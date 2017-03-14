@@ -9,7 +9,7 @@ The repository also contains a set of test fixtures for API resources which can
 be used to create higher quality mocked responses. These are also located in
 the `spec` directory.
 
-All API resourecs in the specification are tagged with a vendor-prefix
+All API resources in the specification are tagged with a vendor-prefix
 attribute called `x-resourceId`. The value of the attribute is an identifier
 that can be used to find the associated fixture in one of the fixture data
 files.
