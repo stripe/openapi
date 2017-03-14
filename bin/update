@@ -1,0 +1,157 @@
+#!/usr/bin/env ruby
+
+# This exists so that we can stub out various calls to system commands (e.g.
+# copying files, running Git operations) which would otherwise be difficult or
+# fragile to test.
+module SystemUtils
+  def abort(message)
+  end
+
+  def clean_git_repository?(dir)
+    changes = `git -C #{dir} status -uno --porcelain`.strip
+    changes.empty?
+  end
+
+  def copy_dir(source, target)
+    `cp -r #{source} #{target}`
+  end
+
+  def dir_exists?(dir)
+    Dir.exists?(dir)
+  end
+
+  def dir_glob(pattern)
+    Dir.glob(pattern)
+  end
+
+  def git_add(files)
+    `git add #{files.join(" ")}`
+  end
+
+  def git_commit(message)
+    `git commit -vm "Update fixture data"`
+  end
+
+  def git_pull_origin_master
+    `git pull origin master`
+  end
+
+  def git_push_origin_master
+    `git push origin master`
+  end
+end
+
+# Encapsulates our scripted update logic so that we can test it.
+class Updater
+  SOURCE_DIR = File.expand_path("~/stripe/pay-server/spec")
+  TARGET_DIR = File.expand_path("../../", __FILE__)
+
+  def initialize(out: nil, utils: nil)
+    self.out = out || $stdout
+    self.utils = utils || SystemUtils.new
+  end
+
+  def run
+    unless utils.dir_exists?(SOURCE_DIR)
+      utils.abort("Source directory does not exist: #{SOURCE_DIR}")
+      return # reachable in testing
+    end
+
+    unless utils.clean_git_repository?(TARGET_DIR)
+      utils.abort("Repository must be unmodified to continue: #{TARGET_DIR}")
+      return # reachable in testing
+    end
+
+    out.puts "Pulling from origin"
+    out.puts utils.git_pull_origin_master
+
+    out.puts "Copying #{SOURCE_DIR} to #{TARGET_DIR}"
+    out.puts utils.copy_dir(SOURCE_DIR, TARGET_DIR)
+
+    out.puts "Commiting fixtures"
+    out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/spec/fixtures.*"))
+    out.puts utils.git_commit("Update fixture data")
+
+    out.puts "Commiting specification"
+    out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/spec/spec.*"))
+    out.puts utils.git_commit("Update OpenAPI specification")
+
+    out.puts "Pushing to origin"
+    out.puts utils.git_push_origin_master
+  end
+
+  private
+
+  attr_accessor :out
+  attr_accessor :utils
+end
+
+if ENV['RUN_TESTS'] != 'true'
+  Updater.new.run
+else
+  require "minitest/autorun"
+  require "minitest/mock"
+
+  class UpdateTest < Minitest::Test
+    def setup
+      self.utils = Minitest::Mock.new
+      self.updater = Updater.new(out: StringIO.new, utils: utils)
+    end
+
+    def test_runs_successfully
+      utils.expect(:dir_exists?, true,
+        [Updater::SOURCE_DIR])
+      utils.expect(:clean_git_repository?, true,
+        [Updater::TARGET_DIR])
+
+      utils.expect(:git_pull_origin_master, "")
+
+      utils.expect(:copy_dir, "",
+        [Updater::SOURCE_DIR, Updater::TARGET_DIR])
+
+      utils.expect(:dir_glob, ["fixtures1", "fixtures2"],
+        ["#{Updater::TARGET_DIR}/spec/fixtures.*"])
+      utils.expect(:git_add, "",
+        [["fixtures1", "fixtures2"]])
+      utils.expect(:git_commit, "",
+        ["Update fixture data"])
+
+      utils.expect(:dir_glob, ["spec1", "spec2"],
+        ["#{Updater::TARGET_DIR}/spec/spec.*"])
+      utils.expect(:git_add, "",
+        [["spec1", "spec2"]])
+      utils.expect(:git_commit, "",
+        ["Update OpenAPI specification"])
+
+      utils.expect(:git_push_origin_master, "")
+
+      updater.run
+      utils.verify
+    end
+
+    def test_checks_source_and_aborts
+      utils.expect(:dir_exists?, false,
+        [Updater::SOURCE_DIR])
+      utils.expect(:abort, nil,
+        ["Source directory does not exist: #{Updater::SOURCE_DIR}"])
+      updater.run
+      utils.verify
+    end
+
+    def test_checks_target_unmodified_and_aborts
+      utils.expect(:dir_exists?, true,
+        [Updater::SOURCE_DIR])
+      utils.expect(:clean_git_repository?, false,
+        [Updater::TARGET_DIR])
+      utils.expect(:abort, nil,
+        ["Repository must be unmodified to continue: #{Updater::TARGET_DIR}"])
+      updater.run
+      utils.verify
+    end
+
+    private
+
+    attr_accessor :updater
+    attr_accessor :utils
+  end
+end
