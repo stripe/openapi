@@ -29,8 +29,13 @@ class SystemUtils
     `git add #{files.join(" ")}`
   end
 
+  def git_any_files_staged?
+    files = `git diff --name-only --cached`
+    !files.empty?
+  end
+
   def git_commit(message)
-    `git commit -vm "#{message}"`
+    execute_subshell(%{git commit -vem "#{message}"})
   end
 
   def git_pull_origin_master
@@ -39,6 +44,13 @@ class SystemUtils
 
   def git_push_origin_master
     `git push origin master`
+  end
+
+  private def execute_subshell(*args)
+    ret = system(*args)
+    if ret.nil? || !ret
+      abort("Failed to execute subshell (status #{$?}): #{args}")
+    end
   end
 end
 
@@ -76,11 +88,19 @@ class Updater
 
     out.puts "--> Commiting fixtures"
     out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/spec/fixtures.*"))
-    out.puts utils.git_commit("Update fixture data")
+    if utils.git_any_files_staged?
+      out.puts utils.git_commit("Update fixture data")
+    else
+      out.puts "--> No fixture changes to commit"
+    end
 
     out.puts "--> Commiting specification"
     out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/spec/spec.*"))
-    out.puts utils.git_commit("Update OpenAPI specification")
+    if utils.git_any_files_staged?
+      out.puts utils.git_commit("Update OpenAPI specification")
+    else
+      out.puts "--> No OpenAPI specification changes to commit"
+    end
 
     out.puts "--> Pushing to origin"
     out.puts utils.git_push_origin_master
@@ -122,6 +142,7 @@ else
         ["#{Updater::TARGET_DIR}/spec/fixtures.*"])
       utils.expect(:git_add, "",
         [["fixtures1", "fixtures2"]])
+      utils.expect(:git_any_files_staged?, true)
       utils.expect(:git_commit, "",
         ["Update fixture data"])
 
@@ -129,6 +150,7 @@ else
         ["#{Updater::TARGET_DIR}/spec/spec.*"])
       utils.expect(:git_add, "",
         [["spec1", "spec2"]])
+      utils.expect(:git_any_files_staged?, true)
       utils.expect(:git_commit, "",
         ["Update OpenAPI specification"])
 
