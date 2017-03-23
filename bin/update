@@ -1,5 +1,9 @@
 #!/usr/bin/env ruby
 
+require "fileutils"
+require "json"
+require "yaml"
+
 # This exists so that we can stub out various calls to system commands (e.g.
 # copying files, running Git operations) which would otherwise be difficult or
 # fragile to test.
@@ -13,8 +17,8 @@ class SystemUtils
     changes.empty?
   end
 
-  def copy_dir(source, target)
-    `cp -r #{source} #{target}`
+  def copy_file(source, target)
+    FileUtils.copy(source, target)
   end
 
   def dir_exists?(dir)
@@ -38,12 +42,20 @@ class SystemUtils
     execute_subshell(%{git commit -vem "#{message}"})
   end
 
+  def git_current_branch(dir)
+    `cd #{dir} && git rev-parse --abbrev-ref HEAD`.strip
+  end
+
   def git_pull_origin_master
     `git pull origin master`
   end
 
   def git_push_origin_master
     `git push origin master`
+  end
+
+  def write_file(file, data)
+    File.write(file, data)
   end
 
   private def execute_subshell(*args)
@@ -56,7 +68,7 @@ end
 
 # Encapsulates our scripted update logic so that we can test it.
 class Updater
-  SOURCE_DIR = File.expand_path("~/stripe/pay-server/spec")
+  SOURCE_DIR = File.expand_path("~/stripe/pay-server/")
   TARGET_DIR = File.expand_path("../../", __FILE__)
 
   def initialize(out: nil, utils: nil)
@@ -70,6 +82,11 @@ class Updater
       return # reachable in testing
     end
 
+    unless utils.git_current_branch(SOURCE_DIR) == "master"
+      utils.abort("Source repository should be on master branch: #{SOURCE_DIR}")
+      return # reachable in testing
+    end
+
     unless utils.clean_git_repository?(TARGET_DIR)
       utils.abort("Repository must be unmodified to continue: #{TARGET_DIR}")
       return # reachable in testing
@@ -78,8 +95,17 @@ class Updater
     out.puts "--> Pulling from origin"
     out.puts utils.git_pull_origin_master
 
-    out.puts "--> Copying #{SOURCE_DIR} to #{TARGET_DIR}"
-    out.puts utils.copy_dir(SOURCE_DIR, TARGET_DIR)
+    ["fixtures", "spec2"].each do |file|
+      source = File.join(SOURCE_DIR, "openapi", file + ".yaml")
+      target = File.join(TARGET_DIR, "openapi", file + ".yaml")
+
+      out.puts "--> Copying #{source} to #{target}"
+      out.puts utils.copy_file(source, target)
+
+      out.puts "--> Rewriting #{source} as JSON"
+      utils.write_file(File.join(TARGET_DIR, "openapi", file + ".json"),
+        JSON.pretty_generate(YAML.load(File.read(target))))
+    end
 
     if utils.clean_git_repository?(TARGET_DIR)
       utils.abort("No changes to commit (fixtures and spec unchanged)")
@@ -87,7 +113,7 @@ class Updater
     end
 
     out.puts "--> Commiting fixtures"
-    out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/spec/fixtures.*"))
+    out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/openapi/fixtures.*"))
     if utils.git_any_files_staged?
       out.puts utils.git_commit("Update fixture data")
     else
@@ -95,7 +121,7 @@ class Updater
     end
 
     out.puts "--> Commiting specification"
-    out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/spec/spec.*"))
+    out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/openapi/spec2.*"))
     if utils.git_any_files_staged?
       out.puts utils.git_commit("Update OpenAPI specification")
     else
@@ -127,29 +153,40 @@ else
     def test_runs_successfully
       utils.expect(:dir_exists?, true,
         [Updater::SOURCE_DIR])
+      utils.expect(:git_current_branch, "master",
+        [Updater::SOURCE_DIR])
       utils.expect(:clean_git_repository?, true,
         [Updater::TARGET_DIR])
 
       utils.expect(:git_pull_origin_master, "")
 
-      utils.expect(:copy_dir, "",
-        [Updater::SOURCE_DIR, Updater::TARGET_DIR])
+      ["fixtures", "spec2"].each do |file|
+        source = File.join(Updater::SOURCE_DIR, "openapi", file + ".yaml")
+        target = File.join(Updater::TARGET_DIR, "openapi", file + ".yaml")
+
+        utils.expect(:copy_file, "", [source, target])
+
+        json_data = JSON.pretty_generate(YAML.load(File.read(target)))
+        json_target = File.join(Updater::TARGET_DIR, "openapi", file + ".json")
+
+        utils.expect(:write_file, "", [json_target, json_data])
+      end
 
       utils.expect(:clean_git_repository?, false,
         [Updater::TARGET_DIR])
 
-      utils.expect(:dir_glob, ["fixtures1", "fixtures2"],
-        ["#{Updater::TARGET_DIR}/spec/fixtures.*"])
+      utils.expect(:dir_glob, ["fixtures.json", "fixtures.yaml"],
+        ["#{Updater::TARGET_DIR}/openapi/fixtures.*"])
       utils.expect(:git_add, "",
-        [["fixtures1", "fixtures2"]])
+        [["fixtures.json", "fixtures.yaml"]])
       utils.expect(:git_any_files_staged?, true)
       utils.expect(:git_commit, "",
         ["Update fixture data"])
 
-      utils.expect(:dir_glob, ["spec1", "spec2"],
-        ["#{Updater::TARGET_DIR}/spec/spec.*"])
+      utils.expect(:dir_glob, ["spec2.json", "spec2.yaml"],
+        ["#{Updater::TARGET_DIR}/openapi/spec2.*"])
       utils.expect(:git_add, "",
-        [["spec1", "spec2"]])
+        [["spec2.json", "spec2.yaml"]])
       utils.expect(:git_any_files_staged?, true)
       utils.expect(:git_commit, "",
         ["Update OpenAPI specification"])
@@ -169,8 +206,21 @@ else
       utils.verify
     end
 
+    def test_checks_source_on_master_and_aborts
+      utils.expect(:dir_exists?, true,
+        [Updater::SOURCE_DIR])
+      utils.expect(:git_current_branch, "my-feature-branch",
+        [Updater::SOURCE_DIR])
+      utils.expect(:abort, nil,
+        ["Source repository should be on master branch: #{Updater::SOURCE_DIR}"])
+      updater.run
+      utils.verify
+    end
+
     def test_checks_target_unmodified_and_aborts
       utils.expect(:dir_exists?, true,
+        [Updater::SOURCE_DIR])
+      utils.expect(:git_current_branch, "master",
         [Updater::SOURCE_DIR])
       utils.expect(:clean_git_repository?, false,
         [Updater::TARGET_DIR])
@@ -183,13 +233,24 @@ else
     def test_checks_target_modified_after_copy_and_aborts
       utils.expect(:dir_exists?, true,
         [Updater::SOURCE_DIR])
+      utils.expect(:git_current_branch, "master",
+        [Updater::SOURCE_DIR])
       utils.expect(:clean_git_repository?, true,
         [Updater::TARGET_DIR])
 
       utils.expect(:git_pull_origin_master, "")
 
-      utils.expect(:copy_dir, "",
-        [Updater::SOURCE_DIR, Updater::TARGET_DIR])
+      ["fixtures", "spec2"].each do |file|
+        source = File.join(Updater::SOURCE_DIR, "openapi", file + ".yaml")
+        target = File.join(Updater::TARGET_DIR, "openapi", file + ".yaml")
+
+        utils.expect(:copy_file, "", [source, target])
+
+        json_data = JSON.pretty_generate(YAML.load(File.read(target)))
+        json_target = File.join(Updater::TARGET_DIR, "openapi", file + ".json")
+
+        utils.expect(:write_file, "", [json_target, json_data])
+      end
 
       utils.expect(:clean_git_repository?, true,
         [Updater::TARGET_DIR])
