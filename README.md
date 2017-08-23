@@ -1,7 +1,7 @@
 # Stripe's OpenAPI Specification
 
 This repository contains an [OpenAPI specification][openapi] for Stripe's API.
-Both JSON and YAML formats are included and available in the `spec` directory.
+Both JSON and YAML formats are included and available in the `openapi` directory.
 
 ## Vendor Extensions
 
