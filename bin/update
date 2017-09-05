@@ -71,7 +71,8 @@ class Updater
   SOURCE_DIR = File.expand_path("~/stripe/pay-server/")
   TARGET_DIR = File.expand_path("../../", __FILE__)
 
-  def initialize(out: nil, utils: nil)
+  def initialize(dry_run: false, out: nil, utils: nil)
+    self.dry_run = dry_run
     self.out = out || $stdout
     self.utils = utils || SystemUtils.new
   end
@@ -128,18 +129,24 @@ class Updater
       out.puts "--> No OpenAPI specification changes to commit"
     end
 
-    out.puts "--> Pushing to origin"
-    out.puts utils.git_push_origin_master
+    if dry_run
+      out.puts "--> Not pushing to origin because DRY_RUN=true"
+    else
+      out.puts "--> Pushing to origin"
+      out.puts utils.git_push_origin_master
+    end
   end
 
   private
 
+  attr_accessor :dry_run
   attr_accessor :out
   attr_accessor :utils
 end
 
 if ENV['RUN_TESTS'] != 'true'
-  Updater.new.run
+  dry_run = (ENV['DRY_RUN'] == 'true')
+  Updater.new(dry_run: dry_run).run
 else
   require "minitest/autorun"
   require "minitest/mock"
