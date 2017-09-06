@@ -71,7 +71,8 @@ class Updater
   SOURCE_DIR = File.expand_path("~/stripe/pay-server/")
   TARGET_DIR = File.expand_path("../../", __FILE__)
 
-  def initialize(out: nil, utils: nil)
+  def initialize(dry_run: false, out: nil, utils: nil)
+    self.dry_run = dry_run
     self.out = out || $stdout
     self.utils = utils || SystemUtils.new
   end
@@ -95,7 +96,7 @@ class Updater
     out.puts "--> Pulling from origin"
     out.puts utils.git_pull_origin_master
 
-    ["fixtures", "spec2"].each do |file|
+    ["fixtures2", "fixtures3", "spec2", "spec3"].each do |file|
       source = File.join(SOURCE_DIR, "openapi", file + ".yaml")
       target = File.join(TARGET_DIR, "openapi", file + ".yaml")
 
@@ -113,7 +114,7 @@ class Updater
     end
 
     out.puts "--> Commiting fixtures"
-    out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/openapi/fixtures.*"))
+    out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/openapi/fixtures*"))
     if utils.git_any_files_staged?
       out.puts utils.git_commit("Update fixture data")
     else
@@ -121,25 +122,31 @@ class Updater
     end
 
     out.puts "--> Commiting specification"
-    out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/openapi/spec2.*"))
+    out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/openapi/spec*"))
     if utils.git_any_files_staged?
       out.puts utils.git_commit("Update OpenAPI specification")
     else
       out.puts "--> No OpenAPI specification changes to commit"
     end
 
-    out.puts "--> Pushing to origin"
-    out.puts utils.git_push_origin_master
+    if dry_run
+      out.puts "--> Not pushing to origin because DRY_RUN=true"
+    else
+      out.puts "--> Pushing to origin"
+      out.puts utils.git_push_origin_master
+    end
   end
 
   private
 
+  attr_accessor :dry_run
   attr_accessor :out
   attr_accessor :utils
 end
 
 if ENV['RUN_TESTS'] != 'true'
-  Updater.new.run
+  dry_run = (ENV['DRY_RUN'] == 'true')
+  Updater.new(dry_run: dry_run).run
 else
   require "minitest/autorun"
   require "minitest/mock"
@@ -160,7 +167,7 @@ else
 
       utils.expect(:git_pull_origin_master, "")
 
-      ["fixtures", "spec2"].each do |file|
+      ["fixtures2", "fixtures3", "spec2", "spec3"].each do |file|
         source = File.join(Updater::SOURCE_DIR, "openapi", file + ".yaml")
         target = File.join(Updater::TARGET_DIR, "openapi", file + ".yaml")
 
@@ -175,18 +182,20 @@ else
       utils.expect(:clean_git_repository?, false,
         [Updater::TARGET_DIR])
 
-      utils.expect(:dir_glob, ["fixtures.json", "fixtures.yaml"],
-        ["#{Updater::TARGET_DIR}/openapi/fixtures.*"])
+      utils.expect(:dir_glob,
+        ["fixtures2.json", "fixtures2.yaml", "fixtures3.json", "fixtures3.yaml"],
+        ["#{Updater::TARGET_DIR}/openapi/fixtures*"])
       utils.expect(:git_add, "",
-        [["fixtures.json", "fixtures.yaml"]])
+        [["fixtures2.json", "fixtures2.yaml", "fixtures3.json", "fixtures3.yaml"]])
       utils.expect(:git_any_files_staged?, true)
       utils.expect(:git_commit, "",
         ["Update fixture data"])
 
-      utils.expect(:dir_glob, ["spec2.json", "spec2.yaml"],
-        ["#{Updater::TARGET_DIR}/openapi/spec2.*"])
+      utils.expect(:dir_glob,
+        ["spec2.json", "spec2.yaml", "spec3.json", "spec3.yaml"],
+        ["#{Updater::TARGET_DIR}/openapi/spec*"])
       utils.expect(:git_add, "",
-        [["spec2.json", "spec2.yaml"]])
+        [["spec2.json", "spec2.yaml", "spec3.json", "spec3.yaml"]])
       utils.expect(:git_any_files_staged?, true)
       utils.expect(:git_commit, "",
         ["Update OpenAPI specification"])
@@ -240,7 +249,7 @@ else
 
       utils.expect(:git_pull_origin_master, "")
 
-      ["fixtures", "spec2"].each do |file|
+      ["fixtures2", "fixtures3", "spec2", "spec3"].each do |file|
         source = File.join(Updater::SOURCE_DIR, "openapi", file + ".yaml")
         target = File.join(Updater::TARGET_DIR, "openapi", file + ".yaml")
 
