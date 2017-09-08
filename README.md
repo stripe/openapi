@@ -4,11 +4,12 @@ This repository contains [OpenAPI specifications][openapi] for Stripe's API.
 
 Files can be found in the `openapi/` directory:
 
+* `spec3.{json,yaml}:` OpenAPI 3.0 spec.
 * `spec2.{json,yaml}`: OpenAPI 2.0 spec. We're continuing to generate this for
   now, but it will be deprecated in favor of `spec3`.
-* `spec3.{json,yaml}:` OpenAPI 3.0 spec.
+* `fixtures3.{json,yaml}`: Test fixtures for resources in `spec3`. See below
+  for more information.
 * `fixtures2.{json,yaml}`: Test fixtures for resources in `spec2`.
-* `fixtures3.{json,yaml}`: Test fixtures for resources in `spec3`.
 
 ## Vendor Extensions
 
@@ -80,9 +81,8 @@ definitions:
 ### `x-resourceId` and Fixtures
 
 Resources include `x-resourceId` which is a canonical name for each resource.
-It can be used in conjunction with the files `openapi/fixtures.{json,yaml}` to
-look up a sample representation (otherwise known as a "fixture") of the
-resource.
+It can be used in conjunction with `openapi/fixtures{2,3}.{json,yaml}` to look
+up a sample representation (otherwise known as a "fixture") of the resource.
 
 For example:
 
