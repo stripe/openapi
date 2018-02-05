@@ -626,9 +626,10 @@ definitions:
   balance:
     properties:
       available:
-        description: Funds that are available to be paid out automatically by Stripe
-          or explicitly via the [transfers API](#transfers). The available balance
-          for each currency and payment type can be found in the `source_types` property.
+        description: Funds that are available to be paid out, whether automatically
+          by Stripe or explicitly via the [transfers API](#transfers). The available
+          balance for each currency and payment type can be found in the `source_types`
+          property.
         type: array
       connect_reserved:
         description: Funds held due to negative balances on connected Custom accounts.
@@ -646,9 +647,9 @@ definitions:
         - balance
         type: string
       pending:
-        description: Funds that are not available in the balance yet, due to the 7-day
-          rolling pay cycle. The pending balance for each currency and payment type
-          can be found in the `source_types` property.
+        description: Funds that are not yet available in the balance, due to the 7-day
+          rolling pay cycle. The pending balance for each currency, and for each payment
+          type, can be found in the `source_types` property.
         type: array
     required:
     - available
@@ -703,7 +704,7 @@ definitions:
         - balance_transaction
         type: string
       source:
-        description: The Stripe object this transaction is related to.
+        description: The Stripe object to which this transaction is related.
         type: string
         x-expansionResources:
           oneOf:
@@ -3717,8 +3718,8 @@ definitions:
           be useful for storing additional information about the object in a structured
           format.
         type: object
-      name:
-        description: Display name of the plan.
+      nickname:
+        description: A brief description of the plan, hidden from customers.
         type: string
       object:
         description: String representing the object's type. Objects of the same type
@@ -3726,9 +3727,12 @@ definitions:
         enum:
         - plan
         type: string
-      statement_descriptor:
-        description: Displayed on customer statements when their card is charged.
+      product:
+        description: The product whose pricing this plan determines.
         type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/product"
     required:
     - created
     - currency
@@ -3737,11 +3741,11 @@ definitions:
     - interval_count
     - livemode
     - metadata
-    - name
     - object
     title: Plan
     type: object
-    x-expandableFields: []
+    x-expandableFields:
+    - product
     x-resourceId: plan
   platform_earning:
     properties:
@@ -4067,6 +4071,17 @@ definitions:
         type: object
         x-expandableFields:
         - data
+      statement_descriptor:
+        description: Extra information about a product which will appear on your customer's
+          credit card statement. In the case that multiple products are billed at
+          once, the first statement descriptor will be used. Only available on products
+          of type=`service`.
+        type: string
+      type:
+        description: The type of the product. The product is either of type `good`,
+          which is eligible for use with Orders and SKUs, or `service`, which is eligible
+          for use with Subscriptions and Plans.
+        type: string
       updated:
         type: integer
       url:
@@ -4501,6 +4516,13 @@ definitions:
           associated with the source. This is the currency for which the source will
           be chargeable once ready. Required for `single_use` sources.
         type: string
+      eps:
+        properties:
+          reference:
+            type: string
+          statement_descriptor:
+            type: string
+        type: object
       flow:
         description: The authentication `flow` of the source. `flow` is one of `redirect`,
           `receiver`, `code_verification`, `none`.
@@ -4538,6 +4560,29 @@ definitions:
         description: Set of key/value pairs that you can attach to an object. It can
           be useful for storing additional information about the object in a structured
           format.
+        type: object
+      multibanco:
+        properties:
+          entity:
+            type: string
+          reference:
+            type: string
+          refund_account_holder_address_city:
+            type: string
+          refund_account_holder_address_country:
+            type: string
+          refund_account_holder_address_line1:
+            type: string
+          refund_account_holder_address_line2:
+            type: string
+          refund_account_holder_address_postal_code:
+            type: string
+          refund_account_holder_address_state:
+            type: string
+          refund_account_holder_name:
+            type: string
+          refund_iban:
+            type: string
         type: object
       object:
         description: String representing the object's type. Objects of the same type
@@ -4603,8 +4648,10 @@ definitions:
         - bancontact
         - bitcoin
         - card
+        - eps
         - giropay
         - ideal
+        - multibanco
         - p24
         - sofort
         - three_d_secure
@@ -4888,6 +4935,13 @@ definitions:
         description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
           in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
         type: string
+      eps:
+        properties:
+          reference:
+            type: string
+          statement_descriptor:
+            type: string
+        type: object
       giropay:
         properties:
           bank_code:
@@ -4917,6 +4971,29 @@ definitions:
         description: Flag indicating whether the object exists in live mode or test
           mode.
         type: boolean
+      multibanco:
+        properties:
+          entity:
+            type: string
+          reference:
+            type: string
+          refund_account_holder_address_city:
+            type: string
+          refund_account_holder_address_country:
+            type: string
+          refund_account_holder_address_line1:
+            type: string
+          refund_account_holder_address_line2:
+            type: string
+          refund_account_holder_address_postal_code:
+            type: string
+          refund_account_holder_address_state:
+            type: string
+          refund_account_holder_name:
+            type: string
+          refund_iban:
+            type: string
+        type: object
       object:
         description: String representing the object's type. Objects of the same type
           share the same value.
@@ -4965,8 +5042,10 @@ definitions:
         - bancontact
         - bitcoin
         - card
+        - eps
         - giropay
         - ideal
+        - multibanco
         - p24
         - sofort
         - three_d_secure
@@ -5010,6 +5089,10 @@ definitions:
           the cycle using the default source attached to the customer. When sending
           an invoice, Stripe will email your customer an invoice with payment instructions.
         type: string
+      billing_cycle_anchor:
+        description: Determines the date of the first full invoice, and the day of
+          the month for subsequent invoices (for plans with `month` or `year` intervals).
+        type: integer
       cancel_at_period_end:
         description: If the subscription has been canceled with the `at_period_end`
           flag set to `true`, `cancel_at_period_end` on the subscription will be true.
@@ -5276,7 +5359,7 @@ definitions:
         - token
         type: string
       type:
-        description: 'Type of the token: `card` or `bank_account`.'
+        description: 'Type of the token: `account`, `bank_account`, `card`, or `pii`.'
         type: string
       used:
         description: Whether this token has already been used (tokens can be used
@@ -5460,6 +5543,15 @@ definitions:
       amount:
         description: Amount transferred, in %s.
         type: integer
+      arrival_date:
+        type: integer
+      balance_transaction:
+        description: ID of the balance transaction that describes the impact of this
+          topup on your account balance.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/balance_transaction"
       created:
         description: Time at which the object was created. Measured in seconds since
           the Unix epoch.
@@ -5468,6 +5560,16 @@ definitions:
         description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
           in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
         type: string
+      expected_availability_date:
+        type: integer
+      failure_code:
+        description: Error code explaining reason for topup failure if available (see
+          [the errors section](/docs/api#errors) for a list of codes).
+        type: string
+      failure_message:
+        description: Message to user further explaining reason for topup failure if
+          available.
+        type: string
       id:
         description: Unique identifier for the object.
         type: string
@@ -5475,11 +5577,22 @@ definitions:
         description: Flag indicating whether the object exists in live mode or test
           mode.
         type: boolean
+      metadata:
+        description: Set of key/value pairs that you can attach to an object. It can
+          be useful for storing additional information about the object in a structured
+          format.
+        type: object
       object:
         description: String representing the object's type. Objects of the same type
           share the same value.
         enum:
         - topup
+        type: string
+      source:
+        "$ref": "#/definitions/source"
+      statement_descriptor:
+        type: string
+      status:
         type: string
     required:
     - amount
@@ -5487,10 +5600,15 @@ definitions:
     - currency
     - id
     - livemode
+    - metadata
     - object
+    - source
+    - status
     title: Topup
     type: object
-    x-expandableFields: []
+    x-expandableFields:
+    - balance_transaction
+    - source
   transfer:
     properties:
       amount:
@@ -6204,7 +6322,7 @@ info:
     details.
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
-  version: '2018-01-23'
+  version: '2018-02-05'
 paths:
   "/v1/3d_secure":
     post:
@@ -6338,9 +6456,10 @@ paths:
     post:
       description: <p>Updates a connected <a href="/docs/connect/accounts">Express
         or Custom account</a> by setting the values of the parameters passed. Any
-        parameters not provided are left unchanged. To update your own account, use
-        the <a href="%= Opus::DaemonCommon.stripe_link('dashboard.stripe.com', '/account')
-        %">Dashboard</a>.</p><p>Refer to our <a href="/docs/connect/updating-accounts">Connect</a>
+        parameters not provided are left unchanged. Most parameters can only be changed
+        for Custom accounts. Parameters marked <b>Custom and Express</b> are supported
+        by both. To update your own account, use the <a href="%= Opus::DaemonCommon.stripe_link('dashboard.stripe.com',
+        '/account') %">Dashboard</a>.</p><p>Refer to our <a href="/docs/connect/updating-accounts">Connect</a>
         documentation to learn more about updating accounts.</p>
       operationId: AccountUpdate
       parameters:
@@ -10555,9 +10674,10 @@ paths:
     post:
       description: <p>Updates a connected <a href="/docs/connect/accounts">Express
         or Custom account</a> by setting the values of the parameters passed. Any
-        parameters not provided are left unchanged. To update your own account, use
-        the <a href="%= Opus::DaemonCommon.stripe_link('dashboard.stripe.com', '/account')
-        %">Dashboard</a>.</p><p>Refer to our <a href="/docs/connect/updating-accounts">Connect</a>
+        parameters not provided are left unchanged. Most parameters can only be changed
+        for Custom accounts. Parameters marked <b>Custom and Express</b> are supported
+        by both. To update your own account, use the <a href="%= Opus::DaemonCommon.stripe_link('dashboard.stripe.com',
+        '/account') %">Dashboard</a>.</p><p>Refer to our <a href="/docs/connect/updating-accounts">Connect</a>
         documentation to learn more about updating accounts.</p>
       operationId: AccountUpdate
       parameters:
@@ -13503,8 +13623,8 @@ paths:
         name: expand
         required: false
         type: array
-      - description: The ID of the desired balance transaction (as found on any API
-          object that affects the balance, e.g., a charge or transfer).
+      - description: The ID of the desired balance transaction, as found on any API
+          object that affects the balance (e.g., a charge or transfer).
         in: path
         name: id
         required: true
@@ -13909,6 +14029,8 @@ paths:
               type: integer
             capture:
               type: boolean
+            card_program:
+              type: string
             currency:
               type: string
             customer:
@@ -14053,17 +14175,6 @@ paths:
               type: object
             statement_descriptor:
               type: string
-            three_d_secure:
-              properties:
-                apple_pay:
-                  type: boolean
-                cryptogram:
-                  type: string
-              required:
-              - apple_pay
-              - cryptogram
-              title: three_d_secure_params
-              type: object
             transfer_group:
               type: string
             trust:
@@ -18699,6 +18810,8 @@ paths:
               type: integer
             capture:
               type: boolean
+            card_program:
+              type: string
             currency:
               type: string
             customer:
@@ -18844,17 +18957,6 @@ paths:
               type: object
             statement_descriptor:
               type: string
-            three_d_secure:
-              properties:
-                apple_pay:
-                  type: boolean
-                cryptogram:
-                  type: string
-              required:
-              - apple_pay
-              - cryptogram
-              title: three_d_secure_params
-              type: object
             transfer_group:
               type: string
             trust:
@@ -19208,6 +19310,11 @@ paths:
         name: limit
         required: false
         type: integer
+      - description: Only return plans for the given product.
+        in: query
+        name: product
+        required: false
+        type: string
       - description: A cursor for use in pagination. `starting_after` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, ending with `obj_foo`, your subsequent
@@ -19310,9 +19417,7 @@ paths:
             nickname:
               description: A brief description of the plan, hidden from customers.
               type: string
-            product:
-              description: The product whose pricing the created plan will represent.
-              type: string
+            product: {}
             statement_descriptor:
               description: Displayed on customer statements when their card is charged.
                 See the [Creating charges](https://stripe.com/docs/charges#dynamic-statement-descriptor)
@@ -19391,7 +19496,8 @@ paths:
         change a plan’s ID, amount, currency, or billing cycle.</p>"
       operationId: UpdatePlan
       parameters:
-      - description: The identifier of the plan to be updated.
+      - description: The identifier of the plan to be updated. May only be set if
+          type=`service`.
         in: path
         name: plan
         required: true
@@ -19410,11 +19516,12 @@ paths:
             metadata:
               description: A set of key/value pairs that you can attach to a plan
                 object. It can be useful for storing additional information about
-                the plan in a structured format.
+                the plan in a structured format. Applicable to both `service` and
+                `good` types.
               type: object
             name:
               description: The plan name. Customers may see this value on Stripe-generated
-                invoices and receipts.
+                invoices and receipts. Applicable to both `service` and `good` types.
               type: string
             nickname:
               description: A brief description of the plan, hidden from customers.
@@ -19425,9 +19532,13 @@ paths:
                 will be affected.
               type: string
             statement_descriptor:
-              description: Displayed on customer statements when their card is charged.
-                See the [Creating charges](https://stripe.com/docs/charges#dynamic-statement-descriptor)
-                page for an example.
+              description: An arbitrary string to be displayed on your customer's
+                credit card statement. This may be up to 22 characters. The statement
+                description may not include <>"' characters, and will appear on your
+                customer's statement in capital letters. Non-ASCII characters are
+                automatically stripped. While most banks display this information
+                consistently, some may display it incorrectly or not at all. May only
+                be set if type=`service`.
               type: string
       responses:
         '200':
@@ -19456,6 +19567,12 @@ paths:
         name: active
         required: false
         type: boolean
+      - description: Only return products that were created during the given date
+          interval.
+        in: query
+        name: created
+        required: false
+        type: string
       - description: A cursor for use in pagination. `ending_before` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, starting with `obj_bar`, your subsequent
@@ -19489,6 +19606,11 @@ paths:
           of the list.
         in: query
         name: starting_after
+        required: false
+        type: string
+      - description: Only return products of this type.
+        in: query
+        name: type
         required: false
         type: string
       - description: Only return products with the given url.
@@ -19544,27 +19666,28 @@ paths:
           properties:
             active:
               description: Whether the product is currently available for purchase.
-                Defaults to `true`.
+                Defaults to `true`. May only be set if type=`good`.
               type: boolean
             attributes:
-              description: A list of up to 5 alphanumeric attributes that each SKU
-                can provide values for (e.g., `["color", "size"]`).
+              description: A list of up to 5 alphanumeric attributes. Applicable to
+                both `service` and `good` types.
               items:
                 type: string
               type: array
             caption:
               description: A short one-line description of the product, meant to be
-                displayable to the customer.
+                displayable to the customer. May only be set if type=`good`.
               type: string
             deactivate_on:
               description: An array of Connect application names or identifiers that
-                should not be able to order the SKUs for this product.
+                should not be able to order the SKUs for this product. May only be
+                set if type=`good`.
               items:
                 type: string
               type: array
             description:
               description: The product's description, meant to be displayable to the
-                customer.
+                customer. May only be set if type=`good`.
               type: string
             expand:
               description: Specifies which fields in the response should be expanded.
@@ -19572,27 +19695,31 @@ paths:
                 type: string
               type: array
             id:
-              description: The identifier for the product. Must be unique. If not
-                provided, an identifier will be randomly generated.
+              description: An identifier will be randomly generated by Stripe. You
+                can optionally override this ID, but the ID must be unique across
+                all products in your Stripe account. Applicable to both `service`
+                and `good` types.
               type: string
             images:
               description: A list of up to 8 URLs of images for this product, meant
-                to be displayable to the customer.
+                to be displayable to the customer. May only be set if type=`good`.
               items:
                 type: string
               type: array
             metadata:
               description: A set of key/value pairs that you can attach to a product
                 object. It can be useful for storing additional information about
-                the product in a structured format.
+                the product in a structured format. Applicable to both `service` and
+                `good` types.
               type: object
             name:
               description: The product's name, meant to be displayable to the customer.
+                Applicable to both `service` and `good` types.
               type: string
             package_dimensions:
               description: The dimensions of this product for shipping purposes. A
                 SKU associated with this product can override this value by having
-                its own `package_dimensions`.
+                its own `package_dimensions`. May only be set if type=`good`.
               properties:
                 height:
                   type: number
@@ -19611,13 +19738,32 @@ paths:
               type: object
             shippable:
               description: Whether this product is shipped (i.e., physical goods).
-                Defaults to `true`.
+                Defaults to `true`. May only be set if type=`good`.
               type: boolean
+            statement_descriptor:
+              description: An arbitrary string to be displayed on your customer's
+                credit card statement. This may be up to 22 characters. The statement
+                description may not include <>"' characters, and will appear on your
+                customer's statement in capital letters. Non-ASCII characters are
+                automatically stripped. While most banks display this information
+                consistently, some may display it incorrectly or not at all. May only
+                be set if type=`service`.
+              type: string
+            type:
+              description: The type of the product. The product is either of type
+                `service`, which is eligible for use with Subscriptions and Plans
+                or `good`, which is eligible for use with Orders and SKUs.
+              enum:
+              - good
+              - service
+              type: string
             url:
               description: A URL of a publicly-accessible webpage for this product.
+                May only be set if type=`good`.
               type: string
           required:
           - name
+          - type
       responses:
         '200':
           description: Successful response.
@@ -19761,6 +19907,15 @@ paths:
               description: Whether this product is shipped (i.e., physical goods).
                 Defaults to `true`.
               type: boolean
+            statement_descriptor:
+              description: An arbitrary string to be displayed on your customer's
+                credit card statement. This may be up to 22 characters. The statement
+                description may not include <>"' characters, and will appear on your
+                customer's statement in capital letters. Non-ASCII characters are
+                automatically stripped. While most banks display this information
+                consistently, some may display it incorrectly or not at all. May only
+                be set if type=`service`.
+              type: string
             url:
               description: A URL of a publicly-accessible webpage for this product.
               type: string
@@ -20238,7 +20393,8 @@ paths:
         name: limit
         required: false
         type: integer
-      - description: The ID of the product whose SKUs will be retrieved.
+      - description: The ID of the product whose SKUs will be retrieved. Must be a
+          product with type `good`.
         in: query
         name: product
         required: false
@@ -20373,7 +20529,8 @@ paths:
                 ¥100, Japanese Yen being a zero-decimal currency).
               type: integer
             product:
-              description: The ID of the product this SKU is associated with.
+              description: The ID of the product this SKU is associated with. Must
+                be a product with type `good`.
               type: string
           required:
           - currency
@@ -20537,8 +20694,8 @@ paths:
               type: integer
             product:
               description: The ID of the product that this SKU should belong to. The
-                product must exist and have the same set of attribute names as the
-                SKU's current product.
+                product must exist, have the same set of attribute names as the SKU's
+                current product, and be of type `good`.
               type: string
       responses:
         '200':
