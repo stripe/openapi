@@ -1588,6 +1588,10 @@ definitions:
           can be useful for storing additional information about the object in a structured
           format.
         type: object
+      name:
+        description: Name of the coupon displayed to customers on for instance invoices
+          or receipts.
+        type: string
       object:
         description: String representing the object's type. Objects of the same type
           share the same value.
@@ -3066,7 +3070,9 @@ definitions:
           the Unix epoch.
         type: integer
       fraud_type:
-        description: The type of fraud labelled by the issuer.
+        description: The type of fraud labelled by the issuer. One of `card_never_received`,
+          `fraudulent_card_application`, `made_with_counterfeit_card`, `made_with_lost_card`,
+          `made_with_stolen_card`, `misc`, `unauthorized_use_of_card`.
         type: string
       id:
         description: Unique identifier for the object.
@@ -3082,7 +3088,8 @@ definitions:
         - issuer_fraud_record
         type: string
       post_date:
-        description: The timestamp at which the issuer posted the fraud record.
+        description: The timestamp at which the card issuer posted the issuer fraud
+          record.
         type: integer
     required:
     - charge
@@ -3990,8 +3997,8 @@ definitions:
       transform_usage:
         "$ref": "#/definitions/transform_usage"
       trial_period_days:
-        description: Number of trial period days granted when subscribing a customer
-          to this plan. `null` if the plan has no trial period.
+        description: Default number of trial days when subscribing a customer to this
+          plan using [`trial_from_plan=true`](/docs/api#create_subscription-trial_from_plan).
         type: integer
       usage_type:
         description: Configures how the quantity per period should be determined,
@@ -4329,36 +4336,6 @@ definitions:
         description: Whether this product is a shipped good. Only applicable to products
           of `type=good`.
         type: boolean
-      skus:
-        description: A sublist of active SKUs associated with this product. Only applicable
-          to products of `type=good`.
-        properties:
-          data:
-            items:
-              "$ref": "#/definitions/sku"
-            type: array
-          has_more:
-            description: True if this list has another page of items after this one
-              that can be fetched.
-            type: boolean
-          object:
-            description: String representing the object's type. Objects of the same
-              type share the same value. Always has the value `list`.
-            enum:
-            - list
-            type: string
-          url:
-            description: The URL where this list can be accessed.
-            type: string
-        required:
-        - data
-        - has_more
-        - object
-        - url
-        title: SKUList
-        type: object
-        x-expandableFields:
-        - data
       statement_descriptor:
         description: Extra information about a product which will appear on your customer's
           credit card statement. In the case that multiple products are billed at
@@ -4389,13 +4366,11 @@ definitions:
     - metadata
     - name
     - object
-    - skus
     - updated
     title: Product
     type: object
     x-expandableFields:
     - package_dimensions
-    - skus
     x-resourceId: product
   radar_review:
     properties:
@@ -6821,7 +6796,7 @@ info:
     details.
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
-  version: '2018-02-28'
+  version: '2018-05-21'
 paths:
   "/v1/3d_secure":
     post:
@@ -9479,7 +9454,7 @@ paths:
   "/v1/application_fees/{id}/refund":
     post:
       description: ''
-      operationId: RefundPlatformEarning
+      operationId: DeprecatedCreateRefundPlatformEarning
       parameters:
       - in: path
         name: id
@@ -10079,7 +10054,9 @@ paths:
         name: limit
         required: false
         type: integer
-      - in: query
+      - description: 'A filter on the list, based on the source of the charge. The
+          value can be a dictionary with the following options:'
+        in: query
         name: source
         required: false
         type: string
@@ -10627,7 +10604,7 @@ paths:
                   type: string
                 uncategorized_text:
                   type: string
-              title: dispute_evidence_specs
+              title: dispute_evidence_params
               type: object
             expand:
               description: Specifies which fields in the response should be expanded.
@@ -11151,6 +11128,11 @@ paths:
                 object. It can be useful for storing additional information about
                 the coupon in a structured format.
               type: object
+            name:
+              description: Name of the coupon displayed to customers on for instance
+                invoices or receipts. By default the `id` is shown if `name` is not
+                set.
+              type: string
             percent_off:
               description: A positive integer between 1 and 100 that represents the
                 discount the coupon will apply (required if `amount_off` is not passed).
@@ -12711,14 +12693,10 @@ paths:
                 the plan the customer is being subscribed to. The special value `now`
                 can be provided to end the customer's trial immediately.
             trial_from_plan:
-              description: Indicates if `trial_period_days` from plans should be accounted
-                for. By default we account for the trial of plans passed via the `plan`
-                argument but ignore trials from plans passed via `items`. When the
-                flag is set to `true`, we will account for any trial passed via either
-                `plan` or `items` but require the trials to be consistent (for example
-                all plans with a trial must have the same trial). When the flag is
-                set to `false` we ignore all trials on plans. Note that setting `trial_end`
-                or `trial_period_days` is not allowed when this flag is set to `true`.
+              description: Indicates if a plan's `trial_period_days` should be applied
+                to the subscription. Setting `trial_end` per subscription is preferred,
+                and this defaults to `false`. Setting this flag to `true` together
+                with `trial_end` is not allowed.
               type: boolean
             trial_period_days:
               description: Integer representing the number of trial period days before
@@ -12944,14 +12922,10 @@ paths:
                 the plan the customer is being subscribed to. The special value `now`
                 can be provided to end the customer's trial immediately.
             trial_from_plan:
-              description: Indicates if `trial_period_days` from plans should be accounted
-                for. By default we account for the trial of plans passed via the `plan`
-                argument but ignore trials from plans passed via `items`. When the
-                flag is set to `true`, we will account for any trial passed via either
-                `plan` or `items` but require the trials to be consistent (for example
-                all plans with a trial must have the same trial). When the flag is
-                set to `false` we ignore all trials on plans. Note that setting `trial_end`
-                or `trial_period_days` is not allowed when this flag is set to `true`.
+              description: Indicates if a plan's `trial_period_days` should be applied
+                to the subscription. Setting `trial_end` per subscription is preferred,
+                and this defaults to `false`. Setting this flag to `true` together
+                with `trial_end` is not allowed.
               type: boolean
           type: object
       responses:
@@ -13187,7 +13161,7 @@ paths:
                   type: string
                 uncategorized_text:
                   type: string
-              title: dispute_evidence_specs
+              title: dispute_evidence_params
               type: object
             expand:
               description: Specifies which fields in the response should be expanded.
@@ -13645,7 +13619,7 @@ paths:
             purpose:
               description: The purpose of the uploaded file. Possible values are `business_logo`,
                 `customer_signature`, `dispute_evidence`, `identity_document`, `pci_document`,
-                `tax_document_user_upload`.
+                or `tax_document_user_upload`
               enum:
               - business_logo
               - customer_signature
@@ -14239,15 +14213,10 @@ paths:
         name: subscription_trial_end
         required: false
         type: integer
-      - description: Indicates if `trial_period_days` from plans should be accounted
-          for. By default we account for the trial of plans passed via the `subscription_plan`
-          argument but ignore trials from plans passed via `subscription_items`. When
-          the flag is set to `true`, we will account for any trial passed via either
-          `subscription_plan` or `subscription_items` but require the trials to be
-          consistent (for example all plans with a trial must have the same trial).
-          When the flag is set to `false` we ignore all trials on plans. Note that
-          setting `subscription_trial_end` is not allowed when this flag is set to
-          `true`.
+      - description: Indicates if a plan's `trial_period_days` should be applied to
+          the subscription. Setting `subscription_trial_end` per subscription is preferred,
+          and this defaults to `false`. Setting this flag to `true` together with
+          `subscription_trial_end` is not allowed.
         in: query
         name: subscription_trial_from_plan
         required: false
@@ -14257,6 +14226,147 @@ paths:
           description: Successful response.
           schema:
             "$ref": "#/definitions/upcoming_invoice"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/invoices/upcoming/lines":
+    get:
+      description: "<p>When retrieving an upcoming invoice, you’ll get a <strong>lines</strong>
+        property containing the total count of line items and the first handful of
+        those items. There is also a URL where you can retrieve the full (paginated)
+        list of line items.</p>"
+      operationId: AllUpcomingInvoiceLines
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: Preview applying this coupon to the invoice. If a `subscription`
+          or `subscription_items` is provided, the invoice returned will preview updating
+          or creating a subscription with that coupon. Otherwise, it will preview
+          applying that coupon to the customer for the next upcoming invoice from
+          among the customer's subscriptions. Otherwise this parameter is ignored.
+        in: query
+        name: coupon
+        required: false
+        type: string
+      - description: The customer of the upcoming invoice is required. In other cases
+          it is ignored.
+        in: query
+        name: customer
+        required: true
+        type: string
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        type: string
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        type: string
+      - description: The subscription of the upcoming invoice is optional. In other
+          cases it is ignored.
+        in: query
+        name: subscription
+        required: false
+        type: string
+      - in: query
+        name: subscription_billing_cycle_anchor
+        required: false
+        type: string
+      - description: Preview updating the subscription with this list of items. Otherwise
+          this parameter is ignored.
+        in: query
+        name: subscription_items
+        required: false
+        type: array
+      - description: For upcoming invoices, this decides whether the preview will
+          show the result of applying prorations or not. If set, one of `subscription_items`
+          or `subscription`, and one of `subscription_items`, or `subscription_trial_end`
+          are required. Otherwise this parameter is ignored.
+        in: query
+        name: subscription_prorate
+        required: false
+        type: boolean
+      - description: For previewing upcoming invoices with proration, `subscription_proration_date`
+          forces the proration to be calculated as though the update was done at the
+          specified time. The time given must be within the current subscription period,
+          and cannot be before the subscription was on its current plan.If set, `subscription`,
+          and one of `subscription_items` or `subscription_trial_end` are required.
+          Also, `subscription_proration` cannot be set to false. Otherwise this parameter
+          is ignored.
+        in: query
+        name: subscription_proration_date
+        required: false
+        type: integer
+      - in: query
+        name: subscription_tax_percent
+        required: false
+        type: number
+      - description: Preview updating or creating a subscription with that trial end.
+          If set, one of `subscription_items` or `subscription` is required. Otherwise
+          this parameter is ignored.
+        in: query
+        name: subscription_trial_end
+        required: false
+        type: integer
+      - description: Indicates if a plan's `trial_period_days` should be applied to
+          the subscription. Setting `subscription_trial_end` per subscription is preferred,
+          and this defaults to `false`. Setting this flag to `true` together with
+          `subscription_trial_end` is not allowed.
+        in: query
+        name: subscription_trial_from_plan
+        required: false
+        type: boolean
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            properties:
+              data:
+                items:
+                  "$ref": "#/definitions/invoice_line_item"
+                type: array
+              has_more:
+                description: True if this list has another page of items after this
+                  one that can be fetched.
+                type: boolean
+              object:
+                description: String representing the object's type. Objects of the
+                  same type share the same value. Always has the value `list`.
+                enum:
+                - list
+                type: string
+              url:
+                description: The URL where this list can be accessed.
+                type: string
+            required:
+            - data
+            - has_more
+            - object
+            - url
+            title: InvoiceLinesList
+            type: object
+            x-expandableFields:
+            - data
         default:
           description: Error response.
           schema:
@@ -14377,22 +14487,6 @@ paths:
         name: expand
         required: false
         type: array
-      - description: For upcoming invoices, preview applying this coupon to the invoice.
-          If a `subscription` or `subscription_items` is provided, the invoice returned
-          will preview updating or creating a subscription with that coupon. Otherwise,
-          it will preview applying that coupon to the customer for the next upcoming
-          invoice from among the customer's subscriptions. Otherwise this parameter
-          is ignored.
-        in: query
-        name: coupon
-        required: false
-        type: string
-      - description: In the case of upcoming invoices, the customer of the upcoming
-          invoice is required. In other cases it is ignored.
-        in: query
-        name: customer
-        required: false
-        type: string
       - description: A cursor for use in pagination. `ending_before` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, starting with `obj_bar`, your subsequent
@@ -14402,8 +14496,7 @@ paths:
         name: ending_before
         required: false
         type: string
-      - description: The ID of the invoice containing the lines to be retrieved. Use
-          a value of **upcoming** to retrieve the upcoming invoice.
+      - description: The ID of the invoice containing the lines to be retrieved.
         in: path
         name: invoice
         required: true
@@ -14423,65 +14516,6 @@ paths:
         name: starting_after
         required: false
         type: string
-      - description: In the case of upcoming invoices, the subscription of the upcoming
-          invoice is optional. In other cases it is ignored.
-        in: query
-        name: subscription
-        required: false
-        type: string
-      - in: query
-        name: subscription_billing_cycle_anchor
-        required: false
-        type: string
-      - description: For upcoming invoices, preview updating the subscription with
-          this list of items. Otherwise this parameter is ignored.
-        in: query
-        name: subscription_items
-        required: false
-        type: array
-      - description: For upcoming invoices, this decides whether the preview will
-          show the result of applying prorations or not. If set, one of `subscription_items`
-          or `subscription`, and one of `subscription_items`, or `subscription_trial_end`
-          are required. Otherwise this parameter is ignored.
-        in: query
-        name: subscription_prorate
-        required: false
-        type: boolean
-      - description: For previewing upcoming invoices with proration, `subscription_proration_date`
-          forces the proration to be calculated as though the update was done at the
-          specified time. The time given must be within the current subscription period,
-          and cannot be before the subscription was on its current plan.If set, `subscription`,
-          and one of `subscription_items` or `subscription_trial_end` are required.
-          Also, `subscription_proration` cannot be set to false. Otherwise this parameter
-          is ignored.
-        in: query
-        name: subscription_proration_date
-        required: false
-        type: integer
-      - in: query
-        name: subscription_tax_percent
-        required: false
-        type: number
-      - description: For upcoming invoices, preview updating or creating a subscription
-          with that trial end. If set, one of `subscription_items` or `subscription`
-          is required. Otherwise this parameter is ignored.
-        in: query
-        name: subscription_trial_end
-        required: false
-        type: integer
-      - description: Indicates if `trial_period_days` from plans should be accounted
-          for. By default we account for the trial of plans passed via the `subscription_plan`
-          argument but ignore trials from plans passed via `subscription_items`. When
-          the flag is set to `true`, we will account for any trial passed via either
-          `subscription_plan` or `subscription_items` but require the trials to be
-          consistent (for example all plans with a trial must have the same trial).
-          When the flag is set to `false` we ignore all trials on plans. Note that
-          setting `subscription_trial_end` is not allowed when this flag is set to
-          `true`.
-        in: query
-        name: subscription_trial_from_plan
-        required: false
-        type: boolean
       responses:
         '200':
           description: Successful response.
@@ -14562,7 +14596,7 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuer_fraud_records":
     get:
-      description: "<p>Returns a list of IssuerFraudRecords.</p>"
+      description: "<p>Returns a list of issuer fraud records.</p>"
       operationId: DisputesIssuerFraudRecordAll
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -14637,7 +14671,7 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuer_fraud_records/{issuer_fraud_record}":
     get:
-      description: <p>Retrieves the details of an IssuerFraudRecord that has previously
+      description: <p>Retrieves the details of an issuer fraud record that has previously
         been created. </p><p>Please refer to the <a href="#issuer_fraud_record_object">issuer
         fraud record</a> object reference for more details.</p>
       operationId: DisputesIssuerFraudRecordRetrieve
@@ -14647,34 +14681,10 @@ paths:
         name: expand
         required: false
         type: array
-      - description: A cursor for use in pagination. `ending_before` is an object
-          ID that defines your place in the list. For instance, if you make a list
-          request and receive 100 objects, starting with `obj_bar`, your subsequent
-          call can include `ending_before=obj_bar` in order to fetch the previous
-          page of the list.
-        in: query
-        name: ending_before
-        required: false
-        type: string
       - description: The identifier of the issuer fraud record to be retrieved.
         in: path
         name: issuer_fraud_record
         required: true
-        type: string
-      - description: A limit on the number of objects to be returned. Limit can range
-          between 1 and 100, and the default is 10.
-        in: query
-        name: limit
-        required: false
-        type: integer
-      - description: A cursor for use in pagination. `starting_after` is an object
-          ID that defines your place in the list. For instance, if you make a list
-          request and receive 100 objects, ending with `obj_foo`, your subsequent
-          call can include `starting_after=obj_foo` in order to fetch the next page
-          of the list.
-        in: query
-        name: starting_after
-        required: false
         type: string
       responses:
         '200':
@@ -15912,10 +15922,8 @@ paths:
               title: transform_usage_param
               type: object
             trial_period_days:
-              description: Specifies a trial period in (an integer number of) days.
-                If you include a trial period, the customer won't be billed for the
-                first time until the trial period ends. If the customer cancels before
-                the trial period is over, she'll never be billed at all.
+              description: Default number of trial days when subscribing a customer
+                to this plan using [`trial_from_plan=true`](/docs/api#create_subscription-trial_from_plan).
               type: integer
             usage_type:
               description: Configures how the quantity per period should be determined,
@@ -16032,10 +16040,8 @@ paths:
                 contain at least one letter.
               type: string
             trial_period_days:
-              description: Specifies a trial period in (an integer number of) days.
-                If you include a trial period, the customer won't be billed for the
-                first time until the trial period ends. If the customer cancels before
-                the trial period is over, she'll never be billed at all.
+              description: Default number of trial days when subscribing a customer
+                to this plan using [`trial_from_plan=true`](/docs/api#create_subscription-trial_from_plan).
               type: integer
           type: object
       responses:
@@ -17639,6 +17645,8 @@ paths:
               type: array
             values:
               description: The values needed to verify the source.
+              items:
+                type: string
               type: array
           required:
           - values
@@ -18151,14 +18159,10 @@ paths:
                 the plan the customer is being subscribed to. The special value `now`
                 can be provided to end the customer's trial immediately.
             trial_from_plan:
-              description: Indicates if `trial_period_days` from plans should be accounted
-                for. By default we account for the trial of plans passed via the `plan`
-                argument but ignore trials from plans passed via `items`. When the
-                flag is set to `true`, we will account for any trial passed via either
-                `plan` or `items` but require the trials to be consistent (for example
-                all plans with a trial must have the same trial). When the flag is
-                set to `false` we ignore all trials on plans. Note that setting `trial_end`
-                or `trial_period_days` is not allowed when this flag is set to `true`.
+              description: Indicates if a plan's `trial_period_days` should be applied
+                to the subscription. Setting `trial_end` per subscription is preferred,
+                and this defaults to `false`. Setting this flag to `true` together
+                with `trial_end` is not allowed.
               type: boolean
             trial_period_days:
               description: Integer representing the number of trial period days before
@@ -18373,14 +18377,10 @@ paths:
                 the plan the customer is being subscribed to. The special value `now`
                 can be provided to end the customer's trial immediately.
             trial_from_plan:
-              description: Indicates if `trial_period_days` from plans should be accounted
-                for. By default we account for the trial of plans passed via the `plan`
-                argument but ignore trials from plans passed via `items`. When the
-                flag is set to `true`, we will account for any trial passed via either
-                `plan` or `items` but require the trials to be consistent (for example
-                all plans with a trial must have the same trial). When the flag is
-                set to `false` we ignore all trials on plans. Note that setting `trial_end`
-                or `trial_period_days` is not allowed when this flag is set to `true`.
+              description: Indicates if a plan's `trial_period_days` should be applied
+                to the subscription. Setting `trial_end` per subscription is preferred,
+                and this defaults to `false`. Setting this flag to `true` together
+                with `trial_end` is not allowed.
               type: boolean
           type: object
       responses:
