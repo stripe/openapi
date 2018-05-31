@@ -746,7 +746,7 @@ definitions:
         description: 'Transaction type: `adjustment`, `application_fee`, `application_fee_refund`,
           `charge`, `payment`, `payment_failure_refund`, `payment_refund`, `refund`,
           `transfer`, `transfer_refund`, `payout`, `payout_cancel`, `payout_failure`,
-          `validation`, or `stripe_fee`.'
+          `validation`, `stripe_fee`, or `network_cost`.'
         type: string
     required:
     - amount
@@ -2675,6 +2675,16 @@ definitions:
         - charge_automatically
         - send_invoice
         type: string
+      billing_reason:
+        description: Indicates the reason why the invoice was created.
+        enum:
+        - manual
+        - subscription
+        - subscription_cycle
+        - subscription_threshold
+        - subscription_update
+        - upcoming
+        type: string
       charge:
         description: ID of the latest charge generated for this invoice, if any.
         type: string
@@ -3370,9 +3380,11 @@ definitions:
           A photo (jpg or png) of the front of an identifying document, either a passport
           or local ID card."
         type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/file_upload"
+      document_back:
+        description: "(ID of a [file upload](https://stripe.com/docs/guides/file-upload))
+          A photo (jpg or png) of the back of an identifying document, either a passport
+          or local ID card."
+        type: string
       status:
         description: The state of verification for this legal entity. Possible values
           are `unverified`, `pending`, or `verified`.
@@ -3381,8 +3393,7 @@ definitions:
     - status
     title: LegalEntityVerification
     type: object
-    x-expandableFields:
-    - document
+    x-expandableFields: []
   light_account_logout:
     properties: {}
     title: LightAccountLogout
@@ -4277,8 +4288,7 @@ definitions:
   product:
     properties:
       active:
-        description: Whether the product is currently available for purchase. Only
-          applicable to products of `type=good`.
+        description: Whether the product is currently available for purchase.
         type: boolean
       attributes:
         description: A list of up to 5 attributes that each SKU can provide values
@@ -4366,6 +4376,7 @@ definitions:
     - metadata
     - name
     - object
+    - type
     - updated
     title: Product
     type: object
@@ -4784,6 +4795,41 @@ definitions:
           tokenization_method:
             type: string
         type: object
+      card_present:
+        properties:
+          brand:
+            type: string
+          card_automatically_updated:
+            type: boolean
+          country:
+            type: string
+          data_type:
+            type: string
+          emv_auth_data:
+            type: string
+          evidence_customer_signature:
+            type: string
+          evidence_transaction_certificate:
+            type: string
+          exp_month:
+            type: integer
+          exp_year:
+            type: integer
+          fingerprint:
+            type: string
+          funding:
+            type: string
+          last4:
+            type: string
+          read_method:
+            type: string
+          register_country:
+            type: string
+          register_id:
+            type: string
+          transaction_start_time:
+            type: string
+        type: object
       client_secret:
         description: The client secret of the source. Used for client-side retrieval
           using a publishable key.
@@ -4966,10 +5012,11 @@ definitions:
       type:
         description: The `type` of the source. The `type` is a payment method, one
           of `ach_credit_transfer`, `ach_debit`, `alipay`, `bancontact`, `bitcoin`,
-          `card`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `sepa_credit_transfer`,
-          `sepa_debit`, `sofort`, or `three_d_secure`. An additional hash is included
-          on the source with a name matching this value. It contains additional information
-          specific to the [payment method](/docs/sources) used.
+          `card`, `card_present`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`,
+          `sepa_credit_transfer`, `sepa_debit`, `sofort`, or `three_d_secure`. An
+          additional hash is included on the source with a name matching this value.
+          It contains additional information specific to the [payment method](/docs/sources)
+          used.
         enum:
         - ach_credit_transfer
         - ach_debit
@@ -4977,6 +5024,7 @@ definitions:
         - bancontact
         - bitcoin
         - card
+        - card_present
         - eps
         - giropay
         - ideal
@@ -5273,6 +5321,41 @@ definitions:
           tokenization_method:
             type: string
         type: object
+      card_present:
+        properties:
+          brand:
+            type: string
+          card_automatically_updated:
+            type: boolean
+          country:
+            type: string
+          data_type:
+            type: string
+          emv_auth_data:
+            type: string
+          evidence_customer_signature:
+            type: string
+          evidence_transaction_certificate:
+            type: string
+          exp_month:
+            type: integer
+          exp_year:
+            type: integer
+          fingerprint:
+            type: string
+          funding:
+            type: string
+          last4:
+            type: string
+          read_method:
+            type: string
+          register_country:
+            type: string
+          register_id:
+            type: string
+          transaction_start_time:
+            type: string
+        type: object
       created:
         description: Time at which the object was created. Measured in seconds since
           the Unix epoch.
@@ -5433,6 +5516,7 @@ definitions:
         - bancontact
         - bitcoin
         - card
+        - card_present
         - eps
         - giropay
         - ideal
@@ -5481,6 +5565,9 @@ definitions:
           automatically, Stripe will attempt to pay this subscription at the end of
           the cycle using the default source attached to the customer. When sending
           an invoice, Stripe will email your customer an invoice with payment instructions.
+        enum:
+        - charge_automatically
+        - send_invoice
         type: string
       billing_cycle_anchor:
         description: Determines the date of the first full invoice, and, for plans
@@ -6562,6 +6649,16 @@ definitions:
         - charge_automatically
         - send_invoice
         type: string
+      billing_reason:
+        description: Indicates the reason why the invoice was created.
+        enum:
+        - manual
+        - subscription
+        - subscription_cycle
+        - subscription_threshold
+        - subscription_update
+        - upcoming
+        type: string
       charge:
         description: ID of the latest charge generated for this invoice, if any.
         type: string
@@ -7050,9 +7147,7 @@ paths:
                       personal_id_number:
                         type: string
                       verification:
-                        properties:
-                          document:
-                            type: string
+                        properties: {}
                         title: account_person_verification_specs
                         type: object
                     title: account_owner_specs
@@ -7212,9 +7307,7 @@ paths:
                 type:
                   type: string
                 verification:
-                  properties:
-                    document:
-                      type: string
+                  properties: {}
                   title: account_person_verification_specs
                   type: object
               title: account_legal_entity_specs
@@ -7928,9 +8021,7 @@ paths:
                       personal_id_number:
                         type: string
                       verification:
-                        properties:
-                          document:
-                            type: string
+                        properties: {}
                         title: account_person_verification_specs
                         type: object
                     title: account_owner_specs
@@ -8090,9 +8181,7 @@ paths:
                 type:
                   type: string
                 verification:
-                  properties:
-                    document:
-                      type: string
+                  properties: {}
                   title: account_person_verification_specs
                   type: object
               title: account_legal_entity_specs
@@ -8364,9 +8453,7 @@ paths:
                       personal_id_number:
                         type: string
                       verification:
-                        properties:
-                          document:
-                            type: string
+                        properties: {}
                         title: account_person_verification_specs
                         type: object
                     title: account_owner_specs
@@ -8526,9 +8613,7 @@ paths:
                 type:
                   type: string
                 verification:
-                  properties:
-                    document:
-                      type: string
+                  properties: {}
                   title: account_person_verification_specs
                   type: object
               title: account_legal_entity_specs
@@ -9680,7 +9765,7 @@ paths:
         type: string
       - description: 'Only returns transactions of the given type. One of: `charge`,
           `refund`, `adjustment`, `application_fee`, `application_fee_refund`, `transfer`,
-          `payment`, `payout`, `payout_failure`, or `stripe_fee`.'
+          `payment`, `payout`, `payout_failure`, `stripe_fee`, or `network_cost`.'
         in: query
         name: type
         required: false
@@ -16169,7 +16254,7 @@ paths:
           properties:
             active:
               description: Whether the product is currently available for purchase.
-                Defaults to `true`. May only be set if type=`good`.
+                Defaults to `true`.
               type: boolean
             attributes:
               description: A list of up to 5 alphanumeric attributes. Applicable to
@@ -18467,9 +18552,7 @@ paths:
                           personal_id_number:
                             type: string
                           verification:
-                            properties:
-                              document:
-                                type: string
+                            properties: {}
                             title: account_person_verification_specs
                             type: object
                         title: account_owner_specs
@@ -18629,9 +18712,7 @@ paths:
                     type:
                       type: string
                     verification:
-                      properties:
-                        document:
-                          type: string
+                      properties: {}
                       title: account_person_verification_specs
                       type: object
                   title: account_legal_entity_specs
