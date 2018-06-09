@@ -2676,7 +2676,14 @@ definitions:
         - send_invoice
         type: string
       billing_reason:
-        description: Indicates the reason why the invoice was created.
+        description: 'Indicates the reason why the invoice was created. `subscription_cycle`
+          indicates an invoice created by a subscription advancing into a new period.
+          `subscription_update` indicates an invoice created due to creating or updating
+          a subscription. `subscription` is set for all old invoices to indicate either
+          a change to a subscription or a period advancement. `manual` is set for
+          all invoices unrelated to a subscription (for example: created via the invoice
+          editor). The `upcoming` value is reserved for simulated invoices per the
+          upcoming invoice endpoint.'
         enum:
         - manual
         - subscription
@@ -2731,8 +2738,17 @@ definitions:
           us to update the subscription status as if the invoice were successfully
           paid. Once an invoice has been forgiven, it cannot be unforgiven or reopened.
         type: boolean
+      hosted_invoice_url:
+        description: The URL for the hosted invoice page, which allows customers to
+          view and pay an invoice. If the invoice has not been frozen yet, this will
+          be null.
+        type: string
       id:
         description: Unique identifier for the object.
+        type: string
+      invoice_pdf:
+        description: The link to download the PDF for the invoice. If the invoice
+          has not been frozen yet, this will be null.
         type: string
       lines:
         description: 'The individual line items that make up the invoice. `lines`
@@ -3921,6 +3937,9 @@ definitions:
     x-resourceId: payout
   plan:
     properties:
+      active:
+        description: Whether the plan is currently available for new subscriptions.
+        type: boolean
       aggregate_usage:
         description: Specifies a usage aggregation strategy for plans of `usage_type=metered`.
           Allowed values are `sum` for summing up all usage during a period, `last_during_period`
@@ -4018,6 +4037,7 @@ definitions:
           will aggregate the total usage based on usage records. Defaults to `licensed`.
         type: string
     required:
+    - active
     - created
     - currency
     - id
@@ -4729,8 +4749,11 @@ definitions:
             type: string
         type: object
       amount:
-        description: Amount associated with the source. This is the amount for which
-          the source will be chargeable once ready. Required for `single_use` sources.
+        description: A positive integer in the smallest currency unit (that is, 100
+          cents for $1.00, or 1 for ¥1, Japanese Yen being a zero-decimal currency)
+          representing the total amount associated with the source. This is the amount
+          for which the source will be chargeable once ready. Required for `single_use`
+          sources.
         type: integer
       bancontact:
         properties:
@@ -4739,6 +4762,8 @@ definitions:
           bank_name:
             type: string
           bic:
+            type: string
+          iban_last4:
             type: string
           preferred_language:
             type: string
@@ -5079,8 +5104,10 @@ definitions:
   source_mandate_notification:
     properties:
       amount:
-        description: Amount associated with the mandate notification. The amount is
-          expressed in the currency of the underlying Source. Set if the notification
+        description: A positive integer in the smallest currency unit (that is, 100
+          cents for $1.00, or 1 for ¥1, Japanese Yen being a zero-decimal currency)
+          representing the amount associated with the mandate notification. The amount
+          is expressed in the currency of the underlying source. Required if the notification
           type is `debit_initiated`.
         type: integer
       created:
@@ -5101,15 +5128,19 @@ definitions:
         - source_mandate_notification
         type: string
       reason:
-        description: The reason of the mandate notification.
+        description: The reason of the mandate notification. Valid reasons are `mandate_confirmed`
+          or `debit_initiated`.
         type: string
       source:
         "$ref": "#/definitions/source"
       status:
-        description: The status of the mandate notification.
+        description: The status of the mandate notification. Valid statuses are `pending`
+          or `submitted`.
         type: string
       type:
         description: The type of source this mandate notification is attached to.
+          Should be the source type identifier code for the payment method, such as
+          `three_d_secure`.
         type: string
     required:
     - created
@@ -5256,7 +5287,9 @@ definitions:
             type: string
         type: object
       amount:
-        description: The amount your customer has pushed to the receiver.
+        description: A positive integer in the smallest currency unit (that is, 100
+          cents for $1.00, or 1 for ¥1, Japanese Yen being a zero-decimal currency)
+          representing the amount your customer has pushed to the receiver.
         type: integer
       bancontact:
         properties:
@@ -5265,6 +5298,8 @@ definitions:
           bank_name:
             type: string
           bic:
+            type: string
+          iban_last4:
             type: string
           preferred_language:
             type: string
@@ -5760,6 +5795,24 @@ definitions:
     x-expandableFields:
     - plan
     x-resourceId: subscription_item
+  tax_rate_template:
+    properties:
+      id:
+        description: Unique identifier for the object.
+        type: string
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - taxratetemplate
+        type: string
+    required:
+    - id
+    - object
+    title: TaxRateTemplate
+    type: object
+    x-expandableFields: []
+    x-resourceId: tax_rate_template
   three_d_secure:
     properties:
       amount:
@@ -6086,7 +6139,13 @@ definitions:
           bank statement. It must contain at least one letter.
         type: string
       status:
-        description: The status of the top-up is either `failed`, `pending` or `succeeded`.
+        description: The status of the top-up is either `failed`, `pending`, `reversed`,
+          or `succeeded`.
+        enum:
+        - failed
+        - pending
+        - reversed
+        - succeeded
         type: string
     required:
     - amount
@@ -6650,7 +6709,14 @@ definitions:
         - send_invoice
         type: string
       billing_reason:
-        description: Indicates the reason why the invoice was created.
+        description: 'Indicates the reason why the invoice was created. `subscription_cycle`
+          indicates an invoice created by a subscription advancing into a new period.
+          `subscription_update` indicates an invoice created due to creating or updating
+          a subscription. `subscription` is set for all old invoices to indicate either
+          a change to a subscription or a period advancement. `manual` is set for
+          all invoices unrelated to a subscription (for example: created via the invoice
+          editor). The `upcoming` value is reserved for simulated invoices per the
+          upcoming invoice endpoint.'
         enum:
         - manual
         - subscription
@@ -11956,6 +12022,8 @@ paths:
             amounts:
               description: Two positive integers, in *cents*, equal to the values
                 of the microdeposits sent to the bank account.
+              items:
+                type: integer
               type: array
             expand:
               description: Specifies which fields in the response should be expanded.
@@ -12575,6 +12643,8 @@ paths:
             amounts:
               description: Two positive integers, in *cents*, equal to the values
                 of the microdeposits sent to the bank account.
+              items:
+                type: integer
               type: array
             expand:
               description: Specifies which fields in the response should be expanded.
@@ -12708,6 +12778,7 @@ paths:
                 cycle](/docs/subscriptions/billing-cycle). This is used to determine
                 the date of the first full invoice, and, for plans with `month` or
                 `year` intervals, the day of the month for subsequent invoices.
+              type: string
             coupon:
               description: The code of the coupon to apply to this subscription. A
                 coupon applied to a subscription will only affect invoices created
@@ -12777,6 +12848,7 @@ paths:
                 plan. If set, trial_end will override the default trial period of
                 the plan the customer is being subscribed to. The special value `now`
                 can be provided to end the customer's trial immediately.
+              type: string
             trial_from_plan:
               description: Indicates if a plan's `trial_period_days` should be applied
                 to the subscription. Setting `trial_end` per subscription is preferred,
@@ -12886,7 +12958,8 @@ paths:
         name: customer
         required: true
         type: string
-      - in: path
+      - description: The identifier of the subscription to update.
+        in: path
         name: subscription_exposed_id
         required: true
         type: string
@@ -12919,6 +12992,7 @@ paths:
                 cycle](/docs/subscriptions/billing-cycle). This is used to determine
                 the date of the first full invoice, and, for plans with `month` or
                 `year` intervals, the day of the month for subsequent invoices.
+              type: string
             cancel_at_period_end:
               description: Boolean indicating whether this subscription should cancel
                 at the end of the current period.
@@ -13006,6 +13080,7 @@ paths:
                 plan. If set, trial_end will override the default trial period of
                 the plan the customer is being subscribed to. The special value `now`
                 can be provided to end the customer's trial immediately.
+              type: string
             trial_from_plan:
               description: Indicates if a plan's `trial_period_days` should be applied
                 to the subscription. Setting `trial_end` per subscription is preferred,
@@ -14218,7 +14293,7 @@ paths:
         being previewed is to consider only proration line items where <code>period[start]</code>
         is equal to the <code>subscription_proration_date</code> on the upcoming invoice
         resource.</p>"
-      operationId: RetrieveCustomerUpcomingInvoice
+      operationId: RetrieveUpcomingInvoice
       parameters:
       - description: Specifies which fields in the response should be expanded.
         in: query
@@ -14256,7 +14331,12 @@ paths:
         name: subscription
         required: false
         type: string
-      - in: query
+      - description: For new subscriptions, a future timestamp to anchor the subscription's
+          [billing cycle](/docs/subscriptions/billing-cycle). This is used to determine
+          the date of the first full invoice, and, for plans with `month` or `year`
+          intervals, the day of the month for subsequent invoices.For existing subscriptions,
+          the value can only be set to `now` or `unchanged`.
+        in: query
         name: subscription_billing_cycle_anchor
         required: false
         type: string
@@ -14297,7 +14377,7 @@ paths:
         in: query
         name: subscription_trial_end
         required: false
-        type: integer
+        type: string
       - description: Indicates if a plan's `trial_period_days` should be applied to
           the subscription. Setting `subscription_trial_end` per subscription is preferred,
           and this defaults to `false`. Setting this flag to `true` together with
@@ -14328,11 +14408,12 @@ paths:
         name: expand
         required: false
         type: array
-      - description: Preview applying this coupon to the invoice. If a `subscription`
-          or `subscription_items` is provided, the invoice returned will preview updating
-          or creating a subscription with that coupon. Otherwise, it will preview
-          applying that coupon to the customer for the next upcoming invoice from
-          among the customer's subscriptions. Otherwise this parameter is ignored.
+      - description: The code of the coupon to apply. If `subscription` or `subscription_items`
+          is provided, the invoice returned will preview updating or creating a subscription
+          with that coupon. Otherwise, it will preview applying that coupon to the
+          customer for the next upcoming invoice from among the customer's subscriptions.
+          The invoice can be previewed without a coupon by passing this value as an
+          empty string.
         in: query
         name: coupon
         required: false
@@ -14367,13 +14448,21 @@ paths:
         name: starting_after
         required: false
         type: string
-      - description: The subscription of the upcoming invoice is optional. In other
-          cases it is ignored.
+      - description: The identifier of the subscription for which you'd like to retrieve
+          the upcoming invoice. If not provided, but a `subscription_items` is provided,
+          you will preview creating a subscription with those items. If neither `subscription`
+          nor `subscription_items` is provided, you will retrieve the next upcoming
+          invoice from among the customer's subscriptions.
         in: query
         name: subscription
         required: false
         type: string
-      - in: query
+      - description: For new subscriptions, a future timestamp to anchor the subscription's
+          [billing cycle](/docs/subscriptions/billing-cycle). This is used to determine
+          the date of the first full invoice, and, for plans with `month` or `year`
+          intervals, the day of the month for subsequent invoices.For existing subscriptions,
+          the value can only be set to `now` or `unchanged`.
+        in: query
         name: subscription_billing_cycle_anchor
         required: false
         type: string
@@ -14383,36 +14472,39 @@ paths:
         name: subscription_items
         required: false
         type: array
-      - description: For upcoming invoices, this decides whether the preview will
-          show the result of applying prorations or not. If set, one of `subscription_items`
-          or `subscription`, and one of `subscription_items`, or `subscription_trial_end`
-          are required. Otherwise this parameter is ignored.
+      - description: If previewing an update to a subscription, this decides whether
+          the preview will show the result of applying prorations or not. If set,
+          one of `subscription_items` or `subscription`, and one of `subscription_items`
+          or `subscription_trial_end` are required.
         in: query
         name: subscription_prorate
         required: false
         type: boolean
-      - description: For previewing upcoming invoices with proration, `subscription_proration_date`
-          forces the proration to be calculated as though the update was done at the
-          specified time. The time given must be within the current subscription period,
-          and cannot be before the subscription was on its current plan.If set, `subscription`,
-          and one of `subscription_items` or `subscription_trial_end` are required.
-          Also, `subscription_proration` cannot be set to false. Otherwise this parameter
-          is ignored.
+      - description: If previewing an update to a subscription, and doing proration,
+          `subscription_proration_date` forces the proration to be calculated as though
+          the update was done at the specified time. The time given must be within
+          the current subscription period, and cannot be before the subscription was
+          on its current plan. If set, `subscription`, and one of `subscription_items`,
+          or `subscription_trial_end` are required. Also, `subscription_proration`
+          cannot be set to false.
         in: query
         name: subscription_proration_date
         required: false
         type: integer
-      - in: query
+      - description: If provided, the invoice returned will preview updating or creating
+          a subscription with that tax percent. If set, one of `subscription_items`
+          or `subscription` is required.
+        in: query
         name: subscription_tax_percent
         required: false
         type: number
-      - description: Preview updating or creating a subscription with that trial end.
-          If set, one of `subscription_items` or `subscription` is required. Otherwise
-          this parameter is ignored.
+      - description: If provided, the invoice returned will preview updating or creating
+          a subscription with that trial end. If set, one of `subscription_items`
+          or `subscription` is required.
         in: query
         name: subscription_trial_end
         required: false
-        type: integer
+        type: string
       - description: Indicates if a plan's `trial_period_days` should be applied to
           the subscription. Setting `subscription_trial_end` per subscription is preferred,
           and this defaults to `false`. Setting this flag to `true` together with
@@ -15804,6 +15896,12 @@ paths:
         name: expand
         required: false
         type: array
+      - description: Only return plans that are active or inactive (e.g., pass `false`
+          to list all inactive products).
+        in: query
+        name: active
+        required: false
+        type: boolean
       - description: A filter on the list, based on the object `created` field. The
           value can be a string with an integer Unix timestamp, or it can be a dictionary
           with a number of different query options.
@@ -15884,6 +15982,10 @@ paths:
         required: true
         schema:
           properties:
+            active:
+              description: Whether the plan is currently available for new subscriptions.
+                Defaults to `true`.
+              type: boolean
             aggregate_usage:
               description: Specifies a usage aggregation strategy for plans of `usage_type=metered`.
                 Allowed values are `sum` for summing up all usage during a period,
@@ -15899,7 +16001,8 @@ paths:
               type: string
             amount:
               description: A positive integer in %s (or 0 for a free plan) representing
-                how much to charge on a recurring basis.
+                how much to charge on a recurring basis. Either `amount` or `tiers`
+                is required.
               type: integer
             billing_scheme:
               description: Describes how to compute the price per period. Either `per_unit`
@@ -15969,7 +16072,7 @@ paths:
             tiers:
               description: Each element represents a pricing tier. This parameter
                 requires `billing_scheme` to be set to `tiered`. See also the documentation
-                for `billing_scheme`.
+                for `billing_scheme`. Either `amount` or `tiers` is required.
               items:
                 properties:
                   amount:
@@ -16093,6 +16196,9 @@ paths:
         required: false
         schema:
           properties:
+            active:
+              description: Whether the plan is currently available for new subscriptions.
+              type: boolean
             expand:
               description: Specifies which fields in the response should be expanded.
               items:
@@ -16441,6 +16547,9 @@ paths:
                 `attributes` is specified, the list specified will replace the existing
                 attributes list on this product. Any attributes not present after
                 the update will be deleted from the SKUs for this product.
+              items:
+                type: string
+              type: array
             caption:
               description: A short one-line description of the product, meant to be
                 displayable to the customer.
@@ -16448,6 +16557,9 @@ paths:
             deactivate_on:
               description: An array of Connect application names or identifiers that
                 should not be able to order the SKUs for this product.
+              items:
+                type: string
+              type: array
             description:
               description: The product's description, meant to be displayable to the
                 customer.
@@ -16460,6 +16572,9 @@ paths:
             images:
               description: A list of up to 8 URLs of images for this product, meant
                 to be displayable to the customer.
+              items:
+                type: string
+              type: array
             metadata:
               description: A set of key/value pairs that you can attach to a product
                 object. It can be useful for storing additional information about
@@ -17422,7 +17537,7 @@ paths:
               type: string
             type:
               description: The `type` of the source to create. Required unless `customer`
-                and `orginal_source` are specified (see the [Shared card Sources](/docs/sources/connect#shared-card-sources)
+                and `original_source` are specified (see the [Shared card Sources](/docs/sources/connect#shared-card-sources)
                 guide)
               type: string
             usage:
@@ -18171,6 +18286,7 @@ paths:
                 cycle](/docs/subscriptions/billing-cycle). This is used to determine
                 the date of the first full invoice, and, for plans with `month` or
                 `year` intervals, the day of the month for subsequent invoices.
+              type: string
             coupon:
               description: The code of the coupon to apply to this subscription. A
                 coupon applied to a subscription will only affect invoices created
@@ -18243,6 +18359,7 @@ paths:
                 plan. If set, trial_end will override the default trial period of
                 the plan the customer is being subscribed to. The special value `now`
                 can be provided to end the customer's trial immediately.
+              type: string
             trial_from_plan:
               description: Indicates if a plan's `trial_period_days` should be applied
                 to the subscription. Setting `trial_end` per subscription is preferred,
@@ -18341,7 +18458,8 @@ paths:
         invoice</a> endpoint.</p>
       operationId: UpdateSubscription
       parameters:
-      - in: path
+      - description: The identifier of the subscription to update.
+        in: path
         name: subscription_exposed_id
         required: true
         type: string
@@ -18374,6 +18492,7 @@ paths:
                 cycle](/docs/subscriptions/billing-cycle). This is used to determine
                 the date of the first full invoice, and, for plans with `month` or
                 `year` intervals, the day of the month for subsequent invoices.
+              type: string
             cancel_at_period_end:
               description: Boolean indicating whether this subscription should cancel
                 at the end of the current period.
@@ -18461,6 +18580,7 @@ paths:
                 plan. If set, trial_end will override the default trial period of
                 the plan the customer is being subscribed to. The special value `now`
                 can be provided to end the customer's trial immediately.
+              type: string
             trial_from_plan:
               description: Indicates if a plan's `trial_period_days` should be applied
                 to the subscription. Setting `trial_end` per subscription is preferred,
@@ -18495,6 +18615,214 @@ paths:
           description: Error response.
           schema:
             "$ref": "#/definitions/error"
+  "/v1/tax_rate_templates":
+    get:
+      description: "<p>Returns a list of your tax rate templates. Tax rate templates
+        are returned sorted by creation date, with the most recently created tax rate
+        templates appearing first.</p>"
+      operationId: AllTaxRateTemplates
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        type: string
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            properties:
+              data:
+                items:
+                  "$ref": "#/definitions/tax_rate_template"
+                type: array
+              has_more:
+                description: True if this list has another page of items after this
+                  one that can be fetched.
+                type: boolean
+              object:
+                description: String representing the object's type. Objects of the
+                  same type share the same value. Always has the value `list`.
+                enum:
+                - list
+                type: string
+              url:
+                description: The URL where this list can be accessed.
+                type: string
+            required:
+            - data
+            - has_more
+            - object
+            - url
+            type: object
+            x-expandableFields:
+            - data
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      description: "<p>Creates a new tax rate template.</p>"
+      operationId: CreateTaxRateTemplate
+      parameters:
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            description:
+              description: The customer-facing description of this tax rate template.
+              type: string
+            effective_since:
+              description: When this tax rate template starts taking effect.
+              type: integer
+            effective_until:
+              description: When this tax rate template stops taking effect.
+              type: integer
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            inclusive:
+              description: If this tax rate template is inclusive or not.
+              type: boolean
+            name:
+              description: The name of this tax rate template.
+              type: string
+            percentage:
+              description: A non-negative decimal (with at most four decimal places)
+                between 0 and 100. This is percentage of this tax rate template.
+              type: number
+          required:
+          - inclusive
+          - name
+          - percentage
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/tax_rate_template"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/tax_rate_templates/{tax_rate_template}":
+    delete:
+      description: "<p>Removes a tax rate template from the dashboard.</p>"
+      operationId: DeleteTaxRateTemplate
+      parameters:
+      - description: The identifier of the tax rate template to be deleted.
+        in: path
+        name: tax_rate_template
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/deleted_object"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+    get:
+      description: "<p>Retrieves the tax rate template with the given ID.</p>"
+      operationId: RetrieveTaxRateTemplate
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: The ID of the desired tax rate template.
+        in: path
+        name: tax_rate_template
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/tax_rate_template"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      description: "<p>Updates a new tax rate template.</p>"
+      operationId: UpdateTaxRateTemplate
+      parameters:
+      - in: path
+        name: tax_rate_template
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            description:
+              description: The customer-facing description of this tax rate template.
+              type: string
+            effective_since:
+              description: When this tax rate template starts taking effect.
+              type: integer
+            effective_until:
+              description: When this tax rate template stops taking effect.
+              type: integer
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            inclusive:
+              description: If this tax rate template is inclusive or not.
+              type: boolean
+            name:
+              description: The name of this tax rate template.
+              type: string
+            percentage:
+              description: A non-negative decimal (with at most four decimal places)
+                between 0 and 100. This is percentage of this tax rate template.
+              type: number
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/tax_rate_template"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
   "/v1/tokens":
     post:
       description: ''
@@ -18507,6 +18835,7 @@ paths:
         schema:
           properties:
             account:
+              description: Information about the account.
               properties:
                 legal_entity:
                   properties:

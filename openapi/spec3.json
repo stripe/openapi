@@ -4035,7 +4035,7 @@
             "type": "string"
           },
           "billing_reason": {
-            "description": "Indicates the reason why the invoice was created.",
+            "description": "Indicates the reason why the invoice was created. `subscription_cycle` indicates an invoice created by a subscription advancing into a new period. `subscription_update` indicates an invoice created due to creating or updating a subscription. `subscription` is set for all old invoices to indicate either a change to a subscription or a period advancement. `manual` is set for all invoices unrelated to a subscription (for example: created via the invoice editor). The `upcoming` value is reserved for simulated invoices per the upcoming invoice endpoint.",
             "enum": [
               "manual",
               "subscription",
@@ -4134,9 +4134,21 @@
             "description": "Whether the invoice has been forgiven. Forgiving an invoice instructs us to update the subscription status as if the invoice were successfully paid. Once an invoice has been forgiven, it cannot be unforgiven or reopened.",
             "type": "boolean"
           },
+          "hosted_invoice_url": {
+            "description": "The URL for the hosted invoice page, which allows customers to view and pay an invoice. If the invoice has not been frozen yet, this will be null.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
           "id": {
             "description": "Unique identifier for the object.",
             "maxLength": 5000,
+            "type": "string"
+          },
+          "invoice_pdf": {
+            "description": "The link to download the PDF for the invoice. If the invoice has not been frozen yet, this will be null.",
+            "maxLength": 5000,
+            "nullable": true,
             "type": "string"
           },
           "lines": {
@@ -6604,6 +6616,10 @@
       },
       "plan": {
         "properties": {
+          "active": {
+            "description": "Whether the plan is currently available for new subscriptions.",
+            "type": "boolean"
+          },
           "aggregate_usage": {
             "description": "Specifies a usage aggregation strategy for plans of `usage_type=metered`. Allowed values are `sum` for summing up all usage during a period, `last_during_period` for picking the last usage record reported within a period, `last_ever` for picking the last usage record ever (across period bounds) or `max` which picks the usage record with the maximum reported usage during a period. Defaults to `sum`.",
             "enum": [
@@ -6735,6 +6751,7 @@
           }
         },
         "required": [
+          "active",
           "created",
           "currency",
           "id",
@@ -7851,7 +7868,7 @@
             "type": "object"
           },
           "amount": {
-            "description": "Amount associated with the source. This is the amount for which the source will be chargeable once ready. Required for `single_use` sources.",
+            "description": "A positive integer in the smallest currency unit (that is, 100 cents for $1.00, or 1 for ¥1, Japanese Yen being a zero-decimal currency) representing the total amount associated with the source. This is the amount for which the source will be chargeable once ready. Required for `single_use` sources.",
             "nullable": true,
             "type": "integer"
           },
@@ -7866,6 +7883,10 @@
                 "type": "string"
               },
               "bic": {
+                "nullable": true,
+                "type": "string"
+              },
+              "iban_last4": {
                 "nullable": true,
                 "type": "string"
               },
@@ -8429,7 +8450,7 @@
       "source_mandate_notification": {
         "properties": {
           "amount": {
-            "description": "Amount associated with the mandate notification. The amount is expressed in the currency of the underlying Source. Set if the notification type is `debit_initiated`.",
+            "description": "A positive integer in the smallest currency unit (that is, 100 cents for $1.00, or 1 for ¥1, Japanese Yen being a zero-decimal currency) representing the amount associated with the mandate notification. The amount is expressed in the currency of the underlying source. Required if the notification type is `debit_initiated`.",
             "nullable": true,
             "type": "integer"
           },
@@ -8455,7 +8476,7 @@
             "type": "string"
           },
           "reason": {
-            "description": "The reason of the mandate notification.",
+            "description": "The reason of the mandate notification. Valid reasons are `mandate_confirmed` or `debit_initiated`.",
             "maxLength": 5000,
             "type": "string"
           },
@@ -8463,12 +8484,12 @@
             "$ref": "#/components/schemas/source"
           },
           "status": {
-            "description": "The status of the mandate notification.",
+            "description": "The status of the mandate notification. Valid statuses are `pending` or `submitted`.",
             "maxLength": 5000,
             "type": "string"
           },
           "type": {
-            "description": "The type of source this mandate notification is attached to.",
+            "description": "The type of source this mandate notification is attached to. Should be the source type identifier code for the payment method, such as `three_d_secure`.",
             "maxLength": 5000,
             "type": "string"
           }
@@ -8695,7 +8716,7 @@
             "type": "object"
           },
           "amount": {
-            "description": "The amount your customer has pushed to the receiver.",
+            "description": "A positive integer in the smallest currency unit (that is, 100 cents for $1.00, or 1 for ¥1, Japanese Yen being a zero-decimal currency) representing the amount your customer has pushed to the receiver.",
             "type": "integer"
           },
           "bancontact": {
@@ -8709,6 +8730,10 @@
                 "type": "string"
               },
               "bic": {
+                "nullable": true,
+                "type": "string"
+              },
+              "iban_last4": {
                 "nullable": true,
                 "type": "string"
               },
@@ -9497,6 +9522,32 @@
         ],
         "x-resourceId": "subscription_item"
       },
+      "tax_rate_template": {
+        "properties": {
+          "id": {
+            "description": "Unique identifier for the object.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "object": {
+            "description": "String representing the object's type. Objects of the same type share the same value.",
+            "enum": [
+              "taxratetemplate"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "object"
+        ],
+        "title": "TaxRateTemplate",
+        "type": "object",
+        "x-expandableFields": [
+
+        ],
+        "x-resourceId": "tax_rate_template"
+      },
       "three_d_secure": {
         "properties": {
           "amount": {
@@ -9940,8 +9991,13 @@
             "type": "string"
           },
           "status": {
-            "description": "The status of the top-up is either `failed`, `pending` or `succeeded`.",
-            "maxLength": 5000,
+            "description": "The status of the top-up is either `failed`, `pending`, `reversed`, or `succeeded`.",
+            "enum": [
+              "failed",
+              "pending",
+              "reversed",
+              "succeeded"
+            ],
             "type": "string"
           }
         },
@@ -10816,7 +10872,7 @@
             "type": "string"
           },
           "billing_reason": {
-            "description": "Indicates the reason why the invoice was created.",
+            "description": "Indicates the reason why the invoice was created. `subscription_cycle` indicates an invoice created by a subscription advancing into a new period. `subscription_update` indicates an invoice created due to creating or updating a subscription. `subscription` is set for all old invoices to indicate either a change to a subscription or a period advancement. `manual` is set for all invoices unrelated to a subscription (for example: created via the invoice editor). The `upcoming` value is reserved for simulated invoices per the upcoming invoice endpoint.",
             "enum": [
               "manual",
               "subscription",
@@ -11182,7 +11238,6 @@
                   },
                   "currency": {
                     "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "customer": {
@@ -11495,12 +11550,10 @@
                   },
                   "default_currency": {
                     "description": "Three-letter ISO currency code representing the default currency for the account. This must be a currency that [Stripe supports in the account's country](https://stripe.com/docs/payouts).",
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "email": {
                     "description": "Email address of the account representative. For Standard accounts, this is used to ask them to claim their Stripe account. For Custom accounts, this only makes the account easier to identify to platforms; Stripe does not email the account representative.",
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "expand": {
@@ -12037,7 +12090,7 @@
                   },
                   "product_description": {
                     "description": "Internal-only description of the product sold by, or service provided by, the business. Used by Stripe for risk and underwriting purposes.",
-                    "maxLength": 5000,
+                    "maxLength": 40000,
                     "type": "string"
                   },
                   "statement_descriptor": {
@@ -13202,12 +13255,10 @@
                   },
                   "default_currency": {
                     "description": "Three-letter ISO currency code representing the default currency for the account. This must be a currency that [Stripe supports in the account's country](https://stripe.com/docs/payouts).",
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "email": {
                     "description": "Email address of the account representative. For Standard accounts, this is used to ask them to claim their Stripe account. For Custom accounts, this only makes the account easier to identify to platforms; Stripe does not email the account representative.",
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "expand": {
@@ -13748,7 +13799,7 @@
                   },
                   "product_description": {
                     "description": "Internal-only description of the product sold by, or service provided by, the business. Used by Stripe for risk and underwriting purposes.",
-                    "maxLength": 5000,
+                    "maxLength": 40000,
                     "type": "string"
                   },
                   "statement_descriptor": {
@@ -14035,12 +14086,10 @@
                   },
                   "default_currency": {
                     "description": "Three-letter ISO currency code representing the default currency for the account. This must be a currency that [Stripe supports in the account's country](https://stripe.com/docs/payouts).",
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "email": {
                     "description": "Email address of the account representative. For Standard accounts, this is used to ask them to claim their Stripe account. For Custom accounts, this only makes the account easier to identify to platforms; Stripe does not email the account representative.",
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "expand": {
@@ -14577,7 +14626,7 @@
                   },
                   "product_description": {
                     "description": "Internal-only description of the product sold by, or service provided by, the business. Used by Stripe for risk and underwriting purposes.",
-                    "maxLength": 5000,
+                    "maxLength": 40000,
                     "type": "string"
                   },
                   "statement_descriptor": {
@@ -17725,7 +17774,6 @@
                     "type": "string"
                   },
                   "currency": {
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "customer": {
@@ -17890,14 +17938,13 @@
                     "type": "string"
                   },
                   "receipt_email": {
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "recurring": {
                     "type": "boolean"
                   },
                   "referrer": {
-                    "maxLength": 5000,
+                    "maxLength": 40000,
                     "type": "string"
                   },
                   "shipping": {
@@ -18068,7 +18115,6 @@
                     ]
                   },
                   "transfer_group": {
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "trust": {
@@ -18309,7 +18355,6 @@
                   },
                   "transfer_group": {
                     "description": "A string that identifies this transaction as part of a group. `transfer_group` may only be provided if it has not been set. See the [Connect documentation](/docs/connect/charges-transfers#grouping-transactions) for details.",
-                    "maxLength": 5000,
                     "type": "string"
                   }
                 },
@@ -18403,7 +18448,6 @@
                   },
                   "receipt_email": {
                     "description": "The email address to send this charge's receipt to. This will override the previously-specified email address for this charge, if one was set. Receipts will not be sent in test mode.",
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "statement_descriptor": {
@@ -21134,6 +21178,9 @@
                 "properties": {
                   "amounts": {
                     "description": "Two positive integers, in *cents*, equal to the values of the microdeposits sent to the bank account.",
+                    "items": {
+                      "type": "integer"
+                    },
                     "type": "array"
                   },
                   "expand": {
@@ -22513,6 +22560,9 @@
                 "properties": {
                   "amounts": {
                     "description": "Two positive integers, in *cents*, equal to the values of the microdeposits sent to the bank account.",
+                    "items": {
+                      "type": "integer"
+                    },
                     "type": "array"
                   },
                   "expand": {
@@ -22696,10 +22746,6 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
-                "billing_cycle_anchor": {
-                  "explode": true,
-                  "style": "deepObject"
-                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -22713,10 +22759,6 @@
                   "style": "deepObject"
                 },
                 "source": {
-                  "explode": true,
-                  "style": "deepObject"
-                },
-                "trial_end": {
                   "explode": true,
                   "style": "deepObject"
                 }
@@ -22738,16 +22780,9 @@
                     "type": "string"
                   },
                   "billing_cycle_anchor": {
-                    "anyOf": [
-                      {
-                        "type": "integer"
-                      },
-                      {
-                        "maxLength": 5000,
-                        "type": "string"
-                      }
-                    ],
-                    "description": "A future timestamp to anchor the subscription's [billing cycle](/docs/subscriptions/billing-cycle). This is used to determine the date of the first full invoice, and, for plans with `month` or `year` intervals, the day of the month for subsequent invoices."
+                    "description": "A future timestamp to anchor the subscription's [billing cycle](/docs/subscriptions/billing-cycle). This is used to determine the date of the first full invoice, and, for plans with `month` or `year` intervals, the day of the month for subsequent invoices.",
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "coupon": {
                     "description": "The code of the coupon to apply to this subscription. A coupon applied to a subscription will only affect invoices created for that particular subscription.",
@@ -22811,16 +22846,9 @@
                     "type": "number"
                   },
                   "trial_end": {
-                    "anyOf": [
-                      {
-                        "type": "integer"
-                      },
-                      {
-                        "maxLength": 5000,
-                        "type": "string"
-                      }
-                    ],
-                    "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately."
+                    "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately.",
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "trial_from_plan": {
                     "description": "Indicates if a plan's `trial_period_days` should be applied to the subscription. Setting `trial_end` per subscription is preferred, and this defaults to `false`. Setting this flag to `true` together with `trial_end` is not allowed.",
@@ -23015,6 +23043,7 @@
             "style": "simple"
           },
           {
+            "description": "The identifier of the subscription to update.",
             "in": "path",
             "name": "subscription_exposed_id",
             "required": true,
@@ -23029,10 +23058,6 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
-                "billing_cycle_anchor": {
-                  "explode": true,
-                  "style": "deepObject"
-                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -23046,10 +23071,6 @@
                   "style": "deepObject"
                 },
                 "source": {
-                  "explode": true,
-                  "style": "deepObject"
-                },
-                "trial_end": {
                   "explode": true,
                   "style": "deepObject"
                 }
@@ -23071,16 +23092,9 @@
                     "type": "string"
                   },
                   "billing_cycle_anchor": {
-                    "anyOf": [
-                      {
-                        "type": "integer"
-                      },
-                      {
-                        "maxLength": 5000,
-                        "type": "string"
-                      }
-                    ],
-                    "description": "A future timestamp to anchor the subscription's [billing cycle](/docs/subscriptions/billing-cycle). This is used to determine the date of the first full invoice, and, for plans with `month` or `year` intervals, the day of the month for subsequent invoices."
+                    "description": "A future timestamp to anchor the subscription's [billing cycle](/docs/subscriptions/billing-cycle). This is used to determine the date of the first full invoice, and, for plans with `month` or `year` intervals, the day of the month for subsequent invoices.",
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
@@ -23163,16 +23177,9 @@
                     "type": "number"
                   },
                   "trial_end": {
-                    "anyOf": [
-                      {
-                        "type": "integer"
-                      },
-                      {
-                        "maxLength": 5000,
-                        "type": "string"
-                      }
-                    ],
-                    "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately."
+                    "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately.",
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "trial_from_plan": {
                     "description": "Indicates if a plan's `trial_period_days` should be applied to the subscription. Setting `trial_end` per subscription is preferred, and this defaults to `false`. Setting this flag to `true` together with `trial_end` is not allowed.",
@@ -25404,7 +25411,7 @@
     "/v1/invoices/upcoming": {
       "get": {
         "description": "<p>At any time, you can preview the upcoming invoice for a customer. This will show you all the charges that are pending, including subscription renewal charges, invoice item charges, etc. It will also show you any discount that is applicable to the customer.</p><p>Note that when you are viewing an upcoming invoice, you are simply viewing a preview – the invoice has not yet been created. As such, the upcoming invoice will not show up in invoice listing calls, and you cannot use the API to pay or edit the invoice. If you want to change the amount that your customer will be billed, you can add, remove, or update pending invoice items, or update the customer’s discount.</p><p>You can preview the effects of updating a subscription, including a preview of what proration will take place. To ensure that the actual proration is calculated exactly the same as the previewed proration, you should pass a <code>proration_date</code> parameter when doing the actual subscription update. The value passed in should be the same as the <code>subscription_proration_date</code> returned on the upcoming invoice resource. The recommended way to get only the prorations being previewed is to consider only proration line items where <code>period[start]</code> is equal to the <code>subscription_proration_date</code> on the upcoming invoice resource.</p>",
-        "operationId": "RetrieveCustomerUpcomingInvoice",
+        "operationId": "RetrieveUpcomingInvoice",
         "parameters": [
           {
             "description": "The code of the coupon to apply. If `subscription` or `subscription_items` is provided, the invoice returned will preview updating or creating a subscription with that coupon. Otherwise, it will preview applying that coupon to the customer for the next upcoming invoice from among the customer's subscriptions. The invoice can be previewed without a coupon by passing this value as an empty string.",
@@ -25489,14 +25496,28 @@
             "style": "form"
           },
           {
+            "description": "For new subscriptions, a future timestamp to anchor the subscription's [billing cycle](/docs/subscriptions/billing-cycle). This is used to determine the date of the first full invoice, and, for plans with `month` or `year` intervals, the day of the month for subsequent invoices.For existing subscriptions, the value can only be set to `now` or `unchanged`.",
+            "explode": true,
             "in": "query",
             "name": "subscription_billing_cycle_anchor",
             "required": false,
             "schema": {
-              "maxLength": 5000,
-              "type": "string"
+              "anyOf": [
+                {
+                  "enum": [
+                    "now",
+                    "unchanged"
+                  ],
+                  "maxLength": 5000,
+                  "type": "string"
+                },
+                {
+                  "format": "unix-time",
+                  "type": "integer"
+                }
+              ]
             },
-            "style": "form"
+            "style": "deepObject"
           },
           {
             "description": "List of subscription items, each with an attached plan.",
@@ -25568,14 +25589,26 @@
           },
           {
             "description": "If provided, the invoice returned will preview updating or creating a subscription with that trial end. If set, one of `subscription_items` or `subscription` is required.",
+            "explode": true,
             "in": "query",
             "name": "subscription_trial_end",
             "required": false,
             "schema": {
-              "format": "unix-time",
-              "type": "integer"
+              "anyOf": [
+                {
+                  "enum": [
+                    "now"
+                  ],
+                  "maxLength": 5000,
+                  "type": "string"
+                },
+                {
+                  "format": "unix-time",
+                  "type": "integer"
+                }
+              ]
             },
-            "style": "form"
+            "style": "deepObject"
           },
           {
             "description": "Indicates if a plan's `trial_period_days` should be applied to the subscription. Setting `subscription_trial_end` per subscription is preferred, and this defaults to `false`. Setting this flag to `true` together with `subscription_trial_end` is not allowed.",
@@ -25618,7 +25651,7 @@
         "operationId": "AllUpcomingInvoiceLines",
         "parameters": [
           {
-            "description": "Preview applying this coupon to the invoice. If a `subscription` or `subscription_items` is provided, the invoice returned will preview updating or creating a subscription with that coupon. Otherwise, it will preview applying that coupon to the customer for the next upcoming invoice from among the customer's subscriptions. Otherwise this parameter is ignored.",
+            "description": "The code of the coupon to apply. If `subscription` or `subscription_items` is provided, the invoice returned will preview updating or creating a subscription with that coupon. Otherwise, it will preview applying that coupon to the customer for the next upcoming invoice from among the customer's subscriptions. The invoice can be previewed without a coupon by passing this value as an empty string.",
             "in": "query",
             "name": "coupon",
             "required": false,
@@ -25686,7 +25719,7 @@
             "style": "form"
           },
           {
-            "description": "The subscription of the upcoming invoice is optional. In other cases it is ignored.",
+            "description": "The identifier of the subscription for which you'd like to retrieve the upcoming invoice. If not provided, but a `subscription_items` is provided, you will preview creating a subscription with those items. If neither `subscription` nor `subscription_items` is provided, you will retrieve the next upcoming invoice from among the customer's subscriptions.",
             "in": "query",
             "name": "subscription",
             "required": false,
@@ -25697,14 +25730,28 @@
             "style": "form"
           },
           {
+            "description": "For new subscriptions, a future timestamp to anchor the subscription's [billing cycle](/docs/subscriptions/billing-cycle). This is used to determine the date of the first full invoice, and, for plans with `month` or `year` intervals, the day of the month for subsequent invoices.For existing subscriptions, the value can only be set to `now` or `unchanged`.",
+            "explode": true,
             "in": "query",
             "name": "subscription_billing_cycle_anchor",
             "required": false,
             "schema": {
-              "maxLength": 5000,
-              "type": "string"
+              "anyOf": [
+                {
+                  "enum": [
+                    "now",
+                    "unchanged"
+                  ],
+                  "maxLength": 5000,
+                  "type": "string"
+                },
+                {
+                  "format": "unix-time",
+                  "type": "integer"
+                }
+              ]
             },
-            "style": "form"
+            "style": "deepObject"
           },
           {
             "description": "Preview updating the subscription with this list of items. Otherwise this parameter is ignored.",
@@ -25744,7 +25791,7 @@
             "style": "deepObject"
           },
           {
-            "description": "For upcoming invoices, this decides whether the preview will show the result of applying prorations or not. If set, one of `subscription_items` or `subscription`, and one of `subscription_items`, or `subscription_trial_end` are required. Otherwise this parameter is ignored.",
+            "description": "If previewing an update to a subscription, this decides whether the preview will show the result of applying prorations or not. If set, one of `subscription_items` or `subscription`, and one of `subscription_items` or `subscription_trial_end` are required.",
             "in": "query",
             "name": "subscription_prorate",
             "required": false,
@@ -25754,7 +25801,7 @@
             "style": "form"
           },
           {
-            "description": "For previewing upcoming invoices with proration, `subscription_proration_date` forces the proration to be calculated as though the update was done at the specified time. The time given must be within the current subscription period, and cannot be before the subscription was on its current plan.If set, `subscription`, and one of `subscription_items` or `subscription_trial_end` are required. Also, `subscription_proration` cannot be set to false. Otherwise this parameter is ignored.",
+            "description": "If previewing an update to a subscription, and doing proration, `subscription_proration_date` forces the proration to be calculated as though the update was done at the specified time. The time given must be within the current subscription period, and cannot be before the subscription was on its current plan. If set, `subscription`, and one of `subscription_items`, or `subscription_trial_end` are required. Also, `subscription_proration` cannot be set to false.",
             "in": "query",
             "name": "subscription_proration_date",
             "required": false,
@@ -25765,6 +25812,7 @@
             "style": "form"
           },
           {
+            "description": "If provided, the invoice returned will preview updating or creating a subscription with that tax percent. If set, one of `subscription_items` or `subscription` is required.",
             "in": "query",
             "name": "subscription_tax_percent",
             "required": false,
@@ -25774,15 +25822,27 @@
             "style": "form"
           },
           {
-            "description": "Preview updating or creating a subscription with that trial end. If set, one of `subscription_items` or `subscription` is required. Otherwise this parameter is ignored.",
+            "description": "If provided, the invoice returned will preview updating or creating a subscription with that trial end. If set, one of `subscription_items` or `subscription` is required.",
+            "explode": true,
             "in": "query",
             "name": "subscription_trial_end",
             "required": false,
             "schema": {
-              "format": "unix-time",
-              "type": "integer"
+              "anyOf": [
+                {
+                  "enum": [
+                    "now"
+                  ],
+                  "maxLength": 5000,
+                  "type": "string"
+                },
+                {
+                  "format": "unix-time",
+                  "type": "integer"
+                }
+              ]
             },
-            "style": "form"
+            "style": "deepObject"
           },
           {
             "description": "Indicates if a plan's `trial_period_days` should be applied to the subscription. Setting `subscription_trial_end` per subscription is preferred, and this defaults to `false`. Setting this flag to `true` together with `subscription_trial_end` is not allowed.",
@@ -26939,7 +26999,6 @@
                   },
                   "currency": {
                     "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "customer": {
@@ -27549,7 +27608,6 @@
                     "type": "string"
                   },
                   "currency": {
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "customer": {
@@ -27557,7 +27615,7 @@
                     "type": "string"
                   },
                   "description": {
-                    "maxLength": 5000,
+                    "maxLength": 40000,
                     "type": "string"
                   },
                   "destination": {
@@ -27698,14 +27756,13 @@
                     "type": "string"
                   },
                   "receipt_email": {
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "recurring": {
                     "type": "boolean"
                   },
                   "referrer": {
-                    "maxLength": 5000,
+                    "maxLength": 40000,
                     "type": "string"
                   },
                   "shipping": {
@@ -27808,7 +27865,6 @@
                     "type": "string"
                   },
                   "transfer_group": {
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "trust": {
@@ -28188,7 +28244,8 @@
                   "statement_descriptor": {
                     "description": "A string to be displayed on the recipient's bank or card statement. This may be at most 22 characters. Attempting to use a `statement_descriptor` longer than 22 characters will return an error. Note: Most banks will truncate this information and/or display it inconsistently. Some may not display it at all.",
                     "maxLength": 22,
-                    "type": "string"
+                    "type": "string",
+                    "x-stripeBypassValidation": true
                   }
                 },
                 "required": [
@@ -28426,6 +28483,16 @@
         "operationId": "AllPlans",
         "parameters": [
           {
+            "description": "Only return plans that are active or inactive (e.g., pass `false` to list all inactive products).",
+            "in": "query",
+            "name": "active",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "style": "form"
+          },
+          {
             "description": "A filter on the list, based on the object `created` field. The value can be a string with an integer Unix timestamp, or it can be a dictionary with a number of different query options.",
             "explode": true,
             "in": "query",
@@ -28602,6 +28669,10 @@
               "schema": {
                 "additionalProperties": false,
                 "properties": {
+                  "active": {
+                    "description": "Whether the plan is currently available for new subscriptions. Defaults to `true`.",
+                    "type": "boolean"
+                  },
                   "aggregate_usage": {
                     "description": "Specifies a usage aggregation strategy for plans of `usage_type=metered`. Allowed values are `sum` for summing up all usage during a period, `last_during_period` for picking the last usage record reported within a period, `last_ever` for picking the last usage record ever (across period bounds) or `max` which picks the usage record with the maximum reported usage during a period. Defaults to `sum`.",
                     "enum": [
@@ -28614,7 +28685,7 @@
                     "type": "string"
                   },
                   "amount": {
-                    "description": "A positive integer in %s (or 0 for a free plan) representing how much to charge on a recurring basis.",
+                    "description": "A positive integer in %s (or 0 for a free plan) representing how much to charge on a recurring basis. Either `amount` or `tiers` is required.",
                     "type": "integer"
                   },
                   "billing_scheme": {
@@ -28710,7 +28781,7 @@
                     "type": "string"
                   },
                   "tiers": {
-                    "description": "Each element represents a pricing tier. This parameter requires `billing_scheme` to be set to `tiered`. See also the documentation for `billing_scheme`.",
+                    "description": "Each element represents a pricing tier. This parameter requires `billing_scheme` to be set to `tiered`. See also the documentation for `billing_scheme`. Either `amount` or `tiers` is required.",
                     "items": {
                       "properties": {
                         "amount": {
@@ -28942,6 +29013,10 @@
               "schema": {
                 "additionalProperties": false,
                 "properties": {
+                  "active": {
+                    "description": "Whether the plan is currently available for new subscriptions.",
+                    "type": "boolean"
+                  },
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
                     "items": {
@@ -29271,7 +29346,7 @@
                   },
                   "description": {
                     "description": "The product's description, meant to be displayable to the customer. May only be set if type=`good`.",
-                    "maxLength": 5000,
+                    "maxLength": 40000,
                     "type": "string"
                   },
                   "expand": {
@@ -29535,16 +29610,12 @@
                     "type": "boolean"
                   },
                   "attributes": {
-                    "anyOf": [
-                      {
-                        "type": "array"
-                      },
-                      {
-                        "maxLength": 5000,
-                        "type": "string"
-                      }
-                    ],
-                    "description": "A list of up to 5 alphanumeric attributes that each SKU can provide values for (e.g., `[\"color\", \"size\"]`). If a value for `attributes` is specified, the list specified will replace the existing attributes list on this product. Any attributes not present after the update will be deleted from the SKUs for this product."
+                    "description": "A list of up to 5 alphanumeric attributes that each SKU can provide values for (e.g., `[\"color\", \"size\"]`). If a value for `attributes` is specified, the list specified will replace the existing attributes list on this product. Any attributes not present after the update will be deleted from the SKUs for this product.",
+                    "items": {
+                      "maxLength": 5000,
+                      "type": "string"
+                    },
+                    "type": "array"
                   },
                   "caption": {
                     "description": "A short one-line description of the product, meant to be displayable to the customer.",
@@ -29552,20 +29623,16 @@
                     "type": "string"
                   },
                   "deactivate_on": {
-                    "anyOf": [
-                      {
-                        "type": "array"
-                      },
-                      {
-                        "maxLength": 5000,
-                        "type": "string"
-                      }
-                    ],
-                    "description": "An array of Connect application names or identifiers that should not be able to order the SKUs for this product."
+                    "description": "An array of Connect application names or identifiers that should not be able to order the SKUs for this product.",
+                    "items": {
+                      "maxLength": 5000,
+                      "type": "string"
+                    },
+                    "type": "array"
                   },
                   "description": {
                     "description": "The product's description, meant to be displayable to the customer.",
-                    "maxLength": 5000,
+                    "maxLength": 40000,
                     "type": "string"
                   },
                   "expand": {
@@ -29577,16 +29644,11 @@
                     "type": "array"
                   },
                   "images": {
-                    "anyOf": [
-                      {
-                        "type": "array"
-                      },
-                      {
-                        "maxLength": 5000,
-                        "type": "string"
-                      }
-                    ],
-                    "description": "A list of up to 8 URLs of images for this product, meant to be displayable to the customer."
+                    "description": "A list of up to 8 URLs of images for this product, meant to be displayable to the customer.",
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
                   },
                   "metadata": {
                     "description": "A set of key/value pairs that you can attach to a product object. It can be useful for storing additional information about the product in a structured format.",
@@ -29638,7 +29700,6 @@
                   },
                   "url": {
                     "description": "A URL of a publicly-accessible webpage for this product.",
-                    "maxLength": 5000,
                     "type": "string"
                   }
                 },
@@ -31166,7 +31227,6 @@
                   },
                   "currency": {
                     "description": "Three-letter [ISO code for the currency](https://stripe.com/docs/currencies) associated with the source. This is the currency for which the source will be chargeable once ready.",
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "customer": {
@@ -31339,7 +31399,7 @@
                     "type": "string"
                   },
                   "type": {
-                    "description": "The `type` of the source to create. Required unless `customer` and `orginal_source` are specified (see the [Shared card Sources](/docs/sources/connect#shared-card-sources) guide)",
+                    "description": "The `type` of the source to create. Required unless `customer` and `original_source` are specified (see the [Shared card Sources](/docs/sources/connect#shared-card-sources) guide)",
                     "maxLength": 5000,
                     "type": "string"
                   },
@@ -32670,10 +32730,6 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
-                "billing_cycle_anchor": {
-                  "explode": true,
-                  "style": "deepObject"
-                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -32687,10 +32743,6 @@
                   "style": "deepObject"
                 },
                 "source": {
-                  "explode": true,
-                  "style": "deepObject"
-                },
-                "trial_end": {
                   "explode": true,
                   "style": "deepObject"
                 }
@@ -32712,16 +32764,9 @@
                     "type": "string"
                   },
                   "billing_cycle_anchor": {
-                    "anyOf": [
-                      {
-                        "type": "integer"
-                      },
-                      {
-                        "maxLength": 5000,
-                        "type": "string"
-                      }
-                    ],
-                    "description": "A future timestamp to anchor the subscription's [billing cycle](/docs/subscriptions/billing-cycle). This is used to determine the date of the first full invoice, and, for plans with `month` or `year` intervals, the day of the month for subsequent invoices."
+                    "description": "A future timestamp to anchor the subscription's [billing cycle](/docs/subscriptions/billing-cycle). This is used to determine the date of the first full invoice, and, for plans with `month` or `year` intervals, the day of the month for subsequent invoices.",
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "coupon": {
                     "description": "The code of the coupon to apply to this subscription. A coupon applied to a subscription will only affect invoices created for that particular subscription.",
@@ -32790,16 +32835,9 @@
                     "type": "number"
                   },
                   "trial_end": {
-                    "anyOf": [
-                      {
-                        "type": "integer"
-                      },
-                      {
-                        "maxLength": 5000,
-                        "type": "string"
-                      }
-                    ],
-                    "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately."
+                    "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately.",
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "trial_from_plan": {
                     "description": "Indicates if a plan's `trial_period_days` should be applied to the subscription. Setting `trial_end` per subscription is preferred, and this defaults to `false`. Setting this flag to `true` together with `trial_end` is not allowed.",
@@ -32853,7 +32891,6 @@
             "name": "subscription_exposed_id",
             "required": true,
             "schema": {
-              "maxLength": 5000,
               "type": "string"
             },
             "style": "simple"
@@ -32966,6 +33003,7 @@
         "operationId": "UpdateSubscription",
         "parameters": [
           {
+            "description": "The identifier of the subscription to update.",
             "in": "path",
             "name": "subscription_exposed_id",
             "required": true,
@@ -32980,10 +33018,6 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
-                "billing_cycle_anchor": {
-                  "explode": true,
-                  "style": "deepObject"
-                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -32997,10 +33031,6 @@
                   "style": "deepObject"
                 },
                 "source": {
-                  "explode": true,
-                  "style": "deepObject"
-                },
-                "trial_end": {
                   "explode": true,
                   "style": "deepObject"
                 }
@@ -33022,16 +33052,9 @@
                     "type": "string"
                   },
                   "billing_cycle_anchor": {
-                    "anyOf": [
-                      {
-                        "type": "integer"
-                      },
-                      {
-                        "maxLength": 5000,
-                        "type": "string"
-                      }
-                    ],
-                    "description": "A future timestamp to anchor the subscription's [billing cycle](/docs/subscriptions/billing-cycle). This is used to determine the date of the first full invoice, and, for plans with `month` or `year` intervals, the day of the month for subsequent invoices."
+                    "description": "A future timestamp to anchor the subscription's [billing cycle](/docs/subscriptions/billing-cycle). This is used to determine the date of the first full invoice, and, for plans with `month` or `year` intervals, the day of the month for subsequent invoices.",
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
@@ -33114,16 +33137,9 @@
                     "type": "number"
                   },
                   "trial_end": {
-                    "anyOf": [
-                      {
-                        "type": "integer"
-                      },
-                      {
-                        "maxLength": 5000,
-                        "type": "string"
-                      }
-                    ],
-                    "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately."
+                    "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately.",
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "trial_from_plan": {
                     "description": "Indicates if a plan's `trial_period_days` should be applied to the subscription. Setting `trial_end` per subscription is preferred, and this defaults to `false`. Setting this flag to `true` together with `trial_end` is not allowed.",
@@ -33200,6 +33216,386 @@
         }
       }
     },
+    "/v1/tax_rate_templates": {
+      "get": {
+        "description": "<p>Returns a list of your tax rate templates. Tax rate templates are returned sorted by creation date, with the most recently created tax rate templates appearing first.</p>",
+        "operationId": "AllTaxRateTemplates",
+        "parameters": [
+          {
+            "description": "A cursor for use in pagination. `ending_before` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, starting with `obj_bar`, your subsequent call can include `ending_before=obj_bar` in order to fetch the previous page of the list.",
+            "in": "query",
+            "name": "ending_before",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "explode": true,
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "schema": {
+              "items": {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "style": "form"
+          },
+          {
+            "description": "A cursor for use in pagination. `starting_after` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with `obj_foo`, your subsequent call can include `starting_after=obj_foo` in order to fetch the next page of the list.",
+            "in": "query",
+            "name": "starting_after",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/tax_rate_template"
+                      },
+                      "type": "array"
+                    },
+                    "has_more": {
+                      "description": "True if this list has another page of items after this one that can be fetched.",
+                      "type": "boolean"
+                    },
+                    "object": {
+                      "description": "String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
+                      "enum": [
+                        "list"
+                      ],
+                      "type": "string"
+                    },
+                    "url": {
+                      "description": "The URL where this list can be accessed.",
+                      "maxLength": 5000,
+                      "pattern": "^/v1/tax_rate_templates",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "has_more",
+                    "object",
+                    "url"
+                  ],
+                  "type": "object",
+                  "x-expandableFields": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        }
+      },
+      "post": {
+        "description": "<p>Creates a new tax rate template.</p>",
+        "operationId": "CreateTaxRateTemplate",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {
+                "expand": {
+                  "explode": true,
+                  "style": "deepObject"
+                }
+              },
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "description": {
+                    "description": "The customer-facing description of this tax rate template.",
+                    "maxLength": 500,
+                    "type": "string"
+                  },
+                  "effective_since": {
+                    "description": "When this tax rate template starts taking effect.",
+                    "format": "unix-time",
+                    "type": "integer"
+                  },
+                  "effective_until": {
+                    "description": "When this tax rate template stops taking effect.",
+                    "format": "unix-time",
+                    "type": "integer"
+                  },
+                  "expand": {
+                    "description": "Specifies which fields in the response should be expanded.",
+                    "items": {
+                      "maxLength": 5000,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "inclusive": {
+                    "description": "If this tax rate template is inclusive or not.",
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "description": "The name of this tax rate template.",
+                    "maxLength": 500,
+                    "type": "string"
+                  },
+                  "percentage": {
+                    "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This is percentage of this tax rate template.",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "inclusive",
+                  "name",
+                  "percentage"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tax_rate_template"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        }
+      }
+    },
+    "/v1/tax_rate_templates/{tax_rate_template}": {
+      "delete": {
+        "description": "<p>Removes a tax rate template from the dashboard.</p>",
+        "operationId": "DeleteTaxRateTemplate",
+        "parameters": [
+          {
+            "description": "The identifier of the tax rate template to be deleted.",
+            "in": "path",
+            "name": "tax_rate_template",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/deleted_object"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        }
+      },
+      "get": {
+        "description": "<p>Retrieves the tax rate template with the given ID.</p>",
+        "operationId": "RetrieveTaxRateTemplate",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "explode": true,
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "schema": {
+              "items": {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "The ID of the desired tax rate template.",
+            "in": "path",
+            "name": "tax_rate_template",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tax_rate_template"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        }
+      },
+      "post": {
+        "description": "<p>Updates a new tax rate template.</p>",
+        "operationId": "UpdateTaxRateTemplate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tax_rate_template",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {
+                "expand": {
+                  "explode": true,
+                  "style": "deepObject"
+                }
+              },
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "description": {
+                    "description": "The customer-facing description of this tax rate template.",
+                    "maxLength": 500,
+                    "type": "string"
+                  },
+                  "effective_since": {
+                    "description": "When this tax rate template starts taking effect.",
+                    "format": "unix-time",
+                    "type": "integer"
+                  },
+                  "effective_until": {
+                    "description": "When this tax rate template stops taking effect.",
+                    "format": "unix-time",
+                    "type": "integer"
+                  },
+                  "expand": {
+                    "description": "Specifies which fields in the response should be expanded.",
+                    "items": {
+                      "maxLength": 5000,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "inclusive": {
+                    "description": "If this tax rate template is inclusive or not.",
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "description": "The name of this tax rate template.",
+                    "maxLength": 500,
+                    "type": "string"
+                  },
+                  "percentage": {
+                    "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This is percentage of this tax rate template.",
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tax_rate_template"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        }
+      }
+    },
     "/v1/tokens": {
       "post": {
         "description": "",
@@ -33233,6 +33629,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "account": {
+                    "description": "Information about the account.",
                     "properties": {
                       "legal_entity": {
                         "properties": {
@@ -33707,7 +34104,8 @@
                       "legal_entity"
                     ],
                     "title": "connect_js_account_token_specs",
-                    "type": "object"
+                    "type": "object",
+                    "x-stripeBypassValidation": true
                   },
                   "amount": {
                     "type": "integer"
@@ -33946,7 +34344,6 @@
                     ]
                   },
                   "currency": {
-                    "maxLength": 5000,
                     "type": "string"
                   },
                   "customer": {
@@ -33999,7 +34396,7 @@
                     "type": "string"
                   },
                   "referrer": {
-                    "maxLength": 5000,
+                    "maxLength": 40000,
                     "type": "string"
                   },
                   "request_id": {
