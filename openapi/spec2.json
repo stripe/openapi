@@ -3256,6 +3256,10 @@
           "description": "Whether an attempt has been made to pay the invoice. An invoice is not attempted until 1 hour after the `invoice.created` webhook, for example, so you might not want to display that invoice as unpaid to your users.",
           "type": "boolean"
         },
+        "auto_advance": {
+          "description": "When set to false the Invoice will not attempt to advance itself in collecting payment, so won't send emails, run smart dunning, or automatically issue a draft invoice.",
+          "type": "boolean"
+        },
         "billing": {
           "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this invoice using the default source attached to the customer. When sending an invoice, Stripe will email this invoice to the customer with payment instructions.",
           "enum": [
@@ -3469,6 +3473,7 @@
         "amount_remaining",
         "attempt_count",
         "attempted",
+        "auto_advance",
         "closed",
         "currency",
         "customer",
@@ -3673,7 +3678,7 @@
           "type": "integer"
         },
         "subscription": {
-          "description": "When type is `invoiceitem`, the subscription that the invoice item pertains to, if any. Left blank when `type` is already subscription, as it'd be redundant with `id`.",
+          "description": "The subscription that the invoice item pertains to, if any.",
           "type": "string"
         },
         "subscription_item": {
@@ -3682,6 +3687,10 @@
         },
         "type": {
           "description": "A string identifying the type of the source of this line item, either an `invoiceitem` or a `subscription`.",
+          "enum": [
+            "invoiceitem",
+            "subscription"
+          ],
           "type": "string"
         }
       },
@@ -4120,11 +4129,25 @@
         },
         "document": {
           "description": "(ID of a [file upload](https://stripe.com/docs/guides/file-upload)) A photo (jpg or png) of the front of an identifying document, either a passport or local ID card.",
-          "type": "string"
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/file_upload"
+              }
+            ]
+          }
         },
         "document_back": {
           "description": "(ID of a [file upload](https://stripe.com/docs/guides/file-upload)) A photo (jpg or png) of the back of an identifying document, either a passport or local ID card.",
-          "type": "string"
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/file_upload"
+              }
+            ]
+          }
         },
         "status": {
           "description": "The state of verification for this legal entity. Possible values are `unverified`, `pending`, or `verified`.",
@@ -4137,7 +4160,8 @@
       "title": "LegalEntityVerification",
       "type": "object",
       "x-expandableFields": [
-
+        "document",
+        "document_back"
       ]
     },
     "light_account_logout": {
@@ -4646,6 +4670,364 @@
 
       ]
     },
+    "payment_flows_payment_intent_resource_transfer_data": {
+      "properties": {
+        "amount": {
+          "description": "The amount to transfer automatically.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "amount"
+      ],
+      "title": "PaymentFlowsPaymentIntentResourceTransferData",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_intent": {
+      "properties": {
+        "allowed_source_types": {
+          "description": "The list of source types that this PaymentIntent was allowed to use. Values can be any combination of `card`.",
+          "type": "array"
+        },
+        "amount": {
+          "description": "Amount intended to be collected by this PaymentIntent.",
+          "type": "integer"
+        },
+        "amount_capturable": {
+          "description": "Amount that can be captured from this PaymentIntent.",
+          "type": "integer"
+        },
+        "amount_received": {
+          "description": "Amount that was collected by this PaymentIntent.",
+          "type": "integer"
+        },
+        "application": {
+          "description": "ID of the Connect application that created the PaymentIntent.",
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/application"
+              }
+            ]
+          }
+        },
+        "application_fee": {
+          "description": "The application fee (if any) for the resulting payment. [See the Connect documentation](/docs/connect/direct-charges#collecting-fees) for details.",
+          "type": "integer"
+        },
+        "canceled_at": {
+          "description": "Populated when `status` is `canceled`, this is the time at which the PaymentIntent was canceled. Measured in seconds since the Unix epoch.",
+          "type": "integer"
+        },
+        "capture_method": {
+          "description": "Capture method of this PaymentIntent, one of `automatic` or `manual`.",
+          "type": "string"
+        },
+        "charges": {
+          "description": "Charges that were created by this PaymentIntent, if any.",
+          "properties": {
+            "data": {
+              "description": "The list contains all Charges that have been created by this PaymentIntent.",
+              "items": {
+                "$ref": "#/definitions/charge"
+              },
+              "type": "array"
+            },
+            "has_more": {
+              "description": "True if this list has another page of items after this one that can be fetched.",
+              "type": "boolean"
+            },
+            "object": {
+              "description": "String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
+              "enum": [
+                "list"
+              ],
+              "type": "string"
+            },
+            "url": {
+              "description": "The URL where this list can be accessed.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "data",
+            "has_more",
+            "object",
+            "url"
+          ],
+          "title": "PaymentFlowsPaymentIntentResourceChargeList",
+          "type": "object",
+          "x-expandableFields": [
+            "data"
+          ]
+        },
+        "client_secret": {
+          "description": "The client secret of this PaymentIntent. Used for client-side retrieval using a publishable key. Please refer to [dynamic authentication](/docs/payments/dynamic-authentication) guide on how `client_secret` should be handled.",
+          "type": "string"
+        },
+        "confirmation_method": {
+          "description": "Confirmation method of this PaymentIntent, one of `secret` or `publishable`.",
+          "type": "string"
+        },
+        "created": {
+          "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+          "type": "integer"
+        },
+        "currency": {
+          "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+          "type": "string"
+        },
+        "customer": {
+          "description": "ID of the Customer this PaymentIntent is for if one exists.",
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/customer"
+              }
+            ]
+          }
+        },
+        "description": {
+          "description": "An arbitrary string attached to the object. Often useful for displaying to users.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier for the object.",
+          "type": "string"
+        },
+        "livemode": {
+          "description": "Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
+          "type": "boolean"
+        },
+        "metadata": {
+          "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+          "type": "object"
+        },
+        "next_source_action": {
+          "$ref": "#/definitions/payment_intent_next_source_action"
+        },
+        "object": {
+          "description": "String representing the object's type. Objects of the same type share the same value.",
+          "enum": [
+            "payment_intent"
+          ],
+          "type": "string"
+        },
+        "on_behalf_of": {
+          "description": "The account (if any) the payment will be made on behalf of. To triggeran automatic transfer when the payment is complete, use `transfer_data`in conjunction with this parameter.\"",
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/account"
+              }
+            ]
+          }
+        },
+        "receipt_email": {
+          "description": "Email address that the receipt for the resulting payment will be sent to.",
+          "type": "string"
+        },
+        "return_url": {
+          "description": "The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site.If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.",
+          "type": "string"
+        },
+        "shipping": {
+          "$ref": "#/definitions/shipping"
+        },
+        "source": {
+          "description": "ID of the source used in this PaymentIntent.",
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/card"
+              },
+              {
+                "$ref": "#/definitions/source"
+              }
+            ]
+          }
+        },
+        "statement_descriptor": {
+          "description": "Extra information about a PaymentIntent. This will appear on your customer's statement when this PaymentIntent succeeds in creating a charge.",
+          "type": "string"
+        },
+        "status": {
+          "description": "Status of this PaymentIntent, one of `requires_source`, `requires_confirmation`, `requires_source_action`, `processing`, `requires_capture`, `canceled`, or `succeeded`.",
+          "type": "string"
+        },
+        "transfer_data": {
+          "$ref": "#/definitions/payment_flows_payment_intent_resource_transfer_data"
+        },
+        "transfer_group": {
+          "description": "A string that identifies the resulting payment as part of a group. See the [Connect documentation](/docs/connect/charges-transfers#grouping-transactions) for details.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "allowed_source_types",
+        "amount",
+        "amount_capturable",
+        "amount_received",
+        "capture_method",
+        "charges",
+        "confirmation_method",
+        "created",
+        "currency",
+        "id",
+        "livemode",
+        "metadata",
+        "object",
+        "status"
+      ],
+      "title": "PaymentIntent",
+      "type": "object",
+      "x-expandableFields": [
+        "application",
+        "charges",
+        "customer",
+        "next_source_action",
+        "on_behalf_of",
+        "shipping",
+        "source",
+        "transfer_data"
+      ],
+      "x-resourceId": "payment_intent"
+    },
+    "payment_intent_client": {
+      "properties": {
+        "allowed_source_types": {
+          "description": "The list of source types that this PaymentIntent was allowed to use. Values can be any combination of `card`.",
+          "type": "array"
+        },
+        "amount": {
+          "description": "Amount intended to be collected by this PaymentIntent.",
+          "type": "integer"
+        },
+        "canceled_at": {
+          "description": "Populated when `status` is `canceled`, this is the time at which the PaymentIntent was canceled. Measured in seconds since the Unix epoch.",
+          "type": "integer"
+        },
+        "capture_method": {
+          "description": "Capture method of this PaymentIntent, one of `automatic` or `manual`.",
+          "type": "string"
+        },
+        "client_secret": {
+          "description": "The client secret of this PaymentIntent. Used for client-side retrieval using a publishable key. Please refer to [dynamic authentication](/docs/payments/dynamic-authentication) guide on how `client_secret` should be handled.",
+          "type": "string"
+        },
+        "confirmation_method": {
+          "description": "Confirmation method of this PaymentIntent, one of `secret` or `publishable`.",
+          "type": "string"
+        },
+        "created": {
+          "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+          "type": "integer"
+        },
+        "currency": {
+          "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+          "type": "string"
+        },
+        "description": {
+          "description": "An arbitrary string attached to the object. Often useful for displaying to users.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier for the object.",
+          "type": "string"
+        },
+        "livemode": {
+          "description": "Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
+          "type": "boolean"
+        },
+        "next_source_action": {
+          "$ref": "#/definitions/payment_intent_next_source_action"
+        },
+        "object": {
+          "description": "String representing the object's type. Objects of the same type share the same value.",
+          "enum": [
+            "payment_intent"
+          ],
+          "type": "string"
+        },
+        "receipt_email": {
+          "description": "Email address that the receipt for the resulting payment will be sent to.",
+          "type": "string"
+        },
+        "return_url": {
+          "description": "The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site.If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.",
+          "type": "string"
+        },
+        "shipping": {
+          "$ref": "#/definitions/shipping"
+        },
+        "source": {
+          "description": "ID of the source used in this PaymentIntent.",
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/card"
+              },
+              {
+                "$ref": "#/definitions/source"
+              }
+            ]
+          }
+        },
+        "status": {
+          "description": "Status of this PaymentIntent, one of `requires_source`, `requires_confirmation`, `requires_source_action`, `processing`, `requires_capture`, `canceled`, or `succeeded`.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "allowed_source_types",
+        "amount",
+        "capture_method",
+        "confirmation_method",
+        "created",
+        "currency",
+        "id",
+        "livemode",
+        "object",
+        "status"
+      ],
+      "title": "PaymentIntentClient",
+      "type": "object",
+      "x-expandableFields": [
+        "next_source_action",
+        "shipping",
+        "source"
+      ],
+      "x-resourceId": "payment_intent_client"
+    },
+    "payment_intent_next_source_action": {
+      "properties": {
+        "type": {
+          "description": "Type of next source action to perform, one of `authorize_with_url`.",
+          "type": "string"
+        },
+        "value": {
+          "description": "Type-specific next source action data.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ],
+      "title": "PaymentIntentNextSourceAction",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
     "payout": {
       "properties": {
         "amount": {
@@ -4746,7 +5128,7 @@
           "type": "string"
         },
         "source_type": {
-          "description": "The source balance this payout came from. One of `card`, `bank_account`, `bitcoin_receiver`, or `alipay_account`.",
+          "description": "The source balance this payout came from. One of `card`, `bank_account`, or `alipay_account`.",
           "type": "string"
         },
         "statement_descriptor": {
@@ -5809,32 +6191,6 @@
           },
           "type": "object"
         },
-        "bitcoin": {
-          "properties": {
-            "address": {
-              "type": "string"
-            },
-            "amount": {
-              "type": "integer"
-            },
-            "amount_charged": {
-              "type": "integer"
-            },
-            "amount_received": {
-              "type": "integer"
-            },
-            "amount_returned": {
-              "type": "integer"
-            },
-            "refund_address": {
-              "type": "string"
-            },
-            "uri": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
         "card": {
           "properties": {
             "address_line1_check": {
@@ -5887,6 +6243,15 @@
         },
         "card_present": {
           "properties": {
+            "application_cryptogram": {
+              "type": "string"
+            },
+            "application_preferred_name": {
+              "type": "string"
+            },
+            "authorization_response_code": {
+              "type": "string"
+            },
             "brand": {
               "type": "string"
             },
@@ -5896,7 +6261,13 @@
             "country": {
               "type": "string"
             },
+            "cvm_type": {
+              "type": "string"
+            },
             "data_type": {
+              "type": "string"
+            },
+            "dedicated_file_name": {
               "type": "string"
             },
             "emv_auth_data": {
@@ -5923,16 +6294,28 @@
             "last4": {
               "type": "string"
             },
+            "mid": {
+              "type": "string"
+            },
+            "pos_device_id": {
+              "type": "string"
+            },
+            "pos_entry_mode": {
+              "type": "string"
+            },
             "read_method": {
               "type": "string"
             },
-            "register_country": {
+            "reader": {
               "type": "string"
             },
-            "register_id": {
+            "terminal_verification_results": {
               "type": "string"
             },
-            "transaction_start_time": {
+            "tid": {
+              "type": "string"
+            },
+            "transaction_status_information": {
               "type": "string"
             }
           },
@@ -6189,13 +6572,12 @@
           "type": "object"
         },
         "type": {
-          "description": "The `type` of the source. The `type` is a payment method, one of `ach_credit_transfer`, `ach_debit`, `alipay`, `bancontact`, `bitcoin`, `card`, `card_present`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `sepa_credit_transfer`, `sepa_debit`, `sofort`, or `three_d_secure`. An additional hash is included on the source with a name matching this value. It contains additional information specific to the [payment method](/docs/sources) used.",
+          "description": "The `type` of the source. The `type` is a payment method, one of `ach_credit_transfer`, `ach_debit`, `alipay`, `bancontact`, `card`, `card_present`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `sepa_credit_transfer`, `sepa_debit`, `sofort`, or `three_d_secure`. An additional hash is included on the source with a name matching this value. It contains additional information specific to the [payment method](/docs/sources) used.",
           "enum": [
             "ach_credit_transfer",
             "ach_debit",
             "alipay",
             "bancontact",
-            "bitcoin",
             "card",
             "card_present",
             "eps",
@@ -6500,32 +6882,6 @@
           },
           "type": "object"
         },
-        "bitcoin": {
-          "properties": {
-            "address": {
-              "type": "string"
-            },
-            "amount": {
-              "type": "integer"
-            },
-            "amount_charged": {
-              "type": "integer"
-            },
-            "amount_received": {
-              "type": "integer"
-            },
-            "amount_returned": {
-              "type": "integer"
-            },
-            "refund_address": {
-              "type": "string"
-            },
-            "uri": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
         "card": {
           "properties": {
             "address_line1_check": {
@@ -6578,6 +6934,15 @@
         },
         "card_present": {
           "properties": {
+            "application_cryptogram": {
+              "type": "string"
+            },
+            "application_preferred_name": {
+              "type": "string"
+            },
+            "authorization_response_code": {
+              "type": "string"
+            },
             "brand": {
               "type": "string"
             },
@@ -6587,7 +6952,13 @@
             "country": {
               "type": "string"
             },
+            "cvm_type": {
+              "type": "string"
+            },
             "data_type": {
+              "type": "string"
+            },
+            "dedicated_file_name": {
               "type": "string"
             },
             "emv_auth_data": {
@@ -6614,16 +6985,28 @@
             "last4": {
               "type": "string"
             },
+            "mid": {
+              "type": "string"
+            },
+            "pos_device_id": {
+              "type": "string"
+            },
+            "pos_entry_mode": {
+              "type": "string"
+            },
             "read_method": {
               "type": "string"
             },
-            "register_country": {
+            "reader": {
               "type": "string"
             },
-            "register_id": {
+            "terminal_verification_results": {
               "type": "string"
             },
-            "transaction_start_time": {
+            "tid": {
+              "type": "string"
+            },
+            "transaction_status_information": {
               "type": "string"
             }
           },
@@ -6858,7 +7241,6 @@
             "ach_debit",
             "alipay",
             "bancontact",
-            "bitcoin",
             "card",
             "card_present",
             "eps",
@@ -7142,7 +7524,7 @@
         "object": {
           "description": "String representing the object's type. Objects of the same type share the same value.",
           "enum": [
-            "taxratetemplate"
+            "tax_rate_template"
           ],
           "type": "string"
         }
@@ -7677,7 +8059,7 @@
           }
         },
         "source_type": {
-          "description": "The source balance this transfer came from. One of `card`, `bank_account`, `bitcoin_receiver`, or `alipay_account`.",
+          "description": "The source balance this transfer came from. One of `card`, `bank_account`, or `alipay_account`.",
           "type": "string"
         },
         "transfer_group": {
@@ -8008,7 +8390,7 @@
           }
         },
         "source_type": {
-          "description": "The source balance this transfer came from. One of `card`, `bank_account`, `bitcoin_receiver`, or `alipay_account`.",
+          "description": "The source balance this transfer came from. One of `card`, `bank_account`, or `alipay_account`.",
           "type": "string"
         },
         "statement_descriptor": {
@@ -8710,7 +9092,7 @@
                       "type": "boolean"
                     }
                   },
-                  "title": "account_decline_charge_on_specs",
+                  "title": "decline_charge_on_specs",
                   "type": "object"
                 },
                 "default_currency": {
@@ -8758,7 +9140,7 @@
                                 "type": "string"
                               }
                             },
-                            "title": "account_address_specs",
+                            "title": "address_specs",
                             "type": "object"
                           },
                           "dob": {
@@ -8795,6 +9177,9 @@
                           },
                           "verification": {
                             "properties": {
+                              "document": {
+                                "type": "string"
+                              }
                             },
                             "title": "account_person_verification_specs",
                             "type": "object"
@@ -8825,7 +9210,7 @@
                           "type": "string"
                         }
                       },
-                      "title": "account_address_specs",
+                      "title": "address_specs",
                       "type": "object"
                     },
                     "address_kana": {
@@ -8962,7 +9347,7 @@
                           "type": "string"
                         }
                       },
-                      "title": "account_address_specs",
+                      "title": "address_specs",
                       "type": "object"
                     },
                     "personal_address_kana": {
@@ -9036,6 +9421,9 @@
                     },
                     "verification": {
                       "properties": {
+                        "document": {
+                          "type": "string"
+                        }
                       },
                       "title": "account_person_verification_specs",
                       "type": "object"
@@ -9124,7 +9512,7 @@
                     "date",
                     "ip"
                   ],
-                  "title": "account_tos_acceptance_specs",
+                  "title": "tos_acceptance_specs",
                   "type": "object"
                 }
               },
@@ -9268,7 +9656,7 @@
         "operationId": "UpdateAccountExternalAccount",
         "parameters": [
           {
-            "description": "The ID of the bank account to update",
+            "description": "The ID of the external account to update",
             "in": "path",
             "name": "id",
             "required": true,
@@ -9306,6 +9694,7 @@
                   "type": "string"
                 },
                 "default_for_currency": {
+                  "description": "When set to true, this becomes the default external account for its currency.",
                   "type": "boolean"
                 },
                 "exp_month": {
@@ -9553,7 +9942,7 @@
         "operationId": "UpdateAccountExternalAccount",
         "parameters": [
           {
-            "description": "The ID of the bank account to update",
+            "description": "The ID of the external account to update",
             "in": "path",
             "name": "id",
             "required": true,
@@ -9591,6 +9980,7 @@
                   "type": "string"
                 },
                 "default_for_currency": {
+                  "description": "When set to true, this becomes the default external account for its currency.",
                   "type": "boolean"
                 },
                 "exp_month": {
@@ -9865,7 +10255,7 @@
                       "type": "boolean"
                     }
                   },
-                  "title": "account_decline_charge_on_specs",
+                  "title": "decline_charge_on_specs",
                   "type": "object"
                 },
                 "default_currency": {
@@ -9916,7 +10306,7 @@
                                 "type": "string"
                               }
                             },
-                            "title": "account_address_specs",
+                            "title": "address_specs",
                             "type": "object"
                           },
                           "dob": {
@@ -9953,6 +10343,9 @@
                           },
                           "verification": {
                             "properties": {
+                              "document": {
+                                "type": "string"
+                              }
                             },
                             "title": "account_person_verification_specs",
                             "type": "object"
@@ -9983,7 +10376,7 @@
                           "type": "string"
                         }
                       },
-                      "title": "account_address_specs",
+                      "title": "address_specs",
                       "type": "object"
                     },
                     "address_kana": {
@@ -10120,7 +10513,7 @@
                           "type": "string"
                         }
                       },
-                      "title": "account_address_specs",
+                      "title": "address_specs",
                       "type": "object"
                     },
                     "personal_address_kana": {
@@ -10194,6 +10587,9 @@
                     },
                     "verification": {
                       "properties": {
+                        "document": {
+                          "type": "string"
+                        }
                       },
                       "title": "account_person_verification_specs",
                       "type": "object"
@@ -10282,7 +10678,7 @@
                     "date",
                     "ip"
                   ],
-                  "title": "account_tos_acceptance_specs",
+                  "title": "tos_acceptance_specs",
                   "type": "object"
                 },
                 "type": {
@@ -10429,7 +10825,7 @@
                       "type": "boolean"
                     }
                   },
-                  "title": "account_decline_charge_on_specs",
+                  "title": "decline_charge_on_specs",
                   "type": "object"
                 },
                 "default_currency": {
@@ -10477,7 +10873,7 @@
                                 "type": "string"
                               }
                             },
-                            "title": "account_address_specs",
+                            "title": "address_specs",
                             "type": "object"
                           },
                           "dob": {
@@ -10514,6 +10910,9 @@
                           },
                           "verification": {
                             "properties": {
+                              "document": {
+                                "type": "string"
+                              }
                             },
                             "title": "account_person_verification_specs",
                             "type": "object"
@@ -10544,7 +10943,7 @@
                           "type": "string"
                         }
                       },
-                      "title": "account_address_specs",
+                      "title": "address_specs",
                       "type": "object"
                     },
                     "address_kana": {
@@ -10681,7 +11080,7 @@
                           "type": "string"
                         }
                       },
-                      "title": "account_address_specs",
+                      "title": "address_specs",
                       "type": "object"
                     },
                     "personal_address_kana": {
@@ -10755,6 +11154,9 @@
                     },
                     "verification": {
                       "properties": {
+                        "document": {
+                          "type": "string"
+                        }
                       },
                       "title": "account_person_verification_specs",
                       "type": "object"
@@ -10843,7 +11245,7 @@
                     "date",
                     "ip"
                   ],
-                  "title": "account_tos_acceptance_specs",
+                  "title": "tos_acceptance_specs",
                   "type": "object"
                 }
               },
@@ -11011,7 +11413,7 @@
             "type": "string"
           },
           {
-            "description": "The ID of the bank account to update",
+            "description": "The ID of the external account to update",
             "in": "path",
             "name": "id",
             "required": true,
@@ -11049,6 +11451,7 @@
                   "type": "string"
                 },
                 "default_for_currency": {
+                  "description": "When set to true, this becomes the default external account for its currency.",
                   "type": "boolean"
                 },
                 "exp_month": {
@@ -11326,7 +11729,7 @@
             "type": "string"
           },
           {
-            "description": "The ID of the bank account to update",
+            "description": "The ID of the external account to update",
             "in": "path",
             "name": "id",
             "required": true,
@@ -11364,6 +11767,7 @@
                   "type": "string"
                 },
                 "default_for_currency": {
+                  "description": "When set to true, this becomes the default external account for its currency.",
                   "type": "boolean"
                 },
                 "exp_month": {
@@ -12851,6 +13255,12 @@
                 "card_program": {
                   "type": "string"
                 },
+                "cross_border_classification": {
+                  "enum": [
+                    "export"
+                  ],
+                  "type": "string"
+                },
                 "currency": {
                   "type": "string"
                 },
@@ -12882,7 +13292,6 @@
                   "type": "number"
                 },
                 "expand": {
-                  "description": "Specifies which fields in the response should be expanded.",
                   "items": {
                     "type": "string"
                   },
@@ -12893,6 +13302,12 @@
                 },
                 "idempotency_key": {
                   "type": "string"
+                },
+                "include": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
                 },
                 "invoice": {
                   "type": "string"
@@ -13176,6 +13591,19 @@
                 },
                 "fraud_details": {
                   "description": "A set of key/value pairs you can attach to a charge giving information about its riskiness. If you believe a charge is fraudulent, include a `user_report` key with a value of `fraudulent`. If you believe a charge is safe, include a `user_report` key with a value of `safe`. Note that you must refund a charge before setting the `user_report` to `fraudulent`. Stripe will use the information you send to improve our fraud detection algorithms.",
+                  "properties": {
+                    "user_report": {
+                      "enum": [
+                        "fraudulent",
+                        "safe"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "user_report"
+                  ],
+                  "title": "fraud_details",
                   "type": "object"
                 },
                 "metadata": {
@@ -14138,7 +14566,7 @@
                   "type": "object"
                 },
                 "name": {
-                  "description": "Name of the coupon displayed to customers on for instance invoices or receipts. By default the `id` is shown if `name` is not set.",
+                  "description": "Name of the coupon displayed to customers on, for instance invoices, or receipts. By default the `id` is shown if `name` is not set.",
                   "type": "string"
                 },
                 "percent_off": {
@@ -14263,6 +14691,10 @@
                 "metadata": {
                   "description": "A set of key/value pairs that you can attach to a coupon object. It can be useful for storing additional information about the coupon in a structured format.",
                   "type": "object"
+                },
+                "name": {
+                  "description": "Name of the coupon displayed to customers on, for instance invoices, or receipts. By default the `id` is shown if `name` is not set.",
+                  "type": "string"
                 }
               },
               "type": "object"
@@ -14394,18 +14826,11 @@
                   "description": "An integer amount in %s that represents the account balance for your customer. Account balances only affect invoices. A negative amount represents a credit that decreases the amount due on an invoice; a positive amount increases the amount due on an invoice.",
                   "type": "integer"
                 },
-                "bank_account": {
-                  "description": "Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary containing a user's bank account details."
-                },
                 "business_vat_id": {
                   "description": "The customer's VAT identification number. If you are using Relay, this field gets passed to tax provider you are using for your orders.",
                   "type": "string"
                 },
-                "card": {
-                  "description": "Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary containing a user's credit card details."
-                },
                 "coupon": {
-                  "description": "If you provide a coupon code, the customer will have a discount applied on all recurring charges. Charges you create through the API will not have the discount.",
                   "type": "string"
                 },
                 "customer": {
@@ -14599,10 +15024,9 @@
                   "type": "string"
                 },
                 "card": {
-                  "description": "Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary containing a user's credit card details."
+                  "description": "A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js)."
                 },
                 "coupon": {
-                  "description": "If you provide a coupon code, the customer will have a discount applied on all recurring charges. Charges you create through the API will not have the discount.",
                   "type": "string"
                 },
                 "default_alipay_account": {
@@ -14687,6 +15111,10 @@
                   "type": "object"
                 },
                 "source": {
+                },
+                "trial_end": {
+                  "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately.",
+                  "type": "string"
                 }
               },
               "type": "object"
@@ -14823,7 +15251,7 @@
                   "description": "Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary containing a user's bank account details."
                 },
                 "card": {
-                  "description": "Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary containing a user's credit card details."
+                  "description": "A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js)."
                 },
                 "expand": {
                   "description": "Specifies which fields in the response should be expanded.",
@@ -14965,6 +15393,10 @@
                 },
                 "account_holder_type": {
                   "description": "The type of entity that holds the account. This can be either `individual` or `company`.",
+                  "enum": [
+                    "company",
+                    "individual"
+                  ],
                   "type": "string"
                 },
                 "address_city": {
@@ -15250,7 +15682,7 @@
                   "description": "Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary containing a user's bank account details."
                 },
                 "card": {
-                  "description": "Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary containing a user's credit card details."
+                  "description": "A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js)."
                 },
                 "expand": {
                   "description": "Specifies which fields in the response should be expanded.",
@@ -15392,6 +15824,10 @@
                 },
                 "account_holder_type": {
                   "description": "The type of entity that holds the account. This can be either `individual` or `company`.",
+                  "enum": [
+                    "company",
+                    "individual"
+                  ],
                   "type": "string"
                 },
                 "address_city": {
@@ -15681,7 +16117,7 @@
                   "description": "Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary containing a user's bank account details."
                 },
                 "card": {
-                  "description": "Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary containing a user's credit card details."
+                  "description": "A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js)."
                 },
                 "expand": {
                   "description": "Specifies which fields in the response should be expanded.",
@@ -15822,6 +16258,10 @@
                 },
                 "account_holder_type": {
                   "description": "The type of entity that holds the account. This can be either `individual` or `company`.",
+                  "enum": [
+                    "company",
+                    "individual"
+                  ],
                   "type": "string"
                 },
                 "address_city": {
@@ -19092,7 +19532,7 @@
                   "type": "string"
                 },
                 "source": {
-                  "description": "The source can either be a [Token](/docs/api#tokens)'s or a [Source](/docs/api#sources)'s ID, as returned by [Elements](/docs/elements), or a dictionary containing a user's credit card details (with the options shown below). If no customer was attached to the order at creation, either `source` or `customer is required. Otherwise, the specified source will be charged intead of the customer attached to the order."
+                  "description": "A [Token](/docs/api#tokens)'s or a [Source](/docs/api#sources)'s ID, as returned by [Elements](/docs/elements). If no customer was attached to the order at creation, either `source` or `customer is required. Otherwise, the specified source will be charged intead of the customer attached to the order."
                 }
               },
               "type": "object"
@@ -19192,6 +19632,568 @@
         }
       }
     },
+    "/v1/payment_intents": {
+      "get": {
+        "description": "<p>Returns a list of PaymentIntents.</p>",
+        "operationId": "PaymentFlowsPaymentIntentAll",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "description": "A cursor for use in pagination. `ending_before` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, starting with `obj_bar`, your subsequent call can include `ending_before=obj_bar` in order to fetch the previous page of the list.",
+            "in": "query",
+            "name": "ending_before",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "description": "A cursor for use in pagination. `starting_after` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with `obj_foo`, your subsequent call can include `starting_after=obj_foo` in order to fetch the next page of the list.",
+            "in": "query",
+            "name": "starting_after",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "properties": {
+                "data": {
+                  "items": {
+                    "$ref": "#/definitions/payment_intent"
+                  },
+                  "type": "array"
+                },
+                "has_more": {
+                  "description": "True if this list has another page of items after this one that can be fetched.",
+                  "type": "boolean"
+                },
+                "object": {
+                  "description": "String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
+                  "enum": [
+                    "list"
+                  ],
+                  "type": "string"
+                },
+                "url": {
+                  "description": "The URL where this list can be accessed.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "data",
+                "has_more",
+                "object",
+                "url"
+              ],
+              "title": "PaymentFlowsPaymentIntentList",
+              "type": "object",
+              "x-expandableFields": [
+                "data"
+              ]
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "<p>Creates a PaymentIntent object.</p>",
+        "operationId": "PaymentIntentCreate",
+        "parameters": [
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": true,
+            "schema": {
+              "properties": {
+                "allowed_source_types": {
+                  "description": "The list of source types that this PaymentIntent was allowed to use. Values can be any combination of `card`.",
+                  "items": {
+                    "enum": [
+                      "card"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "amount": {
+                  "description": "Amount intended to be collected by this PaymentIntent",
+                  "type": "integer"
+                },
+                "application_fee": {
+                  "description": "A fee that will be applied to the payment and transferred to theapplication owner's Stripe account. To use an application fee, therequest must be made on behalf of another account, using the`Stripe-Account` header or an OAuth key. For more information, see[Collecting applicationfees](/docs/connect/direct-charges#collecting-fees).",
+                  "type": "integer"
+                },
+                "attempt_confirmation": {
+                  "description": "Attempt to confirm this PaymentIntent on source attachment.",
+                  "type": "boolean"
+                },
+                "capture_method": {
+                  "description": "Capture method of this PaymentIntent, one of `automatic` or `manual`.",
+                  "enum": [
+                    "automatic",
+                    "manual"
+                  ],
+                  "type": "string"
+                },
+                "currency": {
+                  "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+                  "type": "string"
+                },
+                "customer": {
+                  "description": "ID of the customer this PaymentIntent is for if one exists.",
+                  "type": "string"
+                },
+                "description": {
+                  "description": "An arbitrary string attached to the object. Often useful for displaying to users.",
+                  "type": "string"
+                },
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "metadata": {
+                  "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+                  "type": "object"
+                },
+                "on_behalf_of": {
+                  "description": "The account (if any) the payment will be made on behalf of. To triggeran automatic transfer when the payment is complete, use `transfer_data`in conjunction with this parameter.\"",
+                  "type": "string"
+                },
+                "receipt_email": {
+                  "description": "Email address that the receipt for the resulting payment will be sent to.",
+                  "type": "string"
+                },
+                "return_url": {
+                  "description": "The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site.If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.",
+                  "type": "string"
+                },
+                "save_source_to_customer": {
+                  "description": "`true` to save this PaymentIntent's Source to the associated Customer, if the Source is not already attached.",
+                  "type": "boolean"
+                },
+                "shipping": {
+                  "description": "Shipping information for this PaymentIntent.",
+                  "properties": {
+                    "address": {
+                      "properties": {
+                        "city": {
+                          "type": "string"
+                        },
+                        "country": {
+                          "type": "string"
+                        },
+                        "line1": {
+                          "type": "string"
+                        },
+                        "line2": {
+                          "type": "string"
+                        },
+                        "postal_code": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "line1"
+                      ],
+                      "title": "address",
+                      "type": "object"
+                    },
+                    "carrier": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "tracking_number": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "address",
+                    "name"
+                  ],
+                  "title": "shipping",
+                  "type": "object"
+                },
+                "source": {
+                  "description": "ID of the Source object to attach to this PaymentIntent.",
+                  "type": "string"
+                },
+                "statement_descriptor": {
+                  "description": "Extra information about a PaymentIntent. This will appear on your customer's statement when this PaymentIntent succeeds in creating a charge.",
+                  "type": "string"
+                },
+                "transfer_data": {
+                  "description": "The parameters with which to automatically create a Transfer when the payment is finalized. The destination of the Transfer is the account set as `on_behalf_of`.",
+                  "properties": {
+                    "amount": {
+                      "type": "integer"
+                    }
+                  },
+                  "title": "transfer_data_params",
+                  "type": "object"
+                },
+                "transfer_group": {
+                  "description": "A string that identifies the resulting payment as part of a group. See the [Connect documentation](/docs/connect/charges-transfers#grouping-transactions) for details.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "allowed_source_types",
+                "amount",
+                "currency"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/payment_intent"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment_intents/{intent}": {
+      "get": {
+        "description": "<p>Retrieves the details of a PaymentIntent that has previously been created. </p><p>Client-side retrieval using a publishable key is allowed when the <code>client_secret</code> is provided in the query string. </p><p>When retrieved with a publishable key, only a subset of properties will be returned. Please refer to the <a href=\"#payment_intent_object\">payment intent</a> object reference for more details.</p>",
+        "operationId": "PaymentIntentRetrieve",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "description": "The client secret of the PaymentIntent. Required if a publishable key is used to retrieve the source.",
+            "in": "query",
+            "name": "client_secret",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "path",
+            "name": "intent",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/payment_intent"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "<p>Updates a PaymentIntent object.</p>",
+        "operationId": "PaymentIntentUpdate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "intent",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": false,
+            "schema": {
+              "properties": {
+                "amount": {
+                  "description": "Amount intended to be collected by this PaymentIntent",
+                  "type": "integer"
+                },
+                "application_fee": {
+                  "description": "The application fee (if any) for the resulting payment. [See the Connect documentation](/docs/connect/direct-charges#collecting-fees) for details.",
+                  "type": "integer"
+                },
+                "currency": {
+                  "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+                  "type": "string"
+                },
+                "customer": {
+                  "description": "ID of the customer this PaymentIntent is for if one exists.",
+                  "type": "string"
+                },
+                "description": {
+                  "description": "An arbitrary string attached to the object. Often useful for displaying to users.",
+                  "type": "string"
+                },
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "metadata": {
+                  "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+                  "type": "object"
+                },
+                "receipt_email": {
+                  "description": "Email address that the receipt for the resulting payment will be sent to.",
+                  "type": "string"
+                },
+                "return_url": {
+                  "description": "The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site.If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.",
+                  "type": "string"
+                },
+                "save_source_to_customer": {
+                  "description": "`true` to save this PaymentIntent's Source to the associated Customer, if the Source is not already attached.",
+                  "type": "boolean"
+                },
+                "source": {
+                  "description": "ID of the Source object to attach to this PaymentIntent.",
+                  "type": "string"
+                },
+                "transfer_data": {
+                  "description": "The parameters with which to automatically create a Transfer when the payment is finalized. The destination of the Transfer is the account set as `on_behalf_of`.",
+                  "properties": {
+                    "amount": {
+                      "type": "integer"
+                    }
+                  },
+                  "title": "transfer_data_params",
+                  "type": "object"
+                },
+                "transfer_group": {
+                  "description": "A string that identifies the resulting payment as part of a group. `transfer_group` may only be provided if it has not been set. See the [Connect documentation](/docs/connect/charges-transfers#grouping-transactions) for details.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/payment_intent"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment_intents/{intent}/cancel": {
+      "post": {
+        "description": "<p>A PaymentIntent object can be canceled when it is in one of these statues: <code>requires_source</code>, <code>requires_capture</code>, <code>requires_confirmation</code>, or <code>requires_source_action</code>. </p><p>Once canceled, no additional charges will be made by the PaymentIntent and any operations on the PaymentIntent will fail with an error. For PaymentIntents with <code>status='requires_capture'</code>, the remaining <code>amount_capturable</code> will automatically be refunded.</p>",
+        "operationId": "PaymentIntentCancel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "intent",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": false,
+            "schema": {
+              "properties": {
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/payment_intent"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment_intents/{intent}/capture": {
+      "post": {
+        "description": "<p>Capture the funds of an existing uncaptured PaymentIntent where <code>required_action=\"requires_capture\"</code>.</p><p>Uncaptured PaymentIntents will be canceled exactly seven days after they are created.</p>",
+        "operationId": "PaymentIntentCapture",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "intent",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": false,
+            "schema": {
+              "properties": {
+                "amount": {
+                  "description": "The amount to capture, which must be less than or equal to the original amount. Any additional amount will be automatically refunded. Defaults to the full `amount_capturable` if not provided.",
+                  "type": "integer"
+                },
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/payment_intent"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment_intents/{intent}/confirm": {
+      "post": {
+        "description": "<p>Confirm that your customer intends to pay with current or provided<code>source</code>. Upon confirmation, the PaymentIntent will attempt to initiatea payment.</p><p>If the selected <code>source</code> requires additional authentication steps, thePaymentIntent will transition to the <code>requires_source_action</code> status andsuggest additional actions via <code>next_source_action</code>. If payment fails,the PaymentIntent will transition to the <code>requires_source</code> status. Ifpayment succeeds, the PaymentIntent will transition to the <code>succeeded</code>status (or <code>requires_capture</code>, if <code>capture_method</code> is set to <code>manual</code>).</p><p>When using a publishable key, the<a href=\"#payment_intent_object-client_secret\">client_secret</a> must be providedto confirm the PaymentIntent.</p>",
+        "operationId": "PaymentIntentConfirm",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "intent",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": false,
+            "schema": {
+              "properties": {
+                "client_secret": {
+                  "description": "The client secret of the PaymentIntent.",
+                  "type": "string"
+                },
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "receipt_email": {
+                  "description": "Email address that the receipt for the resulting payment will be sent to.",
+                  "type": "string"
+                },
+                "return_url": {
+                  "description": "The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site.If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.",
+                  "type": "string"
+                },
+                "save_source_to_customer": {
+                  "description": "`true` to save this PaymentIntent's Source to the associated Customer, if the Source is not already attached.",
+                  "type": "boolean"
+                },
+                "source": {
+                  "description": "ID of the Source object to attach to this PaymentIntent.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/payment_intent"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/v1/payments": {
       "post": {
         "description": "",
@@ -19231,6 +20233,12 @@
                 "card_program": {
                   "type": "string"
                 },
+                "cross_border_classification": {
+                  "enum": [
+                    "export"
+                  ],
+                  "type": "string"
+                },
                 "currency": {
                   "type": "string"
                 },
@@ -19262,7 +20270,6 @@
                   "type": "number"
                 },
                 "expand": {
-                  "description": "Specifies which fields in the response should be expanded.",
                   "items": {
                     "type": "string"
                   },
@@ -19273,6 +20280,12 @@
                 },
                 "idempotency_key": {
                   "type": "string"
+                },
+                "include": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
                 },
                 "invoice": {
                   "type": "string"
@@ -21030,6 +22043,12 @@
             "name": "charge",
             "required": false,
             "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "created",
+            "required": false,
+            "type": "integer"
           },
           {
             "description": "A cursor for use in pagination. `ending_before` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, starting with `obj_bar`, your subsequent call can include `ending_before=obj_bar` in order to fetch the previous page of the list.",
@@ -23105,7 +24124,7 @@
     },
     "/v1/subscriptions/{subscription_exposed_id}/discount": {
       "delete": {
-        "description": "<p>Removes the currently applied discount on a customer.</p>",
+        "description": "<p>Removes the currently applied discount on a subscription.</p>",
         "operationId": "DeleteSubscriptionDiscount",
         "parameters": [
           {
@@ -23452,7 +24471,7 @@
                                     "type": "string"
                                   }
                                 },
-                                "title": "account_address_specs",
+                                "title": "address_specs",
                                 "type": "object"
                               },
                               "dob": {
@@ -23489,6 +24508,9 @@
                               },
                               "verification": {
                                 "properties": {
+                                  "document": {
+                                    "type": "string"
+                                  }
                                 },
                                 "title": "account_person_verification_specs",
                                 "type": "object"
@@ -23519,7 +24541,7 @@
                               "type": "string"
                             }
                           },
-                          "title": "account_address_specs",
+                          "title": "address_specs",
                           "type": "object"
                         },
                         "address_kana": {
@@ -23656,7 +24678,7 @@
                               "type": "string"
                             }
                           },
-                          "title": "account_address_specs",
+                          "title": "address_specs",
                           "type": "object"
                         },
                         "personal_address_kana": {
@@ -23730,6 +24752,9 @@
                         },
                         "verification": {
                           "properties": {
+                            "document": {
+                              "type": "string"
+                            }
                           },
                           "title": "account_person_verification_specs",
                           "type": "object"
@@ -23787,11 +24812,14 @@
                   "properties": {
                     "personal_id_number": {
                       "type": "string"
+                    },
+                    "ssn_last_4": {
+                      "type": "string"
+                    },
+                    "tax_id": {
+                      "type": "string"
                     }
                   },
-                  "required": [
-                    "personal_id_number"
-                  ],
                   "title": "pii_token_specs",
                   "type": "object"
                 },
@@ -24005,7 +25033,7 @@
                   "type": "object"
                 },
                 "source": {
-                  "description": "The source to transfer funds from.",
+                  "description": "The ID of a source or a bank account to transfer funds from. If no source is supplied, the default bank account for the specified currency will be used.",
                   "type": "string"
                 },
                 "statement_descriptor": {
@@ -24016,7 +25044,6 @@
               "required": [
                 "amount",
                 "currency",
-                "description",
                 "statement_descriptor"
               ],
               "type": "object"
@@ -24406,7 +25433,7 @@
             "schema": {
               "properties": {
                 "amount": {
-                  "description": "A positive integer in %s representing how much of this transfer to reverse. Can only reverse up to the unreversed amount remaining of the transfer. Partial transfer reversals are only allowed for transfers to Stripe Accounts.",
+                  "description": "A positive integer in %s representing how much of this transfer to reverse. Can only reverse up to the unreversed amount remaining of the transfer. Partial transfer reversals are only allowed for transfers to Stripe Accounts. Defaults to the entire transfer amount.",
                   "type": "integer"
                 },
                 "description": {

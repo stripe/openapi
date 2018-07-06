@@ -3162,6 +3162,11 @@ components:
             example, so you might not want to display that invoice as unpaid to your
             users.
           type: boolean
+        auto_advance:
+          description: When set to false the Invoice will not attempt to advance itself
+            in collecting payment, so won't send emails, run smart dunning, or automatically
+            issue a draft invoice.
+          type: boolean
         billing:
           description: Either `charge_automatically`, or `send_invoice`. When charging
             automatically, Stripe will attempt to pay this invoice using the default
@@ -3411,6 +3416,7 @@ components:
       - amount_remaining
       - attempt_count
       - attempted
+      - auto_advance
       - closed
       - currency
       - customer
@@ -3614,9 +3620,7 @@ components:
           nullable: true
           type: integer
         subscription:
-          description: When type is `invoiceitem`, the subscription that the invoice
-            item pertains to, if any. Left blank when `type` is already subscription,
-            as it'd be redundant with `id`.
+          description: The subscription that the invoice item pertains to, if any.
           maxLength: 5000
           nullable: true
           type: string
@@ -3628,7 +3632,9 @@ components:
         type:
           description: A string identifying the type of the source of this line item,
             either an `invoiceitem` or a `subscription`.
-          maxLength: 5000
+          enum:
+          - invoiceitem
+          - subscription
           type: string
       required:
       - amount
@@ -4077,19 +4083,29 @@ components:
           nullable: true
           type: string
         document:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/file_upload"
           description: "(ID of a [file upload](https://stripe.com/docs/guides/file-upload))
             A photo (jpg or png) of the front of an identifying document, either a
             passport or local ID card."
-          maxLength: 5000
           nullable: true
-          type: string
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/file_upload"
         document_back:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/file_upload"
           description: "(ID of a [file upload](https://stripe.com/docs/guides/file-upload))
             A photo (jpg or png) of the back of an identifying document, either a
             passport or local ID card."
-          maxLength: 5000
           nullable: true
-          type: string
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/file_upload"
         status:
           description: The state of verification for this legal entity. Possible values
             are `unverified`, `pending`, or `verified`.
@@ -4099,7 +4115,9 @@ components:
       - status
       title: LegalEntityVerification
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - document
+      - document_back
     light_account_logout:
       properties: {}
       title: LightAccountLogout
@@ -4918,6 +4936,388 @@ components:
       - source_transfer
       - transfer
       x-resourceId: payment
+    payment_flows_payment_intent_resource_transfer_data:
+      properties:
+        amount:
+          description: The amount to transfer automatically.
+          type: integer
+      required:
+      - amount
+      title: PaymentFlowsPaymentIntentResourceTransferData
+      type: object
+      x-expandableFields: []
+    payment_intent:
+      properties:
+        allowed_source_types:
+          description: The list of source types that this PaymentIntent was allowed
+            to use. Values can be any combination of `card`.
+          type: array
+        amount:
+          description: Amount intended to be collected by this PaymentIntent.
+          type: integer
+        amount_capturable:
+          description: Amount that can be captured from this PaymentIntent.
+          type: integer
+        amount_received:
+          description: Amount that was collected by this PaymentIntent.
+          type: integer
+        application:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/application"
+          description: ID of the Connect application that created the PaymentIntent.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/application"
+        application_fee:
+          description: The application fee (if any) for the resulting payment. [See
+            the Connect documentation](/docs/connect/direct-charges#collecting-fees)
+            for details.
+          nullable: true
+          type: integer
+        canceled_at:
+          description: Populated when `status` is `canceled`, this is the time at
+            which the PaymentIntent was canceled. Measured in seconds since the Unix
+            epoch.
+          format: unix-time
+          nullable: true
+          type: integer
+        capture_method:
+          description: Capture method of this PaymentIntent, one of `automatic` or
+            `manual`.
+          maxLength: 5000
+          type: string
+        charges:
+          description: Charges that were created by this PaymentIntent, if any.
+          properties:
+            data:
+              description: The list contains all Charges that have been created by
+                this PaymentIntent.
+              items:
+                "$ref": "#/components/schemas/charge"
+              type: array
+            has_more:
+              description: True if this list has another page of items after this
+                one that can be fetched.
+              type: boolean
+            object:
+              description: String representing the object's type. Objects of the same
+                type share the same value. Always has the value `list`.
+              enum:
+              - list
+              type: string
+            url:
+              description: The URL where this list can be accessed.
+              maxLength: 5000
+              type: string
+          required:
+          - data
+          - has_more
+          - object
+          - url
+          title: PaymentFlowsPaymentIntentResourceChargeList
+          type: object
+          x-expandableFields:
+          - data
+        client_secret:
+          description: The client secret of this PaymentIntent. Used for client-side
+            retrieval using a publishable key. Please refer to [dynamic authentication](/docs/payments/dynamic-authentication)
+            guide on how `client_secret` should be handled.
+          maxLength: 5000
+          nullable: true
+          type: string
+        confirmation_method:
+          description: Confirmation method of this PaymentIntent, one of `secret`
+            or `publishable`.
+          maxLength: 5000
+          type: string
+        created:
+          description: Time at which the object was created. Measured in seconds since
+            the Unix epoch.
+          format: unix-time
+          type: integer
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+          maxLength: 5000
+          type: string
+        customer:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/customer"
+          description: ID of the Customer this PaymentIntent is for if one exists.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/customer"
+        description:
+          description: An arbitrary string attached to the object. Often useful for
+            displaying to users.
+          maxLength: 5000
+          nullable: true
+          type: string
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        livemode:
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+          type: boolean
+        metadata:
+          description: Set of key-value pairs that you can attach to an object. This
+            can be useful for storing additional information about the object in a
+            structured format.
+          type: object
+        next_source_action:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_intent_next_source_action"
+          description: Available next Source actions to take for this PaymentIntent.
+          nullable: true
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - payment_intent
+          type: string
+        on_behalf_of:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/account"
+          description: The account (if any) the payment will be made on behalf of.
+            To triggeran automatic transfer when the payment is complete, use `transfer_data`in
+            conjunction with this parameter."
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/account"
+        receipt_email:
+          description: Email address that the receipt for the resulting payment will
+            be sent to.
+          maxLength: 5000
+          nullable: true
+          type: string
+        return_url:
+          description: The URL to redirect your customer back to after they authenticate
+            or cancel their payment on the payment method's app or site.If you'd prefer
+            to redirect to a mobile application, you can alternatively supply an application
+            URI scheme.
+          maxLength: 5000
+          nullable: true
+          type: string
+        shipping:
+          anyOf:
+          - "$ref": "#/components/schemas/shipping"
+          description: Shipping information for this PaymentIntent.
+          nullable: true
+        source:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/card"
+          - "$ref": "#/components/schemas/source"
+          description: ID of the source used in this PaymentIntent.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/card"
+            - "$ref": "#/components/schemas/source"
+        statement_descriptor:
+          description: Extra information about a PaymentIntent. This will appear on
+            your customer's statement when this PaymentIntent succeeds in creating
+            a charge.
+          maxLength: 5000
+          nullable: true
+          type: string
+        status:
+          description: Status of this PaymentIntent, one of `requires_source`, `requires_confirmation`,
+            `requires_source_action`, `processing`, `requires_capture`, `canceled`,
+            or `succeeded`.
+          maxLength: 5000
+          type: string
+        transfer_data:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_flows_payment_intent_resource_transfer_data"
+          description: The data with which to automatically create a Transfer when
+            the payment is finalized. The destination of the Transfer is the account
+            set as `on_behalf_of`.
+          nullable: true
+        transfer_group:
+          description: A string that identifies the resulting payment as part of a
+            group. See the [Connect documentation](/docs/connect/charges-transfers#grouping-transactions)
+            for details.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+      - allowed_source_types
+      - amount
+      - amount_capturable
+      - amount_received
+      - capture_method
+      - charges
+      - confirmation_method
+      - created
+      - currency
+      - id
+      - livemode
+      - metadata
+      - object
+      - status
+      title: PaymentIntent
+      type: object
+      x-expandableFields:
+      - application
+      - charges
+      - customer
+      - next_source_action
+      - on_behalf_of
+      - shipping
+      - source
+      - transfer_data
+      x-resourceId: payment_intent
+    payment_intent_client:
+      properties:
+        allowed_source_types:
+          description: The list of source types that this PaymentIntent was allowed
+            to use. Values can be any combination of `card`.
+          type: array
+        amount:
+          description: Amount intended to be collected by this PaymentIntent.
+          type: integer
+        canceled_at:
+          description: Populated when `status` is `canceled`, this is the time at
+            which the PaymentIntent was canceled. Measured in seconds since the Unix
+            epoch.
+          format: unix-time
+          nullable: true
+          type: integer
+        capture_method:
+          description: Capture method of this PaymentIntent, one of `automatic` or
+            `manual`.
+          maxLength: 5000
+          type: string
+        client_secret:
+          description: The client secret of this PaymentIntent. Used for client-side
+            retrieval using a publishable key. Please refer to [dynamic authentication](/docs/payments/dynamic-authentication)
+            guide on how `client_secret` should be handled.
+          maxLength: 5000
+          nullable: true
+          type: string
+        confirmation_method:
+          description: Confirmation method of this PaymentIntent, one of `secret`
+            or `publishable`.
+          maxLength: 5000
+          type: string
+        created:
+          description: Time at which the object was created. Measured in seconds since
+            the Unix epoch.
+          format: unix-time
+          type: integer
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+          maxLength: 5000
+          type: string
+        description:
+          description: An arbitrary string attached to the object. Often useful for
+            displaying to users.
+          maxLength: 5000
+          nullable: true
+          type: string
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        livemode:
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+          type: boolean
+        next_source_action:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_intent_next_source_action"
+          description: Available next Source actions to take for this PaymentIntent.
+          nullable: true
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - payment_intent
+          type: string
+        receipt_email:
+          description: Email address that the receipt for the resulting payment will
+            be sent to.
+          maxLength: 5000
+          nullable: true
+          type: string
+        return_url:
+          description: The URL to redirect your customer back to after they authenticate
+            or cancel their payment on the payment method's app or site.If you'd prefer
+            to redirect to a mobile application, you can alternatively supply an application
+            URI scheme.
+          maxLength: 5000
+          nullable: true
+          type: string
+        shipping:
+          anyOf:
+          - "$ref": "#/components/schemas/shipping"
+          description: Shipping information for this PaymentIntent.
+          nullable: true
+        source:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/card"
+          - "$ref": "#/components/schemas/source"
+          description: ID of the source used in this PaymentIntent.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/card"
+            - "$ref": "#/components/schemas/source"
+        status:
+          description: Status of this PaymentIntent, one of `requires_source`, `requires_confirmation`,
+            `requires_source_action`, `processing`, `requires_capture`, `canceled`,
+            or `succeeded`.
+          maxLength: 5000
+          type: string
+      required:
+      - allowed_source_types
+      - amount
+      - capture_method
+      - confirmation_method
+      - created
+      - currency
+      - id
+      - livemode
+      - object
+      - status
+      title: PaymentIntentClient
+      type: object
+      x-expandableFields:
+      - next_source_action
+      - shipping
+      - source
+      x-resourceId: payment_intent_client
+    payment_intent_next_source_action:
+      properties:
+        type:
+          description: Type of next source action to perform, one of `authorize_with_url`.
+          maxLength: 5000
+          type: string
+        value:
+          description: Type-specific next source action data.
+          type: object
+      required:
+      - type
+      - value
+      title: PaymentIntentNextSourceAction
+      type: object
+      x-expandableFields: []
     payment_refund:
       properties:
         amount:
@@ -5142,7 +5542,7 @@ components:
           type: string
         source_type:
           description: The source balance this payout came from. One of `card`, `bank_account`,
-            `bitcoin_receiver`, or `alipay_account`.
+            or `alipay_account`.
           maxLength: 5000
           type: string
         statement_descriptor:
@@ -6190,30 +6590,6 @@ components:
               nullable: true
               type: string
           type: object
-        bitcoin:
-          properties:
-            address:
-              nullable: true
-              type: string
-            amount:
-              nullable: true
-              type: integer
-            amount_charged:
-              nullable: true
-              type: integer
-            amount_received:
-              nullable: true
-              type: integer
-            amount_returned:
-              nullable: true
-              type: integer
-            refund_address:
-              nullable: true
-              type: string
-            uri:
-              nullable: true
-              type: string
-          type: object
         card:
           properties:
             address_line1_check:
@@ -6260,6 +6636,12 @@ components:
           type: object
         card_present:
           properties:
+            application_cryptogram:
+              type: string
+            application_preferred_name:
+              type: string
+            authorization_response_code:
+              type: string
             brand:
               nullable: true
               type: string
@@ -6268,8 +6650,12 @@ components:
             country:
               nullable: true
               type: string
+            cvm_type:
+              type: string
             data_type:
               nullable: true
+              type: string
+            dedicated_file_name:
               type: string
             emv_auth_data:
               type: string
@@ -6293,17 +6679,24 @@ components:
             last4:
               nullable: true
               type: string
+            mid:
+              type: string
+            pos_device_id:
+              nullable: true
+              type: string
+            pos_entry_mode:
+              type: string
             read_method:
               nullable: true
               type: string
-            register_country:
+            reader:
               nullable: true
               type: string
-            register_id:
-              nullable: true
+            terminal_verification_results:
               type: string
-            transaction_start_time:
-              nullable: true
+            tid:
+              type: string
+            transaction_status_information:
               type: string
           type: object
         client_secret:
@@ -6550,18 +6943,16 @@ components:
           type: object
         type:
           description: The `type` of the source. The `type` is a payment method, one
-            of `ach_credit_transfer`, `ach_debit`, `alipay`, `bancontact`, `bitcoin`,
-            `card`, `card_present`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`,
-            `sepa_credit_transfer`, `sepa_debit`, `sofort`, or `three_d_secure`. An
-            additional hash is included on the source with a name matching this value.
-            It contains additional information specific to the [payment method](/docs/sources)
-            used.
+            of `ach_credit_transfer`, `ach_debit`, `alipay`, `bancontact`, `card`,
+            `card_present`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `sepa_credit_transfer`,
+            `sepa_debit`, `sofort`, or `three_d_secure`. An additional hash is included
+            on the source with a name matching this value. It contains additional
+            information specific to the [payment method](/docs/sources) used.
           enum:
           - ach_credit_transfer
           - ach_debit
           - alipay
           - bancontact
-          - bitcoin
           - card
           - card_present
           - eps
@@ -6877,30 +7268,6 @@ components:
               nullable: true
               type: string
           type: object
-        bitcoin:
-          properties:
-            address:
-              nullable: true
-              type: string
-            amount:
-              nullable: true
-              type: integer
-            amount_charged:
-              nullable: true
-              type: integer
-            amount_received:
-              nullable: true
-              type: integer
-            amount_returned:
-              nullable: true
-              type: integer
-            refund_address:
-              nullable: true
-              type: string
-            uri:
-              nullable: true
-              type: string
-          type: object
         card:
           properties:
             address_line1_check:
@@ -6947,6 +7314,12 @@ components:
           type: object
         card_present:
           properties:
+            application_cryptogram:
+              type: string
+            application_preferred_name:
+              type: string
+            authorization_response_code:
+              type: string
             brand:
               nullable: true
               type: string
@@ -6955,8 +7328,12 @@ components:
             country:
               nullable: true
               type: string
+            cvm_type:
+              type: string
             data_type:
               nullable: true
+              type: string
+            dedicated_file_name:
               type: string
             emv_auth_data:
               type: string
@@ -6980,17 +7357,24 @@ components:
             last4:
               nullable: true
               type: string
+            mid:
+              type: string
+            pos_device_id:
+              nullable: true
+              type: string
+            pos_entry_mode:
+              type: string
             read_method:
               nullable: true
               type: string
-            register_country:
+            reader:
               nullable: true
               type: string
-            register_id:
-              nullable: true
+            terminal_verification_results:
               type: string
-            transaction_start_time:
-              nullable: true
+            tid:
+              type: string
+            transaction_status_information:
               type: string
           type: object
         created:
@@ -7204,7 +7588,6 @@ components:
           - ach_debit
           - alipay
           - bancontact
-          - bitcoin
           - card
           - card_present
           - eps
@@ -7507,7 +7890,7 @@ components:
           description: String representing the object's type. Objects of the same
             type share the same value.
           enum:
-          - taxratetemplate
+          - tax_rate_template
           type: string
       required:
       - id
@@ -8065,7 +8448,7 @@ components:
             - "$ref": "#/components/schemas/charge"
         source_type:
           description: The source balance this transfer came from. One of `card`,
-            `bank_account`, `bitcoin_receiver`, or `alipay_account`.
+            `bank_account`, or `alipay_account`.
           maxLength: 5000
           nullable: true
           type: string
@@ -8393,7 +8776,7 @@ components:
             - "$ref": "#/components/schemas/transfer_reversal"
         source_type:
           description: The source balance this transfer came from. One of `card`,
-            `bank_account`, `bitcoin_receiver`, or `alipay_account`.
+            `bank_account`, or `alipay_account`.
           maxLength: 5000
           nullable: true
           type: string
@@ -8883,6 +9266,18 @@ components:
       type: object
       x-expandableFields: []
       x-resourceId: usage_record
+  securitySchemes:
+    basicAuth:
+      description: 'Basic HTTP authentication. Allowed headers-- Authorization: Basic
+        <api_key> | Authorization: Basic <base64 hash of `api_key:`>'
+      scheme: basic
+      type: http
+    bearerAuth:
+      bearerFormat: auth-scheme
+      description: 'Bearer HTTP authentication. Allowed headers-- Authorization: Bearer
+        <api_key>'
+      scheme: bearer
+      type: http
 info:
   contact:
     email: dev-platform@stripe.com
@@ -8975,6 +9370,7 @@ paths:
         name: three_d_secure
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -9149,7 +9545,7 @@ paths:
                       type: boolean
                     cvc_failure:
                       type: boolean
-                  title: account_decline_charge_on_specs
+                  title: decline_charge_on_specs
                   type: object
                 default_currency:
                   description: Three-letter ISO currency code representing the default
@@ -9210,7 +9606,7 @@ paths:
                                 state:
                                   maxLength: 5000
                                   type: string
-                              title: account_address_specs
+                              title: address_specs
                               type: object
                             dob:
                               properties:
@@ -9239,7 +9635,10 @@ paths:
                               maxLength: 5000
                               type: string
                             verification:
-                              properties: {}
+                              properties:
+                                document:
+                                  maxLength: 500
+                                  type: string
                               title: account_person_verification_specs
                               type: object
                           title: account_owner_specs
@@ -9267,7 +9666,7 @@ paths:
                                 state:
                                   maxLength: 5000
                                   type: string
-                              title: account_address_specs
+                              title: address_specs
                               type: object
                             dob:
                               properties:
@@ -9296,7 +9695,10 @@ paths:
                               maxLength: 5000
                               type: string
                             verification:
-                              properties: {}
+                              properties:
+                                document:
+                                  maxLength: 500
+                                  type: string
                               title: account_person_verification_specs
                               type: object
                           title: account_owner_specs
@@ -9322,7 +9724,7 @@ paths:
                         state:
                           maxLength: 5000
                           type: string
-                      title: account_address_specs
+                      title: address_specs
                       type: object
                     address_kana:
                       properties:
@@ -9447,7 +9849,7 @@ paths:
                         state:
                           maxLength: 5000
                           type: string
-                      title: account_address_specs
+                      title: address_specs
                       type: object
                     personal_address_kana:
                       properties:
@@ -9500,6 +9902,7 @@ paths:
                       title: japan_address_kanji_specs
                       type: object
                     personal_id_number:
+                      maxLength: 5000
                       type: string
                     phone_number:
                       maxLength: 5000
@@ -9514,7 +9917,10 @@ paths:
                       maxLength: 5000
                       type: string
                     verification:
-                      properties: {}
+                      properties:
+                        document:
+                          maxLength: 500
+                          type: string
                       title: account_person_verification_specs
                       type: object
                   title: account_legal_entity_specs
@@ -9600,7 +10006,7 @@ paths:
                   required:
                   - date
                   - ip
-                  title: account_tos_acceptance_specs
+                  title: tos_acceptance_specs
                   type: object
               type: object
         required: false
@@ -9753,12 +10159,11 @@ paths:
         or changes.</p>
       operationId: UpdateAccountExternalAccount
       parameters:
-      - description: The ID of the bank account to update
+      - description: The ID of the external account to update
         in: path
         name: id
         required: true
         schema:
-          maxLength: 500
           type: string
         style: simple
       requestBody:
@@ -9800,6 +10205,8 @@ paths:
                   maxLength: 5000
                   type: string
                 default_for_currency:
+                  description: When set to true, this becomes the default external
+                    account for its currency.
                   type: boolean
                 exp_month:
                   description: Two digit number representing the card’s expiration
@@ -10064,12 +10471,11 @@ paths:
         or changes.</p>
       operationId: UpdateAccountExternalAccount
       parameters:
-      - description: The ID of the bank account to update
+      - description: The ID of the external account to update
         in: path
         name: id
         required: true
         schema:
-          maxLength: 500
           type: string
         style: simple
       requestBody:
@@ -10111,6 +10517,8 @@ paths:
                   maxLength: 5000
                   type: string
                 default_for_currency:
+                  description: When set to true, this becomes the default external
+                    account for its currency.
                   type: boolean
                 exp_month:
                   description: Two digit number representing the card’s expiration
@@ -10169,6 +10577,7 @@ paths:
                 account:
                   description: The identifier of the account to create a login link
                     for.
+                  maxLength: 5000
                   type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
@@ -10215,6 +10624,7 @@ paths:
               properties:
                 account:
                   description: The identifier of the account to log out.
+                  maxLength: 5000
                   type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
@@ -10405,7 +10815,7 @@ paths:
                       type: boolean
                     cvc_failure:
                       type: boolean
-                  title: account_decline_charge_on_specs
+                  title: decline_charge_on_specs
                   type: object
                 default_currency:
                   description: Three-letter ISO currency code representing the default
@@ -10439,7 +10849,7 @@ paths:
                     without replacing the existing default for the currency, use the
                     bank account or card creation API.
                 from_recipient:
-                  maxLength: 500
+                  maxLength: 5000
                   type: string
                 legal_entity:
                   description: Information about the legal entity itself, including
@@ -10469,7 +10879,7 @@ paths:
                                 state:
                                   maxLength: 5000
                                   type: string
-                              title: account_address_specs
+                              title: address_specs
                               type: object
                             dob:
                               properties:
@@ -10498,7 +10908,10 @@ paths:
                               maxLength: 5000
                               type: string
                             verification:
-                              properties: {}
+                              properties:
+                                document:
+                                  maxLength: 500
+                                  type: string
                               title: account_person_verification_specs
                               type: object
                           title: account_owner_specs
@@ -10526,7 +10939,7 @@ paths:
                                 state:
                                   maxLength: 5000
                                   type: string
-                              title: account_address_specs
+                              title: address_specs
                               type: object
                             dob:
                               properties:
@@ -10555,7 +10968,10 @@ paths:
                               maxLength: 5000
                               type: string
                             verification:
-                              properties: {}
+                              properties:
+                                document:
+                                  maxLength: 500
+                                  type: string
                               title: account_person_verification_specs
                               type: object
                           title: account_owner_specs
@@ -10581,7 +10997,7 @@ paths:
                         state:
                           maxLength: 5000
                           type: string
-                      title: account_address_specs
+                      title: address_specs
                       type: object
                     address_kana:
                       properties:
@@ -10706,7 +11122,7 @@ paths:
                         state:
                           maxLength: 5000
                           type: string
-                      title: account_address_specs
+                      title: address_specs
                       type: object
                     personal_address_kana:
                       properties:
@@ -10759,6 +11175,7 @@ paths:
                       title: japan_address_kanji_specs
                       type: object
                     personal_id_number:
+                      maxLength: 5000
                       type: string
                     phone_number:
                       maxLength: 5000
@@ -10773,7 +11190,10 @@ paths:
                       maxLength: 5000
                       type: string
                     verification:
-                      properties: {}
+                      properties:
+                        document:
+                          maxLength: 500
+                          type: string
                       title: account_person_verification_specs
                       type: object
                   title: account_legal_entity_specs
@@ -10859,7 +11279,7 @@ paths:
                   required:
                   - date
                   - ip
-                  title: account_tos_acceptance_specs
+                  title: tos_acceptance_specs
                   type: object
                 type:
                   enum:
@@ -11043,7 +11463,7 @@ paths:
                       type: boolean
                     cvc_failure:
                       type: boolean
-                  title: account_decline_charge_on_specs
+                  title: decline_charge_on_specs
                   type: object
                 default_currency:
                   description: Three-letter ISO currency code representing the default
@@ -11104,7 +11524,7 @@ paths:
                                 state:
                                   maxLength: 5000
                                   type: string
-                              title: account_address_specs
+                              title: address_specs
                               type: object
                             dob:
                               properties:
@@ -11133,7 +11553,10 @@ paths:
                               maxLength: 5000
                               type: string
                             verification:
-                              properties: {}
+                              properties:
+                                document:
+                                  maxLength: 500
+                                  type: string
                               title: account_person_verification_specs
                               type: object
                           title: account_owner_specs
@@ -11161,7 +11584,7 @@ paths:
                                 state:
                                   maxLength: 5000
                                   type: string
-                              title: account_address_specs
+                              title: address_specs
                               type: object
                             dob:
                               properties:
@@ -11190,7 +11613,10 @@ paths:
                               maxLength: 5000
                               type: string
                             verification:
-                              properties: {}
+                              properties:
+                                document:
+                                  maxLength: 500
+                                  type: string
                               title: account_person_verification_specs
                               type: object
                           title: account_owner_specs
@@ -11216,7 +11642,7 @@ paths:
                         state:
                           maxLength: 5000
                           type: string
-                      title: account_address_specs
+                      title: address_specs
                       type: object
                     address_kana:
                       properties:
@@ -11341,7 +11767,7 @@ paths:
                         state:
                           maxLength: 5000
                           type: string
-                      title: account_address_specs
+                      title: address_specs
                       type: object
                     personal_address_kana:
                       properties:
@@ -11394,6 +11820,7 @@ paths:
                       title: japan_address_kanji_specs
                       type: object
                     personal_id_number:
+                      maxLength: 5000
                       type: string
                     phone_number:
                       maxLength: 5000
@@ -11408,7 +11835,10 @@ paths:
                       maxLength: 5000
                       type: string
                     verification:
-                      properties: {}
+                      properties:
+                        document:
+                          maxLength: 500
+                          type: string
                       title: account_person_verification_specs
                       type: object
                   title: account_legal_entity_specs
@@ -11494,7 +11924,7 @@ paths:
                   required:
                   - date
                   - ip
-                  title: account_tos_acceptance_specs
+                  title: tos_acceptance_specs
                   type: object
               type: object
         required: false
@@ -11676,12 +12106,11 @@ paths:
           maxLength: 5000
           type: string
         style: simple
-      - description: The ID of the bank account to update
+      - description: The ID of the external account to update
         in: path
         name: id
         required: true
         schema:
-          maxLength: 500
           type: string
         style: simple
       requestBody:
@@ -11723,6 +12152,8 @@ paths:
                   maxLength: 5000
                   type: string
                 default_for_currency:
+                  description: When set to true, this becomes the default external
+                    account for its currency.
                   type: boolean
                 exp_month:
                   description: Two digit number representing the card’s expiration
@@ -12023,12 +12454,11 @@ paths:
           maxLength: 5000
           type: string
         style: simple
-      - description: The ID of the bank account to update
+      - description: The ID of the external account to update
         in: path
         name: id
         required: true
         schema:
-          maxLength: 500
           type: string
         style: simple
       requestBody:
@@ -12070,6 +12500,8 @@ paths:
                   maxLength: 5000
                   type: string
                 default_for_currency:
+                  description: When set to true, this becomes the default external
+                    account for its currency.
                   type: boolean
                 exp_month:
                   description: Two digit number representing the card’s expiration
@@ -12121,6 +12553,7 @@ paths:
         name: account
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -12170,6 +12603,7 @@ paths:
         name: account
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -12278,6 +12712,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -12308,6 +12743,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -12493,6 +12929,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -12523,6 +12960,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -12588,6 +13026,7 @@ paths:
         name: fee
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: ID of refund to retrieve.
@@ -12595,6 +13034,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -12621,6 +13061,7 @@ paths:
         name: fee
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: ID of refund to retrieve.
@@ -12628,6 +13069,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -12694,6 +13136,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -12718,6 +13161,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -12774,6 +13218,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -12792,6 +13237,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: A limit on the number of objects to be returned. Limit can range
@@ -12811,6 +13257,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -12861,6 +13308,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -12995,6 +13443,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -13022,6 +13471,7 @@ paths:
         name: payout
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Only returns the original transaction.
@@ -13041,6 +13491,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: 'Only returns transactions of the given type. One of: `charge`,
@@ -13116,6 +13567,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -13154,6 +13606,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -13191,6 +13644,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Filter for receivers with uncaptured funds.
@@ -13261,6 +13715,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -13288,6 +13743,7 @@ paths:
         name: customer
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: A cursor for use in pagination. `ending_before` is an object
@@ -13299,6 +13755,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -13338,6 +13795,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -13392,6 +13850,7 @@ paths:
         name: customer
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: A cursor for use in pagination. `ending_before` is an object
@@ -13403,6 +13862,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -13442,6 +13902,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -13515,6 +13976,7 @@ paths:
         name: customer
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: A cursor for use in pagination. `ending_before` is an object
@@ -13645,6 +14107,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              include:
+                explode: true
+                style: deepObject
               level3:
                 explode: true
                 style: deepObject
@@ -13658,9 +14123,6 @@ paths:
                 explode: true
                 style: deepObject
               statement_address:
-                explode: true
-                style: deepObject
-              statement_descriptor:
                 explode: true
                 style: deepObject
               trust:
@@ -13694,10 +14156,8 @@ paths:
                     - type: object
                     - maxLength: 5000
                       type: string
-                    description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
-                      or a dictionary containing a user's credit card details.
-                  - description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
-                      or a dictionary containing a user's credit card details.
+                    description: A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js).
+                  - description: A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js).
                     properties:
                       emv_auth_data:
                         maxLength: 5000
@@ -13720,19 +14180,15 @@ paths:
                       read_method:
                         enum:
                         - contact
+                        - contact_emv
                         - contactless
                         - contactless_emv
                         - contactless_magstripe_mode
-                        - emv_cvv_capable
-                        - emv_cvv_incapable
                         - insert
                         - keyed
-                        - magnetic_stripe
                         - magnetic_stripe_fallback
-                        - magnetic_stripe_from_track2
-                        - manual
+                        - magnetic_stripe_track2
                         - swipe
-                        - unknown
                         maxLength: 5000
                         type: string
                     required:
@@ -13741,6 +14197,11 @@ paths:
                     type: object
                 card_program:
                   maxLength: 500
+                  type: string
+                cross_border_classification:
+                  enum:
+                  - export
+                  maxLength: 5000
                   type: string
                 currency:
                   type: string
@@ -13775,7 +14236,6 @@ paths:
                 exchange_rate:
                   type: number
                 expand:
-                  description: Specifies which fields in the response should be expanded.
                   items:
                     maxLength: 5000
                     type: string
@@ -13786,6 +14246,11 @@ paths:
                 idempotency_key:
                   maxLength: 5000
                   type: string
+                include:
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
                 invoice:
                   maxLength: 5000
                   type: string
@@ -13928,19 +14393,15 @@ paths:
                       read_method:
                         enum:
                         - contact
+                        - contact_emv
                         - contactless
                         - contactless_emv
                         - contactless_magstripe_mode
-                        - emv_cvv_capable
-                        - emv_cvv_incapable
                         - insert
                         - keyed
-                        - magnetic_stripe
                         - magnetic_stripe_fallback
-                        - magnetic_stripe_from_track2
-                        - manual
+                        - magnetic_stripe_track2
                         - swipe
-                        - unknown
                         maxLength: 5000
                         type: string
                     required:
@@ -13972,11 +14433,8 @@ paths:
                   title: charge_address
                   type: object
                 statement_descriptor:
-                  anyOf:
-                  - maxLength: 22
-                    type: string
-                  - maxLength: 5000
-                    type: string
+                  maxLength: 22
+                  type: string
                 transfer_group:
                   type: string
                 trust:
@@ -14022,6 +14480,7 @@ paths:
         name: charge
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: Specifies which fields in the response should be expanded.
@@ -14083,7 +14542,7 @@ paths:
                   description: The ID of an existing customer that will be associated
                     with this request. This field may only be updated if there is
                     no existing associated customer with this charge.
-                  maxLength: 500
+                  maxLength: 5000
                   type: string
                 description:
                   description: An arbitrary string which you can attach to a charge
@@ -14107,6 +14566,16 @@ paths:
                     a value of `safe`. Note that you must refund a charge before setting
                     the `user_report` to `fraudulent`. Stripe will use the information
                     you send to improve our fraud detection algorithms.
+                  properties:
+                    user_report:
+                      enum:
+                      - fraudulent
+                      - safe
+                      maxLength: 5000
+                      type: string
+                  required:
+                  - user_report
+                  title: fraud_details
                   type: object
                 metadata:
                   description: Set of key-value pairs that you can attach to an object.
@@ -14377,6 +14846,7 @@ paths:
                       maxLength: 20000
                       type: string
                     duplicate_charge_id:
+                      maxLength: 5000
                       type: string
                     product_description:
                       maxLength: 20000
@@ -14994,6 +15464,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -15024,6 +15495,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -15141,9 +15613,9 @@ paths:
                     the coupon in a structured format.
                   type: object
                 name:
-                  description: Name of the coupon displayed to customers on for instance
-                    invoices or receipts. By default the `id` is shown if `name` is
-                    not set.
+                  description: Name of the coupon displayed to customers on, for instance
+                    invoices, or receipts. By default the `id` is shown if `name`
+                    is not set.
                   maxLength: 40
                   type: string
                 percent_off:
@@ -15188,6 +15660,7 @@ paths:
         name: coupon
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -15212,6 +15685,7 @@ paths:
         name: coupon
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: Specifies which fields in the response should be expanded.
@@ -15248,6 +15722,7 @@ paths:
         name: coupon
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -15274,6 +15749,12 @@ paths:
                     object. It can be useful for storing additional information about
                     the coupon in a structured format.
                   type: object
+                name:
+                  description: Name of the coupon displayed to customers on, for instance
+                    invoices, or receipts. By default the `id` is shown if `name`
+                    is not set.
+                  maxLength: 40
+                  type: string
               type: object
         required: false
       responses:
@@ -15332,6 +15813,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -15362,6 +15844,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -15411,12 +15894,6 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
-              bank_account:
-                explode: true
-                style: deepObject
-              card:
-                explode: true
-                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -15439,30 +15916,13 @@ paths:
                     due on an invoice; a positive amount increases the amount due
                     on an invoice.
                   type: integer
-                bank_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
-                  description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
-                    or a dictionary containing a user's bank account details.
                 business_vat_id:
                   description: The customer's VAT identification number. If you are
                     using Relay, this field gets passed to tax provider you are using
                     for your orders.
                   maxLength: 5000
                   type: string
-                card:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
-                  description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
-                    or a dictionary containing a user's credit card details.
                 coupon:
-                  description: If you provide a coupon code, the customer will have
-                    a discount applied on all recurring charges. Charges you create
-                    through the API will not have the discount.
                   maxLength: 5000
                   type: string
                 customer:
@@ -15570,6 +16030,7 @@ paths:
         name: customer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -15595,6 +16056,7 @@ paths:
         name: customer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: Specifies which fields in the response should be expanded.
@@ -15632,7 +16094,7 @@ paths:
         name: customer
         required: true
         schema:
-          maxLength: 500
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -15685,12 +16147,8 @@ paths:
                   - type: object
                   - maxLength: 5000
                     type: string
-                  description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
-                    or a dictionary containing a user's credit card details.
+                  description: A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js).
                 coupon:
-                  description: If you provide a coupon code, the customer will have
-                    a discount applied on all recurring charges. Charges you create
-                    through the API will not have the discount.
                   maxLength: 5000
                   type: string
                 default_alipay_account:
@@ -15780,6 +16238,15 @@ paths:
                   - type: object
                   - maxLength: 5000
                     type: string
+                trial_end:
+                  description: Unix timestamp representing the end of the trial period
+                    the customer will get before being charged for the first time.
+                    This will always overwrite any trials that might apply via a subscribed
+                    plan. If set, trial_end will override the default trial period
+                    of the plan the customer is being subscribed to. The special value
+                    `now` can be provided to end the customer's trial immediately.
+                  maxLength: 5000
+                  type: string
               type: object
         required: false
       responses:
@@ -15810,6 +16277,7 @@ paths:
         name: customer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: A cursor for use in pagination. `ending_before` is an object
@@ -15948,8 +16416,7 @@ paths:
                   - type: object
                   - maxLength: 5000
                     type: string
-                  description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
-                    or a dictionary containing a user's credit card details.
+                  description: A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js).
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -15999,7 +16466,7 @@ paths:
         name: id
         required: true
         schema:
-          maxLength: 500
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -16030,6 +16497,7 @@ paths:
         name: customer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: Specifies which fields in the response should be expanded.
@@ -16107,6 +16575,9 @@ paths:
                 account_holder_type:
                   description: The type of entity that holds the account. This can
                     be either `individual` or `company`.
+                  enum:
+                  - company
+                  - individual
                   maxLength: 5000
                   type: string
                 address_city:
@@ -16282,6 +16753,7 @@ paths:
         name: customer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: A cursor for use in pagination. `ending_before` is an object
@@ -16420,8 +16892,7 @@ paths:
                   - type: object
                   - maxLength: 5000
                     type: string
-                  description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
-                    or a dictionary containing a user's credit card details.
+                  description: A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js).
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -16471,7 +16942,7 @@ paths:
         name: id
         required: true
         schema:
-          maxLength: 500
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -16500,6 +16971,7 @@ paths:
         name: customer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: Specifies which fields in the response should be expanded.
@@ -16577,6 +17049,9 @@ paths:
                 account_holder_type:
                   description: The type of entity that holds the account. This can
                     be either `individual` or `company`.
+                  enum:
+                  - company
+                  - individual
                   maxLength: 5000
                   type: string
                 address_city:
@@ -16711,6 +17186,7 @@ paths:
         name: customer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: Specifies which fields in the response should be expanded.
@@ -16747,6 +17223,7 @@ paths:
         name: customer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: A cursor for use in pagination. `ending_before` is an object
@@ -16900,8 +17377,7 @@ paths:
                   - type: object
                   - maxLength: 5000
                     type: string
-                  description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
-                    or a dictionary containing a user's credit card details.
+                  description: A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js).
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -16951,7 +17427,7 @@ paths:
         name: id
         required: true
         schema:
-          maxLength: 500
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -17057,6 +17533,9 @@ paths:
                 account_holder_type:
                   description: The type of entity that holds the account. This can
                     be either `individual` or `company`.
+                  enum:
+                  - company
+                  - individual
                   maxLength: 5000
                   type: string
                 address_city:
@@ -17234,6 +17713,7 @@ paths:
         name: customer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: A cursor for use in pagination. `ending_before` is an object
@@ -17245,6 +17725,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -17275,6 +17756,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -17326,7 +17808,7 @@ paths:
         name: customer
         required: true
         schema:
-          maxLength: 500
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -17443,6 +17925,7 @@ paths:
                     final amount in each billing period. For example, a plan which
                     charges $10/month with a `tax_percent` of `20.0` will charge $12
                     per invoice. To unset a previously-set value, pass an empty string.
+                  nullable: true
                   type: number
                 trial_end:
                   description: Unix timestamp representing the end of the trial period
@@ -17597,7 +18080,7 @@ paths:
         name: customer
         required: true
         schema:
-          maxLength: 500
+          maxLength: 5000
           type: string
         style: simple
       - description: The identifier of the subscription to update.
@@ -17743,6 +18226,7 @@ paths:
                     final amount in each billing period. For example, a plan which
                     charges $10/month with a `tax_percent` of `20.0` will charge $12
                     per invoice. To unset a previously-set value, pass an empty string.
+                  nullable: true
                   type: number
                 trial_end:
                   description: Unix timestamp representing the end of the trial period
@@ -17814,6 +18298,7 @@ paths:
         name: customer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: Specifies which fields in the response should be expanded.
@@ -18061,6 +18546,7 @@ paths:
                       maxLength: 20000
                       type: string
                     duplicate_charge_id:
+                      maxLength: 5000
                       type: string
                     product_description:
                       maxLength: 20000
@@ -18198,6 +18684,7 @@ paths:
                 customer:
                   description: The ID of the Customer you'd like to modify using the
                     resulting ephemeral key.
+                  maxLength: 5000
                   type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
@@ -18232,6 +18719,7 @@ paths:
         name: key
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -18280,6 +18768,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -18310,6 +18799,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: A string containing a specific event name, or group of events
@@ -18397,6 +18887,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -18421,6 +18912,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -18619,6 +19111,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -18678,6 +19171,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -18804,6 +19298,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -18851,6 +19346,7 @@ paths:
         name: customer
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: A cursor for use in pagination. `ending_before` is an object
@@ -18862,6 +19358,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -18882,6 +19379,7 @@ paths:
         name: invoice
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: A limit on the number of objects to be returned. Limit can range
@@ -18901,6 +19399,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -18972,6 +19471,7 @@ paths:
                 customer:
                   description: The ID of the customer who will be billed when this
                     invoice item is billed.
+                  maxLength: 5000
                   type: string
                 description:
                   description: An arbitrary string which you can attach to the invoice
@@ -18995,6 +19495,7 @@ paths:
                     upcoming scheduled invoice. Use this when adding invoice items
                     in response to an invoice.created webhook. You cannot add an invoice
                     item to an invoice that has already been paid, attempted or closed.
+                  maxLength: 5000
                   type: string
                 metadata:
                   description: A set of key/value pairs that you can attach to an
@@ -19012,6 +19513,7 @@ paths:
                     other than the specified subscription will ignore the invoice
                     item. Use this when you want to express that an invoice item has
                     been accrued within the context of a particular subscription.
+                  maxLength: 5000
                   type: string
                 unit_amount:
                   description: The integer unit amount in **%s** of the charge to
@@ -19048,6 +19550,7 @@ paths:
         name: invoiceitem
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -19083,6 +19586,7 @@ paths:
         name: invoiceitem
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -19108,6 +19612,7 @@ paths:
         name: invoiceitem
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -19199,6 +19704,7 @@ paths:
         name: customer
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - explode: true
@@ -19248,6 +19754,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -19278,6 +19785,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Only return invoices for the subscription specified by this subscription
@@ -19370,6 +19878,7 @@ paths:
                   maxLength: 5000
                   type: string
                 customer:
+                  maxLength: 5000
                   type: string
                 days_until_due:
                   description: The number of days from which the invoice is created
@@ -19459,6 +19968,7 @@ paths:
         name: coupon
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: The identifier of the customer whose upcoming invoice you'd like
@@ -19467,6 +19977,7 @@ paths:
         name: customer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -19499,6 +20010,7 @@ paths:
               discountable:
                 type: boolean
               invoiceitem:
+                maxLength: 5000
                 type: string
               metadata:
                 type: object
@@ -19653,6 +20165,7 @@ paths:
         name: coupon
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: The customer of the upcoming invoice is required. In other cases
@@ -19885,6 +20398,7 @@ paths:
         name: invoice
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -19911,6 +20425,7 @@ paths:
         name: invoice
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -19983,6 +20498,7 @@ paths:
                     between 0 and 100. To unset a previously-set value, pass an empty
                     string. The tax rate of an attempted, paid or forgiven invoice
                     cannot be changed.
+                  nullable: true
                   type: number
               type: object
         required: false
@@ -20035,6 +20551,7 @@ paths:
         name: invoice
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: A limit on the number of objects to be returned. Limit can range
@@ -20176,6 +20693,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -20206,6 +20724,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -20272,6 +20791,7 @@ paths:
         name: issuer_fraud_record
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -20322,6 +20842,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -20360,6 +20881,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -20425,6 +20947,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -20483,6 +21006,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -20524,6 +21048,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Only return orders that have the given status. One of `created`,
@@ -20863,6 +21388,7 @@ paths:
                   description: A coupon code that represents a discount to be applied
                     to this order. Must be one-time duration and in same currency
                     as the order.
+                  maxLength: 5000
                   type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
@@ -20984,13 +21510,11 @@ paths:
                   - type: object
                   - maxLength: 5000
                     type: string
-                  description: The source can either be a [Token](/docs/api#tokens)'s
-                    or a [Source](/docs/api#sources)'s ID, as returned by [Elements](/docs/elements),
-                    or a dictionary containing a user's credit card details (with
-                    the options shown below). If no customer was attached to the order
-                    at creation, either `source` or `customer is required. Otherwise,
-                    the specified source will be charged intead of the customer attached
-                    to the order.
+                  description: A [Token](/docs/api#tokens)'s or a [Source](/docs/api#sources)'s
+                    ID, as returned by [Elements](/docs/elements). If no customer
+                    was attached to the order at creation, either `source` or `customer
+                    is required. Otherwise, the specified source will be charged intead
+                    of the customer attached to the order.
               type: object
         required: false
       responses:
@@ -21080,6 +21604,617 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
+  "/v1/payment_intents":
+    get:
+      description: "<p>Returns a list of PaymentIntents.</p>"
+      operationId: PaymentFlowsPaymentIntentAll
+      parameters:
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    items:
+                      "$ref": "#/components/schemas/payment_intent"
+                    type: array
+                  has_more:
+                    description: True if this list has another page of items after
+                      this one that can be fetched.
+                    type: boolean
+                  object:
+                    description: String representing the object's type. Objects of
+                      the same type share the same value. Always has the value `list`.
+                    enum:
+                    - list
+                    type: string
+                  url:
+                    description: The URL where this list can be accessed.
+                    maxLength: 5000
+                    pattern: "^/v1/payment_intents"
+                    type: string
+                required:
+                - data
+                - has_more
+                - object
+                - url
+                title: PaymentFlowsPaymentIntentList
+                type: object
+                x-expandableFields:
+                - data
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+    post:
+      description: "<p>Creates a PaymentIntent object.</p>"
+      operationId: PaymentIntentCreate
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              allowed_source_types:
+                explode: true
+                style: deepObject
+              expand:
+                explode: true
+                style: deepObject
+              metadata:
+                explode: true
+                style: deepObject
+              shipping:
+                explode: true
+                style: deepObject
+              transfer_data:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                allowed_source_types:
+                  description: The list of source types that this PaymentIntent was
+                    allowed to use. Values can be any combination of `card`.
+                  items:
+                    enum:
+                    - card
+                    maxLength: 5000
+                    type: string
+                  type: array
+                amount:
+                  description: Amount intended to be collected by this PaymentIntent
+                  type: integer
+                application_fee:
+                  description: A fee that will be applied to the payment and transferred
+                    to theapplication owner's Stripe account. To use an application
+                    fee, therequest must be made on behalf of another account, using
+                    the`Stripe-Account` header or an OAuth key. For more information,
+                    see[Collecting applicationfees](/docs/connect/direct-charges#collecting-fees).
+                  type: integer
+                attempt_confirmation:
+                  description: Attempt to confirm this PaymentIntent on source attachment.
+                  type: boolean
+                capture_method:
+                  description: Capture method of this PaymentIntent, one of `automatic`
+                    or `manual`.
+                  enum:
+                  - automatic
+                  - manual
+                  maxLength: 5000
+                  type: string
+                currency:
+                  description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                    in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+                  type: string
+                customer:
+                  description: ID of the customer this PaymentIntent is for if one
+                    exists.
+                  maxLength: 5000
+                  type: string
+                description:
+                  description: An arbitrary string attached to the object. Often useful
+                    for displaying to users.
+                  maxLength: 1000
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                metadata:
+                  description: Set of key-value pairs that you can attach to an object.
+                    This can be useful for storing additional information about the
+                    object in a structured format.
+                  type: object
+                on_behalf_of:
+                  description: The account (if any) the payment will be made on behalf
+                    of. To triggeran automatic transfer when the payment is complete,
+                    use `transfer_data`in conjunction with this parameter."
+                  type: string
+                receipt_email:
+                  description: Email address that the receipt for the resulting payment
+                    will be sent to.
+                  maxLength: 5000
+                  type: string
+                return_url:
+                  description: The URL to redirect your customer back to after they
+                    authenticate or cancel their payment on the payment method's app
+                    or site.If you'd prefer to redirect to a mobile application, you
+                    can alternatively supply an application URI scheme.
+                  type: string
+                save_source_to_customer:
+                  description: "`true` to save this PaymentIntent's Source to the
+                    associated Customer, if the Source is not already attached."
+                  type: boolean
+                shipping:
+                  description: Shipping information for this PaymentIntent.
+                  properties:
+                    address:
+                      properties:
+                        city:
+                          maxLength: 5000
+                          type: string
+                        country:
+                          maxLength: 5000
+                          type: string
+                        line1:
+                          maxLength: 5000
+                          type: string
+                        line2:
+                          maxLength: 5000
+                          type: string
+                        postal_code:
+                          maxLength: 5000
+                          type: string
+                        state:
+                          maxLength: 5000
+                          type: string
+                      required:
+                      - line1
+                      title: address
+                      type: object
+                    carrier:
+                      maxLength: 5000
+                      type: string
+                    name:
+                      maxLength: 5000
+                      type: string
+                    phone:
+                      maxLength: 5000
+                      type: string
+                    tracking_number:
+                      maxLength: 5000
+                      type: string
+                  required:
+                  - address
+                  - name
+                  title: shipping
+                  type: object
+                source:
+                  description: ID of the Source object to attach to this PaymentIntent.
+                  maxLength: 5000
+                  type: string
+                statement_descriptor:
+                  description: Extra information about a PaymentIntent. This will
+                    appear on your customer's statement when this PaymentIntent succeeds
+                    in creating a charge.
+                  maxLength: 22
+                  type: string
+                transfer_data:
+                  description: The parameters with which to automatically create a
+                    Transfer when the payment is finalized. The destination of the
+                    Transfer is the account set as `on_behalf_of`.
+                  properties:
+                    amount:
+                      type: integer
+                  title: transfer_data_params
+                  type: object
+                transfer_group:
+                  description: A string that identifies the resulting payment as part
+                    of a group. See the [Connect documentation](/docs/connect/charges-transfers#grouping-transactions)
+                    for details.
+                  type: string
+              required:
+              - allowed_source_types
+              - amount
+              - currency
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/payment_intent"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/payment_intents/{intent}":
+    get:
+      description: <p>Retrieves the details of a PaymentIntent that has previously
+        been created. </p><p>Client-side retrieval using a publishable key is allowed
+        when the <code>client_secret</code> is provided in the query string. </p><p>When
+        retrieved with a publishable key, only a subset of properties will be returned.
+        Please refer to the <a href="#payment_intent_object">payment intent</a> object
+        reference for more details.</p>
+      operationId: PaymentIntentRetrieve
+      parameters:
+      - description: The client secret of the PaymentIntent. Required if a publishable
+          key is used to retrieve the source.
+        in: query
+        name: client_secret
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - in: path
+        name: intent
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - "$ref": "#/components/schemas/payment_intent"
+                - "$ref": "#/components/schemas/payment_intent_client"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+    post:
+      description: "<p>Updates a PaymentIntent object.</p>"
+      operationId: PaymentIntentUpdate
+      parameters:
+      - in: path
+        name: intent
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+              metadata:
+                explode: true
+                style: deepObject
+              transfer_data:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                amount:
+                  description: Amount intended to be collected by this PaymentIntent
+                  type: integer
+                application_fee:
+                  description: The application fee (if any) for the resulting payment.
+                    [See the Connect documentation](/docs/connect/direct-charges#collecting-fees)
+                    for details.
+                  type: integer
+                currency:
+                  description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                    in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+                  type: string
+                customer:
+                  description: ID of the customer this PaymentIntent is for if one
+                    exists.
+                  maxLength: 5000
+                  type: string
+                description:
+                  description: An arbitrary string attached to the object. Often useful
+                    for displaying to users.
+                  maxLength: 1000
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                metadata:
+                  description: Set of key-value pairs that you can attach to an object.
+                    This can be useful for storing additional information about the
+                    object in a structured format.
+                  type: object
+                receipt_email:
+                  description: Email address that the receipt for the resulting payment
+                    will be sent to.
+                  maxLength: 5000
+                  type: string
+                return_url:
+                  description: The URL to redirect your customer back to after they
+                    authenticate or cancel their payment on the payment method's app
+                    or site.If you'd prefer to redirect to a mobile application, you
+                    can alternatively supply an application URI scheme.
+                  type: string
+                save_source_to_customer:
+                  description: "`true` to save this PaymentIntent's Source to the
+                    associated Customer, if the Source is not already attached."
+                  type: boolean
+                source:
+                  description: ID of the Source object to attach to this PaymentIntent.
+                  maxLength: 5000
+                  type: string
+                transfer_data:
+                  description: The parameters with which to automatically create a
+                    Transfer when the payment is finalized. The destination of the
+                    Transfer is the account set as `on_behalf_of`.
+                  properties:
+                    amount:
+                      type: integer
+                  title: transfer_data_params
+                  type: object
+                transfer_group:
+                  description: A string that identifies the resulting payment as part
+                    of a group. `transfer_group` may only be provided if it has not
+                    been set. See the [Connect documentation](/docs/connect/charges-transfers#grouping-transactions)
+                    for details.
+                  type: string
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/payment_intent"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/payment_intents/{intent}/cancel":
+    post:
+      description: "<p>A PaymentIntent object can be canceled when it is in one of
+        these statues: <code>requires_source</code>, <code>requires_capture</code>,
+        <code>requires_confirmation</code>, or <code>requires_source_action</code>.
+        </p><p>Once canceled, no additional charges will be made by the PaymentIntent
+        and any operations on the PaymentIntent will fail with an error. For PaymentIntents
+        with <code>status='requires_capture'</code>, the remaining <code>amount_capturable</code>
+        will automatically be refunded.</p>"
+      operationId: PaymentIntentCancel
+      parameters:
+      - in: path
+        name: intent
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/payment_intent"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/payment_intents/{intent}/capture":
+    post:
+      description: <p>Capture the funds of an existing uncaptured PaymentIntent where
+        <code>required_action="requires_capture"</code>.</p><p>Uncaptured PaymentIntents
+        will be canceled exactly seven days after they are created.</p>
+      operationId: PaymentIntentCapture
+      parameters:
+      - in: path
+        name: intent
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                amount:
+                  description: The amount to capture, which must be less than or equal
+                    to the original amount. Any additional amount will be automatically
+                    refunded. Defaults to the full `amount_capturable` if not provided.
+                  type: integer
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/payment_intent"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/payment_intents/{intent}/confirm":
+    post:
+      description: <p>Confirm that your customer intends to pay with current or provided<code>source</code>.
+        Upon confirmation, the PaymentIntent will attempt to initiatea payment.</p><p>If
+        the selected <code>source</code> requires additional authentication steps,
+        thePaymentIntent will transition to the <code>requires_source_action</code>
+        status andsuggest additional actions via <code>next_source_action</code>.
+        If payment fails,the PaymentIntent will transition to the <code>requires_source</code>
+        status. Ifpayment succeeds, the PaymentIntent will transition to the <code>succeeded</code>status
+        (or <code>requires_capture</code>, if <code>capture_method</code> is set to
+        <code>manual</code>).</p><p>When using a publishable key, the<a href="#payment_intent_object-client_secret">client_secret</a>
+        must be providedto confirm the PaymentIntent.</p>
+      operationId: PaymentIntentConfirm
+      parameters:
+      - in: path
+        name: intent
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                client_secret:
+                  description: The client secret of the PaymentIntent.
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                receipt_email:
+                  description: Email address that the receipt for the resulting payment
+                    will be sent to.
+                  maxLength: 5000
+                  type: string
+                return_url:
+                  description: The URL to redirect your customer back to after they
+                    authenticate or cancel their payment on the payment method's app
+                    or site.If you'd prefer to redirect to a mobile application, you
+                    can alternatively supply an application URI scheme.
+                  type: string
+                save_source_to_customer:
+                  description: "`true` to save this PaymentIntent's Source to the
+                    associated Customer, if the Source is not already attached."
+                  type: boolean
+                source:
+                  description: ID of the Source object to attach to this PaymentIntent.
+                  maxLength: 5000
+                  type: string
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - "$ref": "#/components/schemas/payment_intent"
+                - "$ref": "#/components/schemas/payment_intent_client"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
   "/v1/payments":
     post:
       description: ''
@@ -21095,6 +22230,9 @@ paths:
                 explode: true
                 style: deepObject
               expand:
+                explode: true
+                style: deepObject
+              include:
                 explode: true
                 style: deepObject
               level3:
@@ -21137,6 +22275,11 @@ paths:
                 card_program:
                   maxLength: 500
                   type: string
+                cross_border_classification:
+                  enum:
+                  - export
+                  maxLength: 5000
+                  type: string
                 currency:
                   type: string
                 customer:
@@ -21164,7 +22307,6 @@ paths:
                 exchange_rate:
                   type: number
                 expand:
-                  description: Specifies which fields in the response should be expanded.
                   items:
                     maxLength: 5000
                     type: string
@@ -21175,6 +22317,11 @@ paths:
                 idempotency_key:
                   maxLength: 5000
                   type: string
+                include:
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
                 invoice:
                   maxLength: 5000
                   type: string
@@ -21318,7 +22465,7 @@ paths:
                   title: charge_address
                   type: object
                 statement_descriptor:
-                  maxLength: 5000
+                  maxLength: 22
                   type: string
                 transfer_group:
                   type: string
@@ -21375,6 +22522,7 @@ paths:
         name: payment
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -21452,6 +22600,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -21482,6 +22631,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: 'Only return payouts that have the given status: `pending`, `paid`,
@@ -21659,6 +22809,7 @@ paths:
         name: payout
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -21685,6 +22836,7 @@ paths:
         name: payout
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -21738,6 +22890,7 @@ paths:
         name: payout
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -21815,6 +22968,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -21841,6 +22995,7 @@ paths:
         name: product
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: A cursor for use in pagination. `starting_after` is an object
@@ -21852,6 +23007,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -22026,6 +23182,7 @@ paths:
                     type: object
                   - description: The ID of the product whose pricing the created plan
                       will represent.
+                    maxLength: 5000
                     type: string
                 statement_descriptor:
                   description: An arbitrary string to be displayed on your customer's
@@ -22131,6 +23288,7 @@ paths:
         name: plan
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -22166,6 +23324,7 @@ paths:
         name: plan
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -22192,6 +23351,7 @@ paths:
         name: plan
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -22233,6 +23393,7 @@ paths:
                   description: The product the plan belongs to. Note that after updating,
                     statement descriptors and line items of the plan in active subscriptions
                     will be affected.
+                  maxLength: 5000
                   type: string
                 statement_descriptor:
                   description: An arbitrary string to be displayed on your customer's
@@ -22308,6 +23469,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -22357,6 +23519,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Only return products of this type.
@@ -22591,6 +23754,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -22628,6 +23792,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -22830,6 +23995,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -22860,6 +24026,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - in: query
@@ -23042,6 +24209,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -23156,6 +24324,25 @@ paths:
         schema:
           type: string
         style: form
+      - explode: true
+        in: query
+        name: created
+        required: false
+        schema:
+          anyOf:
+          - properties:
+              gt:
+                type: integer
+              gte:
+                type: integer
+              lt:
+                type: integer
+              lte:
+                type: integer
+            title: range_query_specs
+            type: object
+          - type: integer
+        style: deepObject
       - description: A cursor for use in pagination. `ending_before` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, starting with `obj_bar`, your subsequent
@@ -23419,6 +24606,9 @@ paths:
         name: attributes
         required: false
         schema:
+          additionalProperties:
+            maxLength: 500
+            type: string
           type: object
         style: deepObject
       - description: A cursor for use in pagination. `ending_before` is an object
@@ -23430,6 +24620,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -23477,6 +24668,7 @@ paths:
         name: product
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: A cursor for use in pagination. `starting_after` is an object
@@ -23488,6 +24680,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -23560,6 +24753,9 @@ paths:
                     to `true`.
                   type: boolean
                 attributes:
+                  additionalProperties:
+                    maxLength: 500
+                    type: string
                   description: 'A dictionary of attributes and values for the attributes
                     defined by the product. If, for example, a product''s attributes
                     are `["size", "gender"]`, a valid SKU has the following dictionary
@@ -23637,6 +24833,7 @@ paths:
                 product:
                   description: The ID of the product this SKU is associated with.
                     Must be a product with type `good`.
+                  maxLength: 5000
                   type: string
               required:
               - currency
@@ -23669,6 +24866,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -23706,6 +24904,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -23735,6 +24934,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -23763,6 +24963,9 @@ paths:
                   description: Whether this SKU is available for purchase.
                   type: boolean
                 attributes:
+                  additionalProperties:
+                    maxLength: 500
+                    type: string
                   description: A dictionary of attributes and values for the attributes
                     defined by the product. When specified, `attributes` will partially
                     update the existing attributes dictionary on the product, with
@@ -23839,6 +25042,7 @@ paths:
                   description: The ID of the product that this SKU should belong to.
                     The product must exist, have the same set of attribute names as
                     the SKU's current product, and be of type `good`.
+                  maxLength: 5000
                   type: string
               type: object
         required: false
@@ -24127,6 +25331,7 @@ paths:
         name: source
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -24270,6 +25475,7 @@ paths:
         name: mandate_notification
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: The ID of the Source that received a ManateNotification.
@@ -24277,6 +25483,7 @@ paths:
         name: source
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -24306,6 +25513,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -24332,6 +25540,7 @@ paths:
         name: source
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: A cursor for use in pagination. `starting_after` is an object
@@ -24343,6 +25552,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -24442,6 +25652,7 @@ paths:
         name: source
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -24537,6 +25748,7 @@ paths:
         name: subscription
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -24913,6 +26125,7 @@ paths:
         name: customer
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: A cursor for use in pagination. `ending_before` is an object
@@ -24924,6 +26137,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -24950,6 +26164,7 @@ paths:
         name: plan
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: A cursor for use in pagination. `starting_after` is an object
@@ -24961,6 +26176,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: 'The status of the subscriptions to retrieve. One of: `trialing`,
@@ -25078,7 +26294,7 @@ paths:
                   type: string
                 customer:
                   description: The identifier of the customer to subscribe.
-                  maxLength: 500
+                  maxLength: 5000
                   type: string
                 days_until_due:
                   description: Number of days a customer has to pay invoices generated
@@ -25143,6 +26359,7 @@ paths:
                     final amount in each billing period. For example, a plan which
                     charges $10/month with a `tax_percent` of `20.0` will charge $12
                     per invoice. To unset a previously-set value, pass an empty string.
+                  nullable: true
                   type: number
                 trial_end:
                   description: Unix timestamp representing the end of the trial period
@@ -25206,6 +26423,7 @@ paths:
         name: subscription_exposed_id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -25422,6 +26640,7 @@ paths:
                     final amount in each billing period. For example, a plan which
                     charges $10/month with a `tax_percent` of `20.0` will charge $12
                     per invoice. To unset a previously-set value, pass an empty string.
+                  nullable: true
                   type: number
                 trial_end:
                   description: Unix timestamp representing the end of the trial period
@@ -25455,7 +26674,7 @@ paths:
           description: Error response.
   "/v1/subscriptions/{subscription_exposed_id}/discount":
     delete:
-      description: "<p>Removes the currently applied discount on a customer.</p>"
+      description: "<p>Removes the currently applied discount on a subscription.</p>"
       operationId: DeleteSubscriptionDiscount
       parameters:
       - in: path
@@ -25494,6 +26713,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -25524,6 +26744,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -25637,6 +26858,7 @@ paths:
         name: tax_rate_template
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -25672,6 +26894,7 @@ paths:
         name: tax_rate_template
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -25695,6 +26918,7 @@ paths:
         name: tax_rate_template
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -25806,7 +27030,7 @@ paths:
                                     state:
                                       maxLength: 5000
                                       type: string
-                                  title: account_address_specs
+                                  title: address_specs
                                   type: object
                                 dob:
                                   properties:
@@ -25835,7 +27059,10 @@ paths:
                                   maxLength: 5000
                                   type: string
                                 verification:
-                                  properties: {}
+                                  properties:
+                                    document:
+                                      maxLength: 500
+                                      type: string
                                   title: account_person_verification_specs
                                   type: object
                               title: account_owner_specs
@@ -25863,7 +27090,7 @@ paths:
                                     state:
                                       maxLength: 5000
                                       type: string
-                                  title: account_address_specs
+                                  title: address_specs
                                   type: object
                                 dob:
                                   properties:
@@ -25892,7 +27119,10 @@ paths:
                                   maxLength: 5000
                                   type: string
                                 verification:
-                                  properties: {}
+                                  properties:
+                                    document:
+                                      maxLength: 500
+                                      type: string
                                   title: account_person_verification_specs
                                   type: object
                               title: account_owner_specs
@@ -25918,7 +27148,7 @@ paths:
                             state:
                               maxLength: 5000
                               type: string
-                          title: account_address_specs
+                          title: address_specs
                           type: object
                         address_kana:
                           properties:
@@ -26043,7 +27273,7 @@ paths:
                             state:
                               maxLength: 5000
                               type: string
-                          title: account_address_specs
+                          title: address_specs
                           type: object
                         personal_address_kana:
                           properties:
@@ -26096,6 +27326,7 @@ paths:
                           title: japan_address_kanji_specs
                           type: object
                         personal_id_number:
+                          maxLength: 5000
                           type: string
                         phone_number:
                           maxLength: 5000
@@ -26110,7 +27341,10 @@ paths:
                           maxLength: 5000
                           type: string
                         verification:
-                          properties: {}
+                          properties:
+                            document:
+                              maxLength: 500
+                              type: string
                           title: account_person_verification_specs
                           type: object
                       title: account_legal_entity_specs
@@ -26174,8 +27408,6 @@ paths:
                         type: string
                       token_cryptogram_used:
                         type: boolean
-                    required:
-                    - pk_token
                     title: apple_pay_specs
                     type: object
                   - properties:
@@ -26315,10 +27547,15 @@ paths:
                     personal_id_number:
                       maxLength: 5000
                       type: string
-                  required:
-                  - personal_id_number
+                    ssn_last_4:
+                      maxLength: 5000
+                      type: string
+                    tax_id:
+                      maxLength: 5000
+                      type: string
                   title: pii_token_specs
                   type: object
+                  x-stripeBypassValidation: true
                 recipient:
                   maxLength: 5000
                   type: string
@@ -26568,7 +27805,10 @@ paths:
                     object in a structured format.
                   type: object
                 source:
-                  description: The source to transfer funds from.
+                  description: The ID of a source or a bank account to transfer funds
+                    from. If no source is supplied, the default bank account for the
+                    specified currency will be used.
+                  maxLength: 5000
                   type: string
                 statement_descriptor:
                   description: Extra information about a top-up for the source's bank
@@ -26578,7 +27818,6 @@ paths:
               required:
               - amount
               - currency
-              - description
               - statement_descriptor
               type: object
         required: true
@@ -26721,6 +27960,7 @@ paths:
         name: destination
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: A cursor for use in pagination. `ending_before` is an object
@@ -26732,6 +27972,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -26762,6 +28003,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Only return transfers with the specified transfer group.
@@ -26905,6 +28147,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -26923,6 +28166,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: A limit on the number of objects to be returned. Limit can range
@@ -26942,6 +28186,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       responses:
@@ -27018,7 +28263,8 @@ paths:
                   description: A positive integer in %s representing how much of this
                     transfer to reverse. Can only reverse up to the unreversed amount
                     remaining of the transfer. Partial transfer reversals are only
-                    allowed for transfers to Stripe Accounts.
+                    allowed for transfers to Stripe Accounts. Defaults to the entire
+                    transfer amount.
                   type: integer
                 description:
                   description: An arbitrary string which you can attach to a reversal
@@ -27086,6 +28332,7 @@ paths:
         name: transfer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -27112,6 +28359,7 @@ paths:
         name: transfer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -27178,6 +28426,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: ID of the transfer reversed.
@@ -27185,6 +28434,7 @@ paths:
         name: transfer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       responses:
@@ -27211,6 +28461,7 @@ paths:
         name: id
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       - description: ID of the transfer reversed.
@@ -27218,6 +28469,7 @@ paths:
         name: transfer
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -27261,5 +28513,8 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
+security:
+- basicAuth: []
+- bearerAuth: []
 servers:
 - url: https://api.stripe.com/
