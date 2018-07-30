@@ -2007,11 +2007,6 @@ components:
             for this customer for the duration of the coupon. For example, a coupon
             with percent_off of 50 will make a %s100 invoice %s50 instead.
           nullable: true
-          type: integer
-        percent_off_precise:
-          description: A percise version of `percent_off` that shows floating point
-            values.
-          nullable: true
           type: number
         redeem_by:
           description: Date after which the coupon can no longer be redeemed.
@@ -7485,7 +7480,8 @@ components:
         parameters:
           "$ref": "#/components/schemas/financial_reporting_finance_report_run_run_parameters"
         report_type:
-          description: The ID of the Report Type to run, such as `"activity.summary.1"`.
+          description: The [ID of the Report Type to run](https://stripe.com/docs/dashboard/statements/api#available-report-types),
+            such as `"activity.summary.1"`.
           maxLength: 5000
           type: string
         result:
@@ -7534,7 +7530,8 @@ components:
           format: unix-time
           type: integer
         id:
-          description: Unique identifier for the object.
+          description: The [ID of the Report Type](https://stripe.com/docs/dashboard/statements/api#available-report-types),
+            such as `"activity.summary.1"`.
           maxLength: 5000
           type: string
         name:
@@ -7602,6 +7599,75 @@ components:
       title: ReserveTransaction
       type: object
       x-expandableFields: []
+    scheduled_query_run:
+      properties:
+        created:
+          description: Time at which the object was created. Measured in seconds since
+            the Unix epoch.
+          format: unix-time
+          type: integer
+        data_load_time:
+          description: When the query was run, Sigma contained a snapshot of your
+            Stripe data at this time.
+          format: unix-time
+          type: integer
+        error:
+          description: If the query run was not succeesful, this field contains information
+            about the failure.
+          nullable: true
+          type: object
+        file:
+          anyOf:
+          - "$ref": "#/components/schemas/file"
+          description: The file object representing the results of the query.
+          nullable: true
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        livemode:
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+          type: boolean
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - scheduled_query_run
+          type: string
+        result_available_until:
+          description: Time at which the result expires and is no longer available
+            for download.
+          format: unix-time
+          type: integer
+        sql:
+          description: SQL for the query.
+          maxLength: 5000
+          type: string
+        status:
+          description: The query's execution status, which will be `completed` for
+            successful runs, and `canceled`, `failed`, or `timed_out` otherwise.
+          maxLength: 5000
+          type: string
+        title:
+          description: Title of the query.
+          maxLength: 5000
+          type: string
+      required:
+      - created
+      - data_load_time
+      - id
+      - livemode
+      - object
+      - result_available_until
+      - sql
+      - status
+      - title
+      title: ScheduledQueryRun
+      type: object
+      x-expandableFields:
+      - file
+      x-resourceId: scheduled_query_run
     shipping:
       properties:
         address:
@@ -10593,7 +10659,7 @@ info:
     details.
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
-  version: '2018-05-21'
+  version: '2018-07-27'
 openapi: 3.0.0
 paths:
   "/v1/3d_secure":
@@ -16954,11 +17020,10 @@ paths:
                   maxLength: 40
                   type: string
                 percent_off:
-                  description: A positive float larger than 0 and smaller or equal
-                    to 100 that represents the discount the coupon will apply (required
+                  description: A positive float larger than 0, and smaller or equal
+                    to 100, that represents the discount the coupon will apply (required
                     if `amount_off` is not passed).
-                  type: integer
-                  x-stripeBypassValidation: true
+                  type: number
                 redeem_by:
                   description: Unix timestamp specifying the last time at which the
                     coupon can be redeemed. After the redeem_by date, the coupon can
@@ -19160,9 +19225,6 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
-              source:
-                explode: true
-                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -19236,25 +19298,6 @@ paths:
                     the anchor period will be free (similar to a trial) and no proration
                     adjustments will be created.
                   type: boolean
-                source:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
-                  description: The source can either be a [Token](/docs/api#tokens)
-                    or a [Source](/docs/api#sources), as returned by [Elements](https://stripe.com/docs/elements),
-                    or a dictionary containing a user's credit card details (with
-                    the options shown below). You must provide a source if the customer
-                    does not already have a valid source attached, and you are subscribing
-                    the customer to be charged automatically for a plan that is not
-                    free. Passing `source` will create a new source object, make it
-                    the customer default source, and delete the old customer default
-                    if one exists. If you want to add an additional source, instead
-                    use the [card creation API](https://stripe.com/docs/api#create_card)
-                    to add the card and then the [customer update API](https://stripe.com/docs/api#update_customer)
-                    to set it as the default. Whenever you attach a card to a customer,
-                    Stripe will automatically validate the card.
-                  x-stripeBypassValidation: true
                 tax_percent:
                   description: A non-negative decimal (with at most four decimal places)
                     between 0 and 100. This represents the percentage of the subscription
@@ -19441,9 +19484,6 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
-              source:
-                explode: true
-                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -19538,25 +19578,6 @@ paths:
                     to use for proration calculations.
                   format: unix-time
                   type: integer
-                source:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
-                  description: The source can either be a [Token](/docs/api#tokens)
-                    or a [Source](/docs/api#sources), as returned by [Elements](https://stripe.com/docs/elements),
-                    or a dictionary containing a user's credit card details (with
-                    the options shown below). You must provide a source if the customer
-                    does not already have a valid source attached, and you are subscribing
-                    the customer to be charged automatically for a plan that is not
-                    free. Passing `source` will create a new source object, make it
-                    the customer default source, and delete the old customer default
-                    if one exists. If you want to add an additional source, instead
-                    use the [card creation API](https://stripe.com/docs/api#create_card)
-                    to add the card and then the [customer update API](https://stripe.com/docs/api#update_customer)
-                    to set it as the default. Whenever you attach a card to a customer,
-                    Stripe will automatically validate the card.
-                  x-stripeBypassValidation: true
                 tax_percent:
                   description: A non-negative decimal (with at most four decimal places)
                     between 0 and 100. This represents the percentage of the subscription
@@ -20097,6 +20118,15 @@ paths:
             type: object
           - type: integer
         style: deepObject
+      - description: Filter events by whether all webhooks were successfully delivered.
+          If false, events which are still pending or have failed all delivery attempts
+          to a webhook endpoint will be returned.
+        in: query
+        name: delivery_success
+        required: false
+        schema:
+          type: boolean
+        style: form
       - description: A cursor for use in pagination. `ending_before` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, starting with `obj_bar`, your subsequent
@@ -28947,7 +28977,8 @@ paths:
                   title: run_parameter_specs
                   type: object
                 report_type:
-                  description: The ID of the Report Type to run, such as `"activity.summary.1"`.
+                  description: The [ID of the Report Type to run](https://stripe.com/docs/dashboard/statements/api#available-report-types),
+                    such as `"activity.summary.1"`.
                   type: string
               required:
               - report_type
@@ -29078,7 +29109,8 @@ paths:
             type: string
           type: array
         style: deepObject
-      - description: The ID of the Report Type to retrieve
+      - description: The [ID of the Report Type](https://stripe.com/docs/dashboard/statements/api#available-report-types)
+          to retrieve, such as `"activity.summary.1"`.
         in: path
         name: report_type
         required: true
@@ -29091,6 +29123,131 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/reporting_report_type"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/sigma/scheduled_query_runs":
+    get:
+      description: "<p>Returns a list of scheduled query runs.</p>"
+      operationId: AllScheduledQueryRuns
+      parameters:
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    items:
+                      "$ref": "#/components/schemas/scheduled_query_run"
+                    type: array
+                  has_more:
+                    description: True if this list has another page of items after
+                      this one that can be fetched.
+                    type: boolean
+                  object:
+                    description: String representing the object's type. Objects of
+                      the same type share the same value. Always has the value `list`.
+                    enum:
+                    - list
+                    type: string
+                  url:
+                    description: The URL where this list can be accessed.
+                    maxLength: 5000
+                    pattern: "^/v1/sigma/scheduled_query_runs"
+                    type: string
+                required:
+                - data
+                - has_more
+                - object
+                - url
+                type: object
+                x-expandableFields:
+                - data
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/sigma/scheduled_query_runs/{scheduled_query_run}":
+    get:
+      description: "<p>Retrieves the details of an scheduled query run.</p>"
+      operationId: RetrieveScheduledQueryRun
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - description: Unique identifier for the object.
+        in: path
+        name: scheduled_query_run
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/scheduled_query_run"
           description: Successful response.
         default:
           content:
@@ -30770,9 +30927,6 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
-              source:
-                explode: true
-                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -30850,25 +31004,6 @@ paths:
                     the anchor period will be free (similar to a trial) and no proration
                     adjustments will be created.
                   type: boolean
-                source:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
-                  description: The source can either be a [Token](/docs/api#tokens)
-                    or a [Source](/docs/api#sources), as returned by [Elements](https://stripe.com/docs/elements),
-                    or a dictionary containing a user's credit card details (with
-                    the options shown below). You must provide a source if the customer
-                    does not already have a valid source attached, and you are subscribing
-                    the customer to be charged automatically for a plan that is not
-                    free. Passing `source` will create a new source object, make it
-                    the customer default source, and delete the old customer default
-                    if one exists. If you want to add an additional source, instead
-                    use the [card creation API](https://stripe.com/docs/api#create_card)
-                    to add the card and then the [customer update API](https://stripe.com/docs/api#update_customer)
-                    to set it as the default. Whenever you attach a card to a customer,
-                    Stripe will automatically validate the card.
-                  x-stripeBypassValidation: true
                 tax_percent:
                   description: A non-negative decimal (with at most four decimal places)
                     between 0 and 100. This represents the percentage of the subscription
@@ -31035,9 +31170,6 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
-              source:
-                explode: true
-                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -31132,25 +31264,6 @@ paths:
                     to use for proration calculations.
                   format: unix-time
                   type: integer
-                source:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
-                  description: The source can either be a [Token](/docs/api#tokens)
-                    or a [Source](/docs/api#sources), as returned by [Elements](https://stripe.com/docs/elements),
-                    or a dictionary containing a user's credit card details (with
-                    the options shown below). You must provide a source if the customer
-                    does not already have a valid source attached, and you are subscribing
-                    the customer to be charged automatically for a plan that is not
-                    free. Passing `source` will create a new source object, make it
-                    the customer default source, and delete the old customer default
-                    if one exists. If you want to add an additional source, instead
-                    use the [card creation API](https://stripe.com/docs/api#create_card)
-                    to add the card and then the [customer update API](https://stripe.com/docs/api#update_customer)
-                    to set it as the default. Whenever you attach a card to a customer,
-                    Stripe will automatically validate the card.
-                  x-stripeBypassValidation: true
                 tax_percent:
                   description: A non-negative decimal (with at most four decimal places)
                     between 0 and 100. This represents the percentage of the subscription
