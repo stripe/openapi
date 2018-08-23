@@ -1507,10 +1507,6 @@ definitions:
           This balance is only taken into account for recurring billing purposes (i.e.,
           subscriptions, invoices, invoice items).
         type: integer
-      business_vat_id:
-        description: The customer's tax information. Appears on invoices emailed to
-          this customer.
-        type: string
       created:
         description: Time at which the object was created. Measured in seconds since
           the Unix epoch.
@@ -3376,7 +3372,7 @@ definitions:
           `chip`, `contactless`, or `online`.
         type: string
       authorized_amount:
-        description: The amount that has been authorized. This will be 0 when the
+        description: The amount that has been authorized. This will be `0` when the
           object is created, and increase after it has been approved.
         type: integer
       authorized_currency:
@@ -5133,15 +5129,13 @@ definitions:
     x-resourceId: plan
   plan_tier:
     properties:
-      amount:
+      unit_amount:
         description: Per unit price for units relevant to the tier.
         type: integer
       up_to:
         description: Up to and including to this quantity will be contained in the
           tier.
         type: integer
-    required:
-    - amount
     title: PlanTier
     type: object
     x-expandableFields: []
@@ -6879,6 +6873,10 @@ definitions:
       source:
         description: The ID of the source this transaction is attached to.
         type: string
+      status:
+        description: The status of the transaction, one of `succeeded`, `pending`,
+          or `failed`.
+        type: string
       three_d_secure:
         properties:
           address_line1_check:
@@ -6948,6 +6946,7 @@ definitions:
     - livemode
     - object
     - source
+    - status
     - type
     title: SourceTransaction
     type: object
@@ -7720,7 +7719,7 @@ info:
     details.
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
-  version: '2018-07-27'
+  version: '2018-08-23'
 paths:
   "/v1/3d_secure":
     post:
@@ -12396,10 +12395,6 @@ paths:
                 amount represents a credit that decreases the amount due on an invoice;
                 a positive amount increases the amount due on an invoice.
               type: integer
-            business_vat_id:
-              description: The customer's tax information. Appears on invoices emailed
-                to this customer.
-              type: string
             coupon:
               type: string
             customer:
@@ -12556,10 +12551,6 @@ paths:
             bank_account:
               description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
                 or a dictionary containing a user's bank account details.
-            business_vat_id:
-              description: The customer's tax information. Appears on invoices emailed
-                to this customer.
-              type: string
             card:
               description: A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js).
             coupon:
@@ -13850,17 +13841,6 @@ paths:
         name: subscription_exposed_id
         required: true
         type: string
-      - description: Body parameters for the request.
-        in: body
-        name: payload
-        required: false
-        schema:
-          properties:
-            at_period_end:
-              description: A flag that, if set to `true`, will delay the subscription's
-                cancellation until the end of the current period.
-              type: boolean
-          type: object
       responses:
         '200':
           description: Successful response.
@@ -16021,7 +16001,9 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuing/authorizations":
     get:
-      description: "<p>Returns a list of authorizations</p>"
+      description: "<p>Returns a list of Issuing <code>Authorization</code> objects.
+        The objects are sorted in descending order by creation date, with the most
+        recently created object appearing first.</p>"
       operationId: IssuingAuthorizationAll
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -16069,7 +16051,7 @@ paths:
         name: starting_after
         required: false
         type: string
-      - description: Only return auths that have the given status. One of pending,
+      - description: Only return authorizations with the given status. One of pending,
           closed, or reversed.
         in: query
         name: status
@@ -16111,7 +16093,7 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuing/authorizations/{authorization}":
     get:
-      description: "<p>Retrieves an authorization object.</p>"
+      description: "<p>Retrieves an Issuing <code>Authorization</code> object.</p>"
       operationId: IssuingAuthorizationRetrieve
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -16119,7 +16101,7 @@ paths:
         name: expand
         required: false
         type: array
-      - description: The ID of the desired authorization.
+      - description: The ID of the authorization to retrieve.
         in: path
         name: authorization
         required: true
@@ -16134,10 +16116,12 @@ paths:
           schema:
             "$ref": "#/definitions/error"
     post:
-      description: "<p>Update the metadata of an issuing authorization</p>"
+      description: "<p>Updates the specified Issuing <code>Authorization</code> object
+        by setting the values of the parameters passed. Any parameters not provided
+        will be left unchanged.</p>"
       operationId: IssuingAuthorizationUpdate
       parameters:
-      - description: The identifier of the issuing authorization to be retrieved.
+      - description: The identifier of the authorization to update.
         in: path
         name: authorization
         required: true
@@ -16167,10 +16151,10 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuing/authorizations/{authorization}/approve":
     post:
-      description: "<p>Approve a pending issuing authorization</p>"
+      description: "<p>Approves a pending Issuing <code>Authorization</code> object.</p>"
       operationId: IssuingAuthorizationApprove
       parameters:
-      - description: The identifier of the issuing authorization to approve.
+      - description: The identifier of the authorization to approve.
         in: path
         name: authorization
         required: true
@@ -16203,7 +16187,7 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuing/authorizations/{authorization}/decline":
     post:
-      description: "<p>Decline a pending issuing authorization</p>"
+      description: "<p>Declines a pending Issuing <code>Authorization</code> object.</p>"
       operationId: IssuingAuthorizationDecline
       parameters:
       - description: The identifier of the issuing authorization to decline.
@@ -16234,8 +16218,9 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuing/cardholders":
     get:
-      description: "<p>Returns a list of your cardholders sorted by creation date,
-        with the most recent cardholders appearing first</p>"
+      description: "<p>Returns a list of Issuing <code>Cardholder</code> objects.
+        The objects are sorted in descending order by creation date, with the most
+        recently created object appearing first.</p>"
       operationId: IssuingCardholderAll
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -16249,7 +16234,7 @@ paths:
         name: created
         required: false
         type: integer
-      - description: Only return cardholders that have the given email.
+      - description: Only return cardholders that have the given email address.
         in: query
         name: email
         required: false
@@ -16330,7 +16315,8 @@ paths:
           schema:
             "$ref": "#/definitions/error"
     post:
-      description: "<p>Create an issuing cardholder</p>"
+      description: "<p>Creates a new Issuing <code>Cardholder</code> object that can
+        be issued cards.</p>"
       operationId: IssuingCardholderCreate
       parameters:
       - description: Body parameters for the request.
@@ -16396,7 +16382,8 @@ paths:
               - inactive
               type: string
             type:
-              description: Specifies if the card is held by a human or not.
+              description: The type of cardholder. Possible values are `individual`
+                or `business_entity`.
               enum:
               - business_entity
               - individual
@@ -16417,8 +16404,7 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuing/cardholders/{cardholder}":
     get:
-      description: "<p>Retrieves the details of an existing cardholder. You need only
-        supply the unique identifier that was returned upon cardholder creation.</p>"
+      description: "<p>Retrieves an Issuing <code>Cardholder</code> object.</p>"
       operationId: IssuingCardholderRetrieve
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -16441,10 +16427,13 @@ paths:
           schema:
             "$ref": "#/definitions/error"
     post:
-      description: "<p>Update the details of an existing cardholder</p>"
+      description: "<p>Updates the specified Issuing <code>Cardholder</code> object
+        by setting the values of the parameters passed. Any parameters not provided
+        will be left unchanged.</p>"
       operationId: IssuingCardholderUpdate
       parameters:
-      - in: path
+      - description: The ID of the cardholder to update.
+        in: path
         name: cardholder
         required: true
         type: string
@@ -16500,8 +16489,7 @@ paths:
                 to `metadata`.
               type: object
             name:
-              description: The cardholder's name. This will be printed on cards issued
-                to them.
+              description: The name of the cardholder, printed on the card.
               type: string
             phone_number:
               description: The cardholder's phone number.
@@ -16525,8 +16513,9 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuing/cards":
     get:
-      description: "<p>Returns a list of your issued cards. The cards are returned
-        sorted by creation date, with the most recent cards appearing first</p>"
+      description: "<p>Returns a list of Issuing <code>Card</code> objects. The objects
+        are sorted in descending order by creation date, with the most recently created
+        object appearing first.</p>"
       operationId: IssuingCardAll
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -16564,7 +16553,7 @@ paths:
         name: exp_year
         required: false
         type: integer
-      - description: Only return cards that have the given last4.
+      - description: Only return cards that have the given last four digits.
         in: query
         name: last4
         required: false
@@ -16581,7 +16570,7 @@ paths:
         required: false
         type: string
       - description: Only return cards whose full card number matches that of this
-          card source id
+          card source ID.
         in: query
         name: source
         required: false
@@ -16595,14 +16584,14 @@ paths:
         name: starting_after
         required: false
         type: string
-      - description: Only return cards that have the given status. One of active,
-          inactive, or canceled.
+      - description: Only return cards that have the given status. One of `active`,
+          `inactive`, or `canceled`.
         in: query
         name: status
         required: false
         type: string
-      - description: Only return cards that have the given type. One of virtual or
-          physical.
+      - description: Only return cards that have the given type. One of `virtual`
+          or `physical`.
         in: query
         name: type
         required: false
@@ -16642,7 +16631,7 @@ paths:
           schema:
             "$ref": "#/definitions/error"
     post:
-      description: "<p>Create an issuing card</p>"
+      description: "<p>Creates an Issuing <code>Card</code> object.</p>"
       operationId: IssuingCardCreate
       parameters:
       - description: Body parameters for the request.
@@ -16652,7 +16641,9 @@ paths:
         schema:
           properties:
             authorization_controls:
-              description: A set of rules to automatically decline certain authorizations.
+              description: Spending rules that give you some control over how your
+                cards can be used. Refer to our [authorizations](/docs/issuing/authorizations)
+                documentation for more details.
               properties:
                 allowed_categories:
                   items:
@@ -17292,6 +17283,8 @@ paths:
               - inactive
               type: string
             type:
+              description: The type of card to issue. Possible values are `physical`
+                or `virtual`.
               enum:
               - physical
               - virtual
@@ -17311,8 +17304,7 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuing/cards/{card}":
     get:
-      description: "<p>Retrieves the details of an existing card. You need only supply
-        the unique card identifier that was returned upon card creation.</p>"
+      description: "<p>Retrieves an Issuing <code>Card</code> object.</p>"
       operationId: IssuingCardRetrieve
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -17335,10 +17327,12 @@ paths:
           schema:
             "$ref": "#/definitions/error"
     post:
-      description: "<p>Update the details of an existing issued card</p>"
+      description: "<p>Updates the specified Issuing <code>Card</code> object by setting
+        the values of the parameters passed. Any parameters not provided will be left
+        unchanged.</p>"
       operationId: IssuingCardUpdate
       parameters:
-      - description: The identifier of the issued card to be retrieved.
+      - description: The identifier of the issued card to update.
         in: path
         name: card
         required: true
@@ -17350,7 +17344,9 @@ paths:
         schema:
           properties:
             authorization_controls:
-              description: A set of rules to automatically decline certain authorizations.
+              description: Spending rules that give you some control over how your
+                cards can be used. Refer to our [authorizations](/docs/issuing/authorizations)
+                documentation for more details.
               properties:
                 allowed_categories:
                   items:
@@ -17964,8 +17960,9 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuing/cards/{card}/details":
     get:
-      description: "<p>(Virtual cards only) Retrieves the sensitive details of an
-        existing card.</p>"
+      description: <p>For virtual cards only. Retrieves an Issuing <code>Card_details</code>
+        object that contains <a href="/docs/issuing/cards/management#virtual-card-info">the
+        sensitive details</a> of a virtual card.</p>
       operationId: IssuingCardDetailsRetrieve
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -17973,7 +17970,7 @@ paths:
         name: expand
         required: false
         type: array
-      - description: The identifier of the card to be retrieved.
+      - description: The identifier of the virtual card to be retrieved.
         in: path
         name: card
         required: true
@@ -17989,7 +17986,9 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuing/disputes":
     get:
-      description: "<p>Returns a list of disputes</p>"
+      description: "<p>Returns a list of Issuing <code>Dispute</code> objects. The
+        objects are sorted in descending order by creation date, with the most recently
+        created object appearing first.</p>"
       operationId: IssuingDisputeAll
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -18068,7 +18067,7 @@ paths:
           schema:
             "$ref": "#/definitions/error"
     post:
-      description: "<p>Creates a dispute object.</p>"
+      description: "<p>Creates an Issuing <code>Dispute</code> object.</p>"
       operationId: IssuingDisputeCreate
       parameters:
       - description: Body parameters for the request.
@@ -18145,7 +18144,7 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuing/disputes/{dispute}":
     get:
-      description: "<p>Retrieves a dispute object.</p>"
+      description: "<p>Retrieves an Issuing <code>Dispute</code> object.</p>"
       operationId: IssuingDisputeRetrieve
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -18153,7 +18152,7 @@ paths:
         name: expand
         required: false
         type: array
-      - description: The ID of the desired dispute.
+      - description: The ID of the dispute to retrieve.
         in: path
         name: dispute
         required: true
@@ -18168,10 +18167,13 @@ paths:
           schema:
             "$ref": "#/definitions/error"
     post:
-      description: "<p>Update the metadata of an existing dispute</p>"
+      description: "<p>Updates the specified Issuing <code>Dispute</code> object by
+        setting the values of the parameters passed. Any parameters not provided will
+        be left unchanged.</p>"
       operationId: IssuingDisputeUpdate
       parameters:
-      - in: path
+      - description: The ID of the dispute to update.
+        in: path
         name: dispute
         required: true
         type: string
@@ -18205,7 +18207,9 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuing/transactions":
     get:
-      description: "<p>Returns a list of issuing transactions</p>"
+      description: "<p>Returns a list of Issuing <code>Transaction</code> objects.
+        The objects are sorted in descending order by creation date, with the most
+        recently created object appearing first.</p>"
       operationId: IssuingTransactionAll
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -18289,7 +18293,7 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuing/transactions/{transaction}":
     get:
-      description: "<p>Retrieves an issuing transaction object.</p>"
+      description: "<p>Retrieves an Issuing <code>Transaction</code> object.</p>"
       operationId: IssuingTransactionRetrieve
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -18297,7 +18301,7 @@ paths:
         name: expand
         required: false
         type: array
-      - description: The ID of the desired issuing transaction.
+      - description: The ID of the transaction to retrieve.
         in: path
         name: transaction
         required: true
@@ -18312,10 +18316,12 @@ paths:
           schema:
             "$ref": "#/definitions/error"
     post:
-      description: "<p>Update the metadata of an issuing transaction</p>"
+      description: "<p>Updates the specified Issuing <code>Transaction</code> object
+        by setting the values of the parameters passed. Any parameters not provided
+        will be left unchanged.</p>"
       operationId: IssuingTransactionUpdate
       parameters:
-      - description: The identifier of the issuing transaction to be retrieved.
+      - description: The identifier of the transaction to update.
         in: path
         name: transaction
         required: true
@@ -20040,11 +20046,10 @@ paths:
                 for `billing_scheme`. Either `amount` or `tiers` is required.
               items:
                 properties:
-                  amount:
+                  unit_amount:
                     type: integer
                   up_to: {}
                 required:
-                - amount
                 - up_to
                 title: plan_tier_param
                 type: object
@@ -21842,6 +21847,8 @@ paths:
                 of `RunClub 5K race ticket.` While many payment types will display
                 this information, some may not display it at all.
               type: string
+            three_d_secure_2_eap:
+              type: object
             token:
               description: An optional token used to create the source. When passed,
                 token properties will override source parameters.
@@ -22780,17 +22787,6 @@ paths:
         name: subscription_exposed_id
         required: true
         type: string
-      - description: Body parameters for the request.
-        in: body
-        name: payload
-        required: false
-        schema:
-          properties:
-            at_period_end:
-              description: A flag that, if set to `true`, will delay the subscription's
-                cancellation until the end of the current period.
-              type: boolean
-          type: object
       responses:
         '200':
           description: Successful response.
@@ -23623,9 +23619,10 @@ paths:
                 in a structured format.
               type: object
             source:
-              description: The ID of a source or a bank account to transfer funds
-                from. If no source is supplied, the default bank account for the specified
-                currency will be used.
+              description: The ID of a source to transfer funds from. For most users,
+                this should be left unspecified which will use the bank account that
+                was set up in the dashboard for the specified currency. In test mode,
+                this can be a test bank token (see [Testing Top-ups](/docs/connect/testing#testing-top-ups)).
               type: string
             statement_descriptor:
               description: Extra information about a top-up for the source's bank
@@ -23634,7 +23631,6 @@ paths:
           required:
           - amount
           - currency
-          - statement_descriptor
           type: object
       responses:
         '200':
