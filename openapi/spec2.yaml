@@ -29,7 +29,7 @@ definitions:
         description: Whether the account can create live charges
         type: boolean
       country:
-        description: The country of the account
+        description: The account's country.
         type: string
       created:
         description: Time at which the object was created. Measured in seconds since
@@ -43,7 +43,9 @@ definitions:
       decline_charge_on:
         "$ref": "#/definitions/account_decline_charge_on"
       default_currency:
-        description: The currency this account has chosen to use as the default
+        description: Three-letter ISO currency code representing the default currency
+          for the account. This must be a currency that [Stripe supports in the account's
+          country](https://stripe.com/docs/payouts).
         type: string
       details_submitted:
         description: Whether account details have been submitted. Standard accounts
@@ -124,6 +126,8 @@ definitions:
         description: The default text that appears on credit card statements when
           a charge is made [directly on the account](/docs/connect/direct-charges)
         type: string
+      support_address:
+        "$ref": "#/definitions/address"
       support_email:
         description: A publicly shareable support email address for the business
         type: string
@@ -152,20 +156,21 @@ definitions:
     - external_accounts
     - legal_entity
     - payout_schedule
+    - support_address
     - tos_acceptance
     - verification
     x-resourceId: account
   account_decline_charge_on:
     properties:
       avs_failure:
-        description: Whether Stripe should automatically decline charges with an incorrect
+        description: Whether Stripe automatically declines charges with an incorrect
           ZIP or postal code. This setting only applies when a ZIP or postal code
-          is provided and the bank specifically marks it as failed.
+          is provided and they fail bank verification.
         type: boolean
       cvc_failure:
-        description: Whether Stripe should automatically decline charges with an incorrect
-          CVC. This setting only applies when a CVC is provided and the bank specifically
-          marks it as failed.
+        description: Whether Stripe automatically declines charges with an incorrect
+          CVC. This setting only applies when a CVC is provided and it fails bank
+          verification.
         type: boolean
     required:
     - avs_failure
@@ -1898,6 +1903,30 @@ definitions:
     type: object
     x-expandableFields: []
     x-resourceId: deleted_discount
+  deleted_invoice:
+    properties:
+      deleted:
+        description: Always true for a deleted object
+        enum:
+        - true
+        type: boolean
+      id:
+        description: Unique identifier for the object.
+        type: string
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - invoice
+        type: string
+    required:
+    - deleted
+    - id
+    - object
+    title: DeletedInvoice
+    type: object
+    x-expandableFields: []
+    x-resourceId: deleted_invoice
   deleted_object:
     properties:
       deleted:
@@ -1963,6 +1992,30 @@ definitions:
     type: object
     x-expandableFields: []
     x-resourceId: deleted_product
+  deleted_recipient:
+    properties:
+      deleted:
+        description: Always true for a deleted object
+        enum:
+        - true
+        type: boolean
+      id:
+        description: Unique identifier for the object.
+        type: string
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - recipient
+        type: string
+    required:
+    - deleted
+    - id
+    - object
+    title: DeletedTransferRecipient
+    type: object
+    x-expandableFields: []
+    x-resourceId: deleted_recipient
   deleted_sku:
     properties:
       deleted:
@@ -2035,30 +2088,6 @@ definitions:
     type: object
     x-expandableFields: []
     x-resourceId: deleted_tax_rate_template
-  deleted_transfer_recipient:
-    properties:
-      deleted:
-        description: Always true for a deleted object
-        enum:
-        - true
-        type: boolean
-      id:
-        description: Unique identifier for the object.
-        type: string
-      object:
-        description: String representing the object's type. Objects of the same type
-          share the same value.
-        enum:
-        - recipient
-        type: string
-    required:
-    - deleted
-    - id
-    - object
-    title: DeletedTransferRecipient
-    type: object
-    x-expandableFields: []
-    x-resourceId: deleted_transfer_recipient
   delivery_estimate:
     properties:
       date:
@@ -2905,7 +2934,7 @@ definitions:
       auto_advance:
         description: When set to false the Invoice will not attempt to advance itself
           in collecting payment, so won't send emails, run smart dunning, or automatically
-          issue a draft invoice.
+          finalize a draft invoice.
         type: boolean
       billing:
         description: Either `charge_automatically`, or `send_invoice`. When charging
@@ -2926,8 +2955,10 @@ definitions:
           editor). The `upcoming` value is reserved for simulated invoices per the
           upcoming invoice endpoint.'
         enum:
+        - automatic_pending_invoice_item_invoice
         - manual
         - subscription
+        - subscription_create
         - subscription_cycle
         - subscription_threshold
         - subscription_update
@@ -2969,10 +3000,10 @@ definitions:
           will be `null` for invoices where `billing=charge_automatically`.
         type: integer
       ending_balance:
-        description: Ending customer balance after the invoice is frozen. Invoices
-          are frozen approximately an hour after successful webhook delivery or when
-          payment collection is attempted for the invoice. If the invoice has not
-          been frozen yet, this will be null.
+        description: Ending customer balance after the invoice is finalized. Invoices
+          are finalized approximately an hour after successful webhook delivery or
+          when payment collection is attempted for the invoice. If the invoice has
+          not been finalized yet, this will be null.
         type: integer
       forgiven:
         description: Whether the invoice has been forgiven. Forgiving an invoice instructs
@@ -2981,15 +3012,15 @@ definitions:
         type: boolean
       hosted_invoice_url:
         description: The URL for the hosted invoice page, which allows customers to
-          view and pay an invoice. If the invoice has not been frozen yet, this will
-          be null.
+          view and pay an invoice. If the invoice has not been finalized yet, this
+          will be null.
         type: string
       id:
         description: Unique identifier for the object.
         type: string
       invoice_pdf:
         description: The link to download the PDF for the invoice. If the invoice
-          has not been frozen yet, this will be null.
+          has not been finalized yet, this will be null.
         type: string
       lines:
         description: 'The individual line items that make up the invoice. `lines`
@@ -3064,8 +3095,9 @@ definitions:
           sent for this invoice.
         type: string
       starting_balance:
-        description: Starting customer balance before the invoice is frozen. If the
-          invoice has not been frozen yet, this will be the current customer balance.
+        description: Starting customer balance before the invoice is finalized. If
+          the invoice has not been finalized yet, this will be the current customer
+          balance.
         type: integer
       statement_descriptor:
         description: Extra information about an invoice for the customer's credit
@@ -3564,7 +3596,7 @@ definitions:
         description: The cardholder's phone number.
         type: string
       status:
-        description: One of `active` or `inactive`.
+        description: One of `active`, `inactive`, or `pending`.
         type: string
       type:
         description: One of `individual` or `business_entity`.
@@ -3869,7 +3901,7 @@ definitions:
         type: string
       status:
         description: The delivery status of the card. One of `pending`, `shipped`,
-          `delivered`, `returned`, or `failure`.
+          `delivered`, `returned`, `failure`, or `canceled`.
         type: string
       tracking_number:
         description: The tracking number for a physical product, obtained from the
@@ -3968,11 +4000,10 @@ definitions:
         description: The Kanji variation of the legal name of the company (Japan only).
         type: string
       business_tax_id_provided:
-        description: Whether the business ID number of the legal entity has been provided.
+        description: Whether the business ID number of the legal entity was provided.
         type: boolean
       business_vat_id_provided:
-        description: Whether the business VAT number of the legal entity has been
-          provided.
+        description: Whether the business VAT number of the legal entity was provided.
         type: boolean
       dob:
         "$ref": "#/definitions/legal_entity_dob"
@@ -4013,7 +4044,7 @@ definitions:
         "$ref": "#/definitions/legal_entity_japan_address"
       personal_id_number_provided:
         description: Whether the personal ID number of the individual responsible
-          for the account has been provided.
+          for the account was provided.
         type: boolean
       phone_number:
         description: The phone number of the company, used for verification.
@@ -4060,8 +4091,7 @@ definitions:
         description: The maiden name of this additional owner.
         type: string
       personal_id_number_provided:
-        description: Whether the personal ID number of this additional owner has been
-          provided.
+        description: Whether the personal ID number of this additional owner was provided.
         type: boolean
       verification:
         "$ref": "#/definitions/legal_entity_verification"
@@ -4208,7 +4238,8 @@ definitions:
       metadata:
         description: Set of key-value pairs that you can attach to an object. This
           can be useful for storing additional information about the object in a structured
-          format.
+          format. Note that for line items with `type=subscription` this will reflect
+          the metadata of the subscription that caused the line item to be created.
         type: object
       object:
         description: String representing the object's type. Objects of the same type
@@ -4661,6 +4692,10 @@ definitions:
         description: Populated when `status` is `canceled`, this is the time at which
           the PaymentIntent was canceled. Measured in seconds since the Unix epoch.
         type: integer
+      cancellation_reason:
+        description: User-given reason for cancellation of this PaymentIntent, one
+          of `duplicate`, `fraudulent`, or `requested_by_customer`.
+        type: string
       capture_method:
         description: Capture method of this PaymentIntent, one of `automatic` or `manual`.
         type: string
@@ -4809,12 +4844,18 @@ definitions:
     x-resourceId: payment_intent
   payment_intent_next_source_action:
     properties:
+      authorize_with_url:
+        description: Next source action data for type=authorize_with_url
+        type: object
+      display_ach_credit_transfer_receiver:
+        description: Next source action data for type=display_ach_credit_transfer_receiver
+        type: object
       type:
-        description: Type of next source action to perform, one of `authorize_with_url`.
+        description: Type of next source action to perform, one of `authorize_with_url`
+          or `display_ach_credit_transfer_receiver`.
         type: string
       value:
-        description: Type-specific next source action data.
-        type: object
+        type: string
     required:
     - type
     - value
@@ -4922,6 +4963,9 @@ definitions:
         type: string
       type:
         description: Can be `bank_account` or `card`.
+        enum:
+        - bank_account
+        - card
         type: string
     required:
     - amount
@@ -5541,6 +5585,13 @@ definitions:
         description: This is the transaction number that appears on email receipts
           sent for this refund.
         type: string
+      source_transfer_reversal:
+        description: The transfer reversal that is associated with the refund, if
+          there is one.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/transfer_reversal"
       status:
         description: Status of the refund. For credit card refunds, this can be `succeeded`
           or `failed`. For other types of refunds, it can be `pending`, `succeeded`,
@@ -5560,6 +5611,7 @@ definitions:
     - balance_transaction
     - charge
     - failure_balance_transaction
+    - source_transfer_reversal
     x-resourceId: refund
   reporting.report_run:
     properties:
@@ -5958,6 +6010,14 @@ definitions:
           bank_name:
             type: string
           fingerprint:
+            type: string
+          refund_account_holder_name:
+            type: string
+          refund_account_holder_type:
+            type: string
+          refund_account_number:
+            type: string
+          refund_routing_number:
             type: string
           routing_number:
             type: string
@@ -6541,6 +6601,14 @@ definitions:
           bank_name:
             type: string
           fingerprint:
+            type: string
+          refund_account_holder_name:
+            type: string
+          refund_account_holder_type:
+            type: string
+          refund_account_number:
+            type: string
+          refund_routing_number:
             type: string
           routing_number:
             type: string
@@ -7225,6 +7293,9 @@ definitions:
     x-resourceId: terminal.location
   terminal.reader:
     properties:
+      device_sw_version:
+        description: The current software version of the reader.
+        type: string
       device_type:
         description: Type of reader, e.g., `verifone_P400` or `bbpos_chipper2x`.
         type: string
@@ -7618,6 +7689,9 @@ definitions:
           share the same value.
         enum:
         - transfer_reversal
+        type: string
+      source_refund:
+        description: ID of the refund responsible for the transfer reversal.
         type: string
       transfer:
         description: ID of the transfer that was reversed.
@@ -11230,8 +11304,6 @@ paths:
               type: boolean
             card:
               description: A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js).
-            card_program:
-              type: string
             cross_border_classification:
               enum:
               - export
@@ -15000,6 +15072,20 @@ paths:
                 of RFC 2388 (which defines file transfers for the `multipart/form-data`
                 protocol).
               type: string
+            file_link_data:
+              description: Optional parameters to automatically create a [file link](#file_links)
+                for the newly created file.
+              properties:
+                create:
+                  type: boolean
+                expires_at:
+                  type: integer
+                metadata:
+                  type: object
+              required:
+              - create
+              title: file_link_creation_params
+              type: object
             purpose:
               description: The purpose of the uploaded file. Possible values are `business_logo`,
                 `customer_signature`, `dispute_evidence`, `identity_document`, `pci_document`,
@@ -15788,6 +15874,26 @@ paths:
           schema:
             "$ref": "#/definitions/error"
   "/v1/invoices/{invoice}":
+    delete:
+      description: <p>Permanently deletes a draft invoice. This cannot be undone.
+        Attempts to delete invoices that are no longer in a draft state will fail;
+        once an invoice has been finalized, it must be <a href="#void_invoice">voided</a>.</p>
+      operationId: DeleteInvoice
+      parameters:
+      - description: The identifier of the invoice to be deleted.
+        in: path
+        name: invoice
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/deleted_invoice"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
     get:
       description: "<p>Retrieves the invoice with the given ID.</p>"
       operationId: RetrieveInvoice
@@ -15862,11 +15968,6 @@ paths:
               type: boolean
             metadata:
               type: object
-            paid:
-              description: Boolean representing whether an invoice is paid or not.
-                To mark invoice as paid, pass true. Only applies to invoices where
-                `billing=send_invoice`.
-              type: boolean
             statement_descriptor:
               description: Extra information about a charge for the customer's credit
                 card statement. It must contain at least one letter. If not specified
@@ -15880,6 +15981,39 @@ paths:
                 string. The tax rate of an attempted, paid or forgiven invoice cannot
                 be changed.
               type: number
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/invoice"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/invoices/{invoice}/finalize":
+    post:
+      description: "<p>Stripe automatically finalizes drafts before sending and attempting
+        payment on invoices. However, if you’d like to finalize a draft invoice manually,
+        you can do so using this method.</p>"
+      operationId: FinalizeInvoice
+      parameters:
+      - description: The invoice to be finalized, it must have `status=draft`.
+        in: path
+        name: invoice
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
           type: object
       responses:
         '200':
@@ -15970,6 +16104,39 @@ paths:
           description: Error response.
           schema:
             "$ref": "#/definitions/error"
+  "/v1/invoices/{invoice}/mark_uncollectible":
+    post:
+      description: "<p>Marking an invoice as uncollectible is useful for keeping track
+        of bad debts that can be written off for accounting purposes.</p>"
+      operationId: MarkUncollectibleInvoice
+      parameters:
+      - description: The identifier of the invoice to be marked as uncollectible.
+          The invoice must be non-draft.
+        in: path
+        name: invoice
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/invoice"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
   "/v1/invoices/{invoice}/pay":
     post:
       description: <p>Stripe automatically creates and then attempts to collect payment
@@ -15995,14 +16162,88 @@ paths:
                 type: string
               type: array
             forgive:
-              description: Determines if invoice should be forgiven if source has
-                insufficient funds to fully pay the invoice.
+              description: Determines if invoice should be forgiven if the source
+                used to pay the invoice has insufficient funds to fully pay the invoice.
+              type: boolean
+            paid_out_of_band:
+              description: Boolean representing whether an invoice is paid outside
+                of Stripe. This will result in no charge being made.
               type: boolean
             source:
               description: A payment source to be charged. The source must be the
                 ID of a source belonging to the customer associated with the invoice
                 being paid.
               type: string
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/invoice"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/invoices/{invoice}/send":
+    post:
+      description: <p>Stripe will automatically send invoices to customers according
+        to your <a href="https://dashboard.stripe.com/account/recurring">subscriptions
+        settings</a>. However, if you’d like to manually send an invoice to your customer
+        out of the normal schedule, you can do so. When sending invoices that have
+        already been paid, there will be no reference to the payment in the email.</p>
+      operationId: SendInvoice
+      parameters:
+      - description: The invoice you would like to send. The billing mode for this
+          invoice must be `send_invoice`.
+        in: path
+        name: invoice
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/invoice"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/invoices/{invoice}/void":
+    post:
+      description: <p>Mark a finalized invoice as void. This cannot be undone. Voiding
+        an invoice is similar to <a href="#delete_invoice">deletion</a>, however it
+        only applies to finalized invoices and maintains a papertrail where the invoice
+        can still be found.</p>
+      operationId: VoidInvoice
+      parameters:
+      - description: ID of invoice to void. It must be finalzied.
+        in: path
+        name: invoice
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
           type: object
       responses:
         '200':
@@ -16383,8 +16624,8 @@ paths:
         name: starting_after
         required: false
         type: string
-      - description: Only return cardholders that have the given status. One of `active`
-          or `inactive`.
+      - description: Only return cardholders that have the given status. One of `active`,
+          `inactive`, or `pending`.
         in: query
         name: status
         required: false
@@ -16603,9 +16844,6 @@ paths:
                 empty value to them. All keys can be unset by posting an empty value
                 to `metadata`.
               type: object
-            name:
-              description: The name of the cardholder, printed on the card.
-              type: string
             phone_number:
               description: The cardholder's phone number.
               type: string
@@ -18355,6 +18593,11 @@ paths:
         name: created
         required: false
         type: integer
+      - description: Only return transactions that originate from a given dispute.
+        in: query
+        name: dispute
+        required: false
+        type: string
       - description: A cursor for use in pagination. `ending_before` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, starting with `obj_bar`, your subsequent
@@ -18977,7 +19220,6 @@ paths:
                     type: string
                 title: return_order_item_specs
                 type: object
-              type: array
           type: object
       responses:
         '200':
@@ -19347,6 +19589,14 @@ paths:
         required: false
         schema:
           properties:
+            cancellation_reason:
+              description: Reason for canceling this PaymentIntent. If set, possible
+                values are `duplicate`, `fraudulent`, or `requested_by_customer`
+              enum:
+              - duplicate
+              - fraudulent
+              - requested_by_customer
+              type: string
             expand:
               description: Specifies which fields in the response should be expanded.
               items:
@@ -19456,11 +19706,11 @@ paths:
               - invoice_payer
               - manual_admin
               - manual_mrch
+              - paid_out_of_band
               - payment_receiver
               - unsent_invoice
               - update_card
               - update_customer
-              - update_invoice
               type: string
             receipt_email:
               description: Email address that the receipt for the resulting payment
@@ -19516,8 +19766,6 @@ paths:
               type: integer
             capture:
               type: boolean
-            card_program:
-              type: string
             cross_border_classification:
               enum:
               - export
@@ -20339,424 +20587,6 @@ paths:
           description: Error response.
           schema:
             "$ref": "#/definitions/error"
-  "/v1/point_of_sale/locations":
-    get:
-      description: "<p>Returns a list of <code>Location</code> objects.</p>"
-      operationId: PointOfSaleLocationAll
-      parameters:
-      - description: Specifies which fields in the response should be expanded.
-        in: query
-        name: expand
-        required: false
-        type: array
-      - description: A cursor for use in pagination. `ending_before` is an object
-          ID that defines your place in the list. For instance, if you make a list
-          request and receive 100 objects, starting with `obj_bar`, your subsequent
-          call can include `ending_before=obj_bar` in order to fetch the previous
-          page of the list.
-        in: query
-        name: ending_before
-        required: false
-        type: string
-      - description: A limit on the number of objects to be returned. Limit can range
-          between 1 and 100, and the default is 10.
-        in: query
-        name: limit
-        required: false
-        type: integer
-      - description: The identifier of the account associated with this location.
-        in: query
-        name: operator_account
-        required: false
-        type: string
-      - description: A cursor for use in pagination. `starting_after` is an object
-          ID that defines your place in the list. For instance, if you make a list
-          request and receive 100 objects, ending with `obj_foo`, your subsequent
-          call can include `starting_after=obj_foo` in order to fetch the next page
-          of the list.
-        in: query
-        name: starting_after
-        required: false
-        type: string
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            properties:
-              data:
-                items:
-                  "$ref": "#/definitions/terminal.location"
-                type: array
-              has_more:
-                description: True if this list has another page of items after this
-                  one that can be fetched.
-                type: boolean
-              object:
-                description: String representing the object's type. Objects of the
-                  same type share the same value. Always has the value `list`.
-                enum:
-                - list
-                type: string
-              url:
-                description: The URL where this list can be accessed.
-                type: string
-            required:
-            - data
-            - has_more
-            - object
-            - url
-            title: PointOfSaleLocationLocationList
-            type: object
-            x-expandableFields:
-            - data
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-    post:
-      description: "<p>Creates a new <code>Location</code> object.</p>"
-      operationId: PointOfSaleLocationCreate
-      parameters:
-      - description: Body parameters for the request.
-        in: body
-        name: payload
-        required: true
-        schema:
-          properties:
-            address:
-              description: The full address of the location.
-              properties:
-                city:
-                  type: string
-                country:
-                  type: string
-                line1:
-                  type: string
-                line2:
-                  type: string
-                postal_code:
-                  type: string
-                state:
-                  type: string
-              required:
-              - city
-              - country
-              - line1
-              - postal_code
-              title: required_address
-              type: object
-            display_name:
-              description: A name for the location.
-              type: string
-            expand:
-              description: Specifies which fields in the response should be expanded.
-              items:
-                type: string
-              type: array
-            operator_account:
-              description: If the request is being made from the platform account
-                but the reader is being operated by a connected account, indicate
-                the operating account.
-              type: string
-          required:
-          - address
-          - display_name
-          type: object
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/terminal.location"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-  "/v1/point_of_sale/locations/{location}":
-    get:
-      description: "<p>Retrieves a <code>Location</code> object.</p>"
-      operationId: PointOfSaleLocationRetrieve
-      parameters:
-      - description: Specifies which fields in the response should be expanded.
-        in: query
-        name: expand
-        required: false
-        type: array
-      - description: The identifier of the location to be retrieved.
-        in: path
-        name: location
-        required: true
-        type: string
-      - description: The identifier of the account associated with this location.
-        in: query
-        name: operator_account
-        required: false
-        type: string
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/terminal.location"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-    post:
-      description: "<p>Updates a <code>Location</code> object by setting the values
-        of the parameters passed. Any parameters not provided will be left unchanged.</p>"
-      operationId: PointOfSaleLocationUpdate
-      parameters:
-      - description: The identifier of the location to be updated.
-        in: path
-        name: location
-        required: true
-        type: string
-      - description: Body parameters for the request.
-        in: body
-        name: payload
-        required: false
-        schema:
-          properties:
-            address:
-              description: The full address of the location.
-              properties:
-                city:
-                  type: string
-                country:
-                  type: string
-                line1:
-                  type: string
-                line2:
-                  type: string
-                postal_code:
-                  type: string
-                state:
-                  type: string
-              required:
-              - city
-              - country
-              - line1
-              - postal_code
-              title: required_address
-              type: object
-            display_name:
-              description: A name for the location.
-              type: string
-            expand:
-              description: Specifies which fields in the response should be expanded.
-              items:
-                type: string
-              type: array
-            operator_account:
-              description: The identifier of the new account associated with this
-                location.
-              type: string
-          type: object
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/terminal.location"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-  "/v1/point_of_sale/readers":
-    get:
-      description: "<p>Returns a list of <code>Reader</code> objects.</p>"
-      operationId: PointOfSaleReaderAll
-      parameters:
-      - description: Specifies which fields in the response should be expanded.
-        in: query
-        name: expand
-        required: false
-        type: array
-      - description: A cursor for use in pagination. `ending_before` is an object
-          ID that defines your place in the list. For instance, if you make a list
-          request and receive 100 objects, starting with `obj_bar`, your subsequent
-          call can include `ending_before=obj_bar` in order to fetch the previous
-          page of the list.
-        in: query
-        name: ending_before
-        required: false
-        type: string
-      - description: A limit on the number of objects to be returned. Limit can range
-          between 1 and 100, and the default is 10.
-        in: query
-        name: limit
-        required: false
-        type: integer
-      - description: A location id to filter the response list to only readers at
-          the specific location
-        in: query
-        name: location
-        required: false
-        type: string
-      - description: The identifier of the account associated with this reader.
-        in: query
-        name: operator_account
-        required: false
-        type: string
-      - description: A cursor for use in pagination. `starting_after` is an object
-          ID that defines your place in the list. For instance, if you make a list
-          request and receive 100 objects, ending with `obj_foo`, your subsequent
-          call can include `starting_after=obj_foo` in order to fetch the next page
-          of the list.
-        in: query
-        name: starting_after
-        required: false
-        type: string
-      - description: A status filter to filter readers to only offline or online readers
-        in: query
-        name: status
-        required: false
-        type: string
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            properties:
-              data:
-                description: A list of readers
-                items:
-                  "$ref": "#/definitions/terminal.reader"
-                type: array
-              has_more:
-                description: True if this list has another page of items after this
-                  one that can be fetched.
-                type: boolean
-              object:
-                description: String representing the object's type. Objects of the
-                  same type share the same value. Always has the value `list`.
-                enum:
-                - list
-                type: string
-              url:
-                description: The URL where this list can be accessed.
-                type: string
-            required:
-            - data
-            - has_more
-            - object
-            - url
-            title: PointOfSaleReaderRetrieveReader
-            type: object
-            x-expandableFields:
-            - data
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-    post:
-      description: "<p>Creates a new <code>Reader</code> object.</p>"
-      operationId: PointOfSaleReaderCreate
-      parameters:
-      - description: Body parameters for the request.
-        in: body
-        name: payload
-        required: true
-        schema:
-          properties:
-            expand:
-              description: Specifies which fields in the response should be expanded.
-              items:
-                type: string
-              type: array
-            label:
-              description: Custom label given to the reader for easier identification.
-                If no label is specified, the registration code will be used.
-              type: string
-            location:
-              description: The location to assign the reader to. If no location is
-                specified, the reader will be assigned to the account's default location.
-              type: string
-            operator_account:
-              description: If the request is being made from the platform account
-                but the reader is being operated by a connected account, indicate
-                the operating account.
-              type: string
-            registration_code:
-              description: A code generated by the reader used for registering to
-                an account.
-              type: string
-          required:
-          - registration_code
-          type: object
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/terminal.reader"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-  "/v1/point_of_sale/readers/{reader}":
-    get:
-      description: "<p>Retrieves a <code>Reader</code> object.</p>"
-      operationId: PointOfSaleReaderRetrieve
-      parameters:
-      - description: Specifies which fields in the response should be expanded.
-        in: query
-        name: expand
-        required: false
-        type: array
-      - description: The identifier of the account associated with this reader.
-        in: query
-        name: operator_account
-        required: false
-        type: string
-      - description: The identifier of the reader to be retrieved.
-        in: path
-        name: reader
-        required: true
-        type: string
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/terminal.reader"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-    post:
-      description: "<p>Updates a <code>Reader</code> object by setting the values
-        of the parameters passed. Any parameters not provided will be left unchanged.</p>"
-      operationId: PointOfSaleReaderUpdate
-      parameters:
-      - description: The identifier of the reader to be updated.
-        in: path
-        name: reader
-        required: true
-        type: string
-      - description: Body parameters for the request.
-        in: body
-        name: payload
-        required: false
-        schema:
-          properties:
-            expand:
-              description: Specifies which fields in the response should be expanded.
-              items:
-                type: string
-              type: array
-            label:
-              description: The new label of the reader.
-              type: string
-            operator_account:
-              description: The identifier of the new account associated with this
-                reader.
-              type: string
-          type: object
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/terminal.reader"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
   "/v1/products":
     get:
       description: "<p>Returns a list of your products. The products are returned
@@ -21319,7 +21149,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/deleted_transfer_recipient"
+            "$ref": "#/definitions/deleted_recipient"
         default:
           description: Error response.
           schema:
@@ -21344,7 +21174,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/deleted_transfer_recipient"
+            "$ref": "#/definitions/deleted_recipient"
         default:
           description: Error response.
           schema:
@@ -23798,11 +23628,6 @@ paths:
               items:
                 type: string
               type: array
-            operator_account:
-              description: If the request is being made from the platform account
-                but the reader is being operated by a connected account, indicate
-                the operating account.
-              type: string
           type: object
       responses:
         '200':
@@ -23927,11 +23752,6 @@ paths:
               items:
                 type: string
               type: array
-            operator_account:
-              description: If the request is being made from the platform account
-                but the reader is being operated by a connected account, indicate
-                the operating account.
-              type: string
           required:
           - address
           - display_name
@@ -24142,11 +23962,6 @@ paths:
             location:
               description: The location to assign the reader to. If no location is
                 specified, the reader will be assigned to the account's default location.
-              type: string
-            operator_account:
-              description: If the request is being made from the platform account
-                but the reader is being operated by a connected account, indicate
-                the operating account.
               type: string
             registration_code:
               description: A code generated by the reader used for registering to
