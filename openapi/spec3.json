@@ -52,10 +52,6 @@
             "nullable": true,
             "type": "string"
           },
-          "capabilities": {
-            "description": "A hash containing the set of capabilities that was requested for this account and their associated states. States can be `active`, `pending`, or `inactive`.",
-            "type": "object"
-          },
           "charges_enabled": {
             "description": "Whether the account can create live charges",
             "type": "boolean"
@@ -850,10 +846,16 @@
         "properties": {
           "available": {
             "description": "Funds that are available to be paid out, whether automatically by Stripe or explicitly via the [transfers API](#transfers). The available balance for each currency and payment type can be found in the `source_types` property.",
+            "items": {
+              "$ref": "#/components/schemas/balance_amount"
+            },
             "type": "array"
           },
           "connect_reserved": {
             "description": "Funds held due to negative balances on connected Custom accounts. The connect reserve balance for each currency and payment type can be found in the `source_types` property.",
+            "items": {
+              "$ref": "#/components/schemas/balance_amount"
+            },
             "type": "array"
           },
           "livemode": {
@@ -869,6 +871,9 @@
           },
           "pending": {
             "description": "Funds that are not yet available in the balance, due to the 7-day rolling pay cycle. The pending balance for each currency, and for each payment type, can be found in the `source_types` property.",
+            "items": {
+              "$ref": "#/components/schemas/balance_amount"
+            },
             "type": "array"
           }
         },
@@ -881,12 +886,56 @@
         "title": "Balance",
         "type": "object",
         "x-expandableFields": [
-
+          "available",
+          "connect_reserved",
+          "pending"
         ],
         "x-resourceId": "balance",
         "x-stripeResource": {
           "class_name": "Balance"
         }
+      },
+      "balance_amount": {
+        "properties": {
+          "amount": {
+            "description": "Balance amount.",
+            "type": "integer"
+          },
+          "currency": {
+            "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "source_types": {
+            "$ref": "#/components/schemas/balance_amount_by_source_type"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "title": "BalanceAmount",
+        "type": "object",
+        "x-expandableFields": [
+          "source_types"
+        ]
+      },
+      "balance_amount_by_source_type": {
+        "properties": {
+          "bank_account": {
+            "description": "Amount for bank account.",
+            "type": "integer"
+          },
+          "card": {
+            "description": "Amount for card.",
+            "type": "integer"
+          }
+        },
+        "title": "BalanceAmountBySourceType",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
       },
       "balance_transaction": {
         "properties": {
@@ -5267,7 +5316,6 @@
             "type": "string"
           },
           "period": {
-            "nullable": true,
             "type": "object"
           },
           "plan": {
@@ -5326,6 +5374,7 @@
           "livemode",
           "metadata",
           "object",
+          "period",
           "proration",
           "quantity",
           "unit_amount"
@@ -5345,6 +5394,10 @@
       },
       "issuer_fraud_record": {
         "properties": {
+          "actionable": {
+            "description": "An IFR is actionable if it has not received a dispute and has not been fully refunded. You may wish to proactively refund a charge that receives an IFR, in order to avoid receiving a dispute later.",
+            "type": "boolean"
+          },
           "charge": {
             "anyOf": [
               {
@@ -5374,6 +5427,10 @@
             "maxLength": 5000,
             "type": "string"
           },
+          "has_liability_shift": {
+            "description": "If true, the associated charge is subject to [liability shift](https://stripe.com/docs/sources/three-d-secure#disputed-payments).",
+            "type": "boolean"
+          },
           "id": {
             "description": "Unique identifier for the object.",
             "maxLength": 5000,
@@ -5396,9 +5453,11 @@
           }
         },
         "required": [
+          "actionable",
           "charge",
           "created",
           "fraud_type",
+          "has_liability_shift",
           "id",
           "livemode",
           "object",
@@ -5530,6 +5589,12 @@
           },
           "verification_data": {
             "$ref": "#/components/schemas/issuing_authorization_verification_data"
+          },
+          "wallet_provider": {
+            "description": "What, if any, digital wallet was used for this authorization. One of `apple_pay`, `google_pay`, or `samsung_pay`.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
@@ -5649,7 +5714,14 @@
           },
           "status": {
             "description": "One of `active`, `inactive`, `pending`, `canceled`, `lost`, or `stolen`.",
-            "maxLength": 5000,
+            "enum": [
+              "active",
+              "canceled",
+              "inactive",
+              "lost",
+              "pending",
+              "stolen"
+            ],
             "type": "string"
           },
           "type": {
@@ -5784,7 +5856,11 @@
           },
           "status": {
             "description": "One of `active`, `inactive`, or `pending`.",
-            "maxLength": 5000,
+            "enum": [
+              "active",
+              "inactive",
+              "pending"
+            ],
             "type": "string"
           },
           "type": {
@@ -6158,7 +6234,7 @@
             "type": "string"
           },
           "reason": {
-            "description": "One of `authorization_controls`, `card_active`, `card_inactive`, `insufficient_funds`, `account_compliance_disabled`, `account_inactive`, `suspected_fraud`, `webhook_approved`, `webhook_declined`, `webhook_timeout`, `forced_card_authentication_failed`, `forced_card_expired`, `forced_card_lost`, `forced_card_stolen`, `forced_do_not_honor`, `forced_incorrect_pin`, `forced_insufficient_funds`, `forced_invalid_account_number`, `forced_invalid_transaction`, or `forced_suspected_fraud`.",
+            "description": "One of `authorization_controls`, `card_active`, `card_inactive`, `insufficient_funds`, `account_compliance_disabled`, `account_inactive`, `suspected_fraud`, `webhook_approved`, `webhook_declined`, or `webhook_timeout`.",
             "maxLength": 5000,
             "type": "string"
           }
@@ -6211,11 +6287,17 @@
         "properties": {
           "allowed_categories": {
             "description": "Array of strings containing [categories](/docs/api#issuing_authorization_object-merchant_data-category) of authorizations permitted on this card.",
+            "items": {
+              "type": "string"
+            },
             "nullable": true,
             "type": "array"
           },
           "blocked_categories": {
             "description": "Array of strings containing [categories](/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to always decline on this card.",
+            "items": {
+              "type": "string"
+            },
             "nullable": true,
             "type": "array"
           },
@@ -6767,7 +6849,7 @@
             "type": "string"
           },
           "details_code": {
-            "description": "A machine-readable code specifying the verification state for this legal entity. One of `scan_corrupt`, `scan_failed_copy`, `scan_not_readable`, `scan_failed_greyscale`, `scan_not_uploaded`, `scan_id_type_not_supported`, `scan_id_country_not_supported`, `scan_failed_other`, `scan_fraudulent`, `scan_invalid_document`, `scan_manipulated_document`, `scan_missing_back`, `scan_missing_front`, `scan_photo_mismatch`, `scan_too_large`, or `scan_failed_test_mode`.",
+            "description": "A machine-readable code specifying the verification state for this legal entity. One of `scan_corrupt`, `scan_not_readable`, `scan_failed_greyscale`, `scan_not_uploaded`, `scan_id_type_not_supported`, `scan_id_country_not_supported`, `scan_failed_other`, or `scan_failed_test_mode`.",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
@@ -7282,9 +7364,6 @@
                 "type": "string"
               },
               {
-                "$ref": "#/components/schemas/discount"
-              },
-              {
                 "$ref": "#/components/schemas/sku"
               }
             ],
@@ -7292,9 +7371,6 @@
             "nullable": true,
             "x-expansionResources": {
               "oneOf": [
-                {
-                  "$ref": "#/components/schemas/discount"
-                },
                 {
                   "$ref": "#/components/schemas/sku"
                 }
@@ -7603,7 +7679,7 @@
             "nullable": true,
             "type": "string"
           },
-          "iban_last4": {
+          "last4": {
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
@@ -7622,19 +7698,12 @@
       },
       "payment_flows_private_payment_methods_sepa_debit": {
         "properties": {
-          "iban": {
-            "maxLength": 5000,
-            "type": "string"
-          },
           "last4": {
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
           }
         },
-        "required": [
-          "iban"
-        ],
         "title": "PaymentFlowsPrivatePaymentMethodsSepaDebit",
         "type": "object",
         "x-expandableFields": [
@@ -7644,7 +7713,10 @@
       "payment_intent": {
         "properties": {
           "allowed_source_types": {
-            "description": "The list of source types that this PaymentIntent is allowed to use.",
+            "description": "The list of source types (e.g. card) that this PaymentIntent is allowed to use.",
+            "items": {
+              "type": "string"
+            },
             "type": "array"
           },
           "amount": {
@@ -8772,6 +8844,9 @@
           },
           "deactivate_on": {
             "description": "An array of connect application identifiers that cannot purchase this product. Only applicable to products of `type=good`.",
+            "items": {
+              "type": "string"
+            },
             "type": "array"
           },
           "description": {
@@ -8902,7 +8977,15 @@
           },
           "item_type": {
             "description": "The type of items in the list. One of `card_fingerprint`, `card_bin`, `email`, `ip_address`, `country`, `string`, or `case_sensitive_string`.",
-            "maxLength": 5000,
+            "enum": [
+              "card_bin",
+              "card_fingerprint",
+              "case_sensitive_string",
+              "country",
+              "email",
+              "ip_address",
+              "string"
+            ],
             "type": "string"
           },
           "list_items": {
@@ -9623,7 +9706,7 @@
                 "$ref": "#/components/schemas/transfer_reversal"
               }
             ],
-            "description": "The transfer reversal that is associated with the refund, if there is one.",
+            "description": "The transfer reversal that is associated with the refund. Only present if the charge came from another Stripe account. See the Connect documentation for details.",
             "nullable": true,
             "x-expansionResources": {
               "oneOf": [
@@ -9638,6 +9721,26 @@
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
+          },
+          "transfer_reversal": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/transfer_reversal"
+              }
+            ],
+            "description": "If the accompanying transfer was reversed, the transfer reversal object. Only applicable if the charge was created using the destination parameter.",
+            "nullable": true,
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/transfer_reversal"
+                }
+              ]
+            }
           }
         },
         "required": [
@@ -9654,7 +9757,8 @@
           "balance_transaction",
           "charge",
           "failure_balance_transaction",
-          "source_transfer_reversal"
+          "source_transfer_reversal",
+          "transfer_reversal"
         ],
         "x-resourceId": "refund",
         "x-stripeResource": {
@@ -9927,6 +10031,7 @@
           "charge",
           "payment_intent"
         ],
+        "x-resourceId": "review",
         "x-stripeResource": {
           "class_name": "Review"
         }
@@ -10395,7 +10500,7 @@
             "type": "string"
           },
           "usage": {
-            "description": "Either `reusable` or `single_use`. Whether this source should be reusable or not. Some source types may or may not be reusable by construction, while other may leave the option at creation. If an incompatible value is passed, an error will be returned.",
+            "description": "Either `reusable` or `single_use`. Whether this source should be reusable or not. Some source types may or may not be reusable by construction, while others may leave the option at creation. If an incompatible value is passed, an error will be returned.",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
@@ -12123,7 +12228,7 @@
       "topup": {
         "properties": {
           "amount": {
-            "description": "Amount transferred, in %s.",
+            "description": "Amount transferred.",
             "type": "integer"
           },
           "balance_transaction": {
@@ -12735,6 +12840,9 @@
           },
           "enabled_events": {
             "description": "The list of events to enable for this endpoint. You may specify `['*']` to enable all events.",
+            "items": {
+              "type": "string"
+            },
             "type": "array"
           },
           "id": {
@@ -12818,7 +12926,7 @@
   "paths": {
     "/v1/3d_secure": {
       "post": {
-        "description": "",
+        "description": "<p>Initiate 3D Secure authentication.</p>",
         "operationId": "Create3DSecure",
         "requestBody": {
           "content": {
@@ -13116,6 +13224,10 @@
                   "style": "deepObject"
                 },
                 "payout_schedule": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "requested_capabilities": {
                   "explode": true,
                   "style": "deepObject"
                 },
@@ -13723,6 +13835,9 @@
                     "type": "object"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key-value pairs that you can attach to an `Account` object. This can be useful for storing additional information about the account in a structured format.",
                     "type": "object"
                   },
@@ -13772,6 +13887,19 @@
                     "description": "Internal-only description of the product sold or service provided by the business. It's used by Stripe for risk and underwriting purposes.",
                     "maxLength": 40000,
                     "type": "string"
+                  },
+                  "requested_capabilities": {
+                    "description": "The set of capabilities you want to unlock for this account. Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
+                    "items": {
+                      "enum": [
+                        "card_payments",
+                        "legacy_payments",
+                        "platform_payments"
+                      ],
+                      "maxLength": 5000,
+                      "type": "string"
+                    },
+                    "type": "array"
                   },
                   "statement_descriptor": {
                     "description": "The default text that appears on credit card statements when a charge is made [directly on the account](/docs/connect/direct-charges)",
@@ -13846,7 +13974,7 @@
     },
     "/v1/account/bank_accounts": {
       "post": {
-        "description": "",
+        "description": "<p>Create an external account for a given account.</p>",
         "operationId": "CreateAccountExternalAccount",
         "requestBody": {
           "content": {
@@ -13909,6 +14037,9 @@
                     "description": "This string to be replaced by DocSpecGenerator."
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key-value pairs that you can attach to an external account object. It can be useful for storing additional information about the external account in a structured format.",
                     "type": "object"
                   }
@@ -13945,7 +14076,7 @@
     },
     "/v1/account/bank_accounts/{id}": {
       "delete": {
-        "description": "",
+        "description": "<p>Delete a specified external account for a given account.</p>",
         "operationId": "DeleteAccountExternalAccount",
         "parameters": [
           {
@@ -14005,7 +14136,7 @@
         }
       },
       "get": {
-        "description": "",
+        "description": "<p>Retrieve a specified external account for a given account.</p>",
         "operationId": "RetrieveAccountExternalAccount",
         "parameters": [
           {
@@ -14170,6 +14301,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "name": {
@@ -14210,7 +14344,7 @@
     },
     "/v1/account/external_accounts": {
       "get": {
-        "description": "",
+        "description": "<p>List external accounts for an account.</p>",
         "operationId": "AllAccountExternalAccounts",
         "parameters": [
           {
@@ -14341,7 +14475,7 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "<p>Create an external account for a given account.</p>",
         "operationId": "CreateAccountExternalAccount",
         "requestBody": {
           "content": {
@@ -14404,6 +14538,9 @@
                     "description": "This string to be replaced by DocSpecGenerator."
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key-value pairs that you can attach to an external account object. It can be useful for storing additional information about the external account in a structured format.",
                     "type": "object"
                   }
@@ -14440,7 +14577,7 @@
     },
     "/v1/account/external_accounts/{id}": {
       "delete": {
-        "description": "",
+        "description": "<p>Delete a specified external account for a given account.</p>",
         "operationId": "DeleteAccountExternalAccount",
         "parameters": [
           {
@@ -14500,7 +14637,7 @@
         }
       },
       "get": {
-        "description": "",
+        "description": "<p>Retrieve a specified external account for a given account.</p>",
         "operationId": "RetrieveAccountExternalAccount",
         "parameters": [
           {
@@ -14665,6 +14802,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "name": {
@@ -15202,6 +15342,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -15247,7 +15390,6 @@
                   },
                   "ssn_last_4": {
                     "description": "The last 4 digits of the person's social security number.",
-                    "maxLength": 5000,
                     "type": "string"
                   }
                 },
@@ -15637,6 +15779,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -15682,7 +15827,6 @@
                   },
                   "ssn_last_4": {
                     "description": "The last 4 digits of the person's social security number.",
-                    "maxLength": 5000,
                     "type": "string"
                   }
                 },
@@ -16085,6 +16229,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -16130,7 +16277,6 @@
                   },
                   "ssn_last_4": {
                     "description": "The last 4 digits of the person's social security number.",
-                    "maxLength": 5000,
                     "type": "string"
                   }
                 },
@@ -16520,6 +16666,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -16565,7 +16714,6 @@
                   },
                   "ssn_last_4": {
                     "description": "The last 4 digits of the person's social security number.",
-                    "maxLength": 5000,
                     "type": "string"
                   }
                 },
@@ -16604,6 +16752,38 @@
         "description": "<p>Returns a list of accounts connected to your platform via <a href=\"/docs/connect\">Connect</a>. If you’re not a platform, the list is empty.</p>",
         "operationId": "AllAccount",
         "parameters": [
+          {
+            "explode": true,
+            "in": "query",
+            "name": "created",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "properties": {
+                    "gt": {
+                      "type": "integer"
+                    },
+                    "gte": {
+                      "type": "integer"
+                    },
+                    "lt": {
+                      "type": "integer"
+                    },
+                    "lte": {
+                      "type": "integer"
+                    }
+                  },
+                  "title": "range_query_specs",
+                  "type": "object"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "style": "deepObject"
+          },
           {
             "description": "A cursor for use in pagination. `ending_before` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, starting with `obj_bar`, your subsequent call can include `ending_before=obj_bar` in order to fetch the previous page of the list.",
             "in": "query",
@@ -17366,6 +17546,9 @@
                     "type": "object"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key-value pairs that you can attach to an `Account` object. This can be useful for storing additional information about the account in a structured format.",
                     "type": "object"
                   },
@@ -17665,6 +17848,10 @@
                   "style": "deepObject"
                 },
                 "payout_schedule": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "requested_capabilities": {
                   "explode": true,
                   "style": "deepObject"
                 },
@@ -18268,6 +18455,9 @@
                     "type": "object"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key-value pairs that you can attach to an `Account` object. This can be useful for storing additional information about the account in a structured format.",
                     "type": "object"
                   },
@@ -18317,6 +18507,19 @@
                     "description": "Internal-only description of the product sold or service provided by the business. It's used by Stripe for risk and underwriting purposes.",
                     "maxLength": 40000,
                     "type": "string"
+                  },
+                  "requested_capabilities": {
+                    "description": "The set of capabilities you want to unlock for this account. Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
+                    "items": {
+                      "enum": [
+                        "card_payments",
+                        "legacy_payments",
+                        "platform_payments"
+                      ],
+                      "maxLength": 5000,
+                      "type": "string"
+                    },
+                    "type": "array"
                   },
                   "statement_descriptor": {
                     "description": "The default text that appears on credit card statements when a charge is made [directly on the account](/docs/connect/direct-charges)",
@@ -18391,7 +18594,7 @@
     },
     "/v1/accounts/{account}/bank_accounts": {
       "post": {
-        "description": "",
+        "description": "<p>Create an external account for a given account.</p>",
         "operationId": "CreateAccountExternalAccount",
         "parameters": [
           {
@@ -18466,6 +18669,9 @@
                     "description": "This string to be replaced by DocSpecGenerator."
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key-value pairs that you can attach to an external account object. It can be useful for storing additional information about the external account in a structured format.",
                     "type": "object"
                   }
@@ -18502,7 +18708,7 @@
     },
     "/v1/accounts/{account}/bank_accounts/{id}": {
       "delete": {
-        "description": "",
+        "description": "<p>Delete a specified external account for a given account.</p>",
         "operationId": "DeleteAccountExternalAccount",
         "parameters": [
           {
@@ -18572,7 +18778,7 @@
         }
       },
       "get": {
-        "description": "",
+        "description": "<p>Retrieve a specified external account for a given account.</p>",
         "operationId": "RetrieveAccountExternalAccount",
         "parameters": [
           {
@@ -18757,6 +18963,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "name": {
@@ -18797,7 +19006,7 @@
     },
     "/v1/accounts/{account}/external_accounts": {
       "get": {
-        "description": "",
+        "description": "<p>List external accounts for an account.</p>",
         "operationId": "AllAccountExternalAccounts",
         "parameters": [
           {
@@ -18938,7 +19147,7 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "<p>Create an external account for a given account.</p>",
         "operationId": "CreateAccountExternalAccount",
         "parameters": [
           {
@@ -19013,6 +19222,9 @@
                     "description": "This string to be replaced by DocSpecGenerator."
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key-value pairs that you can attach to an external account object. It can be useful for storing additional information about the external account in a structured format.",
                     "type": "object"
                   }
@@ -19049,7 +19261,7 @@
     },
     "/v1/accounts/{account}/external_accounts/{id}": {
       "delete": {
-        "description": "",
+        "description": "<p>Delete a specified external account for a given account.</p>",
         "operationId": "DeleteAccountExternalAccount",
         "parameters": [
           {
@@ -19119,7 +19331,7 @@
         }
       },
       "get": {
-        "description": "",
+        "description": "<p>Retrieve a specified external account for a given account.</p>",
         "operationId": "RetrieveAccountExternalAccount",
         "parameters": [
           {
@@ -19304,6 +19516,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "name": {
@@ -19873,6 +20088,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -19918,7 +20136,6 @@
                   },
                   "ssn_last_4": {
                     "description": "The last 4 digits of the person's social security number.",
-                    "maxLength": 5000,
                     "type": "string"
                   }
                 },
@@ -20338,6 +20555,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -20383,7 +20603,6 @@
                   },
                   "ssn_last_4": {
                     "description": "The last 4 digits of the person's social security number.",
-                    "maxLength": 5000,
                     "type": "string"
                   }
                 },
@@ -20808,6 +21027,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -20853,7 +21075,6 @@
                   },
                   "ssn_last_4": {
                     "description": "The last 4 digits of the person's social security number.",
-                    "maxLength": 5000,
                     "type": "string"
                   }
                 },
@@ -21273,6 +21494,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -21318,7 +21542,6 @@
                   },
                   "ssn_last_4": {
                     "description": "The last 4 digits of the person's social security number.",
-                    "maxLength": 5000,
                     "type": "string"
                   }
                 },
@@ -21430,7 +21653,7 @@
     },
     "/v1/apple_pay/domains": {
       "get": {
-        "description": "",
+        "description": "<p>List apple pay domains.</p>",
         "operationId": "AllApplePayDomains",
         "parameters": [
           {
@@ -21565,7 +21788,7 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "<p>Create an apple pay domain.</p>",
         "operationId": "CreateApplePayDomain",
         "requestBody": {
           "content": {
@@ -21626,7 +21849,7 @@
     },
     "/v1/apple_pay/domains/{domain}": {
       "delete": {
-        "description": "",
+        "description": "<p>Delete an apple pay domain.</p>",
         "operationId": "DeleteApplePayDomain",
         "parameters": [
           {
@@ -21679,7 +21902,7 @@
         }
       },
       "get": {
-        "description": "",
+        "description": "<p>Retrieve an apple pay domain.</p>",
         "operationId": "RetrieveApplePayDomain",
         "parameters": [
           {
@@ -22049,6 +22272,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   }
@@ -22410,6 +22636,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   }
@@ -22619,7 +22848,7 @@
             "style": "form"
           },
           {
-            "description": "For automatic Stripe payouts only, only returns transactions that were payed out on the specified payout ID.",
+            "description": "For automatic Stripe payouts only, only returns transactions that were paid out on the specified payout ID.",
             "in": "query",
             "name": "payout",
             "required": false,
@@ -23039,7 +23268,7 @@
     "/v1/bitcoin/receivers/{receiver}/transactions": {
       "get": {
         "deprecated": true,
-        "description": "",
+        "description": "<p>List bitcoin transacitons for a given receiver.</p>",
         "operationId": "BitcoinAllTransactions",
         "parameters": [
           {
@@ -23189,7 +23418,7 @@
     "/v1/bitcoin/transactions": {
       "get": {
         "deprecated": true,
-        "description": "",
+        "description": "<p>List bitcoin transacitons for a given receiver.</p>",
         "operationId": "BitcoinAllTransactions",
         "parameters": [
           {
@@ -23686,6 +23915,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
                     "type": "object"
                   },
@@ -24005,6 +24237,9 @@
                     "type": "object"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -24212,7 +24447,7 @@
     },
     "/v1/charges/{charge}/dispute": {
       "get": {
-        "description": "",
+        "description": "<p>Retrieve a dispute for a specified charge.</p>",
         "operationId": "RetrieveChargeDispute",
         "parameters": [
           {
@@ -24429,6 +24664,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key-value pairs that you can attach to a dispute object. This can be useful for storing additional information about the dispute in a structured format.",
                     "type": "object"
                   },
@@ -24536,7 +24774,7 @@
     },
     "/v1/charges/{charge}/refund": {
       "post": {
-        "description": "",
+        "description": "<p>When you create a new refund, you must specify a charge on which to create it.</p>\n\n<p>Creating a new refund will refund a charge that has previously been created but not yet refunded.\nFunds will be refunded to the credit or debit card that was originally charged.</p>\n\n<p>You can optionally refund only part of a charge.\nYou can do so multiple times, until the entire charge has been refunded.</p>\n\n<p>Once entirely refunded, a charge can’t be refunded again.\nThis method will raise an error when called on an already-refunded charge,\nor when trying to refund more money than is left on a charge.</p>",
         "operationId": "ChargeRefund",
         "parameters": [
           {
@@ -24601,6 +24839,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "reason": {
@@ -24784,7 +25025,7 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "<p>Create a refund.</p>",
         "operationId": "UnifiedPaymentsCreateRefund",
         "parameters": [
           {
@@ -24849,6 +25090,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "reason": {
@@ -24899,7 +25143,7 @@
     },
     "/v1/charges/{charge}/refunds/{refund}": {
       "get": {
-        "description": "",
+        "description": "<p>Retrieves the details of an existing refund.</p>",
         "operationId": "RetrieveChargeRefund",
         "parameters": [
           {
@@ -24975,7 +25219,7 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "<p>Update a specified refund.</p>",
         "operationId": "UpdateChargeRefund",
         "parameters": [
           {
@@ -25022,6 +25266,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   }
                 },
@@ -25469,6 +25716,9 @@
                     "type": "integer"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a coupon object. It can be useful for storing additional information about the coupon in a structured format.",
                     "type": "object"
                   },
@@ -25685,6 +25935,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a coupon object. It can be useful for storing additional information about the coupon in a structured format.",
                     "type": "object"
                   },
@@ -25969,6 +26222,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a customer object. It can be useful for storing additional information about the customer in a structured format.",
                     "type": "object"
                   },
@@ -26219,7 +26475,7 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "<p>Updates the specified customer by setting the values of the parameters passed. Any parameters not provided will be left unchanged. For example, if you pass the <strong>source</strong> parameter, that becomes the customer’s active source (e.g., a card) to be used for all charges in the future. When you update a customer to a new valid source: for each of the customer’s current subscriptions, if the subscription bills automatically and is in the <code>past_due</code> state, then the latest unpaid, unclosed invoice for the subscription will be retried (note that this retry will not count as an automatic retry, and will not affect the next regularly scheduled payment for the invoice). (Note also that no invoices pertaining to subscriptions in the <code>unpaid</code> state, or invoices pertaining to canceled subscriptions, will be retried as a result of updating the customer’s source.)</p>\n\n<p>This request accepts mostly the same arguments as the customer creation call.</p>",
         "operationId": "CustomerUpdate",
         "parameters": [
           {
@@ -26346,6 +26602,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a customer object. It can be useful for storing additional information about the customer in a structured format.",
                     "type": "object"
                   },
@@ -26696,6 +26955,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a card object. It can be useful for storing additional information about the card in a structured format.",
                     "type": "object"
                   },
@@ -26744,7 +27006,7 @@
     },
     "/v1/customers/{customer}/bank_accounts/{id}": {
       "delete": {
-        "description": "",
+        "description": "<p>Delete a specified source for a given customer.</p>",
         "operationId": "DeleteCustomerSource",
         "parameters": [
           {
@@ -26904,7 +27166,7 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "<p>Update a specified source for a given customer.</p>",
         "operationId": "UpdateCustomerSource",
         "parameters": [
           {
@@ -27011,6 +27273,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "name": {
@@ -27108,7 +27373,7 @@
     },
     "/v1/customers/{customer}/bank_accounts/{id}/verify": {
       "post": {
-        "description": "",
+        "description": "<p>Verify a specified bank account for a given customer.</p>",
         "operationId": "VerifyCustomerSource",
         "parameters": [
           {
@@ -27426,6 +27691,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a card object. It can be useful for storing additional information about the card in a structured format.",
                     "type": "object"
                   },
@@ -27474,7 +27742,7 @@
     },
     "/v1/customers/{customer}/cards/{id}": {
       "delete": {
-        "description": "",
+        "description": "<p>Delete a specified source for a given customer.</p>",
         "operationId": "DeleteCustomerSource",
         "parameters": [
           {
@@ -27634,7 +27902,7 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "<p>Update a specified source for a given customer.</p>",
         "operationId": "UpdateCustomerSource",
         "parameters": [
           {
@@ -27741,6 +28009,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "name": {
@@ -27961,7 +28232,7 @@
     },
     "/v1/customers/{customer}/sources": {
       "get": {
-        "description": "",
+        "description": "<p>List sources for a specified customer.</p>",
         "operationId": "AllCustomerSources",
         "parameters": [
           {
@@ -28224,6 +28495,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a card object. It can be useful for storing additional information about the card in a structured format.",
                     "type": "object"
                   },
@@ -28272,7 +28546,7 @@
     },
     "/v1/customers/{customer}/sources/{id}": {
       "delete": {
-        "description": "",
+        "description": "<p>Delete a specified source for a given customer.</p>",
         "operationId": "DeleteCustomerSource",
         "parameters": [
           {
@@ -28352,7 +28626,7 @@
         }
       },
       "get": {
-        "description": "",
+        "description": "<p>Retrieve a specified source for a given customer.</p>",
         "operationId": "RetrieveCustomerSource",
         "parameters": [
           {
@@ -28431,7 +28705,7 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "<p>Update a specified source for a given customer.</p>",
         "operationId": "UpdateCustomerSource",
         "parameters": [
           {
@@ -28538,6 +28812,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "name": {
@@ -28635,7 +28912,7 @@
     },
     "/v1/customers/{customer}/sources/{id}/verify": {
       "post": {
-        "description": "",
+        "description": "<p>Verify a specified bank account for a given customer.</p>",
         "operationId": "VerifyCustomerSource",
         "parameters": [
           {
@@ -28947,6 +29224,12 @@
                     "description": "List of subscription items, each with an attached plan.",
                     "items": {
                       "properties": {
+                        "metadata": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        },
                         "plan": {
                           "maxLength": 5000,
                           "type": "string"
@@ -28964,6 +29247,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key-value pairs that you can attach to a `Subscription` object. It can be useful for storing additional information about the subscription in a structured format.",
                     "type": "object"
                   },
@@ -29054,6 +29340,14 @@
               "schema": {
                 "additionalProperties": false,
                 "properties": {
+                  "invoice_now": {
+                    "description": "Can be set to `true` if `at_period_end` is not set to `true`. Will generate a final invoice that invoices for any un-invoiced metered usage and new/pending proration invoice items.",
+                    "type": "boolean"
+                  },
+                  "prorate": {
+                    "description": "Can be set to `true` if `at_period_end` is not set to `true`. Will generate a proration invoice item that credits remaining unused time until the subscription period end.",
+                    "type": "boolean"
+                  }
                 },
                 "type": "object"
               }
@@ -29269,6 +29563,9 @@
                           "type": "string"
                         },
                         "metadata": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
                           "type": "object"
                         },
                         "plan": {
@@ -29285,6 +29582,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key-value pairs that you can attach to a subscription object. This can be useful for storing additional information about the subscription in a structured format.",
                     "type": "object"
                   },
@@ -29862,6 +30162,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key-value pairs that you can attach to a dispute object. This can be useful for storing additional information about the dispute in a structured format.",
                     "type": "object"
                   },
@@ -29996,6 +30299,11 @@
                       "type": "string"
                     },
                     "type": "array"
+                  },
+                  "issuing_card": {
+                    "description": "The ID of the Issuing Card you'd like to access using the resulting ephemeral key.",
+                    "maxLength": 5000,
+                    "type": "string"
                   }
                 },
                 "required": [
@@ -30830,6 +31138,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
                     "type": "object"
                   }
@@ -31002,6 +31313,9 @@
                     "description": "A future timestamp after which the link will no longer be usable, or `now` to expire the link immediately."
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
                     "type": "object"
                   }
@@ -31121,6 +31435,7 @@
                 "business_logo",
                 "customer_signature",
                 "dispute_evidence",
+                "dsar_report",
                 "finance_report_run",
                 "founders_stock_document",
                 "identity_document",
@@ -31273,6 +31588,9 @@
                         "type": "integer"
                       },
                       "metadata": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
                         "type": "object"
                       }
                     },
@@ -31599,6 +31917,10 @@
                 "metadata": {
                   "explode": true,
                   "style": "deepObject"
+                },
+                "period": {
+                  "explode": true,
+                  "style": "deepObject"
                 }
               },
               "schema": {
@@ -31640,7 +31962,29 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to an invoice item object. It can be useful for storing additional information about the invoice item in a structured format.",
+                    "type": "object"
+                  },
+                  "period": {
+                    "description": "The period associated with this invoice item.",
+                    "properties": {
+                      "end": {
+                        "format": "unix-time",
+                        "type": "integer"
+                      },
+                      "start": {
+                        "format": "unix-time",
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "end",
+                      "start"
+                    ],
+                    "title": "period",
                     "type": "object"
                   },
                   "quantity": {
@@ -31841,6 +32185,10 @@
                 "metadata": {
                   "explode": true,
                   "style": "deepObject"
+                },
+                "period": {
+                  "explode": true,
+                  "style": "deepObject"
                 }
               },
               "schema": {
@@ -31868,7 +32216,29 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to an invoice item object. It can be useful for storing additional information about the invoice item in a structured format.",
+                    "type": "object"
+                  },
+                  "period": {
+                    "description": "The period associated with this invoice item.",
+                    "properties": {
+                      "end": {
+                        "format": "unix-time",
+                        "type": "integer"
+                      },
+                      "start": {
+                        "format": "unix-time",
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "end",
+                      "start"
+                    ],
+                    "title": "period",
                     "type": "object"
                   },
                   "quantity": {
@@ -32203,6 +32573,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "statement_descriptor": {
@@ -32322,6 +32695,27 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "period": {
+                    "properties": {
+                      "end": {
+                        "format": "unix-time",
+                        "type": "integer"
+                      },
+                      "start": {
+                        "format": "unix-time",
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "end",
+                      "start"
+                    ],
+                    "title": "period",
                     "type": "object"
                   }
                 },
@@ -32397,6 +32791,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "plan": {
@@ -32657,6 +33054,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "plan": {
@@ -33003,6 +33403,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "statement_descriptor": {
@@ -33544,7 +33947,7 @@
     "/v1/issuer_fraud_records": {
       "get": {
         "description": "<p>Returns a list of issuer fraud records.</p>",
-        "operationId": "DisputesIssuerFraudRecordAll",
+        "operationId": "RadarIssuerFraudRecordAll",
         "parameters": [
           {
             "description": "Only return issuer fraud records for the charge specified by this charge ID.",
@@ -33655,7 +34058,7 @@
                     "object",
                     "url"
                   ],
-                  "title": "DisputesIssuerFraudRecordList",
+                  "title": "RadarIssuerFraudRecordList",
                   "type": "object",
                   "x-expandableFields": [
                     "data"
@@ -33681,7 +34084,7 @@
     "/v1/issuer_fraud_records/{issuer_fraud_record}": {
       "get": {
         "description": "<p>Retrieves the details of an issuer fraud record that has previously been created. </p>\n\n<p>Please refer to the <a href=\"#issuer_fraud_record_object\">issuer fraud record</a> object reference for more details.</p>",
-        "operationId": "DisputesIssuerFraudRecordRetrieve",
+        "operationId": "RadarIssuerFraudRecordRetrieve",
         "parameters": [
           {
             "description": "Specifies which fields in the response should be expanded.",
@@ -34057,6 +34460,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   }
                 },
@@ -34525,6 +34931,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "name": {
@@ -34758,6 +35167,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -35705,6 +36117,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "shipping": {
@@ -35762,8 +36177,7 @@
                     "description": "Specifies whether to permit authorizations on this card. Possible values are `active` or `inactive`.",
                     "enum": [
                       "active",
-                      "inactive",
-                      "pending_compliance"
+                      "inactive"
                     ],
                     "maxLength": 5000,
                     "type": "string"
@@ -36531,6 +36945,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "status": {
@@ -36898,6 +37315,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -37056,6 +37476,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   }
@@ -37393,6 +37816,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   }
                 },
@@ -38083,6 +38509,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to an order object. Limited to 500 characters. Metadata can be useful for storing additional information about the order in a structured format.",
                     "type": "object"
                   },
@@ -38291,6 +38720,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a product object. It can be useful for storing additional information about the order in a structured format.",
                     "type": "object"
                   },
@@ -38363,7 +38795,7 @@
     },
     "/v1/orders/{id}/pay": {
       "post": {
-        "description": "",
+        "description": "<p>Pay an order by providing a <code>source</code> to create a payment.</p>",
         "operationId": "PayOrder",
         "parameters": [
           {
@@ -38419,6 +38851,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to an order object. Limited to 500 characters. Metadata can be useful for storing additional information about the order in a structured format.",
                     "type": "object"
                   },
@@ -38775,7 +39210,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "allowed_source_types": {
-                    "description": "The list of source types that this PaymentIntent is allowed to use.",
+                    "description": "The list of source types (e.g. card) that this PaymentIntent is allowed to use.",
                     "items": {
                       "maxLength": 5000,
                       "type": "string"
@@ -38826,6 +39261,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
                     "type": "object"
                   },
@@ -39114,6 +39552,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
                     "type": "object"
                   },
@@ -39428,7 +39869,7 @@
                     "type": "string"
                   },
                   "return_url": {
-                    "description": "The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site.\nIf you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.",
+                    "description": "The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site.\nIf you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.\nThis parameter is only used for cards and other redirect-based payment methods.",
                     "type": "string"
                   },
                   "save_source_to_customer": {
@@ -39787,6 +40228,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a payout object. It can be useful for storing additional information about the payout in a structured format.",
                     "type": "object"
                   },
@@ -39964,6 +40408,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a payout object. It can be useful for storing additional information about the payout in a structured format.",
                     "type": "object"
                   }
@@ -40337,6 +40784,9 @@
                     "type": "integer"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a plan object. It can be useful for storing additional information about the plan in a structured format.",
                     "type": "object"
                   },
@@ -40362,6 +40812,9 @@
                             "type": "string"
                           },
                           "metadata": {
+                            "additionalProperties": {
+                              "type": "string"
+                            },
                             "type": "object"
                           },
                           "name": {
@@ -40676,6 +41129,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a plan object. It can be useful for storing additional information about the plan in a structured format.",
                     "type": "object"
                   },
@@ -41039,6 +41495,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a product object. It can be useful for storing additional information about the product in a structured format. Applicable to both `service` and `good` types.",
                     "type": "object"
                   },
@@ -41352,6 +41811,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a product object. It can be useful for storing additional information about the product in a structured format.",
                     "type": "object"
                   },
@@ -41519,7 +41981,7 @@
             "style": "form"
           },
           {
-            "description": "Return only the list item belonging to the parent list with the specified value.",
+            "description": "Return items belonging to the parent list whose value matches the specified value (using an \"is like\" match).",
             "in": "query",
             "name": "value",
             "required": false,
@@ -42018,7 +42480,7 @@
                     "type": "array"
                   },
                   "item_type": {
-                    "description": "Type of the items in the list. Use `string` if the item type is unknown/mixed.",
+                    "description": "Type of the items in the list. One of `card_fingerprint`, `card_bin`, `email`, `ip_address`, `country`, `string`, or `case_sensitive_string`. Use `string` if the item type is unknown or mixed.",
                     "enum": [
                       "card_bin",
                       "card_fingerprint",
@@ -42032,6 +42494,9 @@
                     "type": "string"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -42245,6 +42710,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -42537,6 +43005,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -42811,6 +43282,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -43021,7 +43495,7 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "<p>Create a refund.</p>",
         "operationId": "UnifiedPaymentsCreateRefund",
         "requestBody": {
           "content": {
@@ -43078,6 +43552,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "type": "object"
                   },
                   "reason": {
@@ -43234,6 +43711,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   }
@@ -43783,6 +44263,303 @@
         }
       }
     },
+    "/v1/reviews": {
+      "get": {
+        "description": "<p>Returns a list of <code>Review</code> objects that have <code>open</code> set to <code>true</code>. The objects are sorted in descending order by creation date, with the most recently created object appearing first.</p>",
+        "operationId": "RadarReviewAll",
+        "parameters": [
+          {
+            "explode": true,
+            "in": "query",
+            "name": "created",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "properties": {
+                    "gt": {
+                      "type": "integer"
+                    },
+                    "gte": {
+                      "type": "integer"
+                    },
+                    "lt": {
+                      "type": "integer"
+                    },
+                    "lte": {
+                      "type": "integer"
+                    }
+                  },
+                  "title": "range_query_specs",
+                  "type": "object"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "A cursor for use in pagination. `ending_before` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, starting with `obj_bar`, your subsequent call can include `ending_before=obj_bar` in order to fetch the previous page of the list.",
+            "in": "query",
+            "name": "ending_before",
+            "required": false,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "explode": true,
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "schema": {
+              "items": {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "style": "form"
+          },
+          {
+            "description": "A cursor for use in pagination. `starting_after` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with `obj_foo`, your subsequent call can include `starting_after=obj_foo` in order to fetch the next page of the list.",
+            "in": "query",
+            "name": "starting_after",
+            "required": false,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {
+              },
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/review"
+                      },
+                      "type": "array"
+                    },
+                    "has_more": {
+                      "description": "True if this list has another page of items after this one that can be fetched.",
+                      "type": "boolean"
+                    },
+                    "object": {
+                      "description": "String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
+                      "enum": [
+                        "list"
+                      ],
+                      "type": "string"
+                    },
+                    "url": {
+                      "description": "The URL where this list can be accessed.",
+                      "maxLength": 5000,
+                      "pattern": "^/v1/reviews",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "has_more",
+                    "object",
+                    "url"
+                  ],
+                  "type": "object",
+                  "x-expandableFields": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        }
+      }
+    },
+    "/v1/reviews/{review}": {
+      "get": {
+        "description": "<p>Retrieves a <code>Review</code> object.</p>",
+        "operationId": "RadarReviewRetrieve",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "explode": true,
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "schema": {
+              "items": {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "The identifier of the review to be retrieved.",
+            "in": "path",
+            "name": "review",
+            "required": true,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {
+              },
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/review"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        }
+      }
+    },
+    "/v1/reviews/{review}/approve": {
+      "post": {
+        "description": "<p>Approves a <code>Review</code> object, closing it and removing it from the list of reviews.</p>",
+        "operationId": "RadarReviewApprove",
+        "parameters": [
+          {
+            "description": "The identifier of the review to be approved.",
+            "in": "path",
+            "name": "review",
+            "required": true,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {
+                "expand": {
+                  "explode": true,
+                  "style": "deepObject"
+                }
+              },
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "expand": {
+                    "description": "Specifies which fields in the response should be expanded.",
+                    "items": {
+                      "maxLength": 5000,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/review"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        }
+      }
+    },
     "/v1/sigma/scheduled_query_runs": {
       "get": {
         "description": "<p>Returns a list of scheduled query runs.</p>",
@@ -44260,6 +45037,9 @@
                     "type": "object"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a SKU object. It can be useful for storing additional information about the SKU in a structured format.",
                     "type": "object"
                   },
@@ -44567,6 +45347,9 @@
                     "type": "object"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a SKU object. It can be useful for storing additional information about the SKU in a structured format.",
                     "type": "object"
                   },
@@ -44753,6 +45536,9 @@
                     "type": "object"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a source object. It can be useful for storing additional information about the source in a structured format.",
                     "type": "object"
                   },
@@ -45070,6 +45856,9 @@
                     "type": "object"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key/value pairs that you can attach to a source object. It can be useful for storing additional information about the source in a structured format.",
                     "type": "object"
                   },
@@ -45236,7 +46025,7 @@
     },
     "/v1/sources/{source}/source_transactions": {
       "get": {
-        "description": "",
+        "description": "<p>List source transactions for a given source.</p>",
         "operationId": "ApmsSourcesSourceTransactionAll",
         "parameters": [
           {
@@ -45455,7 +46244,7 @@
     },
     "/v1/sources/{source}/verify": {
       "post": {
-        "description": "",
+        "description": "<p>Verify a given source.</p>",
         "operationId": "ApmsSourcesSourceVerify",
         "parameters": [
           {
@@ -45698,6 +46487,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
                     "type": "object"
                   },
@@ -45707,7 +46499,7 @@
                     "type": "string"
                   },
                   "prorate": {
-                    "description": "Flag indicating whether to [prorate](/docs/subscriptions/upgrading-downgrading#understanding-proration) switching plans during a billing cycle.",
+                    "description": "Flag indicating whether to [prorate](/docs/billing/subscriptions/prorations) switching plans during a billing cycle.",
                     "type": "boolean"
                   },
                   "proration_date": {
@@ -45789,7 +46581,7 @@
                     "type": "boolean"
                   },
                   "prorate": {
-                    "description": "Flag indicating whether to [prorate](/docs/subscriptions/upgrading-downgrading#understanding-proration) switching plans during a billing cycle.",
+                    "description": "Flag indicating whether to [prorate](/docs/billing/subscriptions/prorations) switching plans during a billing cycle.",
                     "type": "boolean"
                   },
                   "proration_date": {
@@ -45937,6 +46729,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
                     "type": "object"
                   },
@@ -45946,7 +46741,7 @@
                     "type": "string"
                   },
                   "prorate": {
-                    "description": "Flag indicating whether to [prorate](/docs/subscriptions/upgrading-downgrading#understanding-proration) switching plans during a billing cycle.",
+                    "description": "Flag indicating whether to [prorate](/docs/billing/subscriptions/prorations) switching plans during a billing cycle.",
                     "type": "boolean"
                   },
                   "proration_date": {
@@ -46501,6 +47296,12 @@
                     "description": "List of subscription items, each with an attached plan.",
                     "items": {
                       "properties": {
+                        "metadata": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        },
                         "plan": {
                           "maxLength": 5000,
                           "type": "string"
@@ -46518,6 +47319,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key-value pairs that you can attach to a `Subscription` object. It can be useful for storing additional information about the subscription in a structured format.",
                     "type": "object"
                   },
@@ -46601,6 +47405,14 @@
               "schema": {
                 "additionalProperties": false,
                 "properties": {
+                  "invoice_now": {
+                    "description": "Will generate a final invoice that invoices for any un-invoiced metered usage and new/pending proration invoice items.",
+                    "type": "boolean"
+                  },
+                  "prorate": {
+                    "description": "Will generate a proration invoice item that credits remaining unused time until the subscription period end.",
+                    "type": "boolean"
+                  }
                 },
                 "type": "object"
               }
@@ -46794,6 +47606,9 @@
                           "type": "string"
                         },
                         "metadata": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
                           "type": "object"
                         },
                         "plan": {
@@ -46810,6 +47625,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "A set of key-value pairs that you can attach to a subscription object. This can be useful for storing additional information about the subscription in a structured format.",
                     "type": "object"
                   },
@@ -48975,6 +49793,9 @@
                             "type": "string"
                           },
                           "metadata": {
+                            "additionalProperties": {
+                              "type": "string"
+                            },
                             "type": "object"
                           },
                           "name": {
@@ -49060,7 +49881,6 @@
                         "type": "string"
                       },
                       "ssn_last_4": {
-                        "maxLength": 5000,
                         "type": "string"
                       },
                       "tax_id": {
@@ -49204,7 +50024,7 @@
         "operationId": "TopupAll",
         "parameters": [
           {
-            "description": "A positive integer in %s representing how much to transfer.",
+            "description": "A positive integer representing how much to transfer.",
             "explode": true,
             "in": "query",
             "name": "amount",
@@ -49425,7 +50245,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "amount": {
-                    "description": "A positive integer in %s representing how much to transfer.",
+                    "description": "A positive integer representing how much to transfer.",
                     "type": "integer"
                   },
                   "currency": {
@@ -49446,6 +50266,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
                     "type": "object"
                   },
@@ -49612,6 +50435,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
                     "type": "object"
                   }
@@ -49938,11 +50764,27 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
                   "source_transaction": {
                     "description": "You can use this parameter to transfer funds from a charge before they are added to your available balance. A pending balance will transfer immediately but the funds will not become available until the original charge becomes available. [See the Connect documentation](/docs/connect/charges-transfers#transfer-availability) for details.",
+                    "type": "string"
+                  },
+                  "source_type": {
+                    "description": "The source balance to use for this transfer. One of `card`, `bank_account`, or `alipay_account`. For most users, this will default to `card`.",
+                    "enum": [
+                      "alipay_account",
+                      "bank_account",
+                      "bitcoin_receiver",
+                      "card",
+                      "source",
+                      "stripe_account"
+                    ],
+                    "maxLength": 5000,
                     "type": "string"
                   },
                   "transfer_group": {
@@ -50172,6 +51014,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
@@ -50326,6 +51171,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   }
@@ -50493,6 +51341,9 @@
                     "type": "array"
                   },
                   "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   }
@@ -50834,9 +51685,11 @@
                         "source.refund_attributes_required",
                         "source.transaction.created",
                         "source.transaction.updated",
+                        "subscription_schedule.aborted",
                         "subscription_schedule.canceled",
                         "subscription_schedule.completed",
                         "subscription_schedule.created",
+                        "subscription_schedule.expiring",
                         "subscription_schedule.released",
                         "subscription_schedule.updated",
                         "topup.canceled",
@@ -51222,9 +52075,11 @@
                         "source.refund_attributes_required",
                         "source.transaction.created",
                         "source.transaction.updated",
+                        "subscription_schedule.aborted",
                         "subscription_schedule.canceled",
                         "subscription_schedule.completed",
                         "subscription_schedule.created",
+                        "subscription_schedule.expiring",
                         "subscription_schedule.released",
                         "subscription_schedule.updated",
                         "topup.canceled",

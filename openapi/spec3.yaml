@@ -37,11 +37,6 @@ components:
           maxLength: 5000
           nullable: true
           type: string
-        capabilities:
-          description: A hash containing the set of capabilities that was requested
-            for this account and their associated states. States can be `active`,
-            `pending`, or `inactive`.
-          type: object
         charges_enabled:
           description: Whether the account can create live charges
           type: boolean
@@ -676,11 +671,15 @@ components:
             by Stripe or explicitly via the [transfers API](#transfers). The available
             balance for each currency and payment type can be found in the `source_types`
             property.
+          items:
+            "$ref": "#/components/schemas/balance_amount"
           type: array
         connect_reserved:
           description: Funds held due to negative balances on connected Custom accounts.
             The connect reserve balance for each currency and payment type can be
             found in the `source_types` property.
+          items:
+            "$ref": "#/components/schemas/balance_amount"
           type: array
         livemode:
           description: Has the value `true` if the object exists in live mode or the
@@ -696,6 +695,8 @@ components:
           description: Funds that are not yet available in the balance, due to the
             7-day rolling pay cycle. The pending balance for each currency, and for
             each payment type, can be found in the `source_types` property.
+          items:
+            "$ref": "#/components/schemas/balance_amount"
           type: array
       required:
       - available
@@ -704,10 +705,43 @@ components:
       - pending
       title: Balance
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - available
+      - connect_reserved
+      - pending
       x-resourceId: balance
       x-stripeResource:
         class_name: Balance
+    balance_amount:
+      properties:
+        amount:
+          description: Balance amount.
+          type: integer
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+          maxLength: 5000
+          type: string
+        source_types:
+          "$ref": "#/components/schemas/balance_amount_by_source_type"
+      required:
+      - amount
+      - currency
+      title: BalanceAmount
+      type: object
+      x-expandableFields:
+      - source_types
+    balance_amount_by_source_type:
+      properties:
+        bank_account:
+          description: Amount for bank account.
+          type: integer
+        card:
+          description: Amount for card.
+          type: integer
+      title: BalanceAmountBySourceType
+      type: object
+      x-expandableFields: []
     balance_transaction:
       properties:
         amount:
@@ -4121,7 +4155,6 @@ components:
           - invoiceitem
           type: string
         period:
-          nullable: true
           type: object
         plan:
           anyOf:
@@ -4165,6 +4198,7 @@ components:
       - livemode
       - metadata
       - object
+      - period
       - proration
       - quantity
       - unit_amount
@@ -4180,6 +4214,11 @@ components:
         class_name: InvoiceItem
     issuer_fraud_record:
       properties:
+        actionable:
+          description: An IFR is actionable if it has not received a dispute and has
+            not been fully refunded. You may wish to proactively refund a charge that
+            receives an IFR, in order to avoid receiving a dispute later.
+          type: boolean
         charge:
           anyOf:
           - maxLength: 5000
@@ -4201,6 +4240,9 @@ components:
             `made_with_stolen_card`, `misc`, `unauthorized_use_of_card`.
           maxLength: 5000
           type: string
+        has_liability_shift:
+          description: If true, the associated charge is subject to [liability shift](https://stripe.com/docs/sources/three-d-secure#disputed-payments).
+          type: boolean
         id:
           description: Unique identifier for the object.
           maxLength: 5000
@@ -4220,9 +4262,11 @@ components:
             record.
           type: integer
       required:
+      - actionable
       - charge
       - created
       - fraud_type
+      - has_liability_shift
       - id
       - livemode
       - object
@@ -4333,6 +4377,12 @@ components:
           type: array
         verification_data:
           "$ref": "#/components/schemas/issuing_authorization_verification_data"
+        wallet_provider:
+          description: What, if any, digital wallet was used for this authorization.
+            One of `apple_pay`, `google_pay`, or `samsung_pay`.
+          maxLength: 5000
+          nullable: true
+          type: string
       required:
       - approved
       - authorization_method
@@ -4433,7 +4483,13 @@ components:
         status:
           description: One of `active`, `inactive`, `pending`, `canceled`, `lost`,
             or `stolen`.
-          maxLength: 5000
+          enum:
+          - active
+          - canceled
+          - inactive
+          - lost
+          - pending
+          - stolen
           type: string
         type:
           description: One of `virtual` or `physical`.
@@ -4546,7 +4602,10 @@ components:
           type: string
         status:
           description: One of `active`, `inactive`, or `pending`.
-          maxLength: 5000
+          enum:
+          - active
+          - inactive
+          - pending
           type: string
         type:
           description: One of `individual` or `business_entity`.
@@ -4828,10 +4887,7 @@ components:
         reason:
           description: One of `authorization_controls`, `card_active`, `card_inactive`,
             `insufficient_funds`, `account_compliance_disabled`, `account_inactive`,
-            `suspected_fraud`, `webhook_approved`, `webhook_declined`, `webhook_timeout`,
-            `forced_card_authentication_failed`, `forced_card_expired`, `forced_card_lost`,
-            `forced_card_stolen`, `forced_do_not_honor`, `forced_incorrect_pin`, `forced_insufficient_funds`,
-            `forced_invalid_account_number`, `forced_invalid_transaction`, or `forced_suspected_fraud`.
+            `suspected_fraud`, `webhook_approved`, `webhook_declined`, or `webhook_timeout`.
           maxLength: 5000
           type: string
       required:
@@ -4871,11 +4927,15 @@ components:
         allowed_categories:
           description: Array of strings containing [categories](/docs/api#issuing_authorization_object-merchant_data-category)
             of authorizations permitted on this card.
+          items:
+            type: string
           nullable: true
           type: array
         blocked_categories:
           description: Array of strings containing [categories](/docs/api#issuing_authorization_object-merchant_data-category)
             of authorizations to always decline on this card.
+          items:
+            type: string
           nullable: true
           type: array
         currency:
@@ -5310,11 +5370,9 @@ components:
           type: string
         details_code:
           description: A machine-readable code specifying the verification state for
-            this legal entity. One of `scan_corrupt`, `scan_failed_copy`, `scan_not_readable`,
-            `scan_failed_greyscale`, `scan_not_uploaded`, `scan_id_type_not_supported`,
-            `scan_id_country_not_supported`, `scan_failed_other`, `scan_fraudulent`,
-            `scan_invalid_document`, `scan_manipulated_document`, `scan_missing_back`,
-            `scan_missing_front`, `scan_photo_mismatch`, `scan_too_large`, or `scan_failed_test_mode`.
+            this legal entity. One of `scan_corrupt`, `scan_not_readable`, `scan_failed_greyscale`,
+            `scan_not_uploaded`, `scan_id_type_not_supported`, `scan_id_country_not_supported`,
+            `scan_failed_other`, or `scan_failed_test_mode`.
           maxLength: 5000
           nullable: true
           type: string
@@ -5726,14 +5784,12 @@ components:
           anyOf:
           - maxLength: 5000
             type: string
-          - "$ref": "#/components/schemas/discount"
           - "$ref": "#/components/schemas/sku"
           description: The ID of the associated object for this line item. Expandable
             if not null (e.g., expandable to a SKU).
           nullable: true
           x-expansionResources:
             oneOf:
-            - "$ref": "#/components/schemas/discount"
             - "$ref": "#/components/schemas/sku"
         quantity:
           description: A positive integer representing the number of instances of
@@ -5958,7 +6014,7 @@ components:
           maxLength: 5000
           nullable: true
           type: string
-        iban_last4:
+        last4:
           maxLength: 5000
           nullable: true
           type: string
@@ -5971,23 +6027,20 @@ components:
       x-expandableFields: []
     payment_flows_private_payment_methods_sepa_debit:
       properties:
-        iban:
-          maxLength: 5000
-          type: string
         last4:
           maxLength: 5000
           nullable: true
           type: string
-      required:
-      - iban
       title: PaymentFlowsPrivatePaymentMethodsSepaDebit
       type: object
       x-expandableFields: []
     payment_intent:
       properties:
         allowed_source_types:
-          description: The list of source types that this PaymentIntent is allowed
-            to use.
+          description: The list of source types (e.g. card) that this PaymentIntent
+            is allowed to use.
+          items:
+            type: string
           type: array
         amount:
           description: Amount intended to be collected by this PaymentIntent.
@@ -6893,6 +6946,8 @@ components:
         deactivate_on:
           description: An array of connect application identifiers that cannot purchase
             this product. Only applicable to products of `type=good`.
+          items:
+            type: string
           type: array
         description:
           description: The product's description, meant to be displayable to the customer.
@@ -7013,7 +7068,14 @@ components:
         item_type:
           description: The type of items in the list. One of `card_fingerprint`, `card_bin`,
             `email`, `ip_address`, `country`, `string`, or `case_sensitive_string`.
-          maxLength: 5000
+          enum:
+          - card_bin
+          - card_fingerprint
+          - case_sensitive_string
+          - country
+          - email
+          - ip_address
+          - string
           type: string
         list_items:
           description: List of items contained within this list.
@@ -7572,8 +7634,9 @@ components:
           - maxLength: 5000
             type: string
           - "$ref": "#/components/schemas/transfer_reversal"
-          description: The transfer reversal that is associated with the refund, if
-            there is one.
+          description: The transfer reversal that is associated with the refund. Only
+            present if the charge came from another Stripe account. See the Connect
+            documentation for details.
           nullable: true
           x-expansionResources:
             oneOf:
@@ -7586,6 +7649,18 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        transfer_reversal:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/transfer_reversal"
+          description: If the accompanying transfer was reversed, the transfer reversal
+            object. Only applicable if the charge was created using the destination
+            parameter.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/transfer_reversal"
       required:
       - amount
       - created
@@ -7600,6 +7675,7 @@ components:
       - charge
       - failure_balance_transaction
       - source_transfer_reversal
+      - transfer_reversal
       x-resourceId: refund
       x-stripeResource:
         class_name: Refund
@@ -7820,6 +7896,7 @@ components:
       x-expandableFields:
       - charge
       - payment_intent
+      x-resourceId: review
       x-stripeResource:
         class_name: Review
     rule:
@@ -8220,7 +8297,7 @@ components:
         usage:
           description: Either `reusable` or `single_use`. Whether this source should
             be reusable or not. Some source types may or may not be reusable by construction,
-            while other may leave the option at creation. If an incompatible value
+            while others may leave the option at creation. If an incompatible value
             is passed, an error will be returned.
           maxLength: 5000
           nullable: true
@@ -9596,7 +9673,7 @@ components:
     topup:
       properties:
         amount:
-          description: Amount transferred, in %s.
+          description: Amount transferred.
           type: integer
         balance_transaction:
           anyOf:
@@ -10078,6 +10155,8 @@ components:
         enabled_events:
           description: The list of events to enable for this endpoint. You may specify
             `['*']` to enable all events.
+          items:
+            type: string
           type: array
         id:
           description: Unique identifier for the object.
@@ -10145,7 +10224,7 @@ openapi: 3.0.0
 paths:
   "/v1/3d_secure":
     post:
-      description: ''
+      description: "<p>Initiate 3D Secure authentication.</p>"
       operationId: Create3DSecure
       requestBody:
         content:
@@ -10359,6 +10438,9 @@ paths:
                 explode: true
                 style: deepObject
               payout_schedule:
+                explode: true
+                style: deepObject
+              requested_capabilities:
                 explode: true
                 style: deepObject
               tos_acceptance:
@@ -10819,6 +10901,8 @@ paths:
                   title: account_legal_entity_specs
                   type: object
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key-value pairs that you can attach to an
                     `Account` object. This can be useful for storing additional information
                     about the account in a structured format.
@@ -10867,6 +10951,20 @@ paths:
                     purposes.
                   maxLength: 40000
                   type: string
+                requested_capabilities:
+                  description: The set of capabilities you want to unlock for this
+                    account. Each capability will be inactive until you have provided
+                    its specific requirements and Stripe has verified them. An account
+                    may have some of its requested capabilities be active and some
+                    be inactive.
+                  items:
+                    enum:
+                    - card_payments
+                    - legacy_payments
+                    - platform_payments
+                    maxLength: 5000
+                    type: string
+                  type: array
                 statement_descriptor:
                   description: The default text that appears on credit card statements
                     when a charge is made [directly on the account](/docs/connect/direct-charges)
@@ -10918,7 +11016,7 @@ paths:
           description: Error response.
   "/v1/account/bank_accounts":
     post:
-      description: ''
+      description: "<p>Create an external account for a given account.</p>"
       operationId: CreateAccountExternalAccount
       requestBody:
         content:
@@ -10964,6 +11062,8 @@ paths:
                     type: string
                   description: This string to be replaced by DocSpecGenerator.
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key-value pairs that you can attach to an
                     external account object. It can be useful for storing additional
                     information about the external account in a structured format.
@@ -10985,7 +11085,7 @@ paths:
           description: Error response.
   "/v1/account/bank_accounts/{id}":
     delete:
-      description: ''
+      description: "<p>Delete a specified external account for a given account.</p>"
       operationId: DeleteAccountExternalAccount
       parameters:
       - description: The ID of the external account to be deleted.
@@ -11020,7 +11120,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     get:
-      description: ''
+      description: "<p>Retrieve a specified external account for a given account.</p>"
       operationId: RetrieveAccountExternalAccount
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -11148,6 +11248,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 name:
                   description: Cardholder name.
@@ -11170,7 +11272,7 @@ paths:
           description: Error response.
   "/v1/account/external_accounts":
     get:
-      description: ''
+      description: "<p>List external accounts for an account.</p>"
       operationId: AllAccountExternalAccounts
       parameters:
       - description: A cursor for use in pagination. `ending_before` is an object
@@ -11271,7 +11373,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: ''
+      description: "<p>Create an external account for a given account.</p>"
       operationId: CreateAccountExternalAccount
       requestBody:
         content:
@@ -11317,6 +11419,8 @@ paths:
                     type: string
                   description: This string to be replaced by DocSpecGenerator.
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key-value pairs that you can attach to an
                     external account object. It can be useful for storing additional
                     information about the external account in a structured format.
@@ -11338,7 +11442,7 @@ paths:
           description: Error response.
   "/v1/account/external_accounts/{id}":
     delete:
-      description: ''
+      description: "<p>Delete a specified external account for a given account.</p>"
       operationId: DeleteAccountExternalAccount
       parameters:
       - description: The ID of the external account to be deleted.
@@ -11373,7 +11477,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     get:
-      description: ''
+      description: "<p>Retrieve a specified external account for a given account.</p>"
       operationId: RetrieveAccountExternalAccount
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -11501,6 +11605,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 name:
                   description: Cardholder name.
@@ -11907,6 +12013,8 @@ paths:
                   maxLength: 5000
                   type: string
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -11941,7 +12049,6 @@ paths:
                   type: object
                 ssn_last_4:
                   description: The last 4 digits of the person's social security number.
-                  maxLength: 5000
                   type: string
               type: object
         required: false
@@ -12224,6 +12331,8 @@ paths:
                   maxLength: 5000
                   type: string
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -12258,7 +12367,6 @@ paths:
                   type: object
                 ssn_last_4:
                   description: The last 4 digits of the person's social security number.
-                  maxLength: 5000
                   type: string
               type: object
         required: false
@@ -12568,6 +12676,8 @@ paths:
                   maxLength: 5000
                   type: string
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -12602,7 +12712,6 @@ paths:
                   type: object
                 ssn_last_4:
                   description: The last 4 digits of the person's social security number.
-                  maxLength: 5000
                   type: string
               type: object
         required: false
@@ -12885,6 +12994,8 @@ paths:
                   maxLength: 5000
                   type: string
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -12919,7 +13030,6 @@ paths:
                   type: object
                 ssn_last_4:
                   description: The last 4 digits of the person's social security number.
-                  maxLength: 5000
                   type: string
               type: object
         required: false
@@ -12942,6 +13052,25 @@ paths:
         href="/docs/connect">Connect</a>. If you’re not a platform, the list is empty.</p>
       operationId: AllAccount
       parameters:
+      - explode: true
+        in: query
+        name: created
+        required: false
+        schema:
+          anyOf:
+          - properties:
+              gt:
+                type: integer
+              gte:
+                type: integer
+              lt:
+                type: integer
+              lte:
+                type: integer
+            title: range_query_specs
+            type: object
+          - type: integer
+        style: deepObject
       - description: A cursor for use in pagination. `ending_before` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, starting with `obj_bar`, your subsequent
@@ -13533,6 +13662,8 @@ paths:
                   title: account_legal_entity_specs
                   type: object
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key-value pairs that you can attach to an
                     `Account` object. This can be useful for storing additional information
                     about the account in a structured format.
@@ -13768,6 +13899,9 @@ paths:
                 explode: true
                 style: deepObject
               payout_schedule:
+                explode: true
+                style: deepObject
+              requested_capabilities:
                 explode: true
                 style: deepObject
               tos_acceptance:
@@ -14225,6 +14359,8 @@ paths:
                   title: account_legal_entity_specs
                   type: object
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key-value pairs that you can attach to an
                     `Account` object. This can be useful for storing additional information
                     about the account in a structured format.
@@ -14273,6 +14409,20 @@ paths:
                     purposes.
                   maxLength: 40000
                   type: string
+                requested_capabilities:
+                  description: The set of capabilities you want to unlock for this
+                    account. Each capability will be inactive until you have provided
+                    its specific requirements and Stripe has verified them. An account
+                    may have some of its requested capabilities be active and some
+                    be inactive.
+                  items:
+                    enum:
+                    - card_payments
+                    - legacy_payments
+                    - platform_payments
+                    maxLength: 5000
+                    type: string
+                  type: array
                 statement_descriptor:
                   description: The default text that appears on credit card statements
                     when a charge is made [directly on the account](/docs/connect/direct-charges)
@@ -14324,7 +14474,7 @@ paths:
           description: Error response.
   "/v1/accounts/{account}/bank_accounts":
     post:
-      description: ''
+      description: "<p>Create an external account for a given account.</p>"
       operationId: CreateAccountExternalAccount
       parameters:
       - in: path
@@ -14378,6 +14528,8 @@ paths:
                     type: string
                   description: This string to be replaced by DocSpecGenerator.
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key-value pairs that you can attach to an
                     external account object. It can be useful for storing additional
                     information about the external account in a structured format.
@@ -14399,7 +14551,7 @@ paths:
           description: Error response.
   "/v1/accounts/{account}/bank_accounts/{id}":
     delete:
-      description: ''
+      description: "<p>Delete a specified external account for a given account.</p>"
       operationId: DeleteAccountExternalAccount
       parameters:
       - in: path
@@ -14441,7 +14593,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     get:
-      description: ''
+      description: "<p>Retrieve a specified external account for a given account.</p>"
       operationId: RetrieveAccountExternalAccount
       parameters:
       - in: path
@@ -14583,6 +14735,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 name:
                   description: Cardholder name.
@@ -14605,7 +14759,7 @@ paths:
           description: Error response.
   "/v1/accounts/{account}/external_accounts":
     get:
-      description: ''
+      description: "<p>List external accounts for an account.</p>"
       operationId: AllAccountExternalAccounts
       parameters:
       - in: path
@@ -14713,7 +14867,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: ''
+      description: "<p>Create an external account for a given account.</p>"
       operationId: CreateAccountExternalAccount
       parameters:
       - in: path
@@ -14767,6 +14921,8 @@ paths:
                     type: string
                   description: This string to be replaced by DocSpecGenerator.
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key-value pairs that you can attach to an
                     external account object. It can be useful for storing additional
                     information about the external account in a structured format.
@@ -14788,7 +14944,7 @@ paths:
           description: Error response.
   "/v1/accounts/{account}/external_accounts/{id}":
     delete:
-      description: ''
+      description: "<p>Delete a specified external account for a given account.</p>"
       operationId: DeleteAccountExternalAccount
       parameters:
       - in: path
@@ -14830,7 +14986,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     get:
-      description: ''
+      description: "<p>Retrieve a specified external account for a given account.</p>"
       operationId: RetrieveAccountExternalAccount
       parameters:
       - in: path
@@ -14972,6 +15128,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 name:
                   description: Cardholder name.
@@ -15398,6 +15556,8 @@ paths:
                   maxLength: 5000
                   type: string
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -15432,7 +15592,6 @@ paths:
                   type: object
                 ssn_last_4:
                   description: The last 4 digits of the person's social security number.
-                  maxLength: 5000
                   type: string
               type: object
         required: false
@@ -15736,6 +15895,8 @@ paths:
                   maxLength: 5000
                   type: string
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -15770,7 +15931,6 @@ paths:
                   type: object
                 ssn_last_4:
                   description: The last 4 digits of the person's social security number.
-                  maxLength: 5000
                   type: string
               type: object
         required: false
@@ -16095,6 +16255,8 @@ paths:
                   maxLength: 5000
                   type: string
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -16129,7 +16291,6 @@ paths:
                   type: object
                 ssn_last_4:
                   description: The last 4 digits of the person's social security number.
-                  maxLength: 5000
                   type: string
               type: object
         required: false
@@ -16433,6 +16594,8 @@ paths:
                   maxLength: 5000
                   type: string
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -16467,7 +16630,6 @@ paths:
                   type: object
                 ssn_last_4:
                   description: The last 4 digits of the person's social security number.
-                  maxLength: 5000
                   type: string
               type: object
         required: false
@@ -16540,7 +16702,7 @@ paths:
           description: Error response.
   "/v1/apple_pay/domains":
     get:
-      description: ''
+      description: "<p>List apple pay domains.</p>"
       operationId: AllApplePayDomains
       parameters:
       - in: query
@@ -16644,7 +16806,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: ''
+      description: "<p>Create an apple pay domain.</p>"
       operationId: CreateApplePayDomain
       requestBody:
         content:
@@ -16683,7 +16845,7 @@ paths:
           description: Error response.
   "/v1/apple_pay/domains/{domain}":
     delete:
-      description: ''
+      description: "<p>Delete an apple pay domain.</p>"
       operationId: DeleteApplePayDomain
       parameters:
       - in: path
@@ -16716,7 +16878,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     get:
-      description: ''
+      description: "<p>Retrieve an apple pay domain.</p>"
       operationId: RetrieveApplePayDomain
       parameters:
       - in: path
@@ -16985,6 +17147,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -17258,6 +17422,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -17402,7 +17568,7 @@ paths:
           type: integer
         style: form
       - description: For automatic Stripe payouts only, only returns transactions
-          that were payed out on the specified payout ID.
+          that were paid out on the specified payout ID.
         in: query
         name: payout
         required: false
@@ -17706,7 +17872,7 @@ paths:
   "/v1/bitcoin/receivers/{receiver}/transactions":
     get:
       deprecated: true
-      description: ''
+      description: "<p>List bitcoin transacitons for a given receiver.</p>"
       operationId: BitcoinAllTransactions
       parameters:
       - description: Only return transactions for the customer specified by this customer
@@ -17825,7 +17991,7 @@ paths:
   "/v1/bitcoin/transactions":
     get:
       deprecated: true
-      description: ''
+      description: "<p>List bitcoin transacitons for a given receiver.</p>"
       operationId: BitcoinAllTransactions
       parameters:
       - description: Only return transactions for the customer specified by this customer
@@ -18227,6 +18393,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format.
@@ -18492,6 +18660,8 @@ paths:
                   title: fraud_details
                   type: object
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -18665,7 +18835,7 @@ paths:
           description: Error response.
   "/v1/charges/{charge}/dispute":
     get:
-      description: ''
+      description: "<p>Retrieve a dispute for a specified charge.</p>"
       operationId: RetrieveChargeDispute
       parameters:
       - in: path
@@ -18821,6 +18991,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key-value pairs that you can attach to a dispute
                     object. This can be useful for storing additional information
                     about the dispute in a structured format.
@@ -18892,7 +19064,18 @@ paths:
           description: Error response.
   "/v1/charges/{charge}/refund":
     post:
-      description: ''
+      description: |-
+        <p>When you create a new refund, you must specify a charge on which to create it.</p>
+
+        <p>Creating a new refund will refund a charge that has previously been created but not yet refunded.
+        Funds will be refunded to the credit or debit card that was originally charged.</p>
+
+        <p>You can optionally refund only part of a charge.
+        You can do so multiple times, until the entire charge has been refunded.</p>
+
+        <p>Once entirely refunded, a charge can’t be refunded again.
+        This method will raise an error when called on an already-refunded charge,
+        or when trying to refund more money than is left on a charge.</p>
       operationId: ChargeRefund
       parameters:
       - in: path
@@ -18938,6 +19121,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 reason:
                   enum:
@@ -19073,7 +19258,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: ''
+      description: "<p>Create a refund.</p>"
       operationId: UnifiedPaymentsCreateRefund
       parameters:
       - in: path
@@ -19119,6 +19304,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 reason:
                   enum:
@@ -19148,7 +19335,7 @@ paths:
           description: Error response.
   "/v1/charges/{charge}/refunds/{refund}":
     get:
-      description: ''
+      description: "<p>Retrieves the details of an existing refund.</p>"
       operationId: RetrieveChargeRefund
       parameters:
       - in: path
@@ -19197,7 +19384,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: ''
+      description: "<p>Update a specified refund.</p>"
       operationId: UpdateChargeRefund
       parameters:
       - in: path
@@ -19232,6 +19419,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
               type: object
         required: false
@@ -19574,6 +19763,8 @@ paths:
                     blog can use.
                   type: integer
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a coupon
                     object. It can be useful for storing additional information about
                     the coupon in a structured format.
@@ -19729,6 +19920,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a coupon
                     object. It can be useful for storing additional information about
                     the coupon in a structured format.
@@ -19949,6 +20142,8 @@ paths:
                   maxLength: 5000
                   type: string
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a customer
                     object. It can be useful for storing additional information about
                     the customer in a structured format.
@@ -20112,7 +20307,10 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: ''
+      description: |-
+        <p>Updates the specified customer by setting the values of the parameters passed. Any parameters not provided will be left unchanged. For example, if you pass the <strong>source</strong> parameter, that becomes the customer’s active source (e.g., a card) to be used for all charges in the future. When you update a customer to a new valid source: for each of the customer’s current subscriptions, if the subscription bills automatically and is in the <code>past_due</code> state, then the latest unpaid, unclosed invoice for the subscription will be retried (note that this retry will not count as an automatic retry, and will not affect the next regularly scheduled payment for the invoice). (Note also that no invoices pertaining to subscriptions in the <code>unpaid</code> state, or invoices pertaining to canceled subscriptions, will be retried as a result of updating the customer’s source.)</p>
+
+        <p>This request accepts mostly the same arguments as the customer creation call.</p>
       operationId: CustomerUpdate
       parameters:
       - description: The identifier of the customer to subscribe.
@@ -20216,6 +20414,8 @@ paths:
                   maxLength: 5000
                   type: string
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a customer
                     object. It can be useful for storing additional information about
                     the customer in a structured format.
@@ -20480,6 +20680,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a card
                     object. It can be useful for storing additional information about
                     the card in a structured format.
@@ -20507,7 +20709,7 @@ paths:
           description: Error response.
   "/v1/customers/{customer}/bank_accounts/{id}":
     delete:
-      description: ''
+      description: "<p>Delete a specified source for a given customer.</p>"
       operationId: DeleteCustomerSource
       parameters:
       - in: path
@@ -20608,7 +20810,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: ''
+      description: "<p>Update a specified source for a given customer.</p>"
       operationId: UpdateCustomerSource
       parameters:
       - in: path
@@ -20696,6 +20898,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 name:
                   description: Cardholder name.
@@ -20755,7 +20959,7 @@ paths:
           description: Error response.
   "/v1/customers/{customer}/bank_accounts/{id}/verify":
     post:
-      description: ''
+      description: "<p>Verify a specified bank account for a given customer.</p>"
       operationId: VerifyCustomerSource
       parameters:
       - in: path
@@ -20992,6 +21196,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a card
                     object. It can be useful for storing additional information about
                     the card in a structured format.
@@ -21019,7 +21225,7 @@ paths:
           description: Error response.
   "/v1/customers/{customer}/cards/{id}":
     delete:
-      description: ''
+      description: "<p>Delete a specified source for a given customer.</p>"
       operationId: DeleteCustomerSource
       parameters:
       - in: path
@@ -21120,7 +21326,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: ''
+      description: "<p>Update a specified source for a given customer.</p>"
       operationId: UpdateCustomerSource
       parameters:
       - in: path
@@ -21208,6 +21414,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 name:
                   description: Cardholder name.
@@ -21345,7 +21553,7 @@ paths:
           description: Error response.
   "/v1/customers/{customer}/sources":
     get:
-      description: ''
+      description: "<p>List sources for a specified customer.</p>"
       operationId: AllCustomerSources
       parameters:
       - description: The ID of the customer whose sources will be retrieved.
@@ -21538,6 +21746,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a card
                     object. It can be useful for storing additional information about
                     the card in a structured format.
@@ -21565,7 +21775,7 @@ paths:
           description: Error response.
   "/v1/customers/{customer}/sources/{id}":
     delete:
-      description: ''
+      description: "<p>Delete a specified source for a given customer.</p>"
       operationId: DeleteCustomerSource
       parameters:
       - in: path
@@ -21611,7 +21821,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     get:
-      description: ''
+      description: "<p>Retrieve a specified source for a given customer.</p>"
       operationId: RetrieveCustomerSource
       parameters:
       - in: path
@@ -21663,7 +21873,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: ''
+      description: "<p>Update a specified source for a given customer.</p>"
       operationId: UpdateCustomerSource
       parameters:
       - in: path
@@ -21751,6 +21961,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 name:
                   description: Cardholder name.
@@ -21810,7 +22022,7 @@ paths:
           description: Error response.
   "/v1/customers/{customer}/sources/{id}/verify":
     post:
-      description: ''
+      description: "<p>Verify a specified bank account for a given customer.</p>"
       operationId: VerifyCustomerSource
       parameters:
       - in: path
@@ -22066,6 +22278,10 @@ paths:
                   description: List of subscription items, each with an attached plan.
                   items:
                     properties:
+                      metadata:
+                        additionalProperties:
+                          type: string
+                        type: object
                       plan:
                         maxLength: 5000
                         type: string
@@ -22077,6 +22293,8 @@ paths:
                     type: object
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key-value pairs that you can attach to a `Subscription`
                     object. It can be useful for storing additional information about
                     the subscription in a structured format.
@@ -22163,7 +22381,17 @@ paths:
             encoding: {}
             schema:
               additionalProperties: false
-              properties: {}
+              properties:
+                invoice_now:
+                  description: Can be set to `true` if `at_period_end` is not set
+                    to `true`. Will generate a final invoice that invoices for any
+                    un-invoiced metered usage and new/pending proration invoice items.
+                  type: boolean
+                prorate:
+                  description: Can be set to `true` if `at_period_end` is not set
+                    to `true`. Will generate a proration invoice item that credits
+                    remaining unused time until the subscription period end.
+                  type: boolean
               type: object
         required: false
       responses:
@@ -22336,6 +22564,8 @@ paths:
                         maxLength: 5000
                         type: string
                       metadata:
+                        additionalProperties:
+                          type: string
                         type: object
                       plan:
                         maxLength: 5000
@@ -22346,6 +22576,8 @@ paths:
                     type: object
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key-value pairs that you can attach to a subscription
                     object. This can be useful for storing additional information
                     about the subscription in a structured format.
@@ -22776,6 +23008,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key-value pairs that you can attach to a dispute
                     object. This can be useful for storing additional information
                     about the dispute in a structured format.
@@ -22874,6 +23108,11 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                issuing_card:
+                  description: The ID of the Issuing Card you'd like to access using
+                    the resulting ephemeral key.
+                  maxLength: 5000
+                  type: string
               required:
               - customer
               type: object
@@ -23474,6 +23713,8 @@ paths:
                   maxLength: 5000
                   type: string
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format.
@@ -23588,6 +23829,8 @@ paths:
                   description: A future timestamp after which the link will no longer
                     be usable, or `now` to expire the link immediately.
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format.
@@ -23676,6 +23919,7 @@ paths:
           - business_logo
           - customer_signature
           - dispute_evidence
+          - dsar_report
           - finance_report_run
           - founders_stock_document
           - identity_document
@@ -23800,6 +24044,8 @@ paths:
                       format: unix-time
                       type: integer
                     metadata:
+                      additionalProperties:
+                        type: string
                       type: object
                   required:
                   - create
@@ -24038,6 +24284,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              period:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -24080,9 +24329,25 @@ paths:
                   maxLength: 5000
                   type: string
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to an
                     invoice item object. It can be useful for storing additional information
                     about the invoice item in a structured format.
+                  type: object
+                period:
+                  description: The period associated with this invoice item.
+                  properties:
+                    end:
+                      format: unix-time
+                      type: integer
+                    start:
+                      format: unix-time
+                      type: integer
+                  required:
+                  - end
+                  - start
+                  title: period
                   type: object
                 quantity:
                   description: Non-negative integer. The quantity of units for the
@@ -24226,6 +24491,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              period:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -24251,9 +24519,25 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to an
                     invoice item object. It can be useful for storing additional information
                     about the invoice item in a structured format.
+                  type: object
+                period:
+                  description: The period associated with this invoice item.
+                  properties:
+                    end:
+                      format: unix-time
+                      type: integer
+                    start:
+                      format: unix-time
+                      type: integer
+                  required:
+                  - end
+                  - start
+                  title: period
                   type: object
                 quantity:
                   description: Non-negative integer. The quantity of units for the
@@ -24517,6 +24801,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 statement_descriptor:
                   description: Extra information about a charge for the customer's
@@ -24620,6 +24906,21 @@ paths:
                 maxLength: 5000
                 type: string
               metadata:
+                additionalProperties:
+                  type: string
+                type: object
+              period:
+                properties:
+                  end:
+                    format: unix-time
+                    type: integer
+                  start:
+                    format: unix-time
+                    type: integer
+                required:
+                - end
+                - start
+                title: period
                 type: object
             title: invoice_item_preview_params
             type: object
@@ -24680,6 +24981,8 @@ paths:
                 maxLength: 5000
                 type: string
               metadata:
+                additionalProperties:
+                  type: string
                 type: object
               plan:
                 maxLength: 5000
@@ -24900,6 +25203,8 @@ paths:
                 maxLength: 5000
                 type: string
               metadata:
+                additionalProperties:
+                  type: string
                 type: object
               plan:
                 maxLength: 5000
@@ -25172,6 +25477,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 statement_descriptor:
                   description: Extra information about a charge for the customer's
@@ -25578,7 +25885,7 @@ paths:
   "/v1/issuer_fraud_records":
     get:
       description: "<p>Returns a list of issuer fraud records.</p>"
-      operationId: DisputesIssuerFraudRecordAll
+      operationId: RadarIssuerFraudRecordAll
       parameters:
       - description: Only return issuer fraud records for the charge specified by
           this charge ID.
@@ -25670,7 +25977,7 @@ paths:
                 - has_more
                 - object
                 - url
-                title: DisputesIssuerFraudRecordList
+                title: RadarIssuerFraudRecordList
                 type: object
                 x-expandableFields:
                 - data
@@ -25687,7 +25994,7 @@ paths:
         <p>Retrieves the details of an issuer fraud record that has previously been created. </p>
 
         <p>Please refer to the <a href="#issuer_fraud_record_object">issuer fraud record</a> object reference for more details.</p>
-      operationId: DisputesIssuerFraudRecordRetrieve
+      operationId: RadarIssuerFraudRecordRetrieve
       parameters:
       - description: Specifies which fields in the response should be expanded.
         explode: true
@@ -25959,6 +26266,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
               type: object
         required: false
@@ -26294,6 +26603,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 name:
                   description: The cardholder's name. This will be printed on cards
@@ -26462,6 +26773,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -27317,6 +27630,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 shipping:
                   description: The address where the card will be shipped. This will
@@ -27363,7 +27678,6 @@ paths:
                   enum:
                   - active
                   - inactive
-                  - pending_compliance
                   maxLength: 5000
                   type: string
                 type:
@@ -28071,6 +28385,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 status:
                   description: Specifies whether to permit authorizations on this
@@ -28340,6 +28656,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -28452,6 +28770,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -28697,6 +29017,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
               type: object
         required: false
@@ -29190,6 +29512,8 @@ paths:
                     type: object
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to an
                     order object. Limited to 500 characters. Metadata can be useful
                     for storing additional information about the order in a structured
@@ -29340,6 +29664,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a product
                     object. It can be useful for storing additional information about
                     the order in a structured format.
@@ -29393,7 +29719,8 @@ paths:
           description: Error response.
   "/v1/orders/{id}/pay":
     post:
-      description: ''
+      description: "<p>Pay an order by providing a <code>source</code> to create a
+        payment.</p>"
       operationId: PayOrder
       parameters:
       - in: path
@@ -29440,6 +29767,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to an
                     order object. Limited to 500 characters. Metadata can be useful
                     for storing additional information about the order in a structured
@@ -29697,8 +30026,8 @@ paths:
               additionalProperties: false
               properties:
                 allowed_source_types:
-                  description: The list of source types that this PaymentIntent is
-                    allowed to use.
+                  description: The list of source types (e.g. card) that this PaymentIntent
+                    is allowed to use.
                   items:
                     maxLength: 5000
                     type: string
@@ -29747,6 +30076,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format.
@@ -29974,6 +30305,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format.
@@ -30229,6 +30562,7 @@ paths:
                   description: |-
                     The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site.
                     If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.
+                    This parameter is only used for cards and other redirect-based payment methods.
                   type: string
                 save_source_to_customer:
                   description: "`true` to save this PaymentIntent's Source to the
@@ -30498,6 +30832,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a payout
                     object. It can be useful for storing additional information about
                     the payout in a structured format.
@@ -30634,6 +30970,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a payout
                     object. It can be useful for storing additional information about
                     the payout in a structured format.
@@ -30930,6 +31268,8 @@ paths:
                     or 52 weeks).
                   type: integer
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a plan
                     object. It can be useful for storing additional information about
                     the plan in a structured format.
@@ -30954,6 +31294,8 @@ paths:
                         maxLength: 5000
                         type: string
                       metadata:
+                        additionalProperties:
+                          type: string
                         type: object
                       name:
                         maxLength: 5000
@@ -31183,6 +31525,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a plan
                     object. It can be useful for storing additional information about
                     the plan in a structured format.
@@ -31475,6 +31819,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a product
                     object. It can be useful for storing additional information about
                     the product in a structured format. Applicable to both `service`
@@ -31725,6 +32071,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a product
                     object. It can be useful for storing additional information about
                     the product in a structured format.
@@ -31861,8 +32209,8 @@ paths:
           maxLength: 5000
           type: string
         style: form
-      - description: Return only the list item belonging to the parent list with the
-          specified value.
+      - description: Return items belonging to the parent list whose value matches
+          the specified value (using an "is like" match).
         in: query
         name: value
         required: false
@@ -32219,8 +32567,9 @@ paths:
                     type: string
                   type: array
                 item_type:
-                  description: Type of the items in the list. Use `string` if the
-                    item type is unknown/mixed.
+                  description: Type of the items in the list. One of `card_fingerprint`,
+                    `card_bin`, `email`, `ip_address`, `country`, `string`, or `case_sensitive_string`.
+                    Use `string` if the item type is unknown or mixed.
                   enum:
                   - card_bin
                   - card_fingerprint
@@ -32232,6 +32581,8 @@ paths:
                   maxLength: 5000
                   type: string
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -32380,6 +32731,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -32605,6 +32958,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -32813,6 +33168,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -32971,7 +33328,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: ''
+      description: "<p>Create a refund.</p>"
       operationId: UnifiedPaymentsCreateRefund
       requestBody:
         content:
@@ -33012,6 +33369,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   type: object
                 reason:
                   enum:
@@ -33117,6 +33476,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -33512,6 +33873,215 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
+  "/v1/reviews":
+    get:
+      description: "<p>Returns a list of <code>Review</code> objects that have <code>open</code>
+        set to <code>true</code>. The objects are sorted in descending order by creation
+        date, with the most recently created object appearing first.</p>"
+      operationId: RadarReviewAll
+      parameters:
+      - explode: true
+        in: query
+        name: created
+        required: false
+        schema:
+          anyOf:
+          - properties:
+              gt:
+                type: integer
+              gte:
+                type: integer
+              lt:
+                type: integer
+              lte:
+                type: integer
+            title: range_query_specs
+            type: object
+          - type: integer
+        style: deepObject
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    items:
+                      "$ref": "#/components/schemas/review"
+                    type: array
+                  has_more:
+                    description: True if this list has another page of items after
+                      this one that can be fetched.
+                    type: boolean
+                  object:
+                    description: String representing the object's type. Objects of
+                      the same type share the same value. Always has the value `list`.
+                    enum:
+                    - list
+                    type: string
+                  url:
+                    description: The URL where this list can be accessed.
+                    maxLength: 5000
+                    pattern: "^/v1/reviews"
+                    type: string
+                required:
+                - data
+                - has_more
+                - object
+                - url
+                type: object
+                x-expandableFields:
+                - data
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/reviews/{review}":
+    get:
+      description: "<p>Retrieves a <code>Review</code> object.</p>"
+      operationId: RadarReviewRetrieve
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - description: The identifier of the review to be retrieved.
+        in: path
+        name: review
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/review"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/reviews/{review}/approve":
+    post:
+      description: "<p>Approves a <code>Review</code> object, closing it and removing
+        it from the list of reviews.</p>"
+      operationId: RadarReviewApprove
+      parameters:
+      - description: The identifier of the review to be approved.
+        in: path
+        name: review
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/review"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
   "/v1/sigma/scheduled_query_runs":
     get:
       description: "<p>Returns a list of scheduled query runs.</p>"
@@ -33885,6 +34455,8 @@ paths:
                   title: inventory_specs
                   type: object
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a SKU
                     object. It can be useful for storing additional information about
                     the SKU in a structured format.
@@ -34109,6 +34681,8 @@ paths:
                   title: inventory_update_specs
                   type: object
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a SKU
                     object. It can be useful for storing additional information about
                     the SKU in a structured format.
@@ -34260,6 +34834,8 @@ paths:
                   title: mandate_params
                   type: object
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a source
                     object. It can be useful for storing additional information about
                     the source in a structured format.
@@ -34504,6 +35080,8 @@ paths:
                   title: mandate_params
                   type: object
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key/value pairs that you can attach to a source
                     object. It can be useful for storing additional information about
                     the source in a structured format.
@@ -34615,7 +35193,7 @@ paths:
           description: Error response.
   "/v1/sources/{source}/source_transactions":
     get:
-      description: ''
+      description: "<p>List source transactions for a given source.</p>"
       operationId: ApmsSourcesSourceTransactionAll
       parameters:
       - description: A cursor for use in pagination. `ending_before` is an object
@@ -34776,7 +35354,7 @@ paths:
           description: Error response.
   "/v1/sources/{source}/verify":
     post:
-      description: ''
+      description: "<p>Verify a given source.</p>"
       operationId: ApmsSourcesSourceVerify
       parameters:
       - description: The ID of the desired source.
@@ -34956,6 +35534,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format.
@@ -34965,7 +35545,7 @@ paths:
                   maxLength: 5000
                   type: string
                 prorate:
-                  description: Flag indicating whether to [prorate](/docs/subscriptions/upgrading-downgrading#understanding-proration)
+                  description: Flag indicating whether to [prorate](/docs/billing/subscriptions/prorations)
                     switching plans during a billing cycle.
                   type: boolean
                 proration_date:
@@ -35027,7 +35607,7 @@ paths:
                     only when the current plan's `usage_type` is `metered`.
                   type: boolean
                 prorate:
-                  description: Flag indicating whether to [prorate](/docs/subscriptions/upgrading-downgrading#understanding-proration)
+                  description: Flag indicating whether to [prorate](/docs/billing/subscriptions/prorations)
                     switching plans during a billing cycle.
                   type: boolean
                 proration_date:
@@ -35129,6 +35709,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format.
@@ -35139,7 +35721,7 @@ paths:
                   maxLength: 5000
                   type: string
                 prorate:
-                  description: Flag indicating whether to [prorate](/docs/subscriptions/upgrading-downgrading#understanding-proration)
+                  description: Flag indicating whether to [prorate](/docs/billing/subscriptions/prorations)
                     switching plans during a billing cycle.
                   type: boolean
                 proration_date:
@@ -35592,6 +36174,10 @@ paths:
                   description: List of subscription items, each with an attached plan.
                   items:
                     properties:
+                      metadata:
+                        additionalProperties:
+                          type: string
+                        type: object
                       plan:
                         maxLength: 5000
                         type: string
@@ -35603,6 +36189,8 @@ paths:
                     type: object
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key-value pairs that you can attach to a `Subscription`
                     object. It can be useful for storing additional information about
                     the subscription in a structured format.
@@ -35684,7 +36272,15 @@ paths:
             encoding: {}
             schema:
               additionalProperties: false
-              properties: {}
+              properties:
+                invoice_now:
+                  description: Will generate a final invoice that invoices for any
+                    un-invoiced metered usage and new/pending proration invoice items.
+                  type: boolean
+                prorate:
+                  description: Will generate a proration invoice item that credits
+                    remaining unused time until the subscription period end.
+                  type: boolean
               type: object
         required: false
       responses:
@@ -35841,6 +36437,8 @@ paths:
                         maxLength: 5000
                         type: string
                       metadata:
+                        additionalProperties:
+                          type: string
                         type: object
                       plan:
                         maxLength: 5000
@@ -35851,6 +36449,8 @@ paths:
                     type: object
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: A set of key-value pairs that you can attach to a subscription
                     object. This can be useful for storing additional information
                     about the subscription in a structured format.
@@ -37421,6 +38021,8 @@ paths:
                         maxLength: 5000
                         type: string
                       metadata:
+                        additionalProperties:
+                          type: string
                         type: object
                       name:
                         maxLength: 5000
@@ -37485,7 +38087,6 @@ paths:
                       maxLength: 5000
                       type: string
                     ssn_last_4:
-                      maxLength: 5000
                       type: string
                     tax_id:
                       maxLength: 5000
@@ -37577,7 +38178,7 @@ paths:
       description: "<p>Returns a list of top-ups.</p>"
       operationId: TopupAll
       parameters:
-      - description: A positive integer in %s representing how much to transfer.
+      - description: A positive integer representing how much to transfer.
         explode: true
         in: query
         name: amount
@@ -37741,7 +38342,7 @@ paths:
               additionalProperties: false
               properties:
                 amount:
-                  description: A positive integer in %s representing how much to transfer.
+                  description: A positive integer representing how much to transfer.
                   type: integer
                 currency:
                   description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
@@ -37759,6 +38360,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format.
@@ -37880,6 +38483,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format.
@@ -38119,6 +38724,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -38132,6 +38739,19 @@ paths:
                     available until the original charge becomes available. [See the
                     Connect documentation](/docs/connect/charges-transfers#transfer-availability)
                     for details.
+                  type: string
+                source_type:
+                  description: The source balance to use for this transfer. One of
+                    `card`, `bank_account`, or `alipay_account`. For most users, this
+                    will default to `card`.
+                  enum:
+                  - alipay_account
+                  - bank_account
+                  - bitcoin_receiver
+                  - card
+                  - source
+                  - stripe_account
+                  maxLength: 5000
                   type: string
                 transfer_group:
                   description: A string that identifies this transaction as part of
@@ -38317,6 +38937,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -38433,6 +39055,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -38553,6 +39177,8 @@ paths:
                     type: string
                   type: array
                 metadata:
+                  additionalProperties:
+                    type: string
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format. Individual keys can be unset by
@@ -38858,9 +39484,11 @@ paths:
                     - source.refund_attributes_required
                     - source.transaction.created
                     - source.transaction.updated
+                    - subscription_schedule.aborted
                     - subscription_schedule.canceled
                     - subscription_schedule.completed
                     - subscription_schedule.created
+                    - subscription_schedule.expiring
                     - subscription_schedule.released
                     - subscription_schedule.updated
                     - topup.canceled
@@ -39174,9 +39802,11 @@ paths:
                     - source.refund_attributes_required
                     - source.transaction.created
                     - source.transaction.updated
+                    - subscription_schedule.aborted
                     - subscription_schedule.canceled
                     - subscription_schedule.completed
                     - subscription_schedule.created
+                    - subscription_schedule.expiring
                     - subscription_schedule.released
                     - subscription_schedule.updated
                     - topup.canceled
