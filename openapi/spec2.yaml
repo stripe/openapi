@@ -559,10 +559,10 @@ definitions:
   balance:
     properties:
       available:
-        description: Funds that are available to be paid out, whether automatically
-          by Stripe or explicitly via the [transfers API](#transfers). The available
-          balance for each currency and payment type can be found in the `source_types`
-          property.
+        description: Funds that are available to be transferred or paid out, whether
+          automatically by Stripe or explicitly via the [Transfers API](#transfers)
+          or [Payouts API](#payouts). The available balance for each currency and
+          payment type can be found in the `source_types` property.
         items:
           "$ref": "#/definitions/balance_amount"
         type: array
@@ -1126,7 +1126,7 @@ definitions:
           - "$ref": "#/definitions/recipient"
       tokenization_method:
         description: If the card number is tokenized, this is the method that was
-          used. Can be `apple_pay` or `android_pay`.
+          used. Can be `apple_pay` or `google_pay`.
         type: string
     required:
     - brand
@@ -1450,6 +1450,29 @@ definitions:
     type: object
     x-expandableFields:
     - rule
+  checkout_session:
+    properties:
+      id:
+        description: The token used to pass to `redirectToCheckout` in Stripe.js.
+        type: string
+      livemode:
+        description: Has the value `true` if the object exists in live mode or the
+          value `false` if the object exists in test mode.
+        type: boolean
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - checkout_session
+        type: string
+    required:
+    - id
+    - livemode
+    - object
+    title: CheckoutSession
+    type: object
+    x-expandableFields: []
+    x-resourceId: checkout_session
   connect_collection_transfer:
     properties:
       amount:
@@ -1723,7 +1746,7 @@ definitions:
         - customer
         type: string
       shipping:
-        "$ref": "#/definitions/customer_shipping"
+        "$ref": "#/definitions/shipping"
       sources:
         description: The customer's payment sources, if any.
         properties:
@@ -1805,60 +1828,6 @@ definitions:
     - tax_info
     - tax_info_verification
     x-resourceId: customer
-  customer_shipping:
-    properties:
-      address:
-        "$ref": "#/definitions/address"
-      name:
-        description: Customer name.
-        type: string
-      phone:
-        description: Customer phone (including extension).
-        type: string
-    required:
-    - address
-    - name
-    title: CustomerShipping
-    type: object
-    x-expandableFields:
-    - address
-  customer_source:
-    properties:
-      customer:
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/customer"
-          - "$ref": "#/definitions/deleted_customer"
-      id:
-        description: Unique identifier for the object.
-        type: string
-      metadata:
-        description: Set of key-value pairs that you can attach to an object. This
-          can be useful for storing additional information about the object in a structured
-          format.
-        type: object
-      object:
-        description: String representing the object's type. Objects of the same type
-          share the same value.
-        enum:
-        - alipay_account
-        type: string
-    required:
-    - id
-    - object
-    title: Polymorphic
-    type: object
-    x-expandableFields:
-    - customer
-    x-polymorphicResources:
-      oneOf:
-      - "$ref": "#/definitions/alipay_account"
-      - "$ref": "#/definitions/bank_account"
-      - "$ref": "#/definitions/bitcoin_receiver"
-      - "$ref": "#/definitions/card"
-      - "$ref": "#/definitions/source"
-    x-resourceId: customer_source
   deleted_account:
     properties:
       deleted:
@@ -1906,7 +1875,6 @@ definitions:
     title: AlipayDeletedAccount
     type: object
     x-expandableFields: []
-    x-resourceId: deleted_alipay_account
   deleted_apple_pay_domain:
     properties:
       deleted:
@@ -1958,7 +1926,6 @@ definitions:
     title: DeletedBankAccount
     type: object
     x-expandableFields: []
-    x-resourceId: deleted_bank_account
   deleted_bitcoin_receiver:
     properties:
       deleted:
@@ -1982,7 +1949,6 @@ definitions:
     title: BitcoinDeletedReceiver
     type: object
     x-expandableFields: []
-    x-resourceId: deleted_bitcoin_receiver
   deleted_card:
     properties:
       currency:
@@ -2010,7 +1976,6 @@ definitions:
     title: DeletedCard
     type: object
     x-expandableFields: []
-    x-resourceId: deleted_card
   deleted_coupon:
     properties:
       deleted:
@@ -2079,6 +2044,37 @@ definitions:
     type: object
     x-expandableFields: []
     x-resourceId: deleted_discount
+  deleted_external_account:
+    properties:
+      currency:
+        description: Three-letter [ISO code for the currency](https://stripe.com/docs/payouts)
+          paid out to the bank account.
+        type: string
+      deleted:
+        description: Always true for a deleted object
+        enum:
+        - true
+        type: boolean
+      id:
+        description: Unique identifier for the object.
+        type: string
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - bank_account
+        type: string
+    required:
+    - deleted
+    - id
+    - object
+    title: Polymorphic
+    type: object
+    x-polymorphicResources:
+      oneOf:
+      - "$ref": "#/definitions/deleted_bank_account"
+      - "$ref": "#/definitions/deleted_card"
+    x-resourceId: deleted_external_account
   deleted_invoice:
     properties:
       deleted:
@@ -2127,6 +2123,35 @@ definitions:
     type: object
     x-expandableFields: []
     x-resourceId: deleted_invoiceitem
+  deleted_payment_source:
+    properties:
+      deleted:
+        description: Always true for a deleted object
+        enum:
+        - true
+        type: boolean
+      id:
+        description: Unique identifier for the object.
+        type: string
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - alipay_account
+        type: string
+    required:
+    - deleted
+    - id
+    - object
+    title: Polymorphic
+    type: object
+    x-polymorphicResources:
+      oneOf:
+      - "$ref": "#/definitions/deleted_alipay_account"
+      - "$ref": "#/definitions/deleted_bank_account"
+      - "$ref": "#/definitions/deleted_bitcoin_receiver"
+      - "$ref": "#/definitions/deleted_card"
+    x-resourceId: deleted_payment_source
   deleted_person:
     properties:
       deleted:
@@ -2319,30 +2344,6 @@ definitions:
     type: object
     x-expandableFields: []
     x-resourceId: deleted_subscription_item
-  deleted_tax_rate_template:
-    properties:
-      deleted:
-        description: Always true for a deleted object
-        enum:
-        - true
-        type: boolean
-      id:
-        description: Unique identifier for the object.
-        type: string
-      object:
-        description: String representing the object's type. Objects of the same type
-          share the same value.
-        enum:
-        - tax_rate_template
-        type: string
-    required:
-    - deleted
-    - id
-    - object
-    title: DeletedTaxRateTemplate
-    type: object
-    x-expandableFields: []
-    x-resourceId: deleted_tax_rate_template
   deleted_webhook_endpoint:
     properties:
       deleted:
@@ -2824,7 +2825,7 @@ definitions:
     type: object
     x-expandableFields: []
     x-resourceId: exchange_rate
-  external_account_source:
+  external_account:
     properties:
       account:
         type: string
@@ -2880,7 +2881,7 @@ definitions:
       oneOf:
       - "$ref": "#/definitions/bank_account"
       - "$ref": "#/definitions/card"
-    x-resourceId: external_account_source
+    x-resourceId: external_account
   fee:
     properties:
       amount:
@@ -3827,6 +3828,27 @@ definitions:
     x-expandableFields:
     - card
     x-resourceId: issuing.card_details
+  issuing.card_pin:
+    properties:
+      card:
+        "$ref": "#/definitions/issuing.card"
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - issuing.card_pin
+        type: string
+      pin:
+        description: The PIN (4 digits number)
+        type: string
+    required:
+    - card
+    - object
+    title: IssuingPinPinResponse
+    type: object
+    x-expandableFields:
+    - card
+    x-resourceId: issuing.card_pin
   issuing.cardholder:
     properties:
       billing:
@@ -4068,15 +4090,8 @@ definitions:
       scope:
         description: The scope of the verification
         enum:
-        - pin_retrieve
-        - pin_update
-        type: string
-      status:
-        description: The current status of the verification
-        enum:
-        - expired
-        - pending
-        - redeemed
+        - card_pin_retrieve
+        - card_pin_update
         type: string
       verification_method:
         description: The method by which the cardholder will be sent a one-time password
@@ -4091,9 +4106,8 @@ definitions:
     - id
     - object
     - scope
-    - status
     - verification_method
-    title: IssuingVerificationToken
+    title: IssuingVerification
     type: object
     x-expandableFields: []
     x-resourceId: issuing.verification
@@ -4319,7 +4333,7 @@ definitions:
           "$ref": "#/definitions/legal_entity_additional_owner"
         type: array
       address:
-        "$ref": "#/definitions/legal_entity_address"
+        "$ref": "#/definitions/address"
       address_kana:
         "$ref": "#/definitions/legal_entity_japan_address"
       address_kanji:
@@ -4371,7 +4385,7 @@ definitions:
         description: The maiden name of the individual responsible for the account.
         type: string
       personal_address:
-        "$ref": "#/definitions/legal_entity_address"
+        "$ref": "#/definitions/address"
       personal_address_kana:
         "$ref": "#/definitions/legal_entity_japan_address"
       personal_address_kanji:
@@ -4412,9 +4426,12 @@ definitions:
   legal_entity_additional_owner:
     properties:
       address:
-        "$ref": "#/definitions/legal_entity_address"
+        "$ref": "#/definitions/address"
       dob:
         "$ref": "#/definitions/legal_entity_dob"
+      email:
+        description: The email address of this additional owner.
+        type: string
       first_name:
         description: The first name of this additional owner.
         type: string
@@ -4427,10 +4444,18 @@ definitions:
       personal_id_number_provided:
         description: Whether the personal ID number of this additional owner was provided.
         type: boolean
+      phone:
+        description: The phone number of this additional owner.
+        type: string
+      ssn_last_4_provided:
+        description: Whether the last 4 digits of this additional owner's SSN have
+          been provided.
+        type: boolean
       verification:
         "$ref": "#/definitions/legal_entity_verification"
     required:
     - dob
+    - ssn_last_4_provided
     - verification
     title: LegalEntityAdditionalOwner
     type: object
@@ -4438,29 +4463,6 @@ definitions:
     - address
     - dob
     - verification
-  legal_entity_address:
-    properties:
-      city:
-        description: City/District/Suburb/Town/Village.
-        type: string
-      country:
-        description: 2-letter country code.
-        type: string
-      line1:
-        description: Address line 1 (Street address/PO Box/Company name).
-        type: string
-      line2:
-        description: Address line 2 (Apartment/Suite/Unit/Building).
-        type: string
-      postal_code:
-        description: ZIP or postal code.
-        type: string
-      state:
-        description: State/County/Province/Region.
-        type: string
-    title: LegalEntityAddress
-    type: object
-    x-expandableFields: []
   legal_entity_dob:
     properties:
       day:
@@ -4780,7 +4782,7 @@ definitions:
           shipping methods, Stripe will automatically selected the first method.
         type: string
       shipping:
-        "$ref": "#/definitions/order_shipping"
+        "$ref": "#/definitions/shipping"
       shipping_methods:
         description: A list of supported shipping methods for this order. The desired
           shipping method can be specified either by updating the order, or when paying
@@ -4927,31 +4929,6 @@ definitions:
     - order
     - refund
     x-resourceId: order_return
-  order_shipping:
-    properties:
-      address:
-        "$ref": "#/definitions/address"
-      carrier:
-        description: The delivery service that shipped a physical product, such as
-          Fedex, UPS, USPS, etc.
-        type: string
-      name:
-        description: Recipient name.
-        type: string
-      phone:
-        description: Recipient phone (including extension).
-        type: string
-      tracking_number:
-        description: The tracking number for a physical product, obtained from the
-          delivery service. If multiple tracking numbers were generated for this purchase,
-          please separate them with commas.
-        type: string
-    required:
-    - address
-    title: OrderShipping
-    type: object
-    x-expandableFields:
-    - address
   package_dimensions:
     properties:
       height:
@@ -5036,6 +5013,14 @@ definitions:
     x-expandableFields: []
   payment_flows_private_payment_methods_sepa_debit:
     properties:
+      bank_code:
+        type: string
+      branch_code:
+        type: string
+      country:
+        type: string
+      fingerprint:
+        type: string
       last4:
         type: string
     title: PaymentFlowsPrivatePaymentMethodsSepaDebit
@@ -5325,6 +5310,37 @@ definitions:
     - card
     - ideal
     - sepa_debit
+  payment_source:
+    properties:
+      id:
+        description: Unique identifier for the object.
+        type: string
+      metadata:
+        description: Set of key-value pairs that you can attach to an object. This
+          can be useful for storing additional information about the object in a structured
+          format.
+        type: object
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - account
+        type: string
+    required:
+    - id
+    - object
+    title: Polymorphic
+    type: object
+    x-polymorphicResources:
+      oneOf:
+      - "$ref": "#/definitions/account"
+      - "$ref": "#/definitions/alipay_account"
+      - "$ref": "#/definitions/bank_account"
+      - "$ref": "#/definitions/bitcoin_receiver"
+      - "$ref": "#/definitions/card"
+      - "$ref": "#/definitions/payment_method"
+      - "$ref": "#/definitions/source"
+    x-resourceId: payment_source
   payout:
     properties:
       amount:
@@ -5470,7 +5486,7 @@ definitions:
         description: The account the person is associated with.
         type: string
       address:
-        "$ref": "#/definitions/legal_entity_address"
+        "$ref": "#/definitions/address"
       address_kana:
         "$ref": "#/definitions/legal_entity_japan_address"
       address_kanji:
@@ -5931,13 +5947,6 @@ definitions:
         enum:
         - radar.value_list
         type: string
-      updated:
-        description: The timestamp when the value list was last updated.
-        type: integer
-      updated_by:
-        description: The name or email address of the user who last updated this value
-          list.
-        type: string
     required:
     - alias
     - created
@@ -5995,6 +6004,45 @@ definitions:
     type: object
     x-expandableFields: []
     x-resourceId: radar.value_list_item
+  radar_review_resource_location:
+    properties:
+      city:
+        description: The city where the payment originated.
+        type: string
+      country:
+        description: Two-letter ISO code representing the country where the payment
+          originated.
+        type: string
+      latitude:
+        description: The geographic latitude where the payment originated.
+        type: number
+      longitude:
+        description: The geographic longitude where the payment originated.
+        type: number
+      region:
+        description: The state/county/province/region where the payment originated.
+        type: string
+    title: RadarReviewResourceLocation
+    type: object
+    x-expandableFields: []
+  radar_review_resource_session:
+    properties:
+      browser:
+        description: The browser used in this browser session (e.g., `Chrome`).
+        type: string
+      device:
+        description: Information about the device used for the browser session (e.g.,
+          `Samsung SM-G930T`).
+        type: string
+      platform:
+        description: The platform for the browser session (e.g., `Macintosh`).
+        type: string
+      version:
+        description: The version for the browser session (e.g., `61.0.3163.100`).
+        type: string
+    title: RadarReviewResourceSession
+    type: object
+    x-expandableFields: []
   recipient:
     properties:
       active_account:
@@ -6501,12 +6549,24 @@ definitions:
     x-expandableFields: []
   review:
     properties:
+      billing_zip:
+        description: The ZIP or postal code of the card used, if applicable.
+        type: string
       charge:
         description: The charge associated with this review.
         type: string
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/charge"
+      closed_reason:
+        description: The reason the review was closed, or null if it has not yet been
+          closed. One of `approved`, `refunded`, `refunded_as_fraud`, or `disputed`.
+        enum:
+        - approved
+        - disputed
+        - refunded
+        - refunded_as_fraud
+        type: string
       created:
         description: Time at which the object was created. Measured in seconds since
           the Unix epoch.
@@ -6514,6 +6574,11 @@ definitions:
       id:
         description: Unique identifier for the object.
         type: string
+      ip_address:
+        description: The IP address where the payment originated.
+        type: string
+      ip_address_location:
+        "$ref": "#/definitions/radar_review_resource_location"
       livemode:
         description: Has the value `true` if the object exists in live mode or the
           value `false` if the object exists in test mode.
@@ -6527,6 +6592,12 @@ definitions:
       open:
         description: If `true`, the review needs action.
         type: boolean
+      opened_reason:
+        description: The reason the review was opened. One of `rule` or `manual`.
+        enum:
+        - manual
+        - rule
+        type: string
       payment_intent:
         description: The PaymentIntent ID associated with this review, if one exists.
         type: string
@@ -6537,18 +6608,23 @@ definitions:
         description: The reason the review is currently open or closed. One of `rule`,
           `manual`, `approved`, `refunded`, `refunded_as_fraud`, or `disputed`.
         type: string
+      session:
+        "$ref": "#/definitions/radar_review_resource_session"
     required:
     - created
     - id
     - livemode
     - object
     - open
+    - opened_reason
     - reason
     title: RadarReview
     type: object
     x-expandableFields:
     - charge
+    - ip_address_location
     - payment_intent
+    - session
     x-resourceId: review
   rule:
     properties:
@@ -6646,7 +6722,6 @@ definitions:
         type: string
     required:
     - address
-    - name
     title: Shipping
     type: object
     x-expandableFields:
@@ -7787,24 +7862,6 @@ definitions:
     title: TaxInfoVerification
     type: object
     x-expandableFields: []
-  tax_rate_template:
-    properties:
-      id:
-        description: Unique identifier for the object.
-        type: string
-      object:
-        description: String representing the object's type. Objects of the same type
-          share the same value.
-        enum:
-        - tax_rate_template
-        type: string
-    required:
-    - id
-    - object
-    title: TaxRateTemplate
-    type: object
-    x-expandableFields: []
-    x-resourceId: tax_rate_template
   terminal.connection_token:
     properties:
       object:
@@ -8693,6 +8750,8 @@ paths:
                         - year
                         title: date_of_birth_specs
                         type: object
+                      email:
+                        type: string
                       first_name:
                         type: string
                       last_name:
@@ -8700,6 +8759,10 @@ paths:
                       maiden_name:
                         type: string
                       personal_id_number:
+                        type: string
+                      phone:
+                        type: string
+                      ssn_last_4:
                         type: string
                       verification:
                         properties:
@@ -8938,7 +9001,6 @@ paths:
               items:
                 enum:
                 - card_payments
-                - legacy_payments
                 - platform_payments
                 type: string
               type: array
@@ -9017,7 +9079,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/external_account_source"
+            "$ref": "#/definitions/external_account"
         default:
           description: Error response.
           schema:
@@ -9036,7 +9098,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/deleted_bank_account"
+            "$ref": "#/definitions/deleted_external_account"
         default:
           description: Error response.
           schema:
@@ -9058,7 +9120,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/external_account_source"
+            "$ref": "#/definitions/external_account"
         default:
           description: Error response.
           schema:
@@ -9134,7 +9196,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/external_account_source"
+            "$ref": "#/definitions/external_account"
         default:
           description: Error response.
           schema:
@@ -9177,8 +9239,6 @@ paths:
         '200':
           description: Successful response.
           schema:
-            description: External accounts (bank accounts and debit cards) currently
-              attached to this account
             properties:
               data:
                 description: The list contains all external accounts that have been
@@ -9247,7 +9307,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/external_account_source"
+            "$ref": "#/definitions/external_account"
         default:
           description: Error response.
           schema:
@@ -9266,7 +9326,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/deleted_bank_account"
+            "$ref": "#/definitions/deleted_external_account"
         default:
           description: Error response.
           schema:
@@ -9288,7 +9348,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/external_account_source"
+            "$ref": "#/definitions/external_account"
         default:
           description: Error response.
           schema:
@@ -9364,7 +9424,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/external_account_source"
+            "$ref": "#/definitions/external_account"
         default:
           description: Error response.
           schema:
@@ -10576,6 +10636,8 @@ paths:
                         - year
                         title: date_of_birth_specs
                         type: object
+                      email:
+                        type: string
                       first_name:
                         type: string
                       last_name:
@@ -10583,6 +10645,10 @@ paths:
                       maiden_name:
                         type: string
                       personal_id_number:
+                        type: string
+                      phone:
+                        type: string
+                      ssn_last_4:
                         type: string
                       verification:
                         properties:
@@ -11031,6 +11097,8 @@ paths:
                         - year
                         title: date_of_birth_specs
                         type: object
+                      email:
+                        type: string
                       first_name:
                         type: string
                       last_name:
@@ -11038,6 +11106,10 @@ paths:
                       maiden_name:
                         type: string
                       personal_id_number:
+                        type: string
+                      phone:
+                        type: string
+                      ssn_last_4:
                         type: string
                       verification:
                         properties:
@@ -11276,7 +11348,6 @@ paths:
               items:
                 enum:
                 - card_payments
-                - legacy_payments
                 - platform_payments
                 type: string
               type: array
@@ -11359,7 +11430,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/external_account_source"
+            "$ref": "#/definitions/external_account"
         default:
           description: Error response.
           schema:
@@ -11382,7 +11453,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/deleted_bank_account"
+            "$ref": "#/definitions/deleted_external_account"
         default:
           description: Error response.
           schema:
@@ -11408,7 +11479,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/external_account_source"
+            "$ref": "#/definitions/external_account"
         default:
           description: Error response.
           schema:
@@ -11488,7 +11559,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/external_account_source"
+            "$ref": "#/definitions/external_account"
         default:
           description: Error response.
           schema:
@@ -11535,8 +11606,6 @@ paths:
         '200':
           description: Successful response.
           schema:
-            description: External accounts (bank accounts and debit cards) currently
-              attached to this account
             properties:
               data:
                 description: The list contains all external accounts that have been
@@ -11609,7 +11678,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/external_account_source"
+            "$ref": "#/definitions/external_account"
         default:
           description: Error response.
           schema:
@@ -11632,7 +11701,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/deleted_bank_account"
+            "$ref": "#/definitions/deleted_external_account"
         default:
           description: Error response.
           schema:
@@ -11658,7 +11727,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/external_account_source"
+            "$ref": "#/definitions/external_account"
         default:
           description: Error response.
           schema:
@@ -11738,7 +11807,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/external_account_source"
+            "$ref": "#/definitions/external_account"
         default:
           description: Error response.
           schema:
@@ -13184,7 +13253,6 @@ paths:
         '200':
           description: Successful response.
           schema:
-            description: A list of refunds that have been applied to the fee.
             properties:
               data:
                 items:
@@ -13269,8 +13337,9 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/balance":
     get:
-      description: "<p>Retrieves the current account balance, based on the authentication
-        that was used to make the request.</p>"
+      description: |-
+        <p>Retrieves the current account balance, based on the authentication that was used to make the request.
+         For a sample request, see <a href="/docs/connect/account-balances#accounting-for-negative-balances">Accounting for negative balances</a>.</p>
       operationId: BalanceRetrieve
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -13574,9 +13643,6 @@ paths:
         '200':
           description: Successful response.
           schema:
-            description: A list with one entry for each time that the customer sent
-              bitcoin to the receiver. Hidden when viewing the receiver with a publishable
-              key.
             properties:
               data:
                 items:
@@ -13659,9 +13725,6 @@ paths:
         '200':
           description: Successful response.
           schema:
-            description: A list with one entry for each time that the customer sent
-              bitcoin to the receiver. Hidden when viewing the receiver with a publishable
-              key.
             properties:
               data:
                 items:
@@ -13811,6 +13874,8 @@ paths:
                 an application fee. For more information, see the application fees
                 [documentation](/docs/connect/direct-charges#collecting-fees).
               type: integer
+            application_fee_amount:
+              type: integer
             capture:
               description: Whether to immediately capture the charge. Defaults to
                 `true`. When `false`, the charge issues an authorization (or pre-authorization),
@@ -13869,10 +13934,10 @@ paths:
               description: The email address to which this charge's [receipt](/docs/dashboard/receipts)
                 will be sent. The receipt will not be sent until the charge is paid,
                 and no receipts will be sent for test mode charges. If this charge
-                is for a customer, the email address specified here will override
-                the customer's email address. If `receipt_email` is specified for
-                a charge in live mode, a receipt will be sent regardless of your [email
-                settings](https://dashboard.stripe.com/account/emails).
+                is for a [Customer](/docs/api/customers/object), the email address
+                specified here will override the customer's email address. If `receipt_email`
+                is specified for a charge in live mode, a receipt will be sent regardless
+                of your [email settings](https://dashboard.stripe.com/account/emails).
               type: string
             shipping:
               description: Shipping information for the charge. Helps prevent fraud
@@ -14420,7 +14485,6 @@ paths:
         '200':
           description: Successful response.
           schema:
-            description: A list of refunds that have been applied to the charge.
             properties:
               data:
                 items:
@@ -14557,6 +14621,129 @@ paths:
           description: Successful response.
           schema:
             "$ref": "#/definitions/refund"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/checkout_sessions":
+    post:
+      description: "<p>Creates a CheckoutSession object.</p>"
+      operationId: PaymentPagesCheckoutSessionCreate
+      parameters:
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            allowed_source_types:
+              description: The list of source types (e.g. card) that this CheckoutSession
+                is allowed to use.
+              items:
+                enum:
+                - card
+                type: string
+              type: array
+            cancel_url:
+              description: The URL the customer will be directed to if they decide
+                to go back to your website.
+              type: string
+            client_reference_id:
+              description: The reference to identify a payment made with Checkout.
+                This reference will be echoed back in Checkout webhooks.
+              type: string
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            line_items:
+              description: A list of items your customer is purchasing.
+              items:
+                properties:
+                  amount:
+                    type: integer
+                  currency:
+                    type: string
+                  description:
+                    type: string
+                  images:
+                    items:
+                      type: string
+                    type: array
+                  name:
+                    type: string
+                  quantity:
+                    type: integer
+                required:
+                - amount
+                - currency
+                - name
+                - quantity
+                title: line_item_params
+                type: object
+              type: array
+            payment_intent_data:
+              description: A subset of parameters to be passed to payment intent creation.
+              properties:
+                description:
+                  type: string
+                metadata:
+                  type: object
+                receipt_email:
+                  type: string
+                shipping:
+                  properties:
+                    address:
+                      properties:
+                        city:
+                          type: string
+                        country:
+                          type: string
+                        line1:
+                          type: string
+                        line2:
+                          type: string
+                        postal_code:
+                          type: string
+                        state:
+                          type: string
+                      required:
+                      - line1
+                      title: address
+                      type: object
+                    carrier:
+                      type: string
+                    name:
+                      type: string
+                    phone:
+                      type: string
+                    tracking_number:
+                      type: string
+                  required:
+                  - address
+                  - name
+                  title: shipping
+                  type: object
+                statement_descriptor:
+                  type: string
+              title: payment_intent_data_params
+              type: object
+            success_url:
+              description: The URL the customer will be directed to after a successful
+                payment.
+              type: string
+          required:
+          - allowed_source_types
+          - cancel_url
+          - line_items
+          - success_url
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/checkout_session"
         default:
           description: Error response.
           schema:
@@ -15412,7 +15599,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/customer_source"
+            "$ref": "#/definitions/payment_source"
         default:
           description: Error response.
           schema:
@@ -15435,7 +15622,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/customer_source"
+            "$ref": "#/definitions/deleted_payment_source"
         default:
           description: Error response.
           schema:
@@ -15735,7 +15922,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/customer_source"
+            "$ref": "#/definitions/payment_source"
         default:
           description: Error response.
           schema:
@@ -15758,7 +15945,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/customer_source"
+            "$ref": "#/definitions/deleted_payment_source"
         default:
           description: Error response.
           schema:
@@ -15984,7 +16171,6 @@ paths:
         '200':
           description: Successful response.
           schema:
-            description: The customer's payment sources, if any.
             properties:
               data:
                 description: The list contains all payment sources that have been
@@ -16063,7 +16249,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/customer_source"
+            "$ref": "#/definitions/payment_source"
         default:
           description: Error response.
           schema:
@@ -16086,7 +16272,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/customer_source"
+            "$ref": "#/definitions/deleted_payment_source"
         default:
           description: Error response.
           schema:
@@ -16113,7 +16299,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/customer_source"
+            "$ref": "#/definitions/payment_source"
         default:
           description: Error response.
           schema:
@@ -16306,7 +16492,6 @@ paths:
         '200':
           description: Successful response.
           schema:
-            description: The customer's current subscriptions, if any.
             properties:
               data:
                 items:
@@ -18127,7 +18312,7 @@ paths:
           to retrieve.
         in: query
         name: customer
-        required: true
+        required: false
         type: string
       - description: List of invoice items to add or update in the upcoming invoice
           preview.
@@ -18342,9 +18527,6 @@ paths:
         '200':
           description: Successful response.
           schema:
-            description: 'The individual line items that make up the invoice. `lines`
-              is sorted as follows: invoice items in reverse chronological order,
-              followed by the subscription, if any.'
             properties:
               data:
                 items:
@@ -18581,9 +18763,6 @@ paths:
         '200':
           description: Successful response.
           schema:
-            description: 'The individual line items that make up the invoice. `lines`
-              is sorted as follows: invoice items in reverse chronological order,
-              followed by the subscription, if any.'
             properties:
               data:
                 items:
@@ -20872,6 +21051,89 @@ paths:
           description: Error response.
           schema:
             "$ref": "#/definitions/error"
+  "/v1/issuing/cards/{card}/pin":
+    get:
+      description: <p>Retrieves the PIN for a card object, subject to cardholder verification,
+        see <a href="/docs/issuing/pin_management">Retrieve and update cardholder
+        PIN</a></p>
+      operationId: IssuingPinRetrieve
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: The id of the `Card` that the PIN belongs to
+        in: path
+        name: card
+        required: true
+        type: string
+      - description: The id of the `Verification` that was sent and the code entered
+          by the cardholder
+        in: query
+        name: verification
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/issuing.card_pin"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      description: <p>Updates the PIN for a card, subject to cardholder verification.
+        See <a href="/docs/issuing/pin_management">Retrieve and update cardholder
+        PIN</a></p>
+      operationId: IssuingPinUpdate
+      parameters:
+      - description: The id of the `Card` that the PIN belongs to
+        in: path
+        name: card
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            new_pin:
+              description: The new desired PIN
+              type: string
+            verification:
+              description: The id of the `Verification` that was sent and the code
+                entered by the cardholder
+              properties:
+                id:
+                  type: string
+                one_time_code:
+                  type: string
+              required:
+              - id
+              - one_time_code
+              title: verification_params
+              type: object
+          required:
+          - new_pin
+          - verification
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/issuing.card_pin"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
   "/v1/issuing/disputes":
     get:
       description: "<p>Returns a list of Issuing <code>Dispute</code> objects. The
@@ -21246,7 +21508,7 @@ paths:
     post:
       description: "<p>Some actions (eg: updating a PIN) need confirmation from the
         cardholder</p>"
-      operationId: IssuingVerificationTokenCreate
+      operationId: IssuingVerificationCreate
       parameters:
       - description: Body parameters for the request.
         in: body
@@ -21263,10 +21525,11 @@ paths:
                 type: string
               type: array
             scope:
-              description: The scope of the verification (one of pin_retrieve, pin_update)
+              description: The scope of the verification (one of card_pin_retrieve,
+                card_pin_update)
               enum:
-              - pin_retrieve
-              - pin_update
+              - card_pin_retrieve
+              - card_pin_update
               type: string
             verification_method:
               description: The method used to send the cardholder the verification
@@ -25132,15 +25395,42 @@ paths:
               - redirect
               type: string
             mandate:
-              description: Information about a mandate possiblity attached to a source
+              description: Information about a mandate possibility attached to a source
                 object (generally for bank debits) as well as its acceptance status.
               properties:
                 acceptance:
                   properties:
+                    acceptance_type:
+                      enum:
+                      - offline
+                      - online
+                      type: string
                     date:
                       type: integer
                     ip:
                       type: string
+                    offline:
+                      properties:
+                        contact_email:
+                          type: string
+                      required:
+                      - contact_email
+                      title: mandate_offline_acceptance_params
+                      type: object
+                    online:
+                      properties:
+                        date:
+                          type: integer
+                        ip:
+                          type: string
+                        user_agent:
+                          type: string
+                      required:
+                      - date
+                      - ip
+                      - user_agent
+                      title: mandate_online_acceptance_params
+                      type: object
                     status:
                       enum:
                       - accepted
@@ -25151,12 +25441,18 @@ paths:
                     user_agent:
                       type: string
                   required:
-                  - date
-                  - ip
                   - status
-                  - user_agent
                   title: mandate_acceptance_params
                   type: object
+                amount: {}
+                currency:
+                  type: string
+                interval:
+                  enum:
+                  - one_time
+                  - scheduled
+                  - variable
+                  type: string
                 notification_method:
                   enum:
                   - email
@@ -25315,15 +25611,42 @@ paths:
                 type: string
               type: array
             mandate:
-              description: Information about a mandate possiblity attached to a source
+              description: Information about a mandate possibility attached to a source
                 object (generally for bank debits) as well as its acceptance status.
               properties:
                 acceptance:
                   properties:
+                    acceptance_type:
+                      enum:
+                      - offline
+                      - online
+                      type: string
                     date:
                       type: integer
                     ip:
                       type: string
+                    offline:
+                      properties:
+                        contact_email:
+                          type: string
+                      required:
+                      - contact_email
+                      title: mandate_offline_acceptance_params
+                      type: object
+                    online:
+                      properties:
+                        date:
+                          type: integer
+                        ip:
+                          type: string
+                        user_agent:
+                          type: string
+                      required:
+                      - date
+                      - ip
+                      - user_agent
+                      title: mandate_online_acceptance_params
+                      type: object
                     status:
                       enum:
                       - accepted
@@ -25334,12 +25657,18 @@ paths:
                     user_agent:
                       type: string
                   required:
-                  - date
-                  - ip
                   - status
-                  - user_agent
                   title: mandate_acceptance_params
                   type: object
+                amount: {}
+                currency:
+                  type: string
+                interval:
+                  enum:
+                  - one_time
+                  - scheduled
+                  - variable
+                  type: string
                 notification_method:
                   enum:
                   - email
@@ -26385,214 +26714,6 @@ paths:
           description: Error response.
           schema:
             "$ref": "#/definitions/error"
-  "/v1/tax_rate_templates":
-    get:
-      description: "<p>Returns a list of your tax rate templates. Tax rate templates
-        are returned sorted by creation date, with the most recently created tax rate
-        templates appearing first.</p>"
-      operationId: AllTaxRateTemplates
-      parameters:
-      - description: Specifies which fields in the response should be expanded.
-        in: query
-        name: expand
-        required: false
-        type: array
-      - description: A cursor for use in pagination. `ending_before` is an object
-          ID that defines your place in the list. For instance, if you make a list
-          request and receive 100 objects, starting with `obj_bar`, your subsequent
-          call can include `ending_before=obj_bar` in order to fetch the previous
-          page of the list.
-        in: query
-        name: ending_before
-        required: false
-        type: string
-      - description: A limit on the number of objects to be returned. Limit can range
-          between 1 and 100, and the default is 10.
-        in: query
-        name: limit
-        required: false
-        type: integer
-      - description: A cursor for use in pagination. `starting_after` is an object
-          ID that defines your place in the list. For instance, if you make a list
-          request and receive 100 objects, ending with `obj_foo`, your subsequent
-          call can include `starting_after=obj_foo` in order to fetch the next page
-          of the list.
-        in: query
-        name: starting_after
-        required: false
-        type: string
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            properties:
-              data:
-                items:
-                  "$ref": "#/definitions/tax_rate_template"
-                type: array
-              has_more:
-                description: True if this list has another page of items after this
-                  one that can be fetched.
-                type: boolean
-              object:
-                description: String representing the object's type. Objects of the
-                  same type share the same value. Always has the value `list`.
-                enum:
-                - list
-                type: string
-              url:
-                description: The URL where this list can be accessed.
-                type: string
-            required:
-            - data
-            - has_more
-            - object
-            - url
-            type: object
-            x-expandableFields:
-            - data
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-    post:
-      description: "<p>Creates a new tax rate template.</p>"
-      operationId: CreateTaxRateTemplate
-      parameters:
-      - description: Body parameters for the request.
-        in: body
-        name: payload
-        required: true
-        schema:
-          properties:
-            description:
-              description: The customer-facing description of this tax rate template.
-              type: string
-            effective_since:
-              description: When this tax rate template starts taking effect.
-              type: integer
-            effective_until:
-              description: When this tax rate template stops taking effect.
-              type: integer
-            expand:
-              description: Specifies which fields in the response should be expanded.
-              items:
-                type: string
-              type: array
-            inclusive:
-              description: If this tax rate template is inclusive or not.
-              type: boolean
-            name:
-              description: The name of this tax rate template.
-              type: string
-            percentage:
-              description: A non-negative decimal (with at most four decimal places)
-                between 0 and 100. This is percentage of this tax rate template.
-              type: number
-          required:
-          - inclusive
-          - name
-          - percentage
-          type: object
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/tax_rate_template"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-  "/v1/tax_rate_templates/{tax_rate_template}":
-    delete:
-      description: "<p>Removes a tax rate template from the dashboard.</p>"
-      operationId: DeleteTaxRateTemplate
-      parameters:
-      - description: The identifier of the tax rate template to be deleted.
-        in: path
-        name: tax_rate_template
-        required: true
-        type: string
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/deleted_tax_rate_template"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-    get:
-      description: "<p>Retrieves the tax rate template with the given ID.</p>"
-      operationId: RetrieveTaxRateTemplate
-      parameters:
-      - description: Specifies which fields in the response should be expanded.
-        in: query
-        name: expand
-        required: false
-        type: array
-      - description: The ID of the desired tax rate template.
-        in: path
-        name: tax_rate_template
-        required: true
-        type: string
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/tax_rate_template"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-    post:
-      description: "<p>Updates a new tax rate template.</p>"
-      operationId: UpdateTaxRateTemplate
-      parameters:
-      - in: path
-        name: tax_rate_template
-        required: true
-        type: string
-      - description: Body parameters for the request.
-        in: body
-        name: payload
-        required: false
-        schema:
-          properties:
-            description:
-              description: The customer-facing description of this tax rate template.
-              type: string
-            effective_since:
-              description: When this tax rate template starts taking effect.
-              type: integer
-            effective_until:
-              description: When this tax rate template stops taking effect.
-              type: integer
-            expand:
-              description: Specifies which fields in the response should be expanded.
-              items:
-                type: string
-              type: array
-            inclusive:
-              description: If this tax rate template is inclusive or not.
-              type: boolean
-            name:
-              description: The name of this tax rate template.
-              type: string
-            percentage:
-              description: A non-negative decimal (with at most four decimal places)
-                between 0 and 100. This is percentage of this tax rate template.
-              type: number
-          type: object
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/tax_rate_template"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
   "/v1/terminal/connection_tokens":
     post:
       description: "<p>To connect to a reader the Stripe Terminal SDK needs to retrieve
@@ -27053,6 +27174,8 @@ paths:
                             - year
                             title: date_of_birth_specs
                             type: object
+                          email:
+                            type: string
                           first_name:
                             type: string
                           last_name:
@@ -27060,6 +27183,10 @@ paths:
                           maiden_name:
                             type: string
                           personal_id_number:
+                            type: string
+                          phone:
+                            type: string
+                          ssn_last_4:
                             type: string
                           verification:
                             properties:
@@ -27789,7 +27916,6 @@ paths:
         '200':
           description: Successful response.
           schema:
-            description: A list of reversals that have been applied to the transfer.
             properties:
               data:
                 items:
