@@ -2812,6 +2812,9 @@
             "nullable": true,
             "type": "string"
           },
+          "invoice_settings": {
+            "$ref": "#/components/schemas/invoice_setting_customer_setting"
+          },
           "livemode": {
             "description": "Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
             "type": "boolean"
@@ -2965,6 +2968,7 @@
         "x-expandableFields": [
           "default_source",
           "discount",
+          "invoice_settings",
           "shipping",
           "sources",
           "subscriptions",
@@ -4769,6 +4773,11 @@
             "description": "Category of balance transactions to be included in the report run.",
             "maxLength": 5000,
             "type": "string"
+          },
+          "revenue_detail_scope": {
+            "description": "Revenue detail scope for granularity of revenue recognition. Either \"subscription\" or \"invoice\".",
+            "maxLength": 5000,
+            "type": "string"
           }
         },
         "title": "FinancialReportingFinanceReportRunRunParameters",
@@ -4885,6 +4894,14 @@
             "maxLength": 3,
             "type": "string"
           },
+          "custom_fields": {
+            "description": "Custom fields displayed on the invoice.",
+            "items": {
+              "$ref": "#/components/schemas/invoice_setting_custom_field"
+            },
+            "nullable": true,
+            "type": "array"
+          },
           "customer": {
             "anyOf": [
               {
@@ -4988,6 +5005,12 @@
             "format": "unix-time",
             "nullable": true,
             "type": "integer"
+          },
+          "footer": {
+            "description": "Footer displayed on the invoice.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
           },
           "hosted_invoice_url": {
             "description": "The URL for the hosted invoice page, which allows customers to view and pay an invoice. If the invoice has not been finalized yet, this will be null.",
@@ -5184,6 +5207,7 @@
         "type": "object",
         "x-expandableFields": [
           "charge",
+          "custom_fields",
           "customer",
           "default_source",
           "discount",
@@ -5211,6 +5235,52 @@
         "type": "object",
         "x-expandableFields": [
 
+        ]
+      },
+      "invoice_setting_custom_field": {
+        "properties": {
+          "name": {
+            "description": "The name of the custom field.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "value": {
+            "description": "The value of the custom field.",
+            "maxLength": 5000,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "title": "InvoiceSettingCustomField",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
+      "invoice_setting_customer_setting": {
+        "properties": {
+          "custom_fields": {
+            "description": "Default custom fields to be displayed on invoices for this customer.",
+            "items": {
+              "$ref": "#/components/schemas/invoice_setting_custom_field"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "footer": {
+            "description": "Default footer to be displayed on invoices for this customer.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "title": "InvoiceSettingCustomerSetting",
+        "type": "object",
+        "x-expandableFields": [
+          "custom_fields"
         ]
       },
       "invoiceitem": {
@@ -9913,6 +9983,11 @@
             "maxLength": 3,
             "type": "string"
           },
+          "description": {
+            "description": "An arbitrary string attached to the object. Often useful for displaying to users. (Available on non-card refunds only)",
+            "maxLength": 5000,
+            "type": "string"
+          },
           "failure_balance_transaction": {
             "anyOf": [
               {
@@ -11072,12 +11147,24 @@
           "amount_returned": {
             "description": "The total amount that was returned to the customer. The amount returned is expressed in the source's currency.",
             "type": "integer"
+          },
+          "refund_attributes_method": {
+            "description": "Type of refund attribute method, one of `email`, `manual`, or `none`.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "refund_attributes_status": {
+            "description": "Type of refund attribute status, one of `missing`, `requested`, or `available`.",
+            "maxLength": 5000,
+            "type": "string"
           }
         },
         "required": [
           "amount_charged",
           "amount_received",
-          "amount_returned"
+          "amount_returned",
+          "refund_attributes_method",
+          "refund_attributes_status"
         ],
         "title": "SourceReceiverFlow",
         "type": "object",
@@ -11888,13 +11975,11 @@
               "charge_automatically",
               "send_invoice"
             ],
-            "nullable": true,
             "type": "string"
           },
           "billing_cycle_anchor": {
             "description": "Determines the date of the first full invoice, and, for plans with `month` or `year` intervals, the day of the month for subsequent invoices.",
             "format": "unix-time",
-            "nullable": true,
             "type": "integer"
           },
           "cancel_at_period_end": {
@@ -11915,13 +12000,11 @@
           "current_period_end": {
             "description": "End of the current period that the subscription has been invoiced for. At the end of this period, a new invoice will be created.",
             "format": "unix-time",
-            "nullable": true,
             "type": "integer"
           },
           "current_period_start": {
             "description": "Start of the current period that the subscription has been invoiced for.",
             "format": "unix-time",
-            "nullable": true,
             "type": "integer"
           },
           "customer": {
@@ -12124,8 +12207,12 @@
           }
         },
         "required": [
+          "billing",
+          "billing_cycle_anchor",
           "cancel_at_period_end",
           "created",
+          "current_period_end",
+          "current_period_start",
           "customer",
           "id",
           "items",
@@ -12902,10 +12989,24 @@
             "type": "string"
           },
           "source_refund": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/refund"
+              }
+            ],
             "description": "ID of the refund responsible for the transfer reversal.",
-            "maxLength": 5000,
             "nullable": true,
-            "type": "string"
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/refund"
+                }
+              ]
+            }
           },
           "transfer": {
             "anyOf": [
@@ -12940,6 +13041,7 @@
         "type": "object",
         "x-expandableFields": [
           "balance_transaction",
+          "source_refund",
           "transfer"
         ],
         "x-resourceId": "transfer_reversal"
@@ -14138,7 +14240,18 @@
                     "description": "Details on when funds from charges are available, and when they are paid out to an external account. For details, see our [Setting Bank and Debit Card Payouts](/docs/connect/bank-transfers#payout-information) documentation.",
                     "properties": {
                       "delay_days": {
-                        "type": "integer"
+                        "anyOf": [
+                          {
+                            "enum": [
+                              "minimum"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          {
+                            "type": "integer"
+                          }
+                        ]
                       },
                       "interval": {
                         "enum": [
@@ -17938,7 +18051,18 @@
                     "description": "Details on when funds from charges are available, and when they are paid out to an external account. For details, see our [Setting Bank and Debit Card Payouts](/docs/connect/bank-transfers#payout-information) documentation.",
                     "properties": {
                       "delay_days": {
-                        "type": "integer"
+                        "anyOf": [
+                          {
+                            "enum": [
+                              "minimum"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          {
+                            "type": "integer"
+                          }
+                        ]
                       },
                       "interval": {
                         "enum": [
@@ -18867,7 +18991,18 @@
                     "description": "Details on when funds from charges are available, and when they are paid out to an external account. For details, see our [Setting Bank and Debit Card Payouts](/docs/connect/bank-transfers#payout-information) documentation.",
                     "properties": {
                       "delay_days": {
-                        "type": "integer"
+                        "anyOf": [
+                          {
+                            "enum": [
+                              "minimum"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          {
+                            "type": "integer"
+                          }
+                        ]
                       },
                       "interval": {
                         "enum": [
@@ -26764,6 +26899,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "invoice_settings": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "metadata": {
                   "explode": true,
                   "style": "deepObject"
@@ -26828,6 +26967,48 @@
                     "description": "The prefix for the customer used to generate unique invoice numbers. Must be 3–12 uppercase letters or numbers.",
                     "maxLength": 5000,
                     "type": "string"
+                  },
+                  "invoice_settings": {
+                    "description": "Default invoice settings for this customer.",
+                    "properties": {
+                      "custom_fields": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "properties": {
+                                "name": {
+                                  "maxLength": 30,
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "maxLength": 30,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "name",
+                                "value"
+                              ],
+                              "title": "custom_field_params",
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "enum": [
+                              ""
+                            ],
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "footer": {
+                        "maxLength": 5000,
+                        "type": "string"
+                      }
+                    },
+                    "title": "customer_param",
+                    "type": "object"
                   },
                   "metadata": {
                     "additionalProperties": {
@@ -27114,6 +27295,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "invoice_settings": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "metadata": {
                   "explode": true,
                   "style": "deepObject"
@@ -27208,6 +27393,48 @@
                     "description": "The prefix for the customer used to generate unique invoice numbers. Must be 3–12 uppercase letters or numbers.",
                     "maxLength": 5000,
                     "type": "string"
+                  },
+                  "invoice_settings": {
+                    "description": "Default invoice settings for this customer.",
+                    "properties": {
+                      "custom_fields": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "properties": {
+                                "name": {
+                                  "maxLength": 30,
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "maxLength": 30,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "name",
+                                "value"
+                              ],
+                              "title": "custom_field_params",
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "enum": [
+                              ""
+                            ],
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "footer": {
+                        "maxLength": 5000,
+                        "type": "string"
+                      }
+                    },
+                    "title": "customer_param",
+                    "type": "object"
                   },
                   "metadata": {
                     "additionalProperties": {
@@ -29751,6 +29978,10 @@
                 "metadata": {
                   "explode": true,
                   "style": "deepObject"
+                },
+                "tax_percent": {
+                  "explode": true,
+                  "style": "deepObject"
                 }
               },
               "schema": {
@@ -29838,9 +30069,18 @@
                     "type": "boolean"
                   },
                   "tax_percent": {
-                    "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string.",
-                    "nullable": true,
-                    "type": "number"
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string."
                   },
                   "trial_end": {
                     "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately.",
@@ -30079,6 +30319,10 @@
                 "metadata": {
                   "explode": true,
                   "style": "deepObject"
+                },
+                "tax_percent": {
+                  "explode": true,
+                  "style": "deepObject"
                 }
               },
               "schema": {
@@ -30178,9 +30422,18 @@
                     "type": "integer"
                   },
                   "tax_percent": {
-                    "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string.",
-                    "nullable": true,
-                    "type": "number"
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string."
                   },
                   "trial_end": {
                     "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately.",
@@ -30974,7 +31227,7 @@
     },
     "/v1/events": {
       "get": {
-        "description": "<p>List events, going back up to 30 days.</p>",
+        "description": "<p>List events, going back up to 30 days. Each event data is rendered according to Stripe API version at its creation time, specified in <a href=\"/docs/api/events/object\">event object</a> <code>api_version</code> attribute (not according to your current Stripe API version or <code>Stripe-Version</code> header).</p>",
         "operationId": "GetEvents",
         "parameters": [
           {
@@ -33101,6 +33354,10 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
+                "custom_fields": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -33129,6 +33386,38 @@
                     ],
                     "maxLength": 5000,
                     "type": "string"
+                  },
+                  "custom_fields": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "properties": {
+                            "name": {
+                              "maxLength": 30,
+                              "type": "string"
+                            },
+                            "value": {
+                              "maxLength": 30,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "value"
+                          ],
+                          "title": "custom_field_params",
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "A list of up to 4 custom fields to be displayed on the invoice."
                   },
                   "customer": {
                     "maxLength": 5000,
@@ -33159,6 +33448,11 @@
                       "type": "string"
                     },
                     "type": "array"
+                  },
+                  "footer": {
+                    "description": "Footer to be displayed on the invoice.",
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "metadata": {
                     "additionalProperties": {
@@ -33366,6 +33660,15 @@
             "style": "form"
           },
           {
+            "in": "query",
+            "name": "subscription_cancel_now",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "style": "form"
+          },
+          {
             "description": "List of subscription items, each with an attached plan.",
             "explode": true,
             "in": "query",
@@ -33526,10 +33829,10 @@
             "style": "form"
           },
           {
-            "description": "The customer of the upcoming invoice is required. In other cases it is ignored.",
+            "description": "The identifier of the customer whose upcoming invoice you'd like to retrieve.",
             "in": "query",
             "name": "customer",
-            "required": true,
+            "required": false,
             "schema": {
               "maxLength": 5000,
               "type": "string"
@@ -33557,6 +33860,70 @@
               "items": {
                 "maxLength": 5000,
                 "type": "string"
+              },
+              "type": "array"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "List of invoice items to add or update in the upcoming invoice preview.",
+            "explode": true,
+            "in": "query",
+            "name": "invoice_items",
+            "required": false,
+            "schema": {
+              "items": {
+                "properties": {
+                  "amount": {
+                    "type": "integer"
+                  },
+                  "currency": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "maxLength": 5000,
+                    "type": "string"
+                  },
+                  "discountable": {
+                    "type": "boolean"
+                  },
+                  "invoiceitem": {
+                    "maxLength": 5000,
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "period": {
+                    "properties": {
+                      "end": {
+                        "format": "unix-time",
+                        "type": "integer"
+                      },
+                      "start": {
+                        "format": "unix-time",
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "end",
+                      "start"
+                    ],
+                    "title": "period",
+                    "type": "object"
+                  },
+                  "quantity": {
+                    "type": "integer"
+                  },
+                  "unit_amount": {
+                    "type": "integer"
+                  }
+                },
+                "title": "invoice_item_preview_params",
+                "type": "object"
               },
               "type": "array"
             },
@@ -33629,7 +33996,16 @@
             "style": "form"
           },
           {
-            "description": "Preview updating the subscription with this list of items. Otherwise this parameter is ignored.",
+            "in": "query",
+            "name": "subscription_cancel_now",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "style": "form"
+          },
+          {
+            "description": "List of subscription items, each with an attached plan.",
             "explode": true,
             "in": "query",
             "name": "subscription_items",
@@ -33949,11 +34325,19 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
+                "custom_fields": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
                 },
                 "metadata": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "tax_percent": {
                   "explode": true,
                   "style": "deepObject"
                 }
@@ -33968,6 +34352,38 @@
                   "auto_advance": {
                     "description": "Controls whether Stripe will perform [automatic collection](/docs/billing/invoices/workflow/#auto_advance) of the invoice.",
                     "type": "boolean"
+                  },
+                  "custom_fields": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "properties": {
+                            "name": {
+                              "maxLength": 30,
+                              "type": "string"
+                            },
+                            "value": {
+                              "maxLength": 30,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "value"
+                          ],
+                          "title": "custom_field_params",
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "A list of up to 4 custom fields to be displayed on the invoice. If a value for `custom_fields` is specified, the list specified will replace the existing custom field list on this invoice."
                   },
                   "days_until_due": {
                     "description": "The number of days from which the invoice is created until it is due. Only valid for invoices where `billing=send_invoice`. This field can only be updated on `draft` invoices.",
@@ -33995,6 +34411,11 @@
                     },
                     "type": "array"
                   },
+                  "footer": {
+                    "description": "Footer to be displayed on the invoice.",
+                    "maxLength": 5000,
+                    "type": "string"
+                  },
                   "metadata": {
                     "additionalProperties": {
                       "type": "string"
@@ -34007,9 +34428,18 @@
                     "type": "string"
                   },
                   "tax_percent": {
-                    "description": "The percent tax rate applied to the invoice, represented as a non-negative decimal number (with at most four decimal places) between 0 and 100. To unset a previously-set value, pass an empty string. This field can be updated only on `draft` invoices.",
-                    "nullable": true,
-                    "type": "number"
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "The percent tax rate applied to the invoice, represented as a non-negative decimal number (with at most four decimal places) between 0 and 100. To unset a previously-set value, pass an empty string. This field can be updated only on `draft` invoices."
                   }
                 },
                 "type": "object"
@@ -39578,7 +40008,7 @@
         }
       },
       "post": {
-        "description": "<p>Creates a new <code>Order</code> object.</p>",
+        "description": "<p>Creates a new order object.</p>",
         "operationId": "PostOrders",
         "requestBody": {
           "content": {
@@ -40428,7 +40858,7 @@
                     "type": "object"
                   },
                   "on_behalf_of": {
-                    "description": "The Stripe account ID for which these funds are intended. For details, see [Creating Separate Charges and Transfers](/docs/connect/charges-transfers#on-behalf-of). When transfer_data is specified, on_behalf_of must also be specified and must match the destination of the transfer.",
+                    "description": "The Stripe account ID for which these funds are intended. For details, see [Creating Separate Charges and Transfers](/docs/connect/charges-transfers#on-behalf-of).",
                     "type": "string"
                   },
                   "receipt_email": {
@@ -45147,6 +45577,14 @@
                         ],
                         "maxLength": 5000,
                         "type": "string"
+                      },
+                      "revenue_detail_scope": {
+                        "enum": [
+                          "invoice",
+                          "subscription"
+                        ],
+                        "maxLength": 5000,
+                        "type": "string"
                       }
                     },
                     "title": "run_parameter_specs",
@@ -48535,6 +48973,10 @@
                 "metadata": {
                   "explode": true,
                   "style": "deepObject"
+                },
+                "tax_percent": {
+                  "explode": true,
+                  "style": "deepObject"
                 }
               },
               "schema": {
@@ -48627,9 +49069,18 @@
                     "type": "boolean"
                   },
                   "tax_percent": {
-                    "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string.",
-                    "nullable": true,
-                    "type": "number"
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string."
                   },
                   "trial_end": {
                     "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately.",
@@ -48838,6 +49289,10 @@
                 "metadata": {
                   "explode": true,
                   "style": "deepObject"
+                },
+                "tax_percent": {
+                  "explode": true,
+                  "style": "deepObject"
                 }
               },
               "schema": {
@@ -48937,9 +49392,18 @@
                     "type": "integer"
                   },
                   "tax_percent": {
-                    "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string.",
-                    "nullable": true,
-                    "type": "number"
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string."
                   },
                   "trial_end": {
                     "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately.",
@@ -49059,6 +49523,10 @@
                       "type": "string"
                     },
                     "type": "array"
+                  },
+                  "operator_account": {
+                    "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+                    "type": "string"
                   }
                 },
                 "type": "object"
@@ -49129,6 +49597,16 @@
             "required": false,
             "schema": {
               "type": "integer"
+            },
+            "style": "form"
+          },
+          {
+            "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+            "in": "query",
+            "name": "operator_account",
+            "required": false,
+            "schema": {
+              "type": "string"
             },
             "style": "form"
           },
@@ -49285,6 +49763,10 @@
                       "type": "string"
                     },
                     "type": "array"
+                  },
+                  "operator_account": {
+                    "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+                    "type": "string"
                   }
                 },
                 "required": [
@@ -49351,6 +49833,16 @@
               "type": "string"
             },
             "style": "simple"
+          },
+          {
+            "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+            "in": "query",
+            "name": "operator_account",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
           }
         ],
         "requestBody": {
@@ -49472,6 +49964,10 @@
                       "type": "string"
                     },
                     "type": "array"
+                  },
+                  "operator_account": {
+                    "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+                    "type": "string"
                   }
                 },
                 "type": "object"
@@ -49552,6 +50048,16 @@
             "required": false,
             "schema": {
               "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+            "in": "query",
+            "name": "operator_account",
+            "required": false,
+            "schema": {
               "type": "string"
             },
             "style": "form"
@@ -49685,6 +50191,10 @@
                     "maxLength": 5000,
                     "type": "string"
                   },
+                  "operator_account": {
+                    "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+                    "type": "string"
+                  },
                   "registration_code": {
                     "description": "A code generated by the reader used for registering to an account.",
                     "maxLength": 5000,
@@ -49743,6 +50253,16 @@
               "type": "array"
             },
             "style": "deepObject"
+          },
+          {
+            "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+            "in": "query",
+            "name": "operator_account",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
           },
           {
             "description": "The identifier of the reader to be retrieved.",
@@ -49833,6 +50353,10 @@
                   "label": {
                     "description": "The new label of the reader.",
                     "maxLength": 5000,
+                    "type": "string"
+                  },
+                  "operator_account": {
+                    "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
                     "type": "string"
                   }
                 },
