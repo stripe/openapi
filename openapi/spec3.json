@@ -2088,6 +2088,11 @@
             "nullable": true,
             "type": "string"
           },
+          "receipt_url": {
+            "description": "This is the URL to view the receipt for this charge. The receipt is kept up-to-date to the latest state of the charge, including any refunds. If the charge is for an Invoice, the receipt will be stylized as an Invoice receipt.",
+            "maxLength": 5000,
+            "type": "string"
+          },
           "refunded": {
             "description": "Whether the charge has been fully refunded. If the charge is only partially refunded, this attribute will still be false.",
             "type": "boolean"
@@ -2258,6 +2263,7 @@
           "metadata",
           "object",
           "paid",
+          "receipt_url",
           "refunded",
           "refunds",
           "source",
@@ -2399,6 +2405,37 @@
         "x-expandableFields": [
           "destination"
         ]
+      },
+      "checkout.session": {
+        "properties": {
+          "id": {
+            "description": "The token used to pass to `redirectToCheckout` in Stripe.js.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "livemode": {
+            "description": "Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
+            "type": "boolean"
+          },
+          "object": {
+            "description": "String representing the object's type. Objects of the same type share the same value.",
+            "enum": [
+              "checkout.session"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "livemode",
+          "object"
+        ],
+        "title": "Session",
+        "type": "object",
+        "x-expandableFields": [
+
+        ],
+        "x-resourceId": "checkout.session"
       },
       "checkout_session": {
         "properties": {
@@ -4773,11 +4810,6 @@
             "description": "Category of balance transactions to be included in the report run.",
             "maxLength": 5000,
             "type": "string"
-          },
-          "revenue_detail_scope": {
-            "description": "Revenue detail scope for granularity of revenue recognition. Either \"subscription\" or \"invoice\".",
-            "maxLength": 5000,
-            "type": "string"
           }
         },
         "title": "FinancialReportingFinanceReportRunRunParameters",
@@ -4855,7 +4887,7 @@
             "type": "string"
           },
           "billing_reason": {
-            "description": "Indicates the reason why the invoice was created. `subscription_cycle` indicates an invoice created by a subscription advancing into a new period. `subscription_create` indicates an invoice created due to creatinga subscription. `subscription_update` indicates an invoice created due to updating a subscription. `subscription` is set for all old invoices to indicate either a change to a subscription or a period advancement. `manual` is set for all invoices unrelated to a subscription (for example: created via the invoice editor). The `upcoming` value is reserved for simulated invoices per the upcoming invoice endpoint.",
+            "description": "Indicates the reason why the invoice was created. `subscription_cycle` indicates an invoice created by a subscription advancing into a new period. `subscription_create` indicates an invoice created due to creating a subscription. `subscription_update` indicates an invoice created due to updating a subscription. `subscription` is set for all old invoices to indicate either a change to a subscription or a period advancement. `manual` is set for all invoices unrelated to a subscription (for example: created via the invoice editor). The `upcoming` value is reserved for simulated invoices per the upcoming invoice endpoint. `subscription_threshold` indicates an invoice created due to a billing threshold being reached.",
             "enum": [
               "automatic_pending_invoice_item_invoice",
               "manual",
@@ -5173,6 +5205,9 @@
             "nullable": true,
             "type": "number"
           },
+          "threshold_reason": {
+            "$ref": "#/components/schemas/invoice_threshold_reason"
+          },
           "total": {
             "description": "Total after discount.",
             "type": "integer"
@@ -5212,7 +5247,8 @@
           "default_source",
           "discount",
           "lines",
-          "subscription"
+          "subscription",
+          "threshold_reason"
         ],
         "x-resourceId": "invoice"
       },
@@ -5281,6 +5317,30 @@
         "type": "object",
         "x-expandableFields": [
           "custom_fields"
+        ]
+      },
+      "invoice_threshold_reason": {
+        "properties": {
+          "amount_gte": {
+            "description": "The total invoice amount threshold boundary if it triggered the threshold invoice.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "item_reasons": {
+            "description": "Indicates which line items triggered a threshold invoice.",
+            "items": {
+              "$ref": "#/components/schemas/invoiceitem_threshold_reason"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "item_reasons"
+        ],
+        "title": "InvoiceThresholdReason",
+        "type": "object",
+        "x-expandableFields": [
+          "item_reasons"
         ]
       },
       "invoiceitem": {
@@ -5451,6 +5511,30 @@
           "subscription"
         ],
         "x-resourceId": "invoiceitem"
+      },
+      "invoiceitem_threshold_reason": {
+        "properties": {
+          "line_item_ids": {
+            "description": "The IDs of the line items that triggered the threshold invoice.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "usage_gte": {
+            "description": "The quantity threshold boundary that applied to the given line item.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "line_item_ids",
+          "usage_gte"
+        ],
+        "title": "InvoiceItemThresholdReason",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
       },
       "issuer_fraud_record": {
         "properties": {
@@ -6120,7 +6204,7 @@
             "type": "integer"
           },
           "network_fees": {
-            "description": "The total net fees owed to the network.",
+            "description": "The total amount of fees owed to the network.",
             "type": "integer"
           },
           "network_settlement_identifier": {
@@ -6145,11 +6229,11 @@
             "type": "string"
           },
           "transaction_count": {
-            "description": "The total number of transactions involved in this settlement.",
+            "description": "The total number of transactions reflected in this settlement.",
             "type": "integer"
           },
           "transaction_volume": {
-            "description": "The total transaction amount involved in this settlement.",
+            "description": "The total transaction amount reflected in this settlement.",
             "type": "integer"
           },
           "transactions_reconciled": {
@@ -10954,54 +11038,27 @@
       },
       "source_mandate_notification": {
         "properties": {
-          "ach_credit_transfer": {
-            "$ref": "#/components/schemas/source_type_ach_credit_transfer"
-          },
-          "ach_debit": {
-            "$ref": "#/components/schemas/source_type_ach_debit"
-          },
-          "alipay": {
-            "$ref": "#/components/schemas/source_type_alipay"
-          },
           "amount": {
             "description": "A positive integer in the smallest currency unit (that is, 100 cents for $1.00, or 1 for ¥1, Japanese Yen being a zero-decimal currency) representing the amount associated with the mandate notification. The amount is expressed in the currency of the underlying source. Required if the notification type is `debit_initiated`.",
             "nullable": true,
             "type": "integer"
           },
-          "bancontact": {
-            "$ref": "#/components/schemas/source_type_bancontact"
-          },
-          "card": {
-            "$ref": "#/components/schemas/source_type_card"
-          },
-          "card_present": {
-            "$ref": "#/components/schemas/source_type_card_present"
+          "bacs_debit": {
+            "$ref": "#/components/schemas/source_mandate_notification_bacs_debit_data"
           },
           "created": {
             "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
             "format": "unix-time",
             "type": "integer"
           },
-          "eps": {
-            "$ref": "#/components/schemas/source_type_eps"
-          },
-          "giropay": {
-            "$ref": "#/components/schemas/source_type_giropay"
-          },
           "id": {
             "description": "Unique identifier for the object.",
             "maxLength": 5000,
             "type": "string"
           },
-          "ideal": {
-            "$ref": "#/components/schemas/source_type_ideal"
-          },
           "livemode": {
             "description": "Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
             "type": "boolean"
-          },
-          "multibanco": {
-            "$ref": "#/components/schemas/source_type_multibanco"
           },
           "object": {
             "description": "String representing the object's type. Objects of the same type share the same value.",
@@ -11010,25 +11067,13 @@
             ],
             "type": "string"
           },
-          "p24": {
-            "$ref": "#/components/schemas/source_type_p24"
-          },
-          "paper_check": {
-            "$ref": "#/components/schemas/source_type_paper_check"
-          },
           "reason": {
             "description": "The reason of the mandate notification. Valid reasons are `mandate_confirmed` or `debit_initiated`.",
             "maxLength": 5000,
             "type": "string"
           },
-          "sepa_credit_transfer": {
-            "$ref": "#/components/schemas/source_type_sepa_credit_transfer"
-          },
           "sepa_debit": {
-            "$ref": "#/components/schemas/source_type_sepa_debit"
-          },
-          "sofort": {
-            "$ref": "#/components/schemas/source_type_sofort"
+            "$ref": "#/components/schemas/source_mandate_notification_sepa_debit_data"
           },
           "source": {
             "$ref": "#/components/schemas/source"
@@ -11037,9 +11082,6 @@
             "description": "The status of the mandate notification. Valid statuses are `pending` or `submitted`.",
             "maxLength": 5000,
             "type": "string"
-          },
-          "three_d_secure": {
-            "$ref": "#/components/schemas/source_type_three_d_secure"
           },
           "type": {
             "description": "The type of source this mandate notification is attached to. Should be the source type identifier code for the payment method, such as `three_d_secure`.",
@@ -11060,9 +11102,49 @@
         "title": "SourceMandateNotification",
         "type": "object",
         "x-expandableFields": [
+          "bacs_debit",
+          "sepa_debit",
           "source"
         ],
         "x-resourceId": "source_mandate_notification"
+      },
+      "source_mandate_notification_bacs_debit_data": {
+        "properties": {
+          "last4": {
+            "description": "Last 4 digits of the account number associated with the debit.",
+            "maxLength": 5000,
+            "type": "string"
+          }
+        },
+        "title": "SourceMandateNotificationBacsDebitData",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
+      "source_mandate_notification_sepa_debit_data": {
+        "properties": {
+          "creditor_identifier": {
+            "description": "SEPA creditor ID.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "last4": {
+            "description": "Last 4 digits of the account number associated with the debit.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "mandate_reference": {
+            "description": "Mandate reference associated with the debit.",
+            "maxLength": 5000,
+            "type": "string"
+          }
+        },
+        "title": "SourceMandateNotificationSepaDebitData",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
       },
       "source_owner": {
         "properties": {
@@ -11210,26 +11292,14 @@
       "source_transaction": {
         "properties": {
           "ach_credit_transfer": {
-            "$ref": "#/components/schemas/source_type_ach_credit_transfer"
-          },
-          "ach_debit": {
-            "$ref": "#/components/schemas/source_type_ach_debit"
-          },
-          "alipay": {
-            "$ref": "#/components/schemas/source_type_alipay"
+            "$ref": "#/components/schemas/source_transaction_ach_credit_transfer_data"
           },
           "amount": {
             "description": "A positive integer in the smallest currency unit (that is, 100 cents for $1.00, or 1 for ¥1, Japanese Yen being a zero-decimal currency) representing the amount your customer has pushed to the receiver.",
             "type": "integer"
           },
-          "bancontact": {
-            "$ref": "#/components/schemas/source_type_bancontact"
-          },
-          "card": {
-            "$ref": "#/components/schemas/source_type_card"
-          },
-          "card_present": {
-            "$ref": "#/components/schemas/source_type_card_present"
+          "chf_credit_transfer": {
+            "$ref": "#/components/schemas/source_transaction_chf_credit_transfer_data"
           },
           "created": {
             "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
@@ -11241,26 +11311,14 @@
             "maxLength": 3,
             "type": "string"
           },
-          "eps": {
-            "$ref": "#/components/schemas/source_type_eps"
-          },
-          "giropay": {
-            "$ref": "#/components/schemas/source_type_giropay"
-          },
           "id": {
             "description": "Unique identifier for the object.",
             "maxLength": 5000,
             "type": "string"
           },
-          "ideal": {
-            "$ref": "#/components/schemas/source_type_ideal"
-          },
           "livemode": {
             "description": "Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
             "type": "boolean"
-          },
-          "multibanco": {
-            "$ref": "#/components/schemas/source_type_multibanco"
           },
           "object": {
             "description": "String representing the object's type. Objects of the same type share the same value.",
@@ -11269,20 +11327,11 @@
             ],
             "type": "string"
           },
-          "p24": {
-            "$ref": "#/components/schemas/source_type_p24"
-          },
           "paper_check": {
-            "$ref": "#/components/schemas/source_type_paper_check"
+            "$ref": "#/components/schemas/source_transaction_paper_check_data"
           },
           "sepa_credit_transfer": {
-            "$ref": "#/components/schemas/source_type_sepa_credit_transfer"
-          },
-          "sepa_debit": {
-            "$ref": "#/components/schemas/source_type_sepa_debit"
-          },
-          "sofort": {
-            "$ref": "#/components/schemas/source_type_sofort"
+            "$ref": "#/components/schemas/source_transaction_sepa_credit_transfer_data"
           },
           "source": {
             "description": "The ID of the source this transaction is attached to.",
@@ -11293,9 +11342,6 @@
             "description": "The status of the transaction, one of `succeeded`, `pending`, or `failed`.",
             "maxLength": 5000,
             "type": "string"
-          },
-          "three_d_secure": {
-            "$ref": "#/components/schemas/source_type_three_d_secure"
           },
           "type": {
             "description": "The type of source this transaction is attached to.",
@@ -11334,9 +11380,118 @@
         "title": "SourceTransaction",
         "type": "object",
         "x-expandableFields": [
-
+          "ach_credit_transfer",
+          "chf_credit_transfer",
+          "paper_check",
+          "sepa_credit_transfer"
         ],
         "x-resourceId": "source_transaction"
+      },
+      "source_transaction_ach_credit_transfer_data": {
+        "properties": {
+          "customer_data": {
+            "description": "Customer data associated with the transfer.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "fingerprint": {
+            "description": "Bank account fingerprint associated with the transfer.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "last4": {
+            "description": "Last 4 digits of the account number associated with the transfer.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "routing_number": {
+            "description": "Routing number associated with the transfer.",
+            "maxLength": 5000,
+            "type": "string"
+          }
+        },
+        "title": "SourceTransactionAchCreditTransferData",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
+      "source_transaction_chf_credit_transfer_data": {
+        "properties": {
+          "reference": {
+            "description": "Reference associated with the transfer.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "sender_address_country": {
+            "description": "Sender's country address.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "sender_address_line1": {
+            "description": "Sender's line 1 address.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "sender_iban": {
+            "description": "Sender's bank account IBAN.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "sender_name": {
+            "description": "Sender's name.",
+            "maxLength": 5000,
+            "type": "string"
+          }
+        },
+        "title": "SourceTransactionChfCreditTransferData",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
+      "source_transaction_paper_check_data": {
+        "properties": {
+          "available_at": {
+            "description": "String unix time for the available date.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "invoices": {
+            "description": "Invoice ID associated with the paper check.",
+            "maxLength": 5000,
+            "type": "string"
+          }
+        },
+        "title": "SourceTransactionPaperCheckData",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
+      "source_transaction_sepa_credit_transfer_data": {
+        "properties": {
+          "reference": {
+            "description": "Reference associated with the transfer.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "sender_iban": {
+            "description": "Sender's bank account IBAN.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "sender_name": {
+            "description": "Sender's name.",
+            "maxLength": 5000,
+            "type": "string"
+          }
+        },
+        "title": "SourceTransactionSepaCreditTransferData",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
       },
       "source_type_ach_credit_transfer": {
         "properties": {
@@ -11982,6 +12137,15 @@
             "format": "unix-time",
             "type": "integer"
           },
+          "billing_thresholds": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/subscription_billing_thresholds"
+              }
+            ],
+            "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period",
+            "nullable": true
+          },
           "cancel_at_period_end": {
             "description": "If the subscription has been canceled with the `at_period_end` flag set to `true`, `cancel_at_period_end` on the subscription will be true. You can use this attribute to determine whether a subscription that has a status of active is scheduled to be canceled at the end of the current period.",
             "type": "boolean"
@@ -12182,6 +12346,8 @@
             "enum": [
               "active",
               "canceled",
+              "incomplete",
+              "incomplete_expired",
               "past_due",
               "trialing",
               "unpaid"
@@ -12225,6 +12391,7 @@
         "title": "Subscription",
         "type": "object",
         "x-expandableFields": [
+          "billing_thresholds",
           "customer",
           "default_source",
           "discount",
@@ -12233,8 +12400,36 @@
         ],
         "x-resourceId": "subscription"
       },
+      "subscription_billing_thresholds": {
+        "properties": {
+          "amount_gte": {
+            "description": "Monetary threshold that triggers the subscription to create an invoice",
+            "nullable": true,
+            "type": "integer"
+          },
+          "reset_billing_cycle_anchor": {
+            "description": "Indicates if the `billing_cycle_anchor` should be reset when a threshold is reached. If true, `billing_cycle_anchor` will be updated to the date/time the threshold was last reached; otherwise, the value will remain unchanged. This value may not be `true` if the subscription contains items with plans that have `aggregate_usage=last_ever`.",
+            "nullable": true,
+            "type": "boolean"
+          }
+        },
+        "title": "SubscriptionBillingThresholds",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
       "subscription_item": {
         "properties": {
+          "billing_thresholds": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/subscription_item_billing_thresholds"
+              }
+            ],
+            "description": "Define thresholds at which an invoice will be sent, and the related subscription advanced to a new billing period",
+            "nullable": true
+          },
           "created": {
             "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
             "type": "integer"
@@ -12283,9 +12478,24 @@
         "title": "SubscriptionItem",
         "type": "object",
         "x-expandableFields": [
+          "billing_thresholds",
           "plan"
         ],
         "x-resourceId": "subscription_item"
+      },
+      "subscription_item_billing_thresholds": {
+        "properties": {
+          "usage_gte": {
+            "description": "Usage threshold that triggers the subscription to create an invoice",
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "title": "SubscriptionItemBillingThresholds",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
       },
       "tax_info": {
         "properties": {
@@ -12350,7 +12560,7 @@
           "object",
           "secret"
         ],
-        "title": "PointOfSaleConnectionToken",
+        "title": "TerminalConnectionToken",
         "type": "object",
         "x-expandableFields": [
 
@@ -12386,7 +12596,7 @@
           "id",
           "object"
         ],
-        "title": "PointOfSaleLocationLocation",
+        "title": "TerminalLocationLocation",
         "type": "object",
         "x-expandableFields": [
           "address"
@@ -12454,7 +12664,7 @@
           "object",
           "serial_number"
         ],
-        "title": "PointOfSaleReaderReader",
+        "title": "TerminalReaderReader",
         "type": "object",
         "x-expandableFields": [
 
@@ -25823,10 +26033,232 @@
         }
       }
     },
+    "/v1/checkout/sessions": {
+      "post": {
+        "description": "<p>Creates a Session object.</p>",
+        "operationId": "PostCheckoutSessions",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {
+                "allowed_source_types": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "expand": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "line_items": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "payment_intent_data": {
+                  "explode": true,
+                  "style": "deepObject"
+                }
+              },
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "allowed_source_types": {
+                    "description": "The list of source types (e.g. card) that this CheckoutSession is allowed to use.",
+                    "items": {
+                      "enum": [
+                        "card"
+                      ],
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "cancel_url": {
+                    "description": "The URL the customer will be directed to if they decide to go back to your website.",
+                    "maxLength": 5000,
+                    "type": "string"
+                  },
+                  "client_reference_id": {
+                    "description": "The reference to identify a payment made with Checkout. This reference will be echoed back in Checkout webhooks.",
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "expand": {
+                    "description": "Specifies which fields in the response should be expanded.",
+                    "items": {
+                      "maxLength": 5000,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "line_items": {
+                    "description": "A list of items your customer is purchasing.",
+                    "items": {
+                      "properties": {
+                        "amount": {
+                          "type": "integer"
+                        },
+                        "currency": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "maxLength": 5000,
+                          "type": "string"
+                        },
+                        "images": {
+                          "items": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "name": {
+                          "maxLength": 5000,
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "currency",
+                        "name",
+                        "quantity"
+                      ],
+                      "title": "line_item_params",
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "payment_intent_data": {
+                    "description": "A subset of parameters to be passed to payment intent creation.",
+                    "properties": {
+                      "description": {
+                        "maxLength": 1000,
+                        "type": "string"
+                      },
+                      "metadata": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "receipt_email": {
+                        "maxLength": 5000,
+                        "type": "string"
+                      },
+                      "shipping": {
+                        "properties": {
+                          "address": {
+                            "properties": {
+                              "city": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "country": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line1": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line2": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "state": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "line1"
+                            ],
+                            "title": "address",
+                            "type": "object"
+                          },
+                          "carrier": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "name": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "phone": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "tracking_number": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "address",
+                          "name"
+                        ],
+                        "title": "shipping",
+                        "type": "object"
+                      },
+                      "statement_descriptor": {
+                        "maxLength": 22,
+                        "type": "string"
+                      }
+                    },
+                    "title": "payment_intent_data_params",
+                    "type": "object"
+                  },
+                  "success_url": {
+                    "description": "The URL the customer will be directed to after a successful payment.",
+                    "maxLength": 5000,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "allowed_source_types",
+                  "cancel_url",
+                  "line_items",
+                  "success_url"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/checkout.session"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        }
+      }
+    },
     "/v1/checkout_sessions": {
       "post": {
         "description": "<p>Creates a CheckoutSession object.</p>",
-        "operationId": "PostCheckoutSessions",
+        "operationId": "PostLegacy",
         "requestBody": {
           "content": {
             "application/x-www-form-urlencoded": {
@@ -29967,6 +30399,10 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
+                "billing_thresholds": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -30005,6 +30441,29 @@
                     "maxLength": 5000,
                     "type": "string"
                   },
+                  "billing_thresholds": {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "amount_gte": {
+                            "type": "integer"
+                          },
+                          "reset_billing_cycle_anchor": {
+                            "type": "boolean"
+                          }
+                        },
+                        "title": "billing_thresholds_param",
+                        "type": "object"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period. Pass an empty string to remove previously-defined thresholds."
+                  },
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
                     "type": "boolean"
@@ -30035,6 +30494,28 @@
                     "description": "List of subscription items, each with an attached plan.",
                     "items": {
                       "properties": {
+                        "billing_thresholds": {
+                          "anyOf": [
+                            {
+                              "properties": {
+                                "usage_gte": {
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "usage_gte"
+                              ],
+                              "title": "billing_thresholds_param",
+                              "type": "object"
+                            },
+                            {
+                              "enum": [
+                                ""
+                              ],
+                              "type": "string"
+                            }
+                          ]
+                        },
                         "metadata": {
                           "additionalProperties": {
                             "type": "string"
@@ -30308,6 +30789,10 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
+                "billing_thresholds": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -30346,6 +30831,29 @@
                     "maxLength": 5000,
                     "type": "string"
                   },
+                  "billing_thresholds": {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "amount_gte": {
+                            "type": "integer"
+                          },
+                          "reset_billing_cycle_anchor": {
+                            "type": "boolean"
+                          }
+                        },
+                        "title": "billing_thresholds_param",
+                        "type": "object"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period. Pass an empty string to remove previously-defined thresholds."
+                  },
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
                     "type": "boolean"
@@ -30376,6 +30884,28 @@
                     "description": "List of subscription items, each with an attached plan.",
                     "items": {
                       "properties": {
+                        "billing_thresholds": {
+                          "anyOf": [
+                            {
+                              "properties": {
+                                "usage_gte": {
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "usage_gte"
+                              ],
+                              "title": "billing_thresholds_param",
+                              "type": "object"
+                            },
+                            {
+                              "enum": [
+                                ""
+                              ],
+                              "type": "string"
+                            }
+                          ]
+                        },
                         "clear_usage": {
                           "type": "boolean"
                         },
@@ -33677,6 +34207,28 @@
             "schema": {
               "items": {
                 "properties": {
+                  "billing_thresholds": {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "usage_gte": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "usage_gte"
+                        ],
+                        "title": "billing_thresholds_param",
+                        "type": "object"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ]
+                  },
                   "clear_usage": {
                     "type": "boolean"
                   },
@@ -34013,6 +34565,28 @@
             "schema": {
               "items": {
                 "properties": {
+                  "billing_thresholds": {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "usage_gte": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "usage_gte"
+                        ],
+                        "title": "billing_thresholds_param",
+                        "type": "object"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ]
+                  },
                   "clear_usage": {
                     "type": "boolean"
                   },
@@ -39124,6 +39698,17 @@
             "required": false,
             "schema": {
               "type": "integer"
+            },
+            "style": "form"
+          },
+          {
+            "description": "Only return transactions that are associated with the given settlement.",
+            "in": "query",
+            "name": "settlement",
+            "required": false,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
             },
             "style": "form"
           },
@@ -45577,14 +46162,6 @@
                         ],
                         "maxLength": 5000,
                         "type": "string"
-                      },
-                      "revenue_detail_scope": {
-                        "enum": [
-                          "invoice",
-                          "subscription"
-                        ],
-                        "maxLength": 5000,
-                        "type": "string"
                       }
                     },
                     "title": "run_parameter_specs",
@@ -47038,10 +47615,6 @@
                   "explode": true,
                   "style": "deepObject"
                 },
-                "open_banking": {
-                  "explode": true,
-                  "style": "deepObject"
-                },
                 "owner": {
                   "explode": true,
                   "style": "deepObject"
@@ -47095,14 +47668,6 @@
                     "properties": {
                       "acceptance": {
                         "properties": {
-                          "acceptance_type": {
-                            "enum": [
-                              "offline",
-                              "online"
-                            ],
-                            "maxLength": 5000,
-                            "type": "string"
-                          },
                           "date": {
                             "format": "unix-time",
                             "type": "integer"
@@ -47150,6 +47715,14 @@
                               "pending",
                               "refused",
                               "revoked"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "type": {
+                            "enum": [
+                              "offline",
+                              "online"
                             ],
                             "maxLength": 5000,
                             "type": "string"
@@ -47208,9 +47781,6 @@
                       "type": "string"
                     },
                     "description": "A set of key-value pairs that you can attach to a source object. It can be useful for storing additional information about the source in a structured format.",
-                    "type": "object"
-                  },
-                  "open_banking": {
                     "type": "object"
                   },
                   "original_source": {
@@ -47482,14 +48052,6 @@
                     "properties": {
                       "acceptance": {
                         "properties": {
-                          "acceptance_type": {
-                            "enum": [
-                              "offline",
-                              "online"
-                            ],
-                            "maxLength": 5000,
-                            "type": "string"
-                          },
                           "date": {
                             "format": "unix-time",
                             "type": "integer"
@@ -47537,6 +48099,14 @@
                               "pending",
                               "refused",
                               "revoked"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "type": {
+                            "enum": [
+                              "offline",
+                              "online"
                             ],
                             "maxLength": 5000,
                             "type": "string"
@@ -48201,6 +48771,10 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
+                "billing_thresholds": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -48213,6 +48787,29 @@
               "schema": {
                 "additionalProperties": false,
                 "properties": {
+                  "billing_thresholds": {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "usage_gte": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "usage_gte"
+                        ],
+                        "title": "billing_thresholds_param",
+                        "type": "object"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period"
+                  },
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
                     "items": {
@@ -48443,6 +49040,10 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
+                "billing_thresholds": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -48455,6 +49056,29 @@
               "schema": {
                 "additionalProperties": false,
                 "properties": {
+                  "billing_thresholds": {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "usage_gte": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "usage_gte"
+                        ],
+                        "title": "billing_thresholds_param",
+                        "type": "object"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period"
+                  },
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
                     "items": {
@@ -48873,6 +49497,8 @@
                 "active",
                 "all",
                 "canceled",
+                "incomplete",
+                "incomplete_expired",
                 "past_due",
                 "trialing",
                 "unpaid"
@@ -48962,6 +49588,10 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
+                "billing_thresholds": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -49000,6 +49630,29 @@
                     "maxLength": 5000,
                     "type": "string"
                   },
+                  "billing_thresholds": {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "amount_gte": {
+                            "type": "integer"
+                          },
+                          "reset_billing_cycle_anchor": {
+                            "type": "boolean"
+                          }
+                        },
+                        "title": "billing_thresholds_param",
+                        "type": "object"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period. Pass an empty string to remove previously-defined thresholds."
+                  },
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
                     "type": "boolean"
@@ -49035,6 +49688,28 @@
                     "description": "List of subscription items, each with an attached plan.",
                     "items": {
                       "properties": {
+                        "billing_thresholds": {
+                          "anyOf": [
+                            {
+                              "properties": {
+                                "usage_gte": {
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "usage_gte"
+                              ],
+                              "title": "billing_thresholds_param",
+                              "type": "object"
+                            },
+                            {
+                              "enum": [
+                                ""
+                              ],
+                              "type": "string"
+                            }
+                          ]
+                        },
                         "metadata": {
                           "additionalProperties": {
                             "type": "string"
@@ -49278,6 +49953,10 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
+                "billing_thresholds": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -49316,6 +49995,29 @@
                     "maxLength": 5000,
                     "type": "string"
                   },
+                  "billing_thresholds": {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "amount_gte": {
+                            "type": "integer"
+                          },
+                          "reset_billing_cycle_anchor": {
+                            "type": "boolean"
+                          }
+                        },
+                        "title": "billing_thresholds_param",
+                        "type": "object"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period. Pass an empty string to remove previously-defined thresholds."
+                  },
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
                     "type": "boolean"
@@ -49346,6 +50048,28 @@
                     "description": "List of subscription items, each with an attached plan.",
                     "items": {
                       "properties": {
+                        "billing_thresholds": {
+                          "anyOf": [
+                            {
+                              "properties": {
+                                "usage_gte": {
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "usage_gte"
+                              ],
+                              "title": "billing_thresholds_param",
+                              "type": "object"
+                            },
+                            {
+                              "enum": [
+                                ""
+                              ],
+                              "type": "string"
+                            }
+                          ]
+                        },
                         "clear_usage": {
                           "type": "boolean"
                         },
@@ -49673,7 +50397,7 @@
                     "object",
                     "url"
                   ],
-                  "title": "PointOfSaleLocationLocationList",
+                  "title": "TerminalLocationLocationList",
                   "type": "object",
                   "x-expandableFields": [
                     "data"
@@ -50136,7 +50860,7 @@
                     "object",
                     "url"
                   ],
-                  "title": "PointOfSaleReaderRetrieveReader",
+                  "title": "TerminalReaderRetrieveReader",
                   "type": "object",
                   "x-expandableFields": [
                     "data"
