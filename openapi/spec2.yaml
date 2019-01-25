@@ -22,6 +22,10 @@ definitions:
       business_name:
         description: The publicly visible name of the business.
         type: string
+      business_primary_color:
+        description: A CSS hex color value representing the primary branding color
+          for this account.
+        type: string
       business_url:
         description: The publicly visible website of the business.
         type: string
@@ -94,7 +98,7 @@ definitions:
         description: Unique identifier for the object.
         type: string
       keys:
-        type: object
+        "$ref": "#/definitions/account_keys"
       legal_entity:
         "$ref": "#/definitions/legal_entity"
       metadata:
@@ -134,6 +138,9 @@ definitions:
       support_phone:
         description: A publicly shareable support phone number for the business.
         type: string
+      support_url:
+        description: A publicly available website for handling support issues.
+        type: string
       timezone:
         description: The timezone used in the Stripe Dashboard for this account. A
           list of possible time zone values is maintained at the [IANA Time Zone Database](http://www.iana.org/time-zones).
@@ -154,6 +161,7 @@ definitions:
     - business_logo
     - decline_charge_on
     - external_accounts
+    - keys
     - legal_entity
     - payout_schedule
     - support_address
@@ -176,6 +184,19 @@ definitions:
     - avs_failure
     - cvc_failure
     title: AccountDeclineChargeOn
+    type: object
+    x-expandableFields: []
+  account_keys:
+    properties:
+      publishable:
+        description: Key used to identify your account with Stripe. It can be publicly
+          placed in your front-end or mobile client.
+        type: string
+      secret:
+        description: Confidential key used to perform API requests to Stripe. It should
+          be kept confidential and only stored on your own servers.
+        type: string
+    title: AccountKeys
     type: object
     x-expandableFields: []
   account_link:
@@ -5682,8 +5703,8 @@ definitions:
         - payout
         type: string
       source_type:
-        description: The source balance this payout came from. One of `card`, `bank_account`,
-          or `alipay_account`.
+        description: The source balance this payout came from. One of `card`, `financing`,
+          `bank_account`, or `alipay_account`.
         type: string
       statement_descriptor:
         description: Extra information about a payout to be displayed on the user's
@@ -6529,8 +6550,8 @@ definitions:
           oneOf:
           - "$ref": "#/definitions/charge"
       source_type:
-        description: The source balance this transfer came from. One of `card`, `bank_account`,
-          or `alipay_account`.
+        description: The source balance this transfer came from. One of `card`, `financing`,
+          `bank_account`, or `alipay_account`.
         type: string
       statement_descriptor:
         description: Extra information about a transfer to be displayed on the user's
@@ -7205,9 +7226,9 @@ definitions:
         description: The `type` of the source. The `type` is a payment method, one
           of `ach_credit_transfer`, `ach_debit`, `alipay`, `bancontact`, `card`, `card_present`,
           `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `paper_check`, `sepa_credit_transfer`,
-          `sepa_debit`, `sofort`, or `three_d_secure`. An additional hash is included
-          on the source with a name matching this value. It contains additional information
-          specific to the [payment method](/docs/sources) used.
+          `sepa_debit`, `sofort`, `three_d_secure`, or `wechat`. An additional hash
+          is included on the source with a name matching this value. It contains additional
+          information specific to the [payment method](/docs/sources) used.
         enum:
         - ach_credit_transfer
         - ach_debit
@@ -7225,6 +7246,7 @@ definitions:
         - sepa_debit
         - sofort
         - three_d_secure
+        - wechat
         type: string
       usage:
         description: Either `reusable` or `single_use`. Whether this source should
@@ -7232,6 +7254,8 @@ definitions:
           while others may leave the option at creation. If an incompatible value
           is passed, an error will be returned.
         type: string
+      wechat:
+        "$ref": "#/definitions/source_type_wechat"
     required:
     - client_secret
     - created
@@ -7513,6 +7537,7 @@ definitions:
         - sepa_debit
         - sofort
         - three_d_secure
+        - wechat
         type: string
     required:
     - amount
@@ -7906,6 +7931,31 @@ definitions:
       three_d_secure:
         type: string
       tokenization_method:
+        type: string
+    type: object
+  source_type_wechat:
+    properties:
+      appid:
+        type: string
+      native_url:
+        type: string
+      noncestr:
+        type: string
+      package:
+        type: string
+      partnerid:
+        type: string
+      prepay_id:
+        type: string
+      prepayid:
+        type: string
+      qr_code_url:
+        type: string
+      sign:
+        type: string
+      statement_descriptor:
+        type: string
+      timestamp:
         type: string
     type: object
   status_transitions:
@@ -8588,8 +8638,8 @@ definitions:
           oneOf:
           - "$ref": "#/definitions/charge"
       source_type:
-        description: The source balance this transfer came from. One of `card`, `bank_account`,
-          or `alipay_account`.
+        description: The source balance this transfer came from. One of `card`, `financing`,
+          `bank_account`, or `alipay_account`.
         type: string
       transfer_group:
         description: A string that identifies this transaction as part of a group.
@@ -8639,6 +8689,9 @@ definitions:
       destination_payment_refund:
         description: Linked payment refund for the transfer reversal.
         type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/refund"
       id:
         description: Unique identifier for the object.
         type: string
@@ -8677,6 +8730,7 @@ definitions:
     type: object
     x-expandableFields:
     - balance_transaction
+    - destination_payment_refund
     - source_refund
     - transfer
     x-resourceId: transfer_reversal
@@ -14986,8 +15040,8 @@ paths:
         schema:
           properties:
             allowed_source_types:
-              description: The list of source types (e.g. card) that this CheckoutSession
-                is allowed to use.
+              description: The list of source types (e.g. card) that this Checkout
+                Session is allowed to use.
               items:
                 enum:
                 - card
@@ -15033,7 +15087,7 @@ paths:
                 type: object
               type: array
             payment_intent_data:
-              description: A subset of parameters to be passed to payment intent creation.
+              description: A subset of parameters to be passed to PaymentIntent creation.
               properties:
                 description:
                   type: string
@@ -15085,7 +15139,6 @@ paths:
           required:
           - allowed_source_types
           - cancel_url
-          - line_items
           - success_url
           type: object
       responses:
@@ -23054,6 +23107,12 @@ paths:
         required: false
         schema:
           properties:
+            allowed_source_types:
+              description: The list of source types (e.g. card) that this PaymentIntent
+                is allowed to use.
+              items:
+                type: string
+              type: array
             amount:
               description: Amount intended to be collected by this PaymentIntent
               type: integer
@@ -23485,6 +23544,7 @@ paths:
               - bank_account
               - bitcoin_receiver
               - card
+              - financing
               - source
               - stripe_account
               type: string
@@ -26164,9 +26224,11 @@ paths:
                   type: string
                 notification_method:
                   enum:
+                  - deprecated_none
                   - email
                   - manual
                   - none
+                  - stripe_email
                   type: string
               title: mandate_params
               type: object
@@ -26378,9 +26440,11 @@ paths:
                   type: string
                 notification_method:
                   enum:
+                  - deprecated_none
                   - email
                   - manual
                   - none
+                  - stripe_email
                   type: string
               title: mandate_params
               type: object
@@ -28609,13 +28673,14 @@ paths:
               type: string
             source_type:
               description: The source balance to use for this transfer. One of `card`,
-                `bank_account`, or `alipay_account`. For most users, this will default
-                to `card`.
+                `financing`, `bank_account`, or `alipay_account`. For most users,
+                this will default to `card`.
               enum:
               - alipay_account
               - bank_account
               - bitcoin_receiver
               - card
+              - financing
               - source
               - stripe_account
               type: string
