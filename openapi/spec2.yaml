@@ -386,6 +386,8 @@ definitions:
           the error. For example, you can use this to display a message near the correct
           form field.
         type: string
+      payment_method:
+        "$ref": "#/definitions/payment_method"
       source:
         "$ref": "#/definitions/card"
       type:
@@ -406,6 +408,7 @@ definitions:
     title: APIErrors
     type: object
     x-expandableFields:
+    - payment_method
     - source
   apple_pay_domain:
     properties:
@@ -558,7 +561,6 @@ definitions:
     - amount
     - amount_refunded
     - application
-    - balance_transaction
     - charge
     - created
     - currency
@@ -701,7 +703,6 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/application_fee"
-          - "$ref": "#/definitions/bitcoin_transaction"
           - "$ref": "#/definitions/charge"
           - "$ref": "#/definitions/connect_collection_transfer"
           - "$ref": "#/definitions/dispute"
@@ -709,7 +710,6 @@ definitions:
           - "$ref": "#/definitions/issuing.authorization"
           - "$ref": "#/definitions/issuing.transaction"
           - "$ref": "#/definitions/payout"
-          - "$ref": "#/definitions/recipient_transfer"
           - "$ref": "#/definitions/refund"
           - "$ref": "#/definitions/reserve_transaction"
           - "$ref": "#/definitions/topup"
@@ -1777,7 +1777,7 @@ definitions:
           the customer can be charged in for recurring billing purposes.
         type: string
       default_source:
-        description: ID of the default source attached to this customer.
+        description: ID of the default payment source for the customer.
         type: string
         x-expansionResources:
           oneOf:
@@ -3093,9 +3093,10 @@ definitions:
         - file
         type: string
       purpose:
-        description: The purpose of the file. Possible values are `business_logo`,
-          `customer_signature`, `dispute_evidence`, `finance_report_run`, `founders_stock_document`,
-          `identity_document`, `pci_document`, `sigma_scheduled_query`, or `tax_document_user_upload`.
+        description: The purpose of the file. Possible values are `business_icon`,
+          `business_logo`, `customer_signature`, `dispute_evidence`, `finance_report_run`,
+          `founders_stock_document`, `identity_document`, `pci_document`, `sigma_scheduled_query`,
+          or `tax_document_user_upload`.
         type: string
       size:
         description: The size in bytes of the file object.
@@ -3508,6 +3509,23 @@ definitions:
     - subscription
     - threshold_reason
     x-resourceId: invoice
+  invoice_item_threshold_reason:
+    properties:
+      line_item_ids:
+        description: The IDs of the line items that triggered the threshold invoice.
+        items:
+          type: string
+        type: array
+      usage_gte:
+        description: The quantity threshold boundary that applied to the given line
+          item.
+        type: integer
+    required:
+    - line_item_ids
+    - usage_gte
+    title: InvoiceItemThresholdReason
+    type: object
+    x-expandableFields: []
   invoice_line_item_period:
     properties:
       end:
@@ -3550,6 +3568,16 @@ definitions:
     type: object
     x-expandableFields:
     - custom_fields
+  invoice_setting_subscription_schedule_setting:
+    properties:
+      days_until_due:
+        description: Number of days within which a customer must pay invoices generated
+          by this subscription schedule. This value will be `null` for subscription
+          schedules where `billing=charge_automatically`.
+        type: integer
+    title: InvoiceSettingSubscriptionScheduleSetting
+    type: object
+    x-expandableFields: []
   invoice_threshold_reason:
     properties:
       amount_gte:
@@ -3559,7 +3587,7 @@ definitions:
       item_reasons:
         description: Indicates which line items triggered a threshold invoice.
         items:
-          "$ref": "#/definitions/invoiceitem_threshold_reason"
+          "$ref": "#/definitions/invoice_item_threshold_reason"
         type: array
     required:
     - item_reasons
@@ -3667,23 +3695,6 @@ definitions:
     - plan
     - subscription
     x-resourceId: invoiceitem
-  invoiceitem_threshold_reason:
-    properties:
-      line_item_ids:
-        description: The IDs of the line items that triggered the threshold invoice.
-        items:
-          type: string
-        type: array
-      usage_gte:
-        description: The quantity threshold boundary that applied to the given line
-          item.
-        type: integer
-    required:
-    - line_item_ids
-    - usage_gte
-    title: InvoiceItemThresholdReason
-    type: object
-    x-expandableFields: []
   issuer_fraud_record:
     properties:
       actionable:
@@ -4187,13 +4198,7 @@ definitions:
         description: The date of the settlement event.
         type: integer
       settlement_service:
-        description: One of `international`, `australia_national_net`, `canada_national_net`,
-          `uk_national_net`, `india_area_net`, `japan_national_net`, `south_korea_national_net`,
-          `new_zealand_national_net`, `sweden_national_net`, `singapore_national_net`,
-          `colombia_national_net`, `philippines_national_net`, `euro_area_net`, `south_africa_national_net`,
-          `nigeria_national_net`, `lebanon_usd_national_net`, `lebanon_lbp_national_net`,
-          `turkey_national_net`, `brazil_cip_national_net`, `malaysia_national_net`,
-          or `hong_kong_area_net`.
+        description: One of `international` or `uk_national_net`.
         type: string
       transaction_count:
         description: The total number of transactions reflected in this settlement.
@@ -4787,6 +4792,12 @@ definitions:
     x-expandableFields:
     - document
     - document_back
+  light_account_logout:
+    properties: {}
+    title: LightAccountLogout
+    type: object
+    x-expandableFields: []
+    x-resourceId: light_account_logout
   line_item:
     properties:
       amount:
@@ -4889,12 +4900,6 @@ definitions:
     type: object
     x-expandableFields: []
     x-resourceId: login_link
-  logout:
-    properties: {}
-    title: LightAccountLogout
-    type: object
-    x-expandableFields: []
-    x-resourceId: logout
   notification_event_data:
     properties:
       object:
@@ -5217,10 +5222,13 @@ definitions:
       address:
         "$ref": "#/definitions/address"
       email:
+        description: Email address.
         type: string
       name:
+        description: Full name.
         type: string
       phone:
+        description: Billing phone number (including extension).
         type: string
     title: PaymentFlowsPaymentMethodResourceBillingDetails
     type: object
@@ -5229,82 +5237,41 @@ definitions:
   payment_flows_private_payment_methods_card:
     properties:
       brand:
-        type: string
-      exp_month:
-        type: integer
-      exp_year:
-        type: integer
-      funding:
-        type: string
-      last4:
-        type: string
-    required:
-    - exp_month
-    - exp_year
-    title: PaymentFlowsPrivatePaymentMethodsCard
-    type: object
-    x-expandableFields: []
-  payment_flows_private_payment_methods_ideal:
-    properties:
-      bank:
-        description: The customer's bank, if provided.
-        enum:
-        - abn_amro
-        - asn_bank
-        - bunq
-        - handelsbanken
-        - ing
-        - knab
-        - moneyou
-        - rabobank
-        - regiobank
-        - sns_bank
-        - triodos_bank
-        - van_lanschot
-        type: string
-      bic:
-        description: The Bank Identifier Code of the customer's bank, if the bank
-          was provided.
-        enum:
-        - ABNANL2A
-        - ASNBNL21
-        - BUNQNL2A
-        - FVLBNL22
-        - HANDNL2A
-        - INGBNL2A
-        - KNABNL2H
-        - MOYONL21
-        - RABONL2U
-        - RBRBNL21
-        - SNSBNL2A
-        - TRIONL2U
-        type: string
-    title: PaymentFlowsPrivatePaymentMethodsIdeal
-    type: object
-    x-expandableFields: []
-  payment_flows_private_payment_methods_sepa_debit:
-    properties:
-      bank_code:
-        type: string
-      branch_code:
+        description: Card brand. Can be `American Express`, `Diners Club`, `Discover`,
+          `JCB`, `MasterCard`, `UnionPay`, `Visa`, or `Unknown`.
         type: string
       country:
         type: string
+      exp_month:
+        description: Two-digit number representing the card's expiration month.
+        type: integer
+      exp_year:
+        description: Four-digit number representing the card's expiration year.
+        type: integer
       fingerprint:
+        description: Uniquely identifies this particular card number. You can use
+          this attribute to check whether two customers who've signed up with you
+          are using the same card number, for example.
+        type: string
+      funding:
+        description: Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.
         type: string
       last4:
+        description: Two-letter ISO code representing the country of the card. You
+          could use this attribute to get a sense of the international breakdown of
+          cards you've collected.
         type: string
-    title: PaymentFlowsPrivatePaymentMethodsSepaDebit
+    required:
+    - brand
+    - exp_month
+    - exp_year
+    - funding
+    - last4
+    title: PaymentFlowsPrivatePaymentMethodsCard
     type: object
     x-expandableFields: []
   payment_intent:
     properties:
-      allowed_source_types:
-        description: The list of source types (e.g. card) that this PaymentIntent
-          is allowed to use.
-        items:
-          type: string
-        type: array
       amount:
         description: Amount intended to be collected by this PaymentIntent.
         type: integer
@@ -5322,7 +5289,7 @@ definitions:
           - "$ref": "#/definitions/application"
       application_fee_amount:
         description: The amount of the application fee (if any) for the resulting
-          payment. [See the Connect documentation](/docs/connect/direct-charges#collecting-fees)
+          payment. See the PaymentIntent [Connect usage guide](/docs/payments/payment-intents/usage#connect)
           for details.
         type: integer
       canceled_at:
@@ -5331,9 +5298,10 @@ definitions:
         type: integer
       cancellation_reason:
         description: User-given reason for cancellation of this PaymentIntent, one
-          of `duplicate`, `fraudulent`, or `requested_by_customer`.
+          of `duplicate`, `fraudulent`, `requested_by_customer`, or `failed_invoice`.
         enum:
         - duplicate
+        - failed_invoice
         - fraudulent
         - requested_by_customer
         type: string
@@ -5400,6 +5368,7 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/customer"
+          - "$ref": "#/definitions/deleted_customer"
       description:
         description: An arbitrary string attached to the object. Often useful for
           displaying to users.
@@ -5418,8 +5387,8 @@ definitions:
           can be useful for storing additional information about the object in a structured
           format.
         type: object
-      next_source_action:
-        "$ref": "#/definitions/payment_intent_next_source_action"
+      next_action:
+        "$ref": "#/definitions/payment_intent_next_action"
       object:
         description: String representing the object's type. Objects of the same type
           share the same value.
@@ -5428,13 +5397,18 @@ definitions:
         type: string
       on_behalf_of:
         description: The account (if any) for which the funds of the PaymentIntent
-          are intended. For details, see [Creating Separate Charges and Transfers](/docs/connect/charges-transfers#on-behalf-of).
-          When transfer_data is specified, on_behalf_of must also be specified and
-          must match the destination of the transfer.
+          are intended. See the PaymentIntent [Connect usage guide](/docs/payments/payment-intents/usage#connect)
+          for details.
         type: string
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/account"
+      payment_method_types:
+        description: The list of payment method types (e.g. card) that this PaymentIntent
+          is allowed to use.
+        items:
+          type: string
+        type: array
       receipt_email:
         description: Email address that the receipt for the resulting payment will
           be sent to.
@@ -5453,7 +5427,6 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/card"
-          - "$ref": "#/definitions/payment_method"
           - "$ref": "#/definitions/source"
       statement_descriptor:
         description: Extra information about a PaymentIntent. This will appear on
@@ -5461,27 +5434,26 @@ definitions:
           charge.
         type: string
       status:
-        description: Status of this PaymentIntent, one of `requires_source`, `requires_confirmation`,
-          `requires_source_action`, `processing`, `requires_capture`, `canceled`,
-          or `succeeded`.
+        description: Status of this PaymentIntent, one of `requires_payment_method`,
+          `requires_confirmation`, `requires_action`, `processing`, `requires_capture`,
+          `canceled`, or `succeeded`.
         enum:
         - canceled
         - processing
+        - requires_action
         - requires_capture
         - requires_confirmation
-        - requires_source
-        - requires_source_action
+        - requires_payment_method
         - succeeded
         type: string
       transfer_data:
         "$ref": "#/definitions/payment_flows_payment_intent_resource_transfer_data"
       transfer_group:
         description: A string that identifies the resulting payment as part of a group.
-          See the [Connect documentation](/docs/connect/charges-transfers#grouping-transactions)
+          See the PaymentIntent [Connect usage guide](/docs/payments/payment-intents/usage#connect)
           for details.
         type: string
     required:
-    - allowed_source_types
     - amount
     - capture_method
     - confirmation_method
@@ -5490,6 +5462,7 @@ definitions:
     - id
     - livemode
     - object
+    - payment_method_types
     - status
     title: PaymentIntent
     type: object
@@ -5498,19 +5471,19 @@ definitions:
     - charges
     - customer
     - last_payment_error
-    - next_source_action
+    - next_action
     - on_behalf_of
     - review
     - shipping
     - source
     - transfer_data
     x-resourceId: payment_intent
-  payment_intent_next_source_action:
+  payment_intent_next_action:
     properties:
-      authorize_with_url:
-        "$ref": "#/definitions/payment_intent_next_source_action_authorize_with_url"
+      redirect_to_url:
+        "$ref": "#/definitions/payment_intent_next_action_redirect_to_url"
       type:
-        description: Type of the next source action to perform, one of `authorize_with_url`
+        description: Type of the next action to perform, one of `redirect_to_url`
           or `use_stripe_sdk`.
         type: string
       use_stripe_sdk:
@@ -5521,11 +5494,11 @@ definitions:
         type: object
     required:
     - type
-    title: PaymentIntentNextSourceAction
+    title: PaymentIntentNextAction
     type: object
     x-expandableFields:
-    - authorize_with_url
-  payment_intent_next_source_action_authorize_with_url:
+    - redirect_to_url
+  payment_intent_next_action_redirect_to_url:
     properties:
       return_url:
         description: If the customer does not exit their browser while authenticating,
@@ -5535,7 +5508,7 @@ definitions:
         description: The URL you must redirect your customer to in order to authenticate
           the payment.
         type: string
-    title: PaymentIntentNextSourceActionAuthorizeWithUrl
+    title: PaymentIntentNextActionRedirectToUrl
     type: object
     x-expandableFields: []
   payment_method:
@@ -5545,31 +5518,40 @@ definitions:
       card:
         "$ref": "#/definitions/payment_flows_private_payment_methods_card"
       created:
+        description: Time at which the object was created. Measured in seconds since
+          the Unix epoch.
         type: integer
       customer:
+        description: The ID of the Customer to which this PaymentMethod is saved.
+          This will not be set when the PaymentMethod has not been saved to a Customer.
         type: string
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/customer"
       id:
+        description: Unique identifier for the object.
         type: string
-      ideal:
-        "$ref": "#/definitions/payment_flows_private_payment_methods_ideal"
       livemode:
+        description: Has the value `true` if the object exists in live mode or the
+          value `false` if the object exists in test mode.
         type: boolean
       metadata:
+        description: Set of key-value pairs that you can attach to an object. This
+          can be useful for storing additional information about the object in a structured
+          format.
         type: object
       object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
         enum:
         - payment_method
         type: string
-      sepa_debit:
-        "$ref": "#/definitions/payment_flows_private_payment_methods_sepa_debit"
       type:
+        description: The type of the PaymentMethod, one of `card`. An additional hash
+          is included on the PaymentMethod with a name matching this value. It contains
+          additional information specific to the PaymentMethod type.
         enum:
         - card
-        - ideal
-        - sepa_debit
         type: string
     required:
     - billing_details
@@ -5579,14 +5561,12 @@ definitions:
     - metadata
     - object
     - type
-    title: PaymentFlowsPaymentMethod
+    title: PaymentMethod
     type: object
     x-expandableFields:
     - billing_details
     - card
     - customer
-    - ideal
-    - sepa_debit
   payment_source:
     properties:
       id:
@@ -5615,7 +5595,6 @@ definitions:
       - "$ref": "#/definitions/bank_account"
       - "$ref": "#/definitions/bitcoin_receiver"
       - "$ref": "#/definitions/card"
-      - "$ref": "#/definitions/payment_method"
       - "$ref": "#/definitions/source"
     x-resourceId: payment_source
   payout:
@@ -5855,10 +5834,6 @@ definitions:
         type: boolean
       director:
         description: Whether the person is a director of the account's legal entity.
-        type: boolean
-      executive:
-        description: Whether the person has a significant control of the account’s
-          legal entity.
         type: boolean
       owner:
         description: Whether the person is an owner of the account’s legal entity.
@@ -6421,181 +6396,6 @@ definitions:
     - migrated_to
     - rolled_back_from
     x-resourceId: recipient
-  recipient_transfer:
-    properties:
-      amount:
-        description: Amount (in %s) to be transferred to your bank account.
-        type: integer
-      amount_reversed:
-        description: Amount in %s reversed (can be less than the amount attribute
-          on the transfer if a partial reversal was issued).
-        type: integer
-      application_fee:
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/application_fee"
-      automatic:
-        description: Returns `true` if the payout was created by an [automated payout
-          schedule](/docs/payouts#payout-schedule), and `false` if it was [requested
-          manually](https://stripe.com/docs/payouts#manual-payouts).
-        type: boolean
-      balance_transaction:
-        description: Balance transaction that describes the impact of this transfer
-          on your account balance.
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/balance_transaction"
-      created:
-        description: Time at which the object was created. Measured in seconds since
-          the Unix epoch.
-        type: integer
-      currency:
-        description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
-          in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
-        type: string
-      date:
-        description: Date the transfer is scheduled to arrive in the bank. This factors
-          in delays like weekends or bank holidays.
-        type: integer
-      description:
-        description: Internal-only description of the transfer.
-        type: string
-      destination:
-        description: ID of the bank account, card, or Stripe account the transfer
-          was sent to.
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/account"
-      destination_payment:
-        description: If the destination is a Stripe account, this will be the ID of
-          the payment that the destination account received for the transfer.
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/charge"
-      failure_code:
-        description: Error code explaining reason for transfer failure if available.
-          See [Types of transfer failures](/docs/api#transfer_failures) for a list
-          of failure codes.
-        type: string
-      failure_message:
-        description: Message to user further explaining reason for transfer failure
-          if available.
-        type: string
-      id:
-        description: Unique identifier for the object.
-        type: string
-      livemode:
-        description: Has the value `true` if the object exists in live mode or the
-          value `false` if the object exists in test mode.
-        type: boolean
-      metadata:
-        description: Set of key-value pairs that you can attach to an object. This
-          can be useful for storing additional information about the object in a structured
-          format.
-        type: object
-      method:
-        description: The method used to send this transfer, which can be `standard`
-          or `instant`. `instant` is only supported for transfers to debit cards.
-          (See [Instant payouts for marketplaces](/blog/instant-payouts-for-marketplaces)
-          for more information.)
-        type: string
-      object:
-        description: String representing the object's type. Objects of the same type
-          share the same value.
-        enum:
-        - recipient_transfer
-        type: string
-      reversals:
-        description: A list of reversals that have been applied to the transfer.
-        properties:
-          data:
-            items:
-              "$ref": "#/definitions/transfer_reversal"
-            type: array
-          has_more:
-            description: True if this list has another page of items after this one
-              that can be fetched.
-            type: boolean
-          object:
-            description: String representing the object's type. Objects of the same
-              type share the same value. Always has the value `list`.
-            enum:
-            - list
-            type: string
-          url:
-            description: The URL where this list can be accessed.
-            type: string
-        required:
-        - data
-        - has_more
-        - object
-        - url
-        title: TransferReversalList
-        type: object
-        x-expandableFields:
-        - data
-      reversed:
-        description: Whether the transfer has been fully reversed. If the transfer
-          is only partially reversed, this attribute will still be false.
-        type: boolean
-      source_transaction:
-        description: ID of the charge (or other transaction) that was used to fund
-          the transfer. If null, the transfer was funded from the available balance.
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/charge"
-      source_type:
-        description: The source balance this transfer came from. One of `card`, `financing`,
-          `bank_account`, or `alipay_account`.
-        type: string
-      statement_descriptor:
-        description: Extra information about a transfer to be displayed on the user's
-          bank statement.
-        type: string
-      status:
-        description: Current status of the transfer (`paid`, `pending`, `in_transit`,
-          `canceled` or `failed`). A transfer will be `pending` until it is submitted
-          to the bank, at which point it becomes `in_transit`. It will then change
-          to `paid` if the transaction goes through. If it does not go through successfully,
-          its status will change to `failed` or `canceled`.
-        type: string
-      transfer_group:
-        description: A string that identifies this transaction as part of a group.
-          See the [Connect documentation](/docs/connect/charges-transfers#grouping-transactions)
-          for details.
-        type: string
-      type:
-        description: Can be `card`, `bank_account`, or `stripe_account`.
-        type: string
-    required:
-    - amount
-    - amount_reversed
-    - automatic
-    - created
-    - currency
-    - date
-    - id
-    - livemode
-    - metadata
-    - object
-    - reversals
-    - reversed
-    - status
-    - type
-    title: TransferRecipientTransfer
-    type: object
-    x-expandableFields:
-    - application_fee
-    - balance_transaction
-    - destination
-    - destination_payment
-    - reversals
-    - source_transaction
   refund:
     properties:
       amount:
@@ -8089,7 +7889,9 @@ definitions:
           monthly. Only set if the subscription contains a single plan.
         type: integer
       start:
-        description: Date the most recent update to this subscription started.
+        description: Date of the last substantial change to this subscription. For
+          example, a change to the items array, or a change of status, will reset
+          this timestamp.
         type: integer
       status:
         description: Possible values are `trialing`, `active`, `past_due`, `canceled`,
@@ -8216,6 +8018,281 @@ definitions:
     title: SubscriptionItemBillingThresholds
     type: object
     x-expandableFields: []
+  subscription_schedule:
+    properties:
+      billing:
+        description: Either `charge_automatically`, or `send_invoice`. When charging
+          automatically, Stripe will attempt to pay the underlying subscription at
+          the end of each billing cycle using the default source attached to the customer.
+          When sending an invoice, Stripe will email your customer an invoice with
+          payment instructions.
+        enum:
+        - charge_automatically
+        - send_invoice
+        type: string
+      billing_thresholds:
+        "$ref": "#/definitions/subscription_billing_thresholds"
+      canceled_at:
+        description: Time at which the subscription schedule was canceled. Measured
+          in seconds since the Unix epoch.
+        type: integer
+      completed_at:
+        description: Time at which the subscription schedule was completed. Measured
+          in seconds since the Unix epoch.
+        type: integer
+      created:
+        description: Time at which the object was created. Measured in seconds since
+          the Unix epoch.
+        type: integer
+      current_phase:
+        "$ref": "#/definitions/subscription_schedule_current_phase"
+      customer:
+        description: ID of the customer who owns the subscription schedule.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/customer"
+          - "$ref": "#/definitions/deleted_customer"
+      id:
+        description: Unique identifier for the object.
+        type: string
+      invoice_settings:
+        "$ref": "#/definitions/invoice_setting_subscription_schedule_setting"
+      livemode:
+        description: Has the value `true` if the object exists in live mode or the
+          value `false` if the object exists in test mode.
+        type: boolean
+      metadata:
+        description: Set of key-value pairs that you can attach to an object. This
+          can be useful for storing additional information about the object in a structured
+          format.
+        type: object
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - subscription_schedule
+        type: string
+      phases:
+        description: Configuration for the subscription schedule's phases.
+        items:
+          "$ref": "#/definitions/subscription_schedule_phase_configuration"
+        type: array
+      released_at:
+        description: Time at which the subscription schedule was released. Measured
+          in seconds since the Unix epoch.
+        type: integer
+      released_subscription:
+        description: ID of the subscription once managed by the subscription schedule
+          (if it is released).
+        type: string
+      renewal_behavior:
+        description: Behavior of the subscription schedule and underlying subscription
+          when it ends.
+        enum:
+        - none
+        - release
+        - renew
+        type: string
+      renewal_interval:
+        "$ref": "#/definitions/subscription_schedule_renewal_interval"
+      revision:
+        description: ID of the current revision of the subscription schedule.
+        type: string
+      status:
+        description: Possible values are `not_started`, `active`, `completed`, `released`,
+          and `canceled`.
+        enum:
+        - active
+        - canceled
+        - completed
+        - not_started
+        - released
+        type: string
+      subscription:
+        description: ID of the subscription managed by the subscription schedule.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/subscription"
+    required:
+    - created
+    - customer
+    - id
+    - livemode
+    - object
+    - phases
+    - renewal_behavior
+    - revision
+    - status
+    title: SubscriptionSchedule
+    type: object
+    x-expandableFields:
+    - billing_thresholds
+    - current_phase
+    - customer
+    - invoice_settings
+    - phases
+    - renewal_interval
+    - subscription
+    x-resourceId: subscription_schedule
+  subscription_schedule_configuration_item:
+    properties:
+      billing_thresholds:
+        "$ref": "#/definitions/subscription_item_billing_thresholds"
+      plan:
+        description: ID of the plan to which the customer should be subscribed.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/plan"
+          - "$ref": "#/definitions/deleted_plan"
+      quantity:
+        description: Quantity of the plan to which the customer should be subscribed.
+        type: integer
+    required:
+    - plan
+    title: SubscriptionScheduleConfigurationItem
+    type: object
+    x-expandableFields:
+    - billing_thresholds
+    - plan
+  subscription_schedule_current_phase:
+    properties:
+      end_date:
+        type: integer
+      start_date:
+        type: integer
+    required:
+    - end_date
+    - start_date
+    title: SubscriptionScheduleCurrentPhase
+    type: object
+    x-expandableFields: []
+  subscription_schedule_phase_configuration:
+    properties:
+      application_fee_percent:
+        description: A non-negative decimal between 0 and 100, with at most two decimal
+          places. This represents the percentage of the subscription invoice subtotal
+          that will be transferred to the application owner's Stripe account during
+          this phase of the schedule.
+        type: number
+      coupon:
+        description: ID of the coupon to use during this phase of the subscription
+          schedule.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/coupon"
+      end_date:
+        description: The end of this phase of the subscription schedule.
+        type: integer
+      plans:
+        description: Plans to subscribe during this phase of the subscription schedule.
+        items:
+          "$ref": "#/definitions/subscription_schedule_configuration_item"
+        type: array
+      start_date:
+        description: The start of this phase of the subscription schedule.
+        type: integer
+      tax_percent:
+        description: If provided, each invoice created during this phase of the subscription
+          schedule will apply the tax rate, increasing the amount billed to the customer.
+        type: number
+      trial_end:
+        description: When the trial ends within the phase.
+        type: integer
+    required:
+    - end_date
+    - plans
+    - start_date
+    title: SubscriptionSchedulePhaseConfiguration
+    type: object
+    x-expandableFields:
+    - coupon
+    - plans
+  subscription_schedule_renewal_interval:
+    properties:
+      interval:
+        description: Interval at which to renew the subscription schedule for when
+          it ends.
+        enum:
+        - day
+        - month
+        - week
+        - year
+        type: string
+      length:
+        description: Number of intervals to renew the subscription schedule for when
+          it ends.
+        type: integer
+    required:
+    - interval
+    - length
+    title: SubscriptionScheduleRenewalInterval
+    type: object
+    x-expandableFields: []
+  subscription_schedule_revision:
+    properties:
+      created:
+        description: Time at which the object was created. Measured in seconds since
+          the Unix epoch.
+        type: integer
+      id:
+        description: Unique identifier for the object.
+        type: string
+      invoice_settings:
+        "$ref": "#/definitions/invoice_setting_subscription_schedule_setting"
+      livemode:
+        description: Has the value `true` if the object exists in live mode or the
+          value `false` if the object exists in test mode.
+        type: boolean
+      metadata:
+        description: Set of key-value pairs that you can attach to an object. This
+          can be useful for storing additional information about the object in a structured
+          format.
+        type: object
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - subscription_schedule_revision
+        type: string
+      phases:
+        description: Configuration for the subscription schedule's phases.
+        items:
+          "$ref": "#/definitions/subscription_schedule_phase_configuration"
+        type: array
+      previous_revision:
+        type: string
+      renewal_behavior:
+        description: Behavior of the subscription schedule and underlying subscription
+          when it ends.
+        enum:
+        - none
+        - release
+        - renew
+        type: string
+      renewal_interval:
+        "$ref": "#/definitions/subscription_schedule_renewal_interval"
+      schedule:
+        description: ID of the subscription schedule the revision points to.
+        type: string
+    required:
+    - created
+    - id
+    - livemode
+    - object
+    - phases
+    - renewal_behavior
+    - schedule
+    title: SubscriptionScheduleRevision
+    type: object
+    x-expandableFields:
+    - invoice_settings
+    - phases
+    - renewal_interval
+    x-resourceId: subscription_schedule_revision
   tax_info:
     properties:
       tax_id:
@@ -8896,7 +8973,7 @@ info:
     details.
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
-  version: '2018-11-08'
+  version: '2019-02-11'
   x-stripeSpecFilename: spec2
 paths:
   "/v1/3d_secure":
@@ -9002,7 +9079,7 @@ paths:
           schema:
             "$ref": "#/definitions/error"
     get:
-      description: "<p>Retrieves the details of the account.</p>"
+      description: "<p>Retrieves the details of an account.</p>"
       operationId: GetAccount
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -9038,8 +9115,6 @@ paths:
         required: false
         schema:
           properties:
-            account:
-              type: string
             account_token:
               description: An [account token](https://stripe.com/docs/api#create_account_token),
                 used to securely provide details to the account.
@@ -9053,10 +9128,6 @@ paths:
               type: string
             business_name:
               description: The publicly sharable name for this account.
-              type: string
-            business_primary_color:
-              description: A CSS hex color value representing the primary branding
-                color for this account.
               type: string
             business_url:
               description: The URL that best shows the service or product provided
@@ -9885,7 +9956,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/logout"
+            "$ref": "#/definitions/light_account_logout"
         default:
           description: Error response.
           schema:
@@ -10103,8 +10174,6 @@ paths:
                   type: boolean
                 director:
                   type: boolean
-                executive:
-                  type: boolean
                 owner:
                   type: boolean
                 percent_ownership: {}
@@ -10309,8 +10378,6 @@ paths:
                 account_opener:
                   type: boolean
                 director:
-                  type: boolean
-                executive:
                   type: boolean
                 owner:
                   type: boolean
@@ -10545,8 +10612,6 @@ paths:
                   type: boolean
                 director:
                   type: boolean
-                executive:
-                  type: boolean
                 owner:
                   type: boolean
                 percent_ownership: {}
@@ -10752,8 +10817,6 @@ paths:
                   type: boolean
                 director:
                   type: boolean
-                executive:
-                  type: boolean
                 owner:
                   type: boolean
                 percent_ownership: {}
@@ -10794,7 +10857,9 @@ paths:
             collect:
               description: The information the platform wants to collect from users
                 up-front. Possible values are `currently_due` and `eventually_due`.
-                Only valid if the selected type is `custom_account_verification`.
+              enum:
+              - currently_due
+              - eventually_due
               type: string
             expand:
               description: Specifies which fields in the response should be expanded.
@@ -10929,10 +10994,6 @@ paths:
               type: string
             business_name:
               description: The publicly sharable name for this account.
-              type: string
-            business_primary_color:
-              description: A CSS hex color value representing the primary branding
-                color for this account.
               type: string
             business_url:
               description: The URL that best shows the service or product provided
@@ -11347,7 +11408,7 @@ paths:
           schema:
             "$ref": "#/definitions/error"
     get:
-      description: "<p>Retrieves the details of the account.</p>"
+      description: "<p>Retrieves the details of an account.</p>"
       operationId: GetAccountsAccount
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -11400,10 +11461,6 @@ paths:
               type: string
             business_name:
               description: The publicly sharable name for this account.
-              type: string
-            business_primary_color:
-              description: A CSS hex color value representing the primary branding
-                color for this account.
               type: string
             business_url:
               description: The URL that best shows the service or product provided
@@ -12268,7 +12325,7 @@ paths:
         '200':
           description: Successful response.
           schema:
-            "$ref": "#/definitions/logout"
+            "$ref": "#/definitions/light_account_logout"
         default:
           description: Error response.
           schema:
@@ -12494,8 +12551,6 @@ paths:
                   type: boolean
                 director:
                   type: boolean
-                executive:
-                  type: boolean
                 owner:
                   type: boolean
                 percent_ownership: {}
@@ -12712,8 +12767,6 @@ paths:
                 account_opener:
                   type: boolean
                 director:
-                  type: boolean
-                executive:
                   type: boolean
                 owner:
                   type: boolean
@@ -12956,8 +13009,6 @@ paths:
                   type: boolean
                 director:
                   type: boolean
-                executive:
-                  type: boolean
                 owner:
                   type: boolean
                 percent_ownership: {}
@@ -13174,8 +13225,6 @@ paths:
                 account_opener:
                   type: boolean
                 director:
-                  type: boolean
-                executive:
                   type: boolean
                 owner:
                   type: boolean
@@ -15025,14 +15074,6 @@ paths:
         required: true
         schema:
           properties:
-            allowed_source_types:
-              description: The list of source types (e.g. card) that this Checkout
-                Session is allowed to use.
-              items:
-                enum:
-                - card
-                type: string
-              type: array
             cancel_url:
               description: The URL the customer will be directed to if they decide
                 to go back to your website.
@@ -15118,13 +15159,42 @@ paths:
                   type: string
               title: payment_intent_data_params
               type: object
+            payment_method_types:
+              description: The list of payment method types (e.g. card) that this
+                Checkout Session is allowed to use.
+              items:
+                enum:
+                - card
+                type: string
+              type: array
+            subscription_data:
+              description: A subset of parameters to be passed to subscription creation.
+              properties:
+                items:
+                  items:
+                    properties:
+                      plan:
+                        type: string
+                      quantity:
+                        type: integer
+                    required:
+                    - plan
+                    title: subscription_data_item_param
+                    type: object
+                  type: array
+                metadata:
+                  type: object
+              required:
+              - items
+              title: subscription_data_params
+              type: object
             success_url:
               description: The URL the customer will be directed to after a successful
                 payment.
               type: string
           required:
-          - allowed_source_types
           - cancel_url
+          - payment_method_types
           - success_url
           type: object
       responses:
@@ -15147,14 +15217,6 @@ paths:
         required: true
         schema:
           properties:
-            allowed_source_types:
-              description: The list of source types (e.g. card) that this CheckoutSession
-                is allowed to use.
-              items:
-                enum:
-                - card
-                type: string
-              type: array
             cancel_url:
               description: The URL the customer will be directed to if they decide
                 to go back to your website.
@@ -15240,14 +15302,22 @@ paths:
                   type: string
               title: payment_intent_data_params
               type: object
+            payment_method_types:
+              description: The list of payment method types (e.g. card) that this
+                CheckoutSession is allowed to use.
+              items:
+                enum:
+                - card
+                type: string
+              type: array
             success_url:
               description: The URL the customer will be directed to after a successful
                 payment.
               type: string
           required:
-          - allowed_source_types
           - cancel_url
           - line_items
+          - payment_method_types
           - success_url
           type: object
       responses:
@@ -15700,6 +15770,7 @@ paths:
             customer:
               type: string
             default_source:
+              description: ID of the default payment source for the customer.
               type: string
             description:
               description: An arbitrary string that you can attach to a customer object.
@@ -15747,34 +15818,8 @@ paths:
                 the customer in a structured format.
               type: object
             shipping:
-              properties:
-                address:
-                  properties:
-                    city:
-                      type: string
-                    country:
-                      type: string
-                    line1:
-                      type: string
-                    line2:
-                      type: string
-                    postal_code:
-                      type: string
-                    state:
-                      type: string
-                  required:
-                  - line1
-                  title: address
-                  type: object
-                name:
-                  type: string
-                phone:
-                  type: string
-              required:
-              - address
-              - name
-              title: customer_shipping
-              type: object
+              description: The customer's shipping information. Appears on invoices
+                emailed to this customer.
             source:
               description: The source can either be a [Token](/docs/api#tokens) or
                 a [Source](/docs/api#sources), as returned by [Elements](https://stripe.com/docs/elements),
@@ -15860,7 +15905,7 @@ paths:
             "$ref": "#/definitions/error"
     post:
       description: |-
-        <p>Updates the specified customer by setting the values of the parameters passed. Any parameters not provided will be left unchanged. For example, if you pass the <strong>source</strong> parameter, that becomes the customer’s active source (e.g., a card) to be used for all charges in the future. When you update a customer to a new valid source: for each of the customer’s current subscriptions, if the subscription bills automatically and is in the <code>past_due</code> state, then the latest unpaid, unclosed invoice for the subscription will be retried (note that this retry will not count as an automatic retry, and will not affect the next regularly scheduled payment for the invoice). (Note also that no invoices pertaining to subscriptions in the <code>unpaid</code> state, or invoices pertaining to canceled subscriptions, will be retried as a result of updating the customer’s source.)</p>
+        <p>Updates the specified customer by setting the values of the parameters passed. Any parameters not provided will be left unchanged. For example, if you pass the <strong>source</strong> parameter, that becomes the customer’s active source (e.g., a card) to be used for all charges in the future. When you update a customer to a new valid card source by passing the <strong>source</strong> parameter: for each of the customer’s current subscriptions, if the subscription bills automatically and is in the <code>past_due</code> state, then the latest unclosed invoice for the subscription will be retried. This retry will not count as an automatic retry, and will not affect the next regularly scheduled payment for the invoice. Changing the <strong>default_source</strong> for a customer will not trigger this behavior.</p>
 
         <p>This request accepts mostly the same arguments as the customer creation call.</p>
       operationId: PostCustomersCustomer
@@ -15905,6 +15950,7 @@ paths:
                 payments.
               type: string
             default_source:
+              description: ID of the default payment source for the customer.
               type: string
             description:
               description: An arbitrary string that you can attach to a customer object.
@@ -15949,34 +15995,8 @@ paths:
                 the customer in a structured format.
               type: object
             shipping:
-              properties:
-                address:
-                  properties:
-                    city:
-                      type: string
-                    country:
-                      type: string
-                    line1:
-                      type: string
-                    line2:
-                      type: string
-                    postal_code:
-                      type: string
-                    state:
-                      type: string
-                  required:
-                  - line1
-                  title: address
-                  type: object
-                name:
-                  type: string
-                phone:
-                  type: string
-              required:
-              - address
-              - name
-              title: customer_shipping
-              type: object
+              description: The customer's shipping information. Appears on invoices
+                emailed to this customer.
             source:
               description: The source can either be a [Token](/docs/api#tokens) or
                 a [Source](/docs/api#sources), as returned by [Elements](https://stripe.com/docs/elements),
@@ -18311,10 +18331,11 @@ paths:
               title: file_link_creation_params
               type: object
             purpose:
-              description: The purpose of the uploaded file. Possible values are `business_logo`,
-                `customer_signature`, `dispute_evidence`, `identity_document`, `pci_document`,
-                or `tax_document_user_upload`
+              description: The purpose of the uploaded file. Possible values are `business_icon`,
+                `business_logo`, `customer_signature`, `dispute_evidence`, `identity_document`,
+                `pci_document`, or `tax_document_user_upload`
               enum:
+              - business_icon
               - business_logo
               - customer_signature
               - dispute_evidence
@@ -19537,7 +19558,7 @@ paths:
         can still be found.</p>
       operationId: PostInvoicesInvoiceVoid
       parameters:
-      - description: ID of invoice to void. It must be finalzied.
+      - description: ID of invoice to void. It must be finalized.
         in: path
         name: invoice
         required: true
@@ -21618,8 +21639,9 @@ paths:
             metadata:
               type: object
             status:
-              description: Specifies whether to permit authorizations on this card.
-                Possible values are `active`, `inactive`, or `canceled`.
+              description: 'Specifies whether to permit authorizations on this card.
+                Possible values are `active`, `inactive`, or the terminal states:
+                `canceled`, `lost`, `stolen`.'
               enum:
               - active
               - canceled
@@ -22905,23 +22927,15 @@ paths:
         required: true
         schema:
           properties:
-            allowed_source_types:
-              description: The list of source types (e.g. card) that this PaymentIntent
-                is allowed to use.
-              items:
-                type: string
-              type: array
             amount:
               description: Amount intended to be collected by this PaymentIntent
               type: integer
             application_fee_amount:
               description: |-
                 The amount of the application fee (if any) that will be applied to the payment and transferred to the
-                application owner's Stripe account. To use an application fee, the
-                request must be made on behalf of another account, using the
-                `Stripe-Account` header or an OAuth key. For more information, see
-                [Collecting application
-                fees](/docs/connect/direct-charges#collecting-fees).
+                application owner's Stripe account. To use an application fee, the request must be made on
+                behalf of another account, using the `Stripe-Account` header or an OAuth key. For more
+                information, see the PaymentIntent [Connect usage guide](/docs/payments/payment-intents/usage#connect).
               type: integer
             capture_method:
               description: Capture method of this PaymentIntent, one of `automatic`
@@ -22931,7 +22945,9 @@ paths:
               - manual
               type: string
             confirm:
-              description: Attempt to confirm this PaymentIntent on source attachment.
+              description: Attempt to confirm this PaymentIntent immediately. If the
+                payment method attached is a card, a return_url must be provided in
+                case additional authentication is required.
               type: boolean
             currency:
               description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
@@ -22956,8 +22972,14 @@ paths:
               type: object
             on_behalf_of:
               description: The Stripe account ID for which these funds are intended.
-                For details, see [Creating Separate Charges and Transfers](/docs/connect/charges-transfers#on-behalf-of).
+                For details, see the PaymentIntent [Connect usage guide](/docs/payments/payment-intents/usage#connect).
               type: string
+            payment_method_types:
+              description: The list of payment method types (e.g. card) that this
+                PaymentIntent is allowed to use.
+              items:
+                type: string
+              type: array
             receipt_email:
               description: Email address that the receipt for the resulting payment
                 will be sent to.
@@ -22968,11 +22990,12 @@ paths:
                 If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.
                 This param can only be used if `confirm=true`.
               type: string
-            save_source_to_customer:
-              description: Set to `true` to save this PaymentIntent's Source to the
-                associated Customer, if the Source is not already attached. This parameter
-                only applies to the current Source attached to the PaymentIntent and
-                must be specified again if a new Source is added.
+            save_payment_method:
+              description: Set to `true` to save this PaymentIntent's payment method
+                to the associated Customer, if the payment method is not already attached.
+                This parameter only applies to the payment method passed in the same
+                request or the current payment method attached to the PaymentIntent
+                and must be specified again if a new payment method is added.
               type: boolean
             shipping:
               description: Shipping information for this PaymentIntent.
@@ -23017,8 +23040,9 @@ paths:
                 a charge.
               type: string
             transfer_data:
-              description: The parameters used to automatically create a Transfer
-                when the payment succeeds.
+              description: |-
+                The parameters used to automatically create a Transfer when the payment succeeds.
+                For more information, see the PaymentIntent [Connect usage guide](/docs/payments/payment-intents/usage#connect).
               properties:
                 destination:
                   type: string
@@ -23028,13 +23052,13 @@ paths:
               type: object
             transfer_group:
               description: A string that identifies the resulting payment as part
-                of a group. See the [Connect documentation](/docs/connect/charges-transfers#grouping-transactions)
+                of a group. See the PaymentIntent [Connect usage guide](/docs/payments/payment-intents/usage#connect)
                 for details.
               type: string
           required:
-          - allowed_source_types
           - amount
           - currency
+          - payment_method_types
           type: object
       responses:
         '200':
@@ -23093,18 +23117,12 @@ paths:
         required: false
         schema:
           properties:
-            allowed_source_types:
-              description: The list of source types (e.g. card) that this PaymentIntent
-                is allowed to use.
-              items:
-                type: string
-              type: array
             amount:
               description: Amount intended to be collected by this PaymentIntent
               type: integer
             application_fee_amount:
               description: The amount of the application fee (if any) for the resulting
-                payment. [See the Connect documentation](/docs/connect/direct-charges#collecting-fees)
+                payment. See the PaymentIntent [Connect usage guide](/docs/payments/payment-intents/usage#connect)
                 for details.
               type: integer
             currency:
@@ -23128,15 +23146,22 @@ paths:
                 This can be useful for storing additional information about the object
                 in a structured format.
               type: object
+            payment_method_types:
+              description: The list of payment method types (e.g. card) that this
+                PaymentIntent is allowed to use.
+              items:
+                type: string
+              type: array
             receipt_email:
               description: Email address that the receipt for the resulting payment
                 will be sent to.
               type: string
-            save_source_to_customer:
-              description: Set to `true` to save this PaymentIntent's Source to the
-                associated Customer, if the Source is not already attached. This parameter
-                only applies to the current Source attached to the PaymentIntent and
-                must be specified again if a new Source is added.
+            save_payment_method:
+              description: Set to `true` to save this PaymentIntent's payment method
+                to the associated Customer, if the payment method is not already attached.
+                This parameter only applies to the payment method passed in the same
+                request or the current payment method attached to the PaymentIntent
+                and must be specified again if a new payment method is added.
               type: boolean
             shipping:
               description: Shipping information for this PaymentIntent.
@@ -23178,7 +23203,7 @@ paths:
             transfer_group:
               description: A string that identifies the resulting payment as part
                 of a group. `transfer_group` may only be provided if it has not been
-                set. See the [Connect documentation](/docs/connect/charges-transfers#grouping-transactions)
+                set. See the PaymentIntent [Connect usage guide](/docs/payments/payment-intents/usage#connect)
                 for details.
               type: string
           type: object
@@ -23194,7 +23219,7 @@ paths:
   "/v1/payment_intents/{intent}/cancel":
     post:
       description: |-
-        <p>A PaymentIntent object can be canceled when it is in one of these statuses: requires_source, requires_capture, requires_confirmation, requires_source_action. </p>
+        <p>A PaymentIntent object can be canceled when it is in one of these statuses: requires_payment_method, requires_capture, requires_confirmation, requires_action. </p>
 
         <p>Once canceled, no additional charges will be made by the PaymentIntent and any operations on the PaymentIntent will fail with an error. For PaymentIntents with <code>status='requires_capture'</code>, the remaining <code>amount_capturable</code> will automatically be refunded.</p>
       operationId: PostPaymentIntentsIntentCancel
@@ -23211,9 +23236,11 @@ paths:
           properties:
             cancellation_reason:
               description: Reason for canceling this PaymentIntent. If set, possible
-                values are `duplicate`, `fraudulent`, or `requested_by_customer`
+                values are `duplicate`, `fraudulent`, `requested_by_customer`, or
+                `failed_invoice`
               enum:
               - duplicate
+              - failed_invoice
               - fraudulent
               - requested_by_customer
               type: string
@@ -23261,9 +23288,8 @@ paths:
                 The amount of the application fee (if any) that will be applied to the payment and transferred to the
                 application owner's Stripe account. To use an application fee, the
                 request must be made on behalf of another account, using the
-                `Stripe-Account` header or an OAuth key. For more information, see
-                [Collecting application
-                fees](/docs/connect/direct-charges#collecting-fees).
+                `Stripe-Account` header or an OAuth key. For more
+                information, see the PaymentIntent [Connect usage guide](/docs/payments/payment-intents/usage#connect).
               type: integer
             expand:
               description: Specifies which fields in the response should be expanded.
@@ -23288,9 +23314,9 @@ paths:
         a payment.</p>
 
         <p>If the selected <code>source</code> requires additional authentication steps, the
-        PaymentIntent will transition to the <code>requires_source_action</code> status and
+        PaymentIntent will transition to the <code>requires_action</code> status and
         suggest additional actions via <code>next_source_action</code>. If payment fails,
-        the PaymentIntent will transition to the <code>requires_source</code> status. If
+        the PaymentIntent will transition to the <code>requires_payment_method</code> status. If
         payment succeeds, the PaymentIntent will transition to the <code>succeeded</code>
         status (or <code>requires_capture</code>, if <code>capture_method</code> is set to <code>manual</code>).</p>
 
@@ -23317,6 +23343,12 @@ paths:
               items:
                 type: string
               type: array
+            payment_method_types:
+              description: The list of payment method types (e.g. card) that this
+                PaymentIntent is allowed to use.
+              items:
+                type: string
+              type: array
             receipt_email:
               description: Email address that the receipt for the resulting payment
                 will be sent to.
@@ -23327,11 +23359,12 @@ paths:
                 If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.
                 This parameter is only used for cards and other redirect-based payment methods.
               type: string
-            save_source_to_customer:
-              description: Set to `true` to save this PaymentIntent's Source to the
-                associated Customer, if the Source is not already attached. This parameter
-                only applies to the current Source attached to the PaymentIntent and
-                must be specified again if a new Source is added.
+            save_payment_method:
+              description: Set to `true` to save this PaymentIntent's payment method
+                to the associated Customer, if the payment method is not already attached.
+                This parameter only applies to the payment method passed in the same
+                request or the current payment method attached to the PaymentIntent
+                and must be specified again if a new payment method is added.
               type: boolean
             shipping:
               description: Shipping information for this PaymentIntent.
@@ -27033,6 +27066,596 @@ paths:
           description: Error response.
           schema:
             "$ref": "#/definitions/error"
+  "/v1/subscription_schedules":
+    get:
+      description: "<p>Retrieves the list of your subscription schedules.</p>"
+      operationId: GetSubscriptionSchedules
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: Only return subscription schedules that were created canceled
+          the given date interval.
+        in: query
+        name: canceled_at
+        required: false
+        type: integer
+      - description: Only return subscription schedules that completed during the
+          given date interval.
+        in: query
+        name: completed_at
+        required: false
+        type: integer
+      - description: Only return subscription schedules that were created during the
+          given date interval.
+        in: query
+        name: created
+        required: false
+        type: integer
+      - description: Only return subscription schedules for the given customer.
+        in: query
+        name: customer
+        required: false
+        type: string
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        type: string
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - description: Only return subscription schedules that were released during
+          the given date interval.
+        in: query
+        name: released_at
+        required: false
+        type: integer
+      - description: Only return subscription schedules that have not started yet.
+        in: query
+        name: scheduled
+        required: false
+        type: boolean
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            properties:
+              data:
+                items:
+                  "$ref": "#/definitions/subscription_schedule"
+                type: array
+              has_more:
+                description: True if this list has another page of items after this
+                  one that can be fetched.
+                type: boolean
+              object:
+                description: String representing the object's type. Objects of the
+                  same type share the same value. Always has the value `list`.
+                enum:
+                - list
+                type: string
+              url:
+                description: The URL where this list can be accessed.
+                type: string
+            required:
+            - data
+            - has_more
+            - object
+            - url
+            type: object
+            x-expandableFields:
+            - data
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      description: "<p>Creates a new subscription schedule object.</p>"
+      operationId: PostSubscriptionSchedules
+      parameters:
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            billing:
+              description: Either `charge_automatically`, or `send_invoice`. When
+                charging automatically, Stripe will attempt to pay the underlying
+                subscription at the end of each billing cycle using the default source
+                attached to the customer. When sending an invoice, Stripe will email
+                your customer an invoice with payment instructions. Defaults to `charge_automatically`
+                on creation.
+              enum:
+              - charge_automatically
+              - send_invoice
+              type: string
+            billing_thresholds:
+              description: Define thresholds at which an invoice will be sent, and
+                the subscription advanced to a new billing period. Pass an empty string
+                to remove previously-defined thresholds.
+            customer:
+              description: The identifier of the customer to create the subscription
+                schedule for.
+              type: string
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            from_subscription:
+              description: Migrate an existing subscription to be managed by a subscription
+                schedule. If this parameter is set, a subscription schedule will be
+                created using the subscription's plan(s), set to auto-renew using
+                the subscription's interval. Other parameters cannot be set since
+                their values will be inferred from the subscription.
+              type: string
+            invoice_settings:
+              description: All invoices will be billed using the specified settings.
+              properties:
+                days_until_due:
+                  type: integer
+              title: invoice_settings_params
+              type: object
+            metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format.
+              type: object
+            phases:
+              description: List representing phases of the subscription schedule.
+                Each phase can be customized to have different durations, plans, and
+                coupons. If there are multiple phases, the `end_date` of one phase
+                will always equal the `start_date` of the next phase.
+              items:
+                properties:
+                  application_fee_percent:
+                    type: number
+                  coupon:
+                    type: string
+                  end_date:
+                    type: integer
+                  iterations:
+                    type: integer
+                  plans:
+                    items:
+                      properties:
+                        billing_thresholds: {}
+                        plan:
+                          type: string
+                        quantity:
+                          type: integer
+                      required:
+                      - plan
+                      title: configuration_item_params
+                      type: object
+                    type: array
+                  tax_percent:
+                    type: number
+                  trial:
+                    type: boolean
+                  trial_end:
+                    type: integer
+                required:
+                - plans
+                title: phase_configuration_params
+                type: object
+              type: array
+            renewal_behavior:
+              description: Configures how the subscription schedule behaves when it
+                ends. Possible values are `none`, `renew`, or `release`. `renew` will
+                create a new subscription schedule revision by adding a new phase
+                using the most recent phase's `plans` applied to a duration set by
+                `renewal_interval`. `none` will stop the subscription schedule and
+                cancel the underlying subscription. `release` will stop the subscription
+                schedule, but keep the underlying subscription running.
+              enum:
+              - none
+              - release
+              - renew
+              type: string
+            renewal_interval:
+              description: Configuration for renewing the subscription schedule when
+                it ends. Must be set if `renewal_behavior` is `renew`. Otherwise,
+                must not be set.
+              properties:
+                interval:
+                  enum:
+                  - day
+                  - month
+                  - week
+                  - year
+                  type: string
+                length:
+                  type: integer
+              required:
+              - interval
+              - length
+              title: renewal_interval_params
+              type: object
+            start_date:
+              description: The date at which the subscription schedule starts.
+              type: string
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/subscription_schedule"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/subscription_schedules/{schedule}":
+    get:
+      description: "<p>Retrieves the details of an existing subscription schedule.
+        You only need to supply the unique subscription schedule identifier that was
+        returned upon subscription schedule creation.</p>"
+      operationId: GetSubscriptionSchedulesSchedule
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: The identifier of the subscription schedule to be retrieved.
+        in: path
+        name: schedule
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/subscription_schedule"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      description: "<p>Updates an existing subscription schedule.</p>"
+      operationId: PostSubscriptionSchedulesSchedule
+      parameters:
+      - in: path
+        name: schedule
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            billing:
+              description: Either `charge_automatically`, or `send_invoice`. When
+                charging automatically, Stripe will attempt to pay the underlying
+                subscription at the end of each billing cycle using the default source
+                attached to the customer. When sending an invoice, Stripe will email
+                your customer an invoice with payment instructions. Defaults to `charge_automatically`
+                on creation.
+              enum:
+              - charge_automatically
+              - send_invoice
+              type: string
+            billing_thresholds:
+              description: Define thresholds at which an invoice will be sent, and
+                the subscription advanced to a new billing period. Pass an empty string
+                to remove previously-defined thresholds.
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            invoice_settings:
+              description: All invoices will be billed using the specified settings.
+              properties:
+                days_until_due:
+                  type: integer
+              title: invoice_settings_params
+              type: object
+            metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format.
+              type: object
+            phases:
+              description: List representing phases of the subscription schedule.
+                Each phase can be customized to have different durations, plans, and
+                coupons. If there are multiple phases, the `end_date` of one phase
+                will always equal the `start_date` of the next phase. Note that past
+                phases can be omitted.
+              items:
+                properties:
+                  application_fee_percent:
+                    type: number
+                  coupon:
+                    type: string
+                  end_date:
+                    type: string
+                  iterations:
+                    type: integer
+                  plans:
+                    items:
+                      properties:
+                        billing_thresholds: {}
+                        plan:
+                          type: string
+                        quantity:
+                          type: integer
+                      required:
+                      - plan
+                      title: configuration_item_params
+                      type: object
+                    type: array
+                  start_date:
+                    type: string
+                  tax_percent:
+                    type: number
+                  trial:
+                    type: boolean
+                  trial_end:
+                    type: string
+                required:
+                - plans
+                title: phase_configuration_params
+                type: object
+              type: array
+            prorate:
+              description: If the update changes the current phase, indicates if the
+                changes should be prorated. Defaults to `true`.
+              type: boolean
+            renewal_behavior:
+              description: Configures how the subscription schedule behaves when it
+                ends. Possible values are `none`, `renew`, or `release`. `renew` will
+                create a new subscription schedule revision by adding a new phase
+                using the most recent phase's `plans` applied to a duration set by
+                `renewal_interval`. `none` will stop the subscription schedule and
+                cancel the underlying subscription. `release` will stop the subscription
+                schedule, but keep the underlying subscription running.
+              enum:
+              - none
+              - release
+              - renew
+              type: string
+            renewal_interval:
+              description: Configuration for renewing the subscription schedule when
+                it ends. Must be set if `renewal_behavior` is `renew`. Otherwise,
+                must not be set.
+              properties:
+                interval:
+                  enum:
+                  - day
+                  - month
+                  - week
+                  - year
+                  type: string
+                length:
+                  type: integer
+              required:
+              - interval
+              - length
+              title: renewal_interval_params
+              type: object
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/subscription_schedule"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/subscription_schedules/{schedule}/cancel":
+    post:
+      description: "<p>Cancels a subscription schedule and its associated subscription
+        immediately (if the subscription schedule has an active subscription). A subscription
+        schedule can only be canceled if its status is <code>not_started</code> or
+        <code>active</code>.</p>"
+      operationId: PostSubscriptionSchedulesScheduleCancel
+      parameters:
+      - description: The identifier of the subscription schedule to be canceled.
+        in: path
+        name: schedule
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            invoice_now:
+              description: If the subscription schedule is `active`, indicates whether
+                or not to generate a final invoice that contains any un-invoiced metered
+                usage and new/pending proration invoice items. Defaults to `true`.
+              type: boolean
+            prorate:
+              description: If the subscription schedule is `active`, indicates if
+                the cancellation should be prorated. Defaults to `true`.
+              type: boolean
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/subscription_schedule"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/subscription_schedules/{schedule}/release":
+    post:
+      description: "<p>Releases the subscription schedule immediately, which will
+        stop scheduling of its phases, but leave any existing subscription in place.
+        A schedule can only be released if its status is <code>not_started</code>
+        or <code>active</code>. If the subscription schedule is currently associated
+        with a subscription, releasing it will remove its <code>subscription</code>
+        property and set the subscription’s ID to the <code>released_subscription</code>
+        property.</p>"
+      operationId: PostSubscriptionSchedulesScheduleRelease
+      parameters:
+      - description: The identifier of the subscription schedule to be released.
+        in: path
+        name: schedule
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            preserve_cancel_date:
+              description: Keep any cancellation on the subscription that the schedule
+                has set
+              type: boolean
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/subscription_schedule"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/subscription_schedules/{schedule}/revisions":
+    get:
+      description: "<p>Retrieves the list of subscription schedule revisions for a
+        subscription schedule.</p>"
+      operationId: GetSubscriptionSchedulesScheduleRevisions
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        type: string
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - description: The identifier of the subscription schedule to retrieve revisions
+          for.
+        in: path
+        name: schedule
+        required: true
+        type: string
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            properties:
+              data:
+                items:
+                  "$ref": "#/definitions/subscription_schedule_revision"
+                type: array
+              has_more:
+                description: True if this list has another page of items after this
+                  one that can be fetched.
+                type: boolean
+              object:
+                description: String representing the object's type. Objects of the
+                  same type share the same value. Always has the value `list`.
+                enum:
+                - list
+                type: string
+              url:
+                description: The URL where this list can be accessed.
+                type: string
+            required:
+            - data
+            - has_more
+            - object
+            - url
+            type: object
+            x-expandableFields:
+            - data
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/subscription_schedules/{schedule}/revisions/{revision}":
+    get:
+      description: "<p>Retrieves the details of an existing subscription schedule
+        revision. You only need to supply the unique subscription schedule revision
+        identifier that was returned upon subscription schedule creation or retrieval.</p>"
+      operationId: GetSubscriptionSchedulesScheduleRevisionsRevision
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: The identifier of the subscription schedule revision to be retrieved.
+        in: path
+        name: revision
+        required: true
+        type: string
+      - description: The identifier of the subscription schedule the revision is associated
+          with.
+        in: path
+        name: schedule
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/subscription_schedule_revision"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
   "/v1/subscriptions":
     get:
       description: "<p>By default, returns a list of subscriptions that have not been
@@ -27945,8 +28568,7 @@ paths:
     post:
       description: |-
         <p>Creates a single-use token that represents a bank account’s details.
-        This token can be used in place of a bank account dictionary with any API method.
-        These tokens can be used only once: by attaching them to a <a href="#create_recipient">recipient</a> or <a href="#account">Custom account</a>.</p>
+        This token can be used with any API method in place of a bank account dictionary. This token can be used only once, by attaching it to a <a href="#accounts">Custom account</a>.</p>
       operationId: PostTokens
       parameters:
       - description: Body parameters for the request.
@@ -29142,6 +29764,7 @@ paths:
                 - invoice.deleted
                 - invoice.finalized
                 - invoice.marked_uncollectible
+                - invoice.payment_action_required
                 - invoice.payment_failed
                 - invoice.payment_succeeded
                 - invoice.sent
@@ -29407,6 +30030,7 @@ paths:
                 - invoice.deleted
                 - invoice.finalized
                 - invoice.marked_uncollectible
+                - invoice.payment_action_required
                 - invoice.payment_failed
                 - invoice.payment_succeeded
                 - invoice.sent
