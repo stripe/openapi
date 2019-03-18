@@ -5,18 +5,6 @@
   "definitions": {
     "account": {
       "properties": {
-        "application_icon": {
-          "type": "string"
-        },
-        "application_logo": {
-          "type": "string"
-        },
-        "application_name": {
-          "type": "string"
-        },
-        "application_url": {
-          "type": "string"
-        },
         "business_profile": {
           "$ref": "#/definitions/account_business_profile"
         },
@@ -616,8 +604,14 @@
           "description": "If the error is parameter-specific, the parameter related to the error. For example, you can use this to display a message near the correct form field.",
           "type": "string"
         },
+        "payment_intent": {
+          "$ref": "#/definitions/payment_intent"
+        },
+        "payment_method": {
+          "$ref": "#/definitions/payment_method"
+        },
         "source": {
-          "$ref": "#/definitions/card"
+          "$ref": "#/definitions/bank_account"
         },
         "type": {
           "description": "The type of error returned. One of `api_connection_error`, `api_error`, `authentication_error`, `card_error`, `idempotency_error`, `invalid_request_error`, or `rate_limit_error`",
@@ -639,6 +633,8 @@
       "title": "APIErrors",
       "type": "object",
       "x-expandableFields": [
+        "payment_intent",
+        "payment_method",
         "source"
       ]
     },
@@ -1191,7 +1187,7 @@
           "type": "string"
         },
         "status": {
-          "description": "Possible values are `new`, `validated`, `verified`, `verification_failed`, or `errored`. A bank account that hasn't had any activity or validation performed is `new`. If Stripe can determine that the bank account exists, its status will be `validated`. Note that there often isn’t enough information to know (e.g., for smaller credit unions), and the validation is not always run. If customer bank account verification has succeeded, the bank account status will be `verified`. If the verification failed for any reason, such as microdeposit failure, the status will be `verification_failed`. If a transfer sent to this bank account fails, we'll set the status to `errored` and will not continue to send transfers until the bank details are updated.",
+          "description": "For bank accounts, possible values are `new`, `validated`, `verified`, `verification_failed`, or `errored`. A bank account that hasn't had any activity or validation performed is `new`. If Stripe can determine that the bank account exists, its status will be `validated`. Note that there often isn’t enough information to know (e.g., for smaller credit unions), and the validation is not always run. If customer bank account verification has succeeded, the bank account status will be `verified`. If the verification failed for any reason, such as microdeposit failure, the status will be `verification_failed`. If a transfer sent to this bank account fails, we'll set the status to `errored` and will not continue to send transfers until the bank details are updated.\n\nFor external accounts, possible values are `new` and `errored`. Validations aren't run against external accounts because they're only used for payouts. This means the other statuses don't apply. If a transfer fails, the status is set to `errored` and transfers are stopped until account details are updated.",
           "type": "string"
         }
       },
@@ -1210,6 +1206,30 @@
         "customer"
       ],
       "x-resourceId": "bank_account"
+    },
+    "billing_details": {
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/address"
+        },
+        "email": {
+          "description": "Email address.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Full name.",
+          "type": "string"
+        },
+        "phone": {
+          "description": "Billing phone number (including extension).",
+          "type": "string"
+        }
+      },
+      "title": "billing_details",
+      "type": "object",
+      "x-expandableFields": [
+        "address"
+      ]
     },
     "bitcoin_receiver": {
       "properties": {
@@ -1734,6 +1754,13 @@
           "description": "ID of the PaymentIntent associated with this charge, if one exists.",
           "type": "string"
         },
+        "payment_method": {
+          "description": "ID of the payment method used in this charge.",
+          "type": "string"
+        },
+        "payment_method_details": {
+          "$ref": "#/definitions/payment_method_details"
+        },
         "receipt_email": {
           "description": "This is the email address that the receipt for this charge was sent to.",
           "type": "string"
@@ -1872,6 +1899,7 @@
         "on_behalf_of",
         "order",
         "outcome",
+        "payment_method_details",
         "refunds",
         "review",
         "shipping",
@@ -1975,6 +2003,29 @@
     },
     "checkout.session": {
       "properties": {
+        "cancel_url": {
+          "description": "The URL the customer will be directed to if they decide to go back to your website.",
+          "type": "string"
+        },
+        "client_reference_id": {
+          "description": "A unique string to reference the Checkout Session. This can be a\ncustomer ID, a cart ID, or similar. It is included in the\n`checkout_beta.session_succeeded` webhook and can be used to fulfill the\npurchase.",
+          "type": "string"
+        },
+        "customer": {
+          "description": "The ID of the customer created.",
+          "type": "string"
+        },
+        "customer_email": {
+          "description": "The email address used to create the customer object.",
+          "type": "string"
+        },
+        "display_items": {
+          "description": "The line items, plans, or SKUs that were purchased by the customer.",
+          "items": {
+            "$ref": "#/definitions/payment_pages_checkout_session_checkout_session_resource_custom_display_item"
+          },
+          "type": "array"
+        },
         "id": {
           "description": "The token used to pass to `redirectToCheckout` in Stripe.js.",
           "type": "string"
@@ -1983,23 +2034,66 @@
           "description": "Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
           "type": "boolean"
         },
+        "locale": {
+          "description": "The IETF language tag of the locale Checkout is displayed in. If blank or `auto`, the browser's locale is used.",
+          "enum": [
+            "auto",
+            "da",
+            "de",
+            "en",
+            "es",
+            "fi",
+            "fr",
+            "it",
+            "ja",
+            "nb",
+            "nl",
+            "pl",
+            "pt",
+            "sv",
+            "zh"
+          ],
+          "type": "string"
+        },
         "object": {
           "description": "String representing the object's type. Objects of the same type share the same value.",
           "enum": [
             "checkout.session"
           ],
           "type": "string"
+        },
+        "payment_intent": {
+          "description": "The ID of the PaymentIntent created if SKUs or line items were provided.",
+          "type": "string"
+        },
+        "payment_method_types": {
+          "description": "The list of payment method types (e.g. card) that this Checkout Session is allowed to use.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "subscription": {
+          "description": "The ID of the subscription created if one or more plans were provided.",
+          "type": "string"
+        },
+        "success_url": {
+          "description": "The URL the customer will be directed to after a successful payment.",
+          "type": "string"
         }
       },
       "required": [
+        "cancel_url",
+        "display_items",
         "id",
         "livemode",
-        "object"
+        "object",
+        "success_url"
       ],
       "title": "Session",
       "type": "object",
       "x-expandableFields": [
-
+        "display_items"
       ],
       "x-resourceId": "checkout.session"
     },
@@ -3152,6 +3246,72 @@
       ],
       "x-resourceId": "deleted_subscription_item"
     },
+    "deleted_terminal.location": {
+      "properties": {
+        "deleted": {
+          "description": "Always true for a deleted object",
+          "enum": [
+            true
+          ],
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique identifier for the object.",
+          "type": "string"
+        },
+        "object": {
+          "description": "String representing the object's type. Objects of the same type share the same value.",
+          "enum": [
+            "terminal.location"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "deleted",
+        "id",
+        "object"
+      ],
+      "title": "TerminalLocationDeletedLocation",
+      "type": "object",
+      "x-expandableFields": [
+
+      ],
+      "x-resourceId": "deleted_terminal.location"
+    },
+    "deleted_terminal.reader": {
+      "properties": {
+        "deleted": {
+          "description": "Always true for a deleted object",
+          "enum": [
+            true
+          ],
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique identifier for the object.",
+          "type": "string"
+        },
+        "object": {
+          "description": "String representing the object's type. Objects of the same type share the same value.",
+          "enum": [
+            "terminal.reader"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "deleted",
+        "id",
+        "object"
+      ],
+      "title": "TerminalReaderDeletedReader",
+      "type": "object",
+      "x-expandableFields": [
+
+      ],
+      "x-resourceId": "deleted_terminal.reader"
+    },
     "deleted_webhook_endpoint": {
       "properties": {
         "deleted": {
@@ -4077,6 +4237,13 @@
     },
     "financial_reporting_finance_report_run_run_parameters": {
       "properties": {
+        "columns": {
+          "description": "The set of output columns requested for inclusion in the report run.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "connected_account": {
           "description": "Connected account ID by which to filter the report run.",
           "type": "string"
@@ -4223,10 +4390,6 @@
             ]
           }
         },
-        "date": {
-          "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
-          "type": "integer"
-        },
         "default_source": {
           "description": "ID of the default payment source for the invoice. It must belong to the customer associated with the invoice and be in a chargeable state. If not set, defaults to the subscription's default source, if any, or to the customer's default source.",
           "type": "string",
@@ -4263,10 +4426,6 @@
         },
         "ending_balance": {
           "description": "Ending customer balance after the invoice is finalized. Invoices are finalized approximately an hour after successful webhook delivery or when payment collection is attempted for the invoice. If the invoice has not been finalized yet, this will be null.",
-          "type": "integer"
-        },
-        "finalized_at": {
-          "description": "The time that the invoice draft was finalized.",
           "type": "integer"
         },
         "footer": {
@@ -5272,6 +5431,10 @@
           "description": "The Bank Identification Number reflecting this settlement record.",
           "type": "string"
         },
+        "clearing_date": {
+          "description": "The date that the transactions are cleared and posted to user's accounts.",
+          "type": "integer"
+        },
         "created": {
           "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
           "type": "integer"
@@ -5315,10 +5478,6 @@
           ],
           "type": "string"
         },
-        "settlement_date": {
-          "description": "The date of the settlement event.",
-          "type": "integer"
-        },
         "settlement_service": {
           "description": "One of `international` or `uk_national_net`.",
           "type": "string"
@@ -5330,14 +5489,11 @@
         "transaction_volume": {
           "description": "The total transaction amount reflected in this settlement.",
           "type": "integer"
-        },
-        "transactions_reconciled": {
-          "description": "Whether or not the transactions have been reconciled.",
-          "type": "boolean"
         }
       },
       "required": [
         "bin",
+        "clearing_date",
         "created",
         "currency",
         "id",
@@ -5348,11 +5504,9 @@
         "network_fees",
         "network_settlement_identifier",
         "object",
-        "settlement_date",
         "settlement_service",
         "transaction_count",
-        "transaction_volume",
-        "transactions_reconciled"
+        "transaction_volume"
       ],
       "title": "IssuingSettlement",
       "type": "object",
@@ -6500,29 +6654,6 @@
 
       ]
     },
-    "payment_flows_payment_intent_resource_transfer_data": {
-      "properties": {
-        "destination": {
-          "description": "The account (if any) the payment will be attributed to for tax\nreporting, and where funds from the payment will be transferred to upon\npayment success.",
-          "type": "string",
-          "x-expansionResources": {
-            "oneOf": [
-              {
-                "$ref": "#/definitions/account"
-              }
-            ]
-          }
-        }
-      },
-      "required": [
-        "destination"
-      ],
-      "title": "PaymentFlowsPaymentIntentResourceTransferData",
-      "type": "object",
-      "x-expandableFields": [
-        "destination"
-      ]
-    },
     "payment_intent": {
       "properties": {
         "amount": {
@@ -6686,6 +6817,17 @@
             ]
           }
         },
+        "payment_method": {
+          "description": "ID of the payment method used in this PaymentIntent.",
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/payment_method"
+              }
+            ]
+          }
+        },
         "payment_method_types": {
           "description": "The list of payment method types (e.g. card) that this PaymentIntent is allowed to use.",
           "items": {
@@ -6717,6 +6859,9 @@
           "x-expansionResources": {
             "oneOf": [
               {
+                "$ref": "#/definitions/bank_account"
+              },
+              {
                 "$ref": "#/definitions/card"
               },
               {
@@ -6744,7 +6889,7 @@
           "type": "string"
         },
         "transfer_data": {
-          "$ref": "#/definitions/payment_flows_payment_intent_resource_transfer_data"
+          "$ref": "#/definitions/transfer_data"
         },
         "transfer_group": {
           "description": "A string that identifies the resulting payment as part of a group. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect) for details.",
@@ -6772,6 +6917,7 @@
         "last_payment_error",
         "next_action",
         "on_behalf_of",
+        "payment_method",
         "review",
         "shipping",
         "source",
@@ -6817,6 +6963,1135 @@
       "type": "object",
       "x-expandableFields": [
 
+      ]
+    },
+    "payment_method": {
+      "properties": {
+        "billing_details": {
+          "$ref": "#/definitions/billing_details"
+        },
+        "card": {
+          "$ref": "#/definitions/payment_method_card"
+        },
+        "card_present": {
+          "$ref": "#/definitions/payment_method_card_present"
+        },
+        "created": {
+          "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+          "type": "integer"
+        },
+        "customer": {
+          "description": "The ID of the Customer to which this PaymentMethod is saved. This will not be set when the PaymentMethod has not been saved to a Customer.",
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/customer"
+              }
+            ]
+          }
+        },
+        "id": {
+          "description": "Unique identifier for the object.",
+          "type": "string"
+        },
+        "livemode": {
+          "description": "Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
+          "type": "boolean"
+        },
+        "metadata": {
+          "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+          "type": "object"
+        },
+        "object": {
+          "description": "String representing the object's type. Objects of the same type share the same value.",
+          "enum": [
+            "payment_method"
+          ],
+          "type": "string"
+        },
+        "type": {
+          "description": "The type of the PaymentMethod, one of `card` or `card_present`. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
+          "enum": [
+            "card",
+            "card_present"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "billing_details",
+        "created",
+        "id",
+        "livemode",
+        "metadata",
+        "object",
+        "type"
+      ],
+      "title": "PaymentMethod",
+      "type": "object",
+      "x-expandableFields": [
+        "billing_details",
+        "card",
+        "card_present",
+        "customer"
+      ],
+      "x-resourceId": "payment_method"
+    },
+    "payment_method_card": {
+      "properties": {
+        "brand": {
+          "description": "Card brand. Can be `amex`, `diners`, `discover`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.",
+          "type": "string"
+        },
+        "checks": {
+          "$ref": "#/definitions/payment_method_card_checks"
+        },
+        "country": {
+          "description": "Two-letter ISO code representing the country of the card. You could use this attribute to get a sense of the international breakdown of cards you've collected.",
+          "type": "string"
+        },
+        "exp_month": {
+          "description": "Two-digit number representing the card's expiration month.",
+          "type": "integer"
+        },
+        "exp_year": {
+          "description": "Four-digit number representing the card's expiration year.",
+          "type": "integer"
+        },
+        "fingerprint": {
+          "description": "Uniquely identifies this particular card number. You can use this attribute to check whether two customers who've signed up with you are using the same card number, for example.",
+          "type": "string"
+        },
+        "funding": {
+          "description": "Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.",
+          "type": "string"
+        },
+        "last4": {
+          "description": "The last four digits of the card.",
+          "type": "string"
+        },
+        "three_d_secure_usage": {
+          "$ref": "#/definitions/three_d_secure_usage"
+        },
+        "wallet": {
+          "$ref": "#/definitions/payment_method_card_wallet"
+        }
+      },
+      "required": [
+        "brand",
+        "exp_month",
+        "exp_year",
+        "funding",
+        "last4"
+      ],
+      "title": "payment_method_card",
+      "type": "object",
+      "x-expandableFields": [
+        "checks",
+        "three_d_secure_usage",
+        "wallet"
+      ]
+    },
+    "payment_method_card_checks": {
+      "properties": {
+        "address_line1_check": {
+          "description": "If a address line1 was provided, results of the check, one of 'pass', 'failed', 'unavailable' or 'unchecked'.",
+          "type": "string"
+        },
+        "address_postal_code_check": {
+          "description": "If a address postal code was provided, results of the check, one of 'pass', 'failed', 'unavailable' or 'unchecked'.",
+          "type": "string"
+        },
+        "cvc_check": {
+          "description": "If a CVC was provided, results of the check, one of 'pass', 'failed', 'unavailable' or 'unchecked'.",
+          "type": "string"
+        }
+      },
+      "title": "payment_method_card_checks",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_card_present": {
+      "properties": {
+      },
+      "title": "payment_method_card_present",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_card_wallet": {
+      "properties": {
+        "amex_express_checkout": {
+          "$ref": "#/definitions/payment_method_card_wallet_amex_express_checkout"
+        },
+        "apple_pay": {
+          "$ref": "#/definitions/payment_method_card_wallet_apple_pay"
+        },
+        "dynamic_last4": {
+          "description": "(For tokenized numbers only.) The last four digits of the device account number.",
+          "type": "string"
+        },
+        "google_pay": {
+          "$ref": "#/definitions/payment_method_card_wallet_google_pay"
+        },
+        "masterpass": {
+          "$ref": "#/definitions/payment_method_card_wallet_masterpass"
+        },
+        "samsung_pay": {
+          "$ref": "#/definitions/payment_method_card_wallet_samsung_pay"
+        },
+        "type": {
+          "description": "The type of the card wallet, one of `amex_express_checkout`, `apple_pay`, `google_pay`, `masterpass`, `samsung_pay`, or `visa_checkout`. An additional hash is included on the Wallet subhash with a name matching this value. It contains additional information specific to the card wallet type.",
+          "enum": [
+            "amex_express_checkout",
+            "apple_pay",
+            "google_pay",
+            "masterpass",
+            "samsung_pay",
+            "visa_checkout"
+          ],
+          "type": "string"
+        },
+        "visa_checkout": {
+          "$ref": "#/definitions/payment_method_card_wallet_visa_checkout"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "payment_method_card_wallet",
+      "type": "object",
+      "x-expandableFields": [
+        "amex_express_checkout",
+        "apple_pay",
+        "google_pay",
+        "masterpass",
+        "samsung_pay",
+        "visa_checkout"
+      ]
+    },
+    "payment_method_card_wallet_amex_express_checkout": {
+      "properties": {
+      },
+      "title": "payment_method_card_wallet_amex_express_checkout",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_card_wallet_apple_pay": {
+      "properties": {
+      },
+      "title": "payment_method_card_wallet_apple_pay",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_card_wallet_google_pay": {
+      "properties": {
+      },
+      "title": "payment_method_card_wallet_google_pay",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_card_wallet_masterpass": {
+      "properties": {
+        "billing_address": {
+          "$ref": "#/definitions/address"
+        },
+        "email": {
+          "description": "Owner's verified email. Values are verified or provided by the wallet directly (if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Owner's verified full name. Values are verified or provided by the wallet directly (if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        },
+        "shipping_address": {
+          "$ref": "#/definitions/address"
+        }
+      },
+      "title": "payment_method_card_wallet_masterpass",
+      "type": "object",
+      "x-expandableFields": [
+        "billing_address",
+        "shipping_address"
+      ]
+    },
+    "payment_method_card_wallet_samsung_pay": {
+      "properties": {
+      },
+      "title": "payment_method_card_wallet_samsung_pay",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_card_wallet_visa_checkout": {
+      "properties": {
+        "billing_address": {
+          "$ref": "#/definitions/address"
+        },
+        "email": {
+          "description": "Owner's verified email. Values are verified or provided by the wallet directly (if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Owner's verified full name. Values are verified or provided by the wallet directly (if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        },
+        "shipping_address": {
+          "$ref": "#/definitions/address"
+        }
+      },
+      "title": "payment_method_card_wallet_visa_checkout",
+      "type": "object",
+      "x-expandableFields": [
+        "billing_address",
+        "shipping_address"
+      ]
+    },
+    "payment_method_details": {
+      "properties": {
+        "ach_credit_transfer": {
+          "$ref": "#/definitions/payment_method_details_ach_credit_transfer"
+        },
+        "ach_debit": {
+          "$ref": "#/definitions/payment_method_details_ach_debit"
+        },
+        "alipay": {
+          "$ref": "#/definitions/payment_method_details_alipay"
+        },
+        "bancontact": {
+          "$ref": "#/definitions/payment_method_details_bancontact"
+        },
+        "card": {
+          "$ref": "#/definitions/payment_method_details_card"
+        },
+        "card_present": {
+          "$ref": "#/definitions/payment_method_details_card_present"
+        },
+        "eps": {
+          "$ref": "#/definitions/payment_method_details_eps"
+        },
+        "giropay": {
+          "$ref": "#/definitions/payment_method_details_giropay"
+        },
+        "ideal": {
+          "$ref": "#/definitions/payment_method_details_ideal"
+        },
+        "multibanco": {
+          "$ref": "#/definitions/payment_method_details_multibanco"
+        },
+        "p24": {
+          "$ref": "#/definitions/payment_method_details_p24"
+        },
+        "sepa_debit": {
+          "$ref": "#/definitions/payment_method_details_sepa_debit"
+        },
+        "sofort": {
+          "$ref": "#/definitions/payment_method_details_sofort"
+        },
+        "stripe_account": {
+          "$ref": "#/definitions/payment_method_details_stripe_account"
+        },
+        "type": {
+          "description": "The type of transaction-specific details of the payment method used in the payment, one of `ach_credit_transfer`, `alipay`, `bancontact`, `card`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `sepa_debit`, or `sofort`.\nAn additional hash is included on `payment_method_details` with a name matching this value.\nIt contains information specific to the payment method.",
+          "type": "string"
+        },
+        "wechat": {
+          "$ref": "#/definitions/payment_method_details_wechat"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "payment_method_details",
+      "type": "object",
+      "x-expandableFields": [
+        "ach_credit_transfer",
+        "ach_debit",
+        "alipay",
+        "bancontact",
+        "card",
+        "card_present",
+        "eps",
+        "giropay",
+        "ideal",
+        "multibanco",
+        "p24",
+        "sepa_debit",
+        "sofort",
+        "stripe_account",
+        "wechat"
+      ]
+    },
+    "payment_method_details_ach_credit_transfer": {
+      "properties": {
+        "account_number": {
+          "description": "Account number to transfer funds to.",
+          "type": "string"
+        },
+        "bank_name": {
+          "description": "Name of the bank associated with the routing number.",
+          "type": "string"
+        },
+        "routing_number": {
+          "description": "Routing transit number for the bank account to transfer funds to.",
+          "type": "string"
+        },
+        "swift_code": {
+          "description": "SWIFT code of the bank associated with the routing number.",
+          "type": "string"
+        }
+      },
+      "title": "payment_method_details_ach_credit_transfer",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_ach_debit": {
+      "properties": {
+        "account_holder_type": {
+          "description": "Type of entity that holds the account. This can be either `individual` or `company`.",
+          "enum": [
+            "company",
+            "individual"
+          ],
+          "type": "string"
+        },
+        "bank_name": {
+          "description": "Name of the bank associated with the bank account.",
+          "type": "string"
+        },
+        "country": {
+          "description": "Two-letter ISO code representing the country the bank account is located in.",
+          "type": "string"
+        },
+        "fingerprint": {
+          "description": "Uniquely identifies this particular bank account. You can use this attribute to check whether two bank accounts are the same.",
+          "type": "string"
+        },
+        "last4": {
+          "description": "Last four digits of the bank account number.",
+          "type": "string"
+        },
+        "routing_number": {
+          "description": "Routing transit number of the bank account.",
+          "type": "string"
+        }
+      },
+      "title": "payment_method_details_ach_debit",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_alipay": {
+      "properties": {
+      },
+      "title": "payment_method_details_alipay",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_bancontact": {
+      "properties": {
+        "bank_code": {
+          "description": "Bank code of bank associated with the bank account.",
+          "type": "string"
+        },
+        "bank_name": {
+          "description": "Name of the bank associated with the bank account.",
+          "type": "string"
+        },
+        "bic": {
+          "description": "Bank Identifier Code of the bank associated with the bank account.",
+          "type": "string"
+        },
+        "iban_last4": {
+          "description": "Last four characters of the IBAN.",
+          "type": "string"
+        },
+        "preferred_language": {
+          "description": "Preferred language of the Bancontact authorization page that the customer is redirected to.\nCan be one of `en`, `de`, `fr`, or `nl`",
+          "enum": [
+            "de",
+            "en",
+            "fr",
+            "nl"
+          ],
+          "type": "string"
+        },
+        "verified_name": {
+          "description": "Owner's verified full name. Values are verified or provided by Bancontact directly\n(if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        }
+      },
+      "title": "payment_method_details_bancontact",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_card": {
+      "properties": {
+        "brand": {
+          "description": "Card brand. Can be `amex`, `diners`, `discover`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.",
+          "type": "string"
+        },
+        "checks": {
+          "$ref": "#/definitions/payment_method_details_card_checks"
+        },
+        "country": {
+          "description": "Two-letter ISO code representing the country of the card. You could use this attribute to get a sense of the international breakdown of cards you've collected.",
+          "type": "string"
+        },
+        "exp_month": {
+          "description": "Two-digit number representing the card's expiration month.",
+          "type": "integer"
+        },
+        "exp_year": {
+          "description": "Four-digit number representing the card's expiration year.",
+          "type": "integer"
+        },
+        "fingerprint": {
+          "description": "Uniquely identifies this particular card number. You can use this attribute to check whether two customers who've signed up with you are using the same card number, for example.",
+          "type": "string"
+        },
+        "funding": {
+          "description": "Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.",
+          "type": "string"
+        },
+        "last4": {
+          "description": "The last four digits of the card.",
+          "type": "string"
+        },
+        "three_d_secure": {
+          "$ref": "#/definitions/three_d_secure_details"
+        },
+        "wallet": {
+          "$ref": "#/definitions/payment_method_details_card_wallet"
+        }
+      },
+      "title": "payment_method_details_card",
+      "type": "object",
+      "x-expandableFields": [
+        "checks",
+        "three_d_secure",
+        "wallet"
+      ]
+    },
+    "payment_method_details_card_checks": {
+      "properties": {
+        "address_line1_check": {
+          "description": "If a address line1 was provided, results of the check, one of 'pass', 'failed', 'unavailable' or 'unchecked'.",
+          "type": "string"
+        },
+        "address_postal_code_check": {
+          "description": "If a address postal code was provided, results of the check, one of 'pass', 'failed', 'unavailable' or 'unchecked'.",
+          "type": "string"
+        },
+        "cvc_check": {
+          "description": "If a CVC was provided, results of the check, one of 'pass', 'failed', 'unavailable' or 'unchecked'.",
+          "type": "string"
+        }
+      },
+      "title": "payment_method_details_card_checks",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_card_present": {
+      "properties": {
+        "brand": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "emv_auth_data": {
+          "type": "string"
+        },
+        "exp_month": {
+          "type": "integer"
+        },
+        "exp_year": {
+          "type": "integer"
+        },
+        "fingerprint": {
+          "type": "string"
+        },
+        "funding": {
+          "type": "string"
+        },
+        "generated_card": {
+          "type": "string"
+        },
+        "last4": {
+          "type": "string"
+        },
+        "read_method": {
+          "type": "string"
+        },
+        "receipt": {
+          "$ref": "#/definitions/payment_method_details_card_present_receipt"
+        }
+      },
+      "title": "payment_method_details_card_present",
+      "type": "object",
+      "x-expandableFields": [
+        "receipt"
+      ]
+    },
+    "payment_method_details_card_present_receipt": {
+      "properties": {
+        "application_cryptogram": {
+          "type": "string"
+        },
+        "application_preferred_name": {
+          "type": "string"
+        },
+        "authorization_code": {
+          "type": "string"
+        },
+        "authorization_response_code": {
+          "type": "string"
+        },
+        "cardholder_verification_method": {
+          "type": "string"
+        },
+        "dedicated_file_name": {
+          "type": "string"
+        },
+        "terminal_verification_results": {
+          "type": "string"
+        },
+        "transaction_status_information": {
+          "type": "string"
+        }
+      },
+      "title": "payment_method_details_card_present_receipt",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_card_wallet": {
+      "properties": {
+        "amex_express_checkout": {
+          "$ref": "#/definitions/payment_method_details_card_wallet_amex_express_checkout"
+        },
+        "apple_pay": {
+          "$ref": "#/definitions/payment_method_details_card_wallet_apple_pay"
+        },
+        "dynamic_last4": {
+          "description": "(For tokenized numbers only.) The last four digits of the device account number.",
+          "type": "string"
+        },
+        "google_pay": {
+          "$ref": "#/definitions/payment_method_details_card_wallet_google_pay"
+        },
+        "masterpass": {
+          "$ref": "#/definitions/payment_method_details_card_wallet_masterpass"
+        },
+        "samsung_pay": {
+          "$ref": "#/definitions/payment_method_details_card_wallet_samsung_pay"
+        },
+        "type": {
+          "description": "The type of the card wallet, one of `amex_express_checkout`, `apple_pay`, `google_pay`, `masterpass`, `samsung_pay`, or `visa_checkout`. An additional hash is included on the Wallet subhash with a name matching this value. It contains additional information specific to the card wallet type.",
+          "enum": [
+            "amex_express_checkout",
+            "apple_pay",
+            "google_pay",
+            "masterpass",
+            "samsung_pay",
+            "visa_checkout"
+          ],
+          "type": "string"
+        },
+        "visa_checkout": {
+          "$ref": "#/definitions/payment_method_details_card_wallet_visa_checkout"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "payment_method_details_card_wallet",
+      "type": "object",
+      "x-expandableFields": [
+        "amex_express_checkout",
+        "apple_pay",
+        "google_pay",
+        "masterpass",
+        "samsung_pay",
+        "visa_checkout"
+      ]
+    },
+    "payment_method_details_card_wallet_amex_express_checkout": {
+      "properties": {
+      },
+      "title": "payment_method_details_card_wallet_amex_express_checkout",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_card_wallet_apple_pay": {
+      "properties": {
+      },
+      "title": "payment_method_details_card_wallet_apple_pay",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_card_wallet_google_pay": {
+      "properties": {
+      },
+      "title": "payment_method_details_card_wallet_google_pay",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_card_wallet_masterpass": {
+      "properties": {
+        "billing_address": {
+          "$ref": "#/definitions/address"
+        },
+        "email": {
+          "description": "Owner's verified email. Values are verified or provided by the wallet directly (if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Owner's verified full name. Values are verified or provided by the wallet directly (if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        },
+        "shipping_address": {
+          "$ref": "#/definitions/address"
+        }
+      },
+      "title": "payment_method_details_card_wallet_masterpass",
+      "type": "object",
+      "x-expandableFields": [
+        "billing_address",
+        "shipping_address"
+      ]
+    },
+    "payment_method_details_card_wallet_samsung_pay": {
+      "properties": {
+      },
+      "title": "payment_method_details_card_wallet_samsung_pay",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_card_wallet_visa_checkout": {
+      "properties": {
+        "billing_address": {
+          "$ref": "#/definitions/address"
+        },
+        "email": {
+          "description": "Owner's verified email. Values are verified or provided by the wallet directly (if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Owner's verified full name. Values are verified or provided by the wallet directly (if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        },
+        "shipping_address": {
+          "$ref": "#/definitions/address"
+        }
+      },
+      "title": "payment_method_details_card_wallet_visa_checkout",
+      "type": "object",
+      "x-expandableFields": [
+        "billing_address",
+        "shipping_address"
+      ]
+    },
+    "payment_method_details_eps": {
+      "properties": {
+        "verified_name": {
+          "description": "Owner's verified full name. Values are verified or provided by EPS directly\n(if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        }
+      },
+      "title": "payment_method_details_eps",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_giropay": {
+      "properties": {
+        "bank_code": {
+          "description": "Bank code of bank associated with the bank account.",
+          "type": "string"
+        },
+        "bank_name": {
+          "description": "Name of the bank associated with the bank account.",
+          "type": "string"
+        },
+        "bic": {
+          "description": "Bank Identifier Code of the bank associated with the bank account.",
+          "type": "string"
+        },
+        "verified_name": {
+          "description": "Owner's verified full name. Values are verified or provided by Giropay directly\n(if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        }
+      },
+      "title": "payment_method_details_giropay",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_ideal": {
+      "properties": {
+        "bank": {
+          "description": "The customer's bank. Can be one of `abn_amro`, `asn_bank`, `bunq`, `handelsbanken`, `ing`, `knab`, `moneyou`, `rabobank`, `regiobank`, `sns_bank`, `triodos_bank`, or `van_lanschot`.",
+          "enum": [
+            "abn_amro",
+            "asn_bank",
+            "bunq",
+            "handelsbanken",
+            "ing",
+            "knab",
+            "moneyou",
+            "rabobank",
+            "regiobank",
+            "sns_bank",
+            "triodos_bank",
+            "van_lanschot"
+          ],
+          "type": "string"
+        },
+        "bic": {
+          "description": "The Bank Identifier Code of the customer's bank.",
+          "enum": [
+            "ABNANL2A",
+            "ASNBNL21",
+            "BUNQNL2A",
+            "FVLBNL22",
+            "HANDNL2A",
+            "INGBNL2A",
+            "KNABNL2H",
+            "MOYONL21",
+            "RABONL2U",
+            "RBRBNL21",
+            "SNSBNL2A",
+            "TRIONL2U"
+          ],
+          "type": "string"
+        },
+        "iban_last4": {
+          "description": "Last four characters of the IBAN.",
+          "type": "string"
+        },
+        "verified_name": {
+          "description": "Owner's verified full name. Values are verified or provided by iDEAL directly\n(if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        }
+      },
+      "title": "payment_method_details_ideal",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_multibanco": {
+      "properties": {
+        "entity": {
+          "description": "Entity number associated with this Multibanco payment.",
+          "type": "string"
+        },
+        "reference": {
+          "description": "Reference number associated with this Multibanco payment.",
+          "type": "string"
+        }
+      },
+      "title": "payment_method_details_multibanco",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_p24": {
+      "properties": {
+        "reference": {
+          "description": "Unique reference for this Przelewy24 payment.",
+          "type": "string"
+        },
+        "verified_name": {
+          "description": "Owner's verified full name. Values are verified or provided by Przelewy24 directly\n(if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        }
+      },
+      "title": "payment_method_details_p24",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_sepa_debit": {
+      "properties": {
+        "bank_code": {
+          "description": "Bank code of bank associated with the bank account.",
+          "type": "string"
+        },
+        "branch_code": {
+          "description": "Branch code of bank associated with the bank account.",
+          "type": "string"
+        },
+        "country": {
+          "description": "Two-letter ISO code representing the country the bank account is located in.",
+          "type": "string"
+        },
+        "fingerprint": {
+          "description": "Uniquely identifies this particular bank account. You can use this attribute to check whether two bank accounts are the same.",
+          "type": "string"
+        },
+        "last4": {
+          "description": "Last four characters of the IBAN.",
+          "type": "string"
+        }
+      },
+      "title": "payment_method_details_sepa_debit",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_sofort": {
+      "properties": {
+        "bank_code": {
+          "description": "Bank code of bank associated with the bank account.",
+          "type": "string"
+        },
+        "bank_name": {
+          "description": "Name of the bank associated with the bank account.",
+          "type": "string"
+        },
+        "bic": {
+          "description": "Bank Identifier Code of the bank associated with the bank account.",
+          "type": "string"
+        },
+        "country": {
+          "description": "Two-letter ISO code representing the country the bank account is located in.",
+          "type": "string"
+        },
+        "iban_last4": {
+          "description": "Last four characters of the IBAN.",
+          "type": "string"
+        },
+        "verified_name": {
+          "description": "Owner's verified full name. Values are verified or provided by SOFORT directly\n(if supported) at the time of authorization or settlement. They cannot be set or mutated.",
+          "type": "string"
+        }
+      },
+      "title": "payment_method_details_sofort",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_stripe_account": {
+      "properties": {
+      },
+      "title": "payment_method_details_stripe_account",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_method_details_wechat": {
+      "properties": {
+      },
+      "title": "payment_method_details_wechat",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_pages_checkout_session_checkout_session_resource_custom_display_item": {
+      "properties": {
+        "amount": {
+          "description": "Amount for the display item.",
+          "type": "integer"
+        },
+        "currency": {
+          "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+          "type": "string"
+        },
+        "custom": {
+          "$ref": "#/definitions/payment_pages_checkout_session_checkout_session_resource_custom_display_item_resource_custom_display_item_description"
+        },
+        "quantity": {
+          "description": "Quantity of the display item being purchased.",
+          "type": "integer"
+        },
+        "type": {
+          "description": "The type of display item.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount",
+        "currency",
+        "custom",
+        "quantity",
+        "type"
+      ],
+      "title": "PaymentPagesCheckoutSessionCheckoutSessionResourceCustomDisplayItem",
+      "type": "object",
+      "x-expandableFields": [
+        "custom"
+      ]
+    },
+    "payment_pages_checkout_session_checkout_session_resource_custom_display_item_resource_custom_display_item_description": {
+      "properties": {
+        "description": {
+          "description": "The description of the line item.",
+          "type": "string"
+        },
+        "images": {
+          "description": "The images of the line item.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "name": {
+          "description": "The name of the line item.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "PaymentPagesCheckoutSessionCheckoutSessionResourceCustomDisplayItemResourceCustomDisplayItemDescription",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "payment_pages_checkout_session_checkout_session_resource_plan_display_item": {
+      "properties": {
+        "amount": {
+          "description": "Amount for the display item.",
+          "type": "integer"
+        },
+        "currency": {
+          "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+          "type": "string"
+        },
+        "plan": {
+          "$ref": "#/definitions/plan"
+        },
+        "quantity": {
+          "description": "Quantity of the display item being purchased.",
+          "type": "integer"
+        },
+        "type": {
+          "description": "The type of display item.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount",
+        "currency",
+        "plan",
+        "quantity",
+        "type"
+      ],
+      "title": "PaymentPagesCheckoutSessionCheckoutSessionResourcePlanDisplayItem",
+      "type": "object",
+      "x-expandableFields": [
+        "plan"
+      ]
+    },
+    "payment_pages_checkout_session_checkout_session_resource_sku_display_item": {
+      "properties": {
+        "amount": {
+          "description": "Amount for the display item.",
+          "type": "integer"
+        },
+        "currency": {
+          "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+          "type": "string"
+        },
+        "quantity": {
+          "description": "Quantity of the display item being purchased.",
+          "type": "integer"
+        },
+        "sku": {
+          "$ref": "#/definitions/sku"
+        },
+        "type": {
+          "description": "The type of display item.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount",
+        "currency",
+        "quantity",
+        "sku",
+        "type"
+      ],
+      "title": "PaymentPagesCheckoutSessionCheckoutSessionResourceSKUDisplayItem",
+      "type": "object",
+      "x-expandableFields": [
+        "sku"
+      ]
+    },
+    "payment_pages_checkout_session_checkout_session_resource_subscription_data_display_item": {
+      "properties": {
+        "amount": {
+          "description": "Amount for the display item.",
+          "type": "integer"
+        },
+        "currency": {
+          "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+          "type": "string"
+        },
+        "plan": {
+          "$ref": "#/definitions/plan"
+        },
+        "quantity": {
+          "description": "Quantity of the display item being purchased.",
+          "type": "integer"
+        },
+        "type": {
+          "description": "The type of display item.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount",
+        "currency",
+        "plan",
+        "quantity",
+        "type"
+      ],
+      "title": "PaymentPagesCheckoutSessionCheckoutSessionResourceSubscriptionDataDisplayItem",
+      "type": "object",
+      "x-expandableFields": [
+        "plan"
       ]
     },
     "payment_source": {
@@ -8001,6 +9276,13 @@
           "description": "Earliest time for which this Report Type is available. Measured in seconds since the Unix epoch.",
           "type": "integer"
         },
+        "default_columns": {
+          "description": "List of column names that are included by default when this Report Type gets run. (If the Report Type doesn't support the `columns` parameter, this will be null.)",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "id": {
           "description": "The [ID of the Report Type](https://stripe.com/docs/reporting/statements/api#available-report-types), such as `balance.summary.1`.",
           "type": "string"
@@ -8136,9 +9418,8 @@
           "type": "boolean"
         },
         "opened_reason": {
-          "description": "The reason the review was opened. One of `rule`, `manual`, or `issuer_fraud_record`.",
+          "description": "The reason the review was opened. One of `rule` or `manual`.",
           "enum": [
-            "issuer_fraud_record",
             "manual",
             "rule"
           ],
@@ -8156,7 +9437,7 @@
           }
         },
         "reason": {
-          "description": "The reason the review is currently open or closed. One of `rule`, `manual`, `issuer_fraud_record`, `approved`, `refunded`, `refunded_as_fraud`, or `disputed`.",
+          "description": "The reason the review is currently open or closed. One of `rule`, `manual`, `approved`, `refunded`, `refunded_as_fraud`, or `disputed`.",
           "type": "string"
         },
         "session": {
@@ -9043,9 +10324,6 @@
         "refund_account_holder_type": {
           "type": "string"
         },
-        "refund_account_number": {
-          "type": "string"
-        },
         "refund_routing_number": {
           "type": "string"
         },
@@ -9155,9 +10433,6 @@
         },
         "name": {
           "type": "string"
-        },
-        "skip_validation": {
-          "type": "boolean"
         },
         "three_d_secure": {
           "type": "string"
@@ -9413,9 +10688,6 @@
         },
         "mandate_url": {
           "type": "string"
-        },
-        "skip_validation": {
-          "type": "boolean"
         }
       },
       "type": "object"
@@ -9492,9 +10764,6 @@
         },
         "name": {
           "type": "string"
-        },
-        "skip_validation": {
-          "type": "boolean"
         },
         "three_d_secure": {
           "type": "string"
@@ -9711,7 +10980,7 @@
           "type": "integer"
         },
         "status": {
-          "description": "Possible values are `trialing`, `active`, `past_due`, `canceled`, or `unpaid`. A subscription still in its trial period is `trialing` and moves to `active` when the trial period is over. If subscription `billing=charge_automatically` it becomes `past_due` when payment to renew it fails and `canceled` or `unpaid` (depending on your subscriptions settings) when Stripe has exhausted all payment retry attempts. If subscription `billing=send_invoice` it becomes `past_due` when its invoice is not paid by the due date, and `canceled` or `unpaid` if it is still not paid by an additional deadline after that. Note that when a subscription has a status of `unpaid`, no subsequent invoices will be attempted (invoices will be created, but then immediately automatically closed.) After receiving updated payment information from a customer, you may choose to reopen and pay their closed invoices.",
+          "description": "Possible values are `incomplete`, `incomplete_expired`, `trialing`, `active`, `past_due`, `canceled`, or `unpaid`. \n\nFor `billing=charge_automatically` a subscription moves into `incomplete` if the initial payment attempt fails. A subscription in this state can only have metadata and default_source updated. Once the first invoice is paid, the subscription moves into an `active` state. If the first invoice is not paid within 23 hours, the subscription transitions to `incomplete_expired`. This is a terminal state, the open invoice will be voided and no further invoices will be generated. \n\nA subscription that is currently in a trial period is `trialing` and moves to `active` when the trial period is over. \n\nIf subscription `billing=charge_automatically` it becomes `past_due` when payment to renew it fails and `canceled` or `unpaid` (depending on your subscriptions settings) when Stripe has exhausted all payment retry attempts. \n\nIf subscription `billing=send_invoice` it becomes `past_due` when its invoice is not paid by the due date, and `canceled` or `unpaid` if it is still not paid by an additional deadline after that. Note that when a subscription has a status of `unpaid`, no subsequent invoices will be attempted (invoices will be created, but then immediately automatically closed). After receiving updated payment information from a customer, you may choose to reopen and pay their closed invoices.",
           "enum": [
             "active",
             "canceled",
@@ -10409,6 +11678,31 @@
       ],
       "x-resourceId": "three_d_secure"
     },
+    "three_d_secure_details": {
+      "properties": {
+      },
+      "title": "three_d_secure_details",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
+    "three_d_secure_usage": {
+      "properties": {
+        "supported": {
+          "description": "3D Secure is support on this card.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "supported"
+      ],
+      "title": "three_d_secure_usage",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
     "token": {
       "properties": {
         "bank_account": {
@@ -10724,6 +12018,29 @@
         "source_transaction"
       ],
       "x-resourceId": "transfer"
+    },
+    "transfer_data": {
+      "properties": {
+        "destination": {
+          "description": "The account (if any) the payment will be attributed to for tax\nreporting, and where funds from the payment will be transferred to upon\npayment success.",
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/account"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "destination"
+      ],
+      "title": "transfer_data",
+      "type": "object",
+      "x-expandableFields": [
+        "destination"
+      ]
     },
     "transfer_reversal": {
       "properties": {
@@ -11041,7 +12358,7 @@
     "description": "The Stripe REST API. Please see https://stripe.com/docs/api for more details.",
     "termsOfService": "https://stripe.com/us/terms/",
     "title": "Stripe API",
-    "version": "2019-02-19",
+    "version": "2019-03-14",
     "x-stripeSpecFilename": "spec2"
   },
   "paths": {
@@ -11386,7 +12703,8 @@
                   "type": "array"
                 },
                 "external_account": {
-                  "description": "A card or bank account to attach to the account. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary, as documented in the `external_account` parameter for [bank account](https://stripe.com/docs/api#account_create_bank_account) creation. <br><br>By default, providing an external account sets it as the new default external account for its currency, and deletes the old default if one exists. To add additional external accounts without replacing the existing default for the currency, use the bank account or card creation API."
+                  "description": "A card or bank account to attach to the account. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary, as documented in the `external_account` parameter for [bank account](https://stripe.com/docs/api#account_create_bank_account) creation. <br><br>By default, providing an external account sets it as the new default external account for its currency, and deletes the old default if one exists. To add additional external accounts without replacing the existing default for the currency, use the bank account or card creation API.",
+                  "type": "string"
                 },
                 "individual": {
                   "description": "Information about the person represented by the account. This field is null unless `business_type` is set to `individual`.",
@@ -11555,7 +12873,7 @@
                   "type": "object"
                 },
                 "requested_capabilities": {
-                  "description": "The set of capabilities you want to unlock for this account. Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
+                  "description": "The set of capabilities you want to unlock for this account (US only). Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
                   "items": {
                     "enum": [
                       "card_payments",
@@ -11730,7 +13048,8 @@
                   "type": "array"
                 },
                 "external_account": {
-                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead."
+                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead.",
+                  "type": "string"
                 },
                 "metadata": {
                   "description": "A set of key-value pairs that you can attach to an external account object. It can be useful for storing additional information about the external account in a structured format.",
@@ -12029,7 +13348,8 @@
                   "type": "array"
                 },
                 "external_account": {
-                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead."
+                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead.",
+                  "type": "string"
                 },
                 "metadata": {
                   "description": "A set of key-value pairs that you can attach to an external account object. It can be useful for storing additional information about the external account in a structured format.",
@@ -13891,7 +15211,7 @@
                   "type": "string"
                 },
                 "email": {
-                  "description": "The email address of the account holder. For Standard accounts, Stripe will email your user with instructions on how to set up their account. For Custom accounts, this is only to make the account easier to identify to you: Stripe will never directly email your users.",
+                  "description": "The email address of the account holder. For Custom accounts, this is only to make the account easier to identify to you: Stripe will never directly email your users.",
                   "type": "string"
                 },
                 "expand": {
@@ -13902,7 +15222,8 @@
                   "type": "array"
                 },
                 "external_account": {
-                  "description": "A card or bank account to attach to the account. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary, as documented in the `external_account` parameter for [bank account](https://stripe.com/docs/api#account_create_bank_account) creation. <br><br>By default, providing an external account sets it as the new default external account for its currency, and deletes the old default if one exists. To add additional external accounts without replacing the existing default for the currency, use the bank account or card creation API."
+                  "description": "A card or bank account to attach to the account. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary, as documented in the `external_account` parameter for [bank account](https://stripe.com/docs/api#account_create_bank_account) creation. <br><br>By default, providing an external account sets it as the new default external account for its currency, and deletes the old default if one exists. To add additional external accounts without replacing the existing default for the currency, use the bank account or card creation API.",
+                  "type": "string"
                 },
                 "from_recipient": {
                   "type": "string"
@@ -14074,7 +15395,7 @@
                   "type": "object"
                 },
                 "requested_capabilities": {
-                  "description": "The set of capabilities you want to unlock for this account. Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
+                  "description": "The set of capabilities you want to unlock for this account (US only). Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
                   "items": {
                     "enum": [
                       "card_payments",
@@ -14202,7 +15523,7 @@
                   "type": "object"
                 },
                 "type": {
-                  "description": "Whether you'd like to create a [Standard or Custom](https://stripe.com/docs/connect/accounts) account. Standard accounts are normal Stripe accounts: Stripe will email the account holder to set up a username and password, and will handle all account management directly with them. Custom accounts have extra parameters available to them, and require that you, the platform, handle all communication with the account holder. Possible values are `standard` and `custom`.",
+                  "description": "The type of Stripe account to create. Currently must be `custom`, as only [Custom accounts](https://stripe.com/docs/connect/custom-accounts) may be created via the API.",
                   "enum": [
                     "custom",
                     "express",
@@ -14477,7 +15798,8 @@
                   "type": "array"
                 },
                 "external_account": {
-                  "description": "A card or bank account to attach to the account. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary, as documented in the `external_account` parameter for [bank account](https://stripe.com/docs/api#account_create_bank_account) creation. <br><br>By default, providing an external account sets it as the new default external account for its currency, and deletes the old default if one exists. To add additional external accounts without replacing the existing default for the currency, use the bank account or card creation API."
+                  "description": "A card or bank account to attach to the account. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary, as documented in the `external_account` parameter for [bank account](https://stripe.com/docs/api#account_create_bank_account) creation. <br><br>By default, providing an external account sets it as the new default external account for its currency, and deletes the old default if one exists. To add additional external accounts without replacing the existing default for the currency, use the bank account or card creation API.",
+                  "type": "string"
                 },
                 "individual": {
                   "description": "Information about the person represented by the account. This field is null unless `business_type` is set to `individual`.",
@@ -14646,7 +15968,7 @@
                   "type": "object"
                 },
                 "requested_capabilities": {
-                  "description": "The set of capabilities you want to unlock for this account. Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
+                  "description": "The set of capabilities you want to unlock for this account (US only). Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
                   "items": {
                     "enum": [
                       "card_payments",
@@ -14827,7 +16149,8 @@
                   "type": "array"
                 },
                 "external_account": {
-                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead."
+                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead.",
+                  "type": "string"
                 },
                 "metadata": {
                   "description": "A set of key-value pairs that you can attach to an external account object. It can be useful for storing additional information about the external account in a structured format.",
@@ -15156,7 +16479,8 @@
                   "type": "array"
                 },
                 "external_account": {
-                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead."
+                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead.",
+                  "type": "string"
                 },
                 "metadata": {
                   "description": "A set of key-value pairs that you can attach to an external account object. It can be useful for storing additional information about the external account in a structured format.",
@@ -18198,7 +19522,8 @@
                   "type": "object"
                 },
                 "source": {
-                  "description": "A payment source to be charged. This can be the ID of a [card](https://stripe.com/docs/api#cards) (i.e., credit or debit card), a [bank account](https://stripe.com/docs/api#bank_accounts), a [source](https://stripe.com/docs/api#sources), a [token](https://stripe.com/docs/api#tokens), or a [connected account](https://stripe.com/docs/connect/account-debits#charging-a-connected-account). For certain sources---namely, [cards](https://stripe.com/docs/api#cards), [bank accounts](https://stripe.com/docs/api#bank_accounts), and attached [sources](https://stripe.com/docs/api#sources)---you must also pass the ID of the associated customer."
+                  "description": "A payment source to be charged. This can be the ID of a [card](https://stripe.com/docs/api#cards) (i.e., credit or debit card), a [bank account](https://stripe.com/docs/api#bank_accounts), a [source](https://stripe.com/docs/api#sources), a [token](https://stripe.com/docs/api#tokens), or a [connected account](https://stripe.com/docs/connect/account-debits#charging-a-connected-account). For certain sources---namely, [cards](https://stripe.com/docs/api#cards), [bank accounts](https://stripe.com/docs/api#bank_accounts), and attached [sources](https://stripe.com/docs/api#sources)---you must also pass the ID of the associated customer.",
+                  "type": "string"
                 },
                 "statement_descriptor": {
                   "description": "An arbitrary string to be displayed on your customer's credit card statement. This can be up to _22 characters_. As an example, if your website is `RunClub` and the item you're charging for is a race ticket, you might want to specify a `statement_descriptor` of `RunClub 5K race ticket`. The statement description must contain at least one letter, must not contain `<>\"'` characters, and will appear on your customer's statement in capital letters. Non-ASCII characters are automatically stripped. While most banks and card issuers display this information consistently, some might display it incorrectly or not at all.",
@@ -19045,12 +20370,24 @@
             "required": true,
             "schema": {
               "properties": {
+                "billing_address_collection": {
+                  "description": "Specify whether Checkout should collect the customer's billing address. If set to `required`, Checkout will always collect the customer's billing address. If left blank or set to `auto` Checkout will only collect the billing address when necessary.",
+                  "enum": [
+                    "auto",
+                    "required"
+                  ],
+                  "type": "string"
+                },
                 "cancel_url": {
                   "description": "The URL the customer will be directed to if they decide to go back to your website.",
                   "type": "string"
                 },
                 "client_reference_id": {
-                  "description": "The reference to identify a payment made with Checkout. This reference will be echoed back in Checkout webhooks.",
+                  "description": "A unique string to reference the Checkout Session. This can be a\ncustomer ID, a cart ID, or similar. It is included in the\n`checkout_beta.session_succeeded` webhook and can be used to fulfill the\npurchase.",
+                  "type": "string"
+                },
+                "customer": {
+                  "description": "ID of the customer this Checkout Session is for if one exists. May only be used with line_items. Usage with subscription_data is not yet available.",
                   "type": "string"
                 },
                 "customer_email": {
@@ -19127,6 +20464,13 @@
                   "properties": {
                     "application_fee_amount": {
                       "type": "integer"
+                    },
+                    "capture_method": {
+                      "enum": [
+                        "automatic",
+                        "manual"
+                      ],
+                      "type": "string"
                     },
                     "description": {
                       "type": "string"
@@ -19267,6 +20611,42 @@
               ],
               "type": "object"
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/checkout.session"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/checkout/sessions/{session}": {
+      "get": {
+        "description": "<p>Retrieves a Checkout Session object.</p>",
+        "operationId": "GetCheckoutSessionsSession",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "description": "The ID of the Checkout Session.",
+            "in": "path",
+            "name": "session",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {
@@ -19807,9 +21187,6 @@
                   "description": "The code of the coupon to apply to this subscription. A coupon applied to a subscription will only affect invoices created for that particular subscription.",
                   "type": "string"
                 },
-                "customer": {
-                  "type": "string"
-                },
                 "description": {
                   "description": "An arbitrary string that you can attach to a customer object. It is displayed alongside the customer in the dashboard.",
                   "type": "string"
@@ -19824,10 +21201,6 @@
                     "type": "string"
                   },
                   "type": "array"
-                },
-                "id": {
-                  "description": "A custom ID to use for the customer",
-                  "type": "string"
                 },
                 "invoice_prefix": {
                   "description": "The prefix for the customer used to generate unique invoice numbers. Must be 3–12 uppercase letters or numbers.",
@@ -19865,11 +21238,16 @@
                   "description": "A set of key-value pairs that you can attach to a customer object. It can be useful for storing additional information about the customer in a structured format.",
                   "type": "object"
                 },
+                "payment_method": {
+                  "description": "ID of the PaymentMethod to attach to the customer",
+                  "type": "string"
+                },
                 "shipping": {
                   "description": "The customer's shipping information. Appears on invoices emailed to this customer."
                 },
                 "source": {
-                  "description": "The source can be a [Token](https://stripe.com/docs/api#tokens) or a [Source](https://stripe.com/docs/api#sources), as returned by [Elements](https://stripe.com/docs/elements). You must provide a source if the customer does not already have a valid source attached, and you are subscribing the customer to be charged automatically for a plan that is not free.\n\nPassing `source` will create a new source object, make it the customer default source, and delete the old customer default if one exists. If you want to add an additional source, instead use the [card creation API](https://stripe.com/docs/api#create_card) to add the card and then the [customer update API](https://stripe.com/docs/api#update_customer) to set it as the default.\n\nWhenever you attach a card to a customer, Stripe will automatically validate the card."
+                  "description": "The source can be a [Token](https://stripe.com/docs/api#tokens) or a [Source](https://stripe.com/docs/api#sources), as returned by [Elements](https://stripe.com/docs/elements). You must provide a source if the customer does not already have a valid source attached, and you are subscribing the customer to be charged automatically for a plan that is not free.\n\nPassing `source` will create a new source object, make it the customer default source, and delete the old customer default if one exists. If you want to add an additional source, instead use the [card creation API](https://stripe.com/docs/api#create_card) to add the card and then the [customer update API](https://stripe.com/docs/api#update_customer) to set it as the default.\n\nWhenever you attach a card to a customer, Stripe will automatically validate the card.",
+                  "type": "string"
                 },
                 "tax_info": {
                   "description": "The customer's tax information. Appears on invoices emailed to this customer.",
@@ -20077,7 +21455,8 @@
                   "description": "The customer's shipping information. Appears on invoices emailed to this customer."
                 },
                 "source": {
-                  "description": "The source can be a [Token](https://stripe.com/docs/api#tokens) or a [Source](https://stripe.com/docs/api#sources), as returned by [Elements](https://stripe.com/docs/elements). You must provide a source if the customer does not already have a valid source attached, and you are subscribing the customer to be charged automatically for a plan that is not free.\n\nPassing `source` will create a new source object, make it the customer default source, and delete the old customer default if one exists. If you want to add an additional source, instead use the [card creation API](https://stripe.com/docs/api#create_card) to add the card and then the [customer update API](https://stripe.com/docs/api#update_customer) to set it as the default.\n\nWhenever you attach a card to a customer, Stripe will automatically validate the card."
+                  "description": "The source can be a [Token](https://stripe.com/docs/api#tokens) or a [Source](https://stripe.com/docs/api#sources), as returned by [Elements](https://stripe.com/docs/elements). You must provide a source if the customer does not already have a valid source attached, and you are subscribing the customer to be charged automatically for a plan that is not free.\n\nPassing `source` will create a new source object, make it the customer default source, and delete the old customer default if one exists. If you want to add an additional source, instead use the [card creation API](https://stripe.com/docs/api#create_card) to add the card and then the [customer update API](https://stripe.com/docs/api#update_customer) to set it as the default.\n\nWhenever you attach a card to a customer, Stripe will automatically validate the card.",
+                  "type": "string"
                 },
                 "tax_info": {
                   "description": "The customer's tax information. Appears on invoices emailed to this customer.",
@@ -20232,7 +21611,8 @@
             "schema": {
               "properties": {
                 "alipay_account": {
-                  "description": "A token returned by [Stripe.js](https://stripe.com/docs/stripe.js) representing the user’s Alipay account details."
+                  "description": "A token returned by [Stripe.js](https://stripe.com/docs/stripe.js) representing the user’s Alipay account details.",
+                  "type": "string"
                 },
                 "bank_account": {
                   "description": "Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary containing a user's bank account details."
@@ -20252,7 +21632,8 @@
                   "type": "object"
                 },
                 "source": {
-                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead."
+                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead.",
+                  "type": "string"
                 }
               },
               "type": "object"
@@ -20663,7 +22044,8 @@
             "schema": {
               "properties": {
                 "alipay_account": {
-                  "description": "A token returned by [Stripe.js](https://stripe.com/docs/stripe.js) representing the user’s Alipay account details."
+                  "description": "A token returned by [Stripe.js](https://stripe.com/docs/stripe.js) representing the user’s Alipay account details.",
+                  "type": "string"
                 },
                 "bank_account": {
                   "description": "Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary containing a user's bank account details."
@@ -20683,7 +22065,8 @@
                   "type": "object"
                 },
                 "source": {
-                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead."
+                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead.",
+                  "type": "string"
                 }
               },
               "type": "object"
@@ -21105,7 +22488,8 @@
             "schema": {
               "properties": {
                 "alipay_account": {
-                  "description": "A token returned by [Stripe.js](https://stripe.com/docs/stripe.js) representing the user’s Alipay account details."
+                  "description": "A token returned by [Stripe.js](https://stripe.com/docs/stripe.js) representing the user’s Alipay account details.",
+                  "type": "string"
                 },
                 "bank_account": {
                   "description": "Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js), or a dictionary containing a user's bank account details."
@@ -21125,7 +22509,8 @@
                   "type": "object"
                 },
                 "source": {
-                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead."
+                  "description": "Please refer to full [documentation](https://stripe.com/docs/api) instead.",
+                  "type": "string"
                 }
               },
               "type": "object"
@@ -28264,7 +29649,8 @@
                   "type": "string"
                 },
                 "source": {
-                  "description": "A [Token](https://stripe.com/docs/api#tokens)'s or a [Source](https://stripe.com/docs/api#sources)'s ID, as returned by [Elements](https://stripe.com/docs/elements). If no customer was attached to the order at creation, either `source` or `customer is required. Otherwise, the specified source will be charged intead of the customer attached to the order."
+                  "description": "A [Token](https://stripe.com/docs/api#tokens)'s or a [Source](https://stripe.com/docs/api#sources)'s ID, as returned by [Elements](https://stripe.com/docs/elements). If no customer was attached to the order at creation, either `source` or `customer is required. Otherwise, the specified source will be charged intead of the customer attached to the order.",
+                  "type": "string"
                 }
               },
               "type": "object"
@@ -28468,7 +29854,7 @@
                   "type": "integer"
                 },
                 "application_fee_amount": {
-                  "description": "The amount of the application fee (if any) that will be applied to the payment and transferred to the\napplication owner's Stripe account. To use an application fee, the request must be made on\nbehalf of another account, using the `Stripe-Account` header or an OAuth key. For more\ninformation, see the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect).",
+                  "description": "The amount of the application fee (if any) that will be applied to the\npayment and transferred to the application owner's Stripe account. For\nmore information, see the PaymentIntents [Connect usage\nguide](/docs/payments/payment-intents/usage#connect).",
                   "type": "integer"
                 },
                 "capture_method": {
@@ -28480,7 +29866,7 @@
                   "type": "string"
                 },
                 "confirm": {
-                  "description": "Attempt to confirm this PaymentIntent immediately. If the payment method attached is a card, a return_url must be provided in case additional authentication is required.",
+                  "description": "Attempt to confirm this PaymentIntent immediately. If the payment method attached is a card, a return_url may be provided in case additional authentication is required. Read the [expanded documentation](https://stripe.com/docs/payments/payment-intents/server-confirmation) to learn more about server-side confirmation.",
                   "type": "boolean"
                 },
                 "currency": {
@@ -28510,6 +29896,10 @@
                   "description": "The Stripe account ID for which these funds are intended. For details, see the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect).",
                   "type": "string"
                 },
+                "payment_method": {
+                  "description": "ID of the payment method to attach to this PaymentIntent.",
+                  "type": "string"
+                },
                 "payment_method_types": {
                   "description": "The list of payment method types (e.g. card) that this PaymentIntent is allowed to use.",
                   "items": {
@@ -28526,7 +29916,7 @@
                   "type": "string"
                 },
                 "save_payment_method": {
-                  "description": "Set to `true` to save this PaymentIntent's payment method to the associated Customer, if the payment method is not already attached. This parameter only applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.",
+                  "description": "Set to `true` to save the PaymentIntent's payment method (either `source` or `payment_method`) to the associated customer. If the payment method is already attached, this parameter does nothing. This parameter defaults to `false` and applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.",
                   "type": "boolean"
                 },
                 "shipping": {
@@ -28693,8 +30083,7 @@
                   "type": "integer"
                 },
                 "application_fee_amount": {
-                  "description": "The amount of the application fee (if any) for the resulting payment. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect) for details.",
-                  "type": "integer"
+                  "description": "The amount of the application fee (if any) for the resulting payment. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect) for details."
                 },
                 "currency": {
                   "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -28719,6 +30108,10 @@
                   "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
                   "type": "object"
                 },
+                "payment_method": {
+                  "description": "ID of the payment method to attach to this PaymentIntent.",
+                  "type": "string"
+                },
                 "payment_method_types": {
                   "description": "The list of payment method types (e.g. card) that this PaymentIntent is allowed to use.",
                   "items": {
@@ -28731,58 +30124,11 @@
                   "type": "string"
                 },
                 "save_payment_method": {
-                  "description": "Set to `true` to save this PaymentIntent's payment method to the associated Customer, if the payment method is not already attached. This parameter only applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.",
+                  "description": "Set to `true` to save the PaymentIntent's payment method (either `source` or `payment_method`) to the associated customer. If the payment method is already attached, this parameter does nothing. This parameter defaults to `false` and applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.",
                   "type": "boolean"
                 },
                 "shipping": {
-                  "description": "Shipping information for this PaymentIntent.",
-                  "properties": {
-                    "address": {
-                      "properties": {
-                        "city": {
-                          "type": "string"
-                        },
-                        "country": {
-                          "type": "string"
-                        },
-                        "line1": {
-                          "type": "string"
-                        },
-                        "line2": {
-                          "type": "string"
-                        },
-                        "postal_code": {
-                          "type": "string"
-                        },
-                        "state": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "line1"
-                      ],
-                      "title": "address",
-                      "type": "object"
-                    },
-                    "carrier": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "phone": {
-                      "type": "string"
-                    },
-                    "tracking_number": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "address",
-                    "name"
-                  ],
-                  "title": "shipping",
-                  "type": "object"
+                  "description": "Shipping information for this PaymentIntent."
                 },
                 "source": {
                   "description": "ID of the Source object to attach to this PaymentIntent.",
@@ -28871,7 +30217,7 @@
     },
     "/v1/payment_intents/{intent}/capture": {
       "post": {
-        "description": "<p>Capture the funds of an existing uncaptured PaymentIntent where <code>required_action=\"requires_capture\"</code>.</p>\n\n<p>Uncaptured PaymentIntents will be canceled exactly seven days after they are created.</p>",
+        "description": "<p>Capture the funds of an existing uncaptured PaymentIntent where <code>required_action=\"requires_capture\"</code>.</p>\n\n<p>Uncaptured PaymentIntents will be canceled exactly seven days after they are created.</p>\n\n<p>Read the <a href=\"/docs/payments/payment-intents/creating-payment-intents#separate-auth-capture\">expanded documentation</a> to learn more about separate authorization and capture.</p>",
         "operationId": "PostPaymentIntentsIntentCapture",
         "parameters": [
           {
@@ -28892,7 +30238,7 @@
                   "type": "integer"
                 },
                 "application_fee_amount": {
-                  "description": "The amount of the application fee (if any) that will be applied to the payment and transferred to the\napplication owner's Stripe account. To use an application fee, the\nrequest must be made on behalf of another account, using the\n`Stripe-Account` header or an OAuth key. For more\ninformation, see the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect).",
+                  "description": "The amount of the application fee (if any) that will be applied to the\npayment and transferred to the application owner's Stripe account. For\nmore information, see the PaymentIntents [Connect usage\nguide](/docs/payments/payment-intents/usage#connect).",
                   "type": "integer"
                 },
                 "expand": {
@@ -28925,7 +30271,7 @@
     },
     "/v1/payment_intents/{intent}/confirm": {
       "post": {
-        "description": "<p>Confirm that your customer intends to pay with current or provided\n<code>source</code>. Upon confirmation, the PaymentIntent will attempt to initiate\na payment.</p>\n\n<p>If the selected <code>source</code> requires additional authentication steps, the\nPaymentIntent will transition to the <code>requires_action</code> status and\nsuggest additional actions via <code>next_source_action</code>. If payment fails,\nthe PaymentIntent will transition to the <code>requires_payment_method</code> status. If\npayment succeeds, the PaymentIntent will transition to the <code>succeeded</code>\nstatus (or <code>requires_capture</code>, if <code>capture_method</code> is set to <code>manual</code>).</p>\n\n<p>When using a publishable key, the\n<a href=\"#payment_intent_object-client_secret\">client_secret</a> must be provided\nto confirm the PaymentIntent.</p>",
+        "description": "<p>Confirm that your customer intends to pay with current or provided\n<code>source</code>. Upon confirmation, the PaymentIntent will attempt to initiate\na payment.</p>\n\n<p>If the selected <code>source</code> requires additional authentication steps, the\nPaymentIntent will transition to the <code>requires_action</code> status and\nsuggest additional actions via <code>next_source_action</code>. If payment fails,\nthe PaymentIntent will transition to the <code>requires_payment_method</code> status. If\npayment succeeds, the PaymentIntent will transition to the <code>succeeded</code>\nstatus (or <code>requires_capture</code>, if <code>capture_method</code> is set to <code>manual</code>).\nRead the <a href=\"/docs/payments/payment-intents/server-confirmation\">expanded documentation</a>\nto learn more about server-side confirmation.</p>\n\n<p>When using a publishable key, the\n<a href=\"#payment_intent_object-client_secret\">client_secret</a> must be provided\nto confirm the PaymentIntent.</p>",
         "operationId": "PostPaymentIntentsIntentConfirm",
         "parameters": [
           {
@@ -28952,6 +30298,10 @@
                   },
                   "type": "array"
                 },
+                "payment_method": {
+                  "description": "ID of the payment method to attach to this PaymentIntent.",
+                  "type": "string"
+                },
                 "payment_method_types": {
                   "description": "The list of payment method types (e.g. card) that this PaymentIntent is allowed to use.",
                   "items": {
@@ -28968,11 +30318,271 @@
                   "type": "string"
                 },
                 "save_payment_method": {
-                  "description": "Set to `true` to save this PaymentIntent's payment method to the associated Customer, if the payment method is not already attached. This parameter only applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.",
+                  "description": "Set to `true` to save the PaymentIntent's payment method (either `source` or `payment_method`) to the associated customer. If the payment method is already attached, this parameter does nothing. This parameter defaults to `false` and applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.",
                   "type": "boolean"
                 },
                 "shipping": {
-                  "description": "Shipping information for this PaymentIntent.",
+                  "description": "Shipping information for this PaymentIntent."
+                },
+                "source": {
+                  "description": "ID of the Source object to attach to this PaymentIntent.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/payment_intent"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment_intents_with_legacy_charges": {
+      "get": {
+        "description": "<p>Returns a list of PaymentIntents + and Charges created without PaymentIntents</p>",
+        "operationId": "GetPaymentIntentsWithLegacyCharges",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "in": "query",
+            "name": "amount",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "created",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "customer",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "A cursor for use in pagination. `ending_before` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, starting with `obj_bar`, your subsequent call can include `ending_before=obj_bar` in order to fetch the previous page of the list.",
+            "in": "query",
+            "name": "ending_before",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "invoice",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "payment_intent",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "A cursor for use in pagination. `starting_after` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with `obj_foo`, your subsequent call can include `starting_after=obj_foo` in order to fetch the next page of the list.",
+            "in": "query",
+            "name": "starting_after",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "type": "array"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "properties": {
+                "data": {
+                  "items": {
+                    "$ref": "#/definitions/charge"
+                  },
+                  "type": "array"
+                },
+                "has_more": {
+                  "description": "True if this list has another page of items after this one that can be fetched.",
+                  "type": "boolean"
+                },
+                "object": {
+                  "description": "String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
+                  "enum": [
+                    "list"
+                  ],
+                  "type": "string"
+                },
+                "url": {
+                  "description": "The URL where this list can be accessed.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "data",
+                "has_more",
+                "object",
+                "url"
+              ],
+              "title": "PaymentFlowsPaymentIntentListWithLegacyCharges",
+              "type": "object",
+              "x-expandableFields": [
+                "data"
+              ]
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment_methods": {
+      "get": {
+        "description": "<p>Returns a list of PaymentMethods for a given Customer</p>",
+        "operationId": "GetPaymentMethods",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "description": "The ID of the customer whose PaymentMethods will be retrieved.",
+            "in": "query",
+            "name": "customer",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "A cursor for use in pagination. `ending_before` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, starting with `obj_bar`, your subsequent call can include `ending_before=obj_bar` in order to fetch the previous page of the list.",
+            "in": "query",
+            "name": "ending_before",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "description": "A cursor for use in pagination. `starting_after` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with `obj_foo`, your subsequent call can include `starting_after=obj_foo` in order to fetch the next page of the list.",
+            "in": "query",
+            "name": "starting_after",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "A required filter on the list, based on the object `type` field.",
+            "in": "query",
+            "name": "type",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "properties": {
+                "data": {
+                  "items": {
+                    "$ref": "#/definitions/payment_method"
+                  },
+                  "type": "array"
+                },
+                "has_more": {
+                  "description": "True if this list has another page of items after this one that can be fetched.",
+                  "type": "boolean"
+                },
+                "object": {
+                  "description": "String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
+                  "enum": [
+                    "list"
+                  ],
+                  "type": "string"
+                },
+                "url": {
+                  "description": "The URL where this list can be accessed.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "data",
+                "has_more",
+                "object",
+                "url"
+              ],
+              "title": "PaymentFlowsPaymentMethodList",
+              "type": "object",
+              "x-expandableFields": [
+                "data"
+              ]
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "<p>Creates a PaymentMethod object. Read the <a href=\"/docs/stripe-js/reference#stripe-create-payment-method\">Stripe.js reference</a> to learn how to create PaymentMethods via Stripe.js.</p>",
+        "operationId": "PostPaymentMethods",
+        "parameters": [
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": false,
+            "schema": {
+              "properties": {
+                "billing_details": {
+                  "description": "Billing information associated with the PaymentMethod that may be used or required by particular types of payment methods.",
                   "properties": {
                     "address": {
                       "properties": {
@@ -28995,13 +30605,10 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "line1"
-                      ],
-                      "title": "address",
+                      "title": "source_address",
                       "type": "object"
                     },
-                    "carrier": {
+                    "email": {
                       "type": "string"
                     },
                     "name": {
@@ -29009,20 +30616,40 @@
                     },
                     "phone": {
                       "type": "string"
-                    },
-                    "tracking_number": {
-                      "type": "string"
                     }
                   },
-                  "required": [
-                    "address",
-                    "name"
-                  ],
-                  "title": "shipping",
+                  "title": "billing_details_inner_params",
                   "type": "object"
                 },
-                "source": {
-                  "description": "ID of the Source object to attach to this PaymentIntent.",
+                "card": {
+                  "description": "If this is a `card` PaymentMethod, this hash contains the user's card details. For backwards compatibility, you can alternatively provide a Stripe token (e.g., for Apple Pay, Amex Express Checkout, or legacy Checkout). When creating with a card number, you must meet the requirements for [PCI compliance](https://stripe.com/docs/security#validating-pci-compliance). We strongly recommend using Stripe.js instead of interacting with this API directly.",
+                  "type": "object"
+                },
+                "customer": {
+                  "description": "The `Customer` to whom the original PaymentMethod is attached.",
+                  "type": "string"
+                },
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "metadata": {
+                  "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+                  "type": "object"
+                },
+                "payment_method": {
+                  "description": "The PaymentMethod to share.",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type. Required unless `payment_method` is specified (see the [Shared PaymentMethods](https://stripe.com/docs/payments/payment-methods/connect#shared-paymentmethods) guide)",
+                  "enum": [
+                    "card",
+                    "card_present"
+                  ],
                   "type": "string"
                 }
               },
@@ -29034,7 +30661,242 @@
           "200": {
             "description": "Successful response.",
             "schema": {
-              "$ref": "#/definitions/payment_intent"
+              "$ref": "#/definitions/payment_method"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment_methods/{payment_method}": {
+      "get": {
+        "description": "<p>Retrieves a PaymentMethod object.</p>",
+        "operationId": "GetPaymentMethodsPaymentMethod",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "description": "The ID of the PaymentMethod.",
+            "in": "path",
+            "name": "payment_method",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/payment_method"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "<p>Updates a PaymentMethod object. A PaymentMethod must be attached a customer to be updated.</p>",
+        "operationId": "PostPaymentMethodsPaymentMethod",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "payment_method",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": false,
+            "schema": {
+              "properties": {
+                "billing_details": {
+                  "description": "Billing information associated with the PaymentMethod that may be used or required by particular types of payment methods.",
+                  "properties": {
+                    "address": {
+                      "properties": {
+                        "city": {
+                          "type": "string"
+                        },
+                        "country": {
+                          "type": "string"
+                        },
+                        "line1": {
+                          "type": "string"
+                        },
+                        "line2": {
+                          "type": "string"
+                        },
+                        "postal_code": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        }
+                      },
+                      "title": "source_address",
+                      "type": "object"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    }
+                  },
+                  "title": "billing_details_inner_params",
+                  "type": "object"
+                },
+                "card": {
+                  "properties": {
+                    "exp_month": {
+                      "type": "integer"
+                    },
+                    "exp_year": {
+                      "type": "integer"
+                    }
+                  },
+                  "title": "update_api_param",
+                  "type": "object"
+                },
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "metadata": {
+                  "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/payment_method"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment_methods/{payment_method}/attach": {
+      "post": {
+        "description": "<p>Attaches a PaymentMethod object to a Customer.</p>",
+        "operationId": "PostPaymentMethodsPaymentMethodAttach",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "payment_method",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": true,
+            "schema": {
+              "properties": {
+                "customer": {
+                  "description": "The ID of the customer to which to attach the PaymentMethod.",
+                  "type": "string"
+                },
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "customer"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/payment_method"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment_methods/{payment_method}/detach": {
+      "post": {
+        "description": "<p>Detaches a PaymentMethod object from a Customer.</p>",
+        "operationId": "PostPaymentMethodsPaymentMethodDetach",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "payment_method",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": false,
+            "schema": {
+              "properties": {
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/payment_method"
             }
           },
           "default": {
@@ -30876,10 +32738,12 @@
             "schema": {
               "properties": {
                 "bank_account": {
-                  "description": "A bank account to attach to the recipient. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js), or a dictionary containing a user's bank account details, with the options described below."
+                  "description": "A bank account to attach to the recipient. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js), or a dictionary containing a user's bank account details, with the options described below.",
+                  "type": "string"
                 },
                 "card": {
-                  "description": "A U.S. Visa or MasterCard debit card (_not_ prepaid) to attach to the recipient. If the debit card is not valid, recipient creation will fail. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js), or a dictionary containing a user's debit card details, with the options described below. Although not all information is required, the extra info helps prevent fraud."
+                  "description": "A U.S. Visa or MasterCard debit card (_not_ prepaid) to attach to the recipient. If the debit card is not valid, recipient creation will fail. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js), or a dictionary containing a user's debit card details, with the options described below. Although not all information is required, the extra info helps prevent fraud.",
+                  "type": "string"
                 },
                 "description": {
                   "description": "An arbitrary string which you can attach to a `Recipient` object. It is displayed alongside the recipient in the web interface.",
@@ -31020,10 +32884,12 @@
             "schema": {
               "properties": {
                 "bank_account": {
-                  "description": "A bank account to attach to the recipient. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js), or a dictionary containing a user's bank account details, with the options described below."
+                  "description": "A bank account to attach to the recipient. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js), or a dictionary containing a user's bank account details, with the options described below.",
+                  "type": "string"
                 },
                 "card": {
-                  "description": "A U.S. Visa or MasterCard debit card (not prepaid) to attach to the recipient. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js), or a dictionary containing a user's debit card details, with the options described below. Passing `card` will create a new card, make it the new recipient default card, and delete the old recipient default (if one exists). If you want to add additional debit cards instead of replacing the existing default, use the [card creation API](#create_card). Whenever you attach a card to a recipient, Stripe will automatically validate the debit card."
+                  "description": "A U.S. Visa or MasterCard debit card (not prepaid) to attach to the recipient. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js), or a dictionary containing a user's debit card details, with the options described below. Passing `card` will create a new card, make it the new recipient default card, and delete the old recipient default (if one exists). If you want to add additional debit cards instead of replacing the existing default, use the [card creation API](#create_card). Whenever you attach a card to a recipient, Stripe will automatically validate the debit card.",
+                  "type": "string"
                 },
                 "default_card": {
                   "description": "ID of the card to set as the recipient's new default for payouts.",
@@ -31428,6 +33294,12 @@
                 "parameters": {
                   "description": "Parameters specifying how the report should be run. Different Report Types have different required and optional parameters, listed in the [API Access to Reports](https://stripe.com/docs/reporting/statements/api) documentation.",
                   "properties": {
+                    "columns": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
                     "connected_account": {
                       "type": "string"
                     },
@@ -34297,6 +36169,18 @@
             "type": "integer"
           },
           {
+            "in": "query",
+            "name": "current_period_end",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "current_period_start",
+            "required": false,
+            "type": "integer"
+          },
+          {
             "description": "The ID of the customer whose subscriptions will be retrieved.",
             "in": "query",
             "name": "customer",
@@ -34332,7 +36216,7 @@
             "type": "string"
           },
           {
-            "description": "The status of the subscriptions to retrieve. One of: `trialing`, `active`, `past_due`, `unpaid`, `canceled`, or `all`. Passing in a value of `canceled` will return all canceled subscriptions, including those belonging to deleted customers. Passing in a value of `all` will return subscriptions of all statuses.",
+            "description": "The status of the subscriptions to retrieve. One of: `incomplete`, `incomplete_expired`, `trialing`, `active`, `past_due`, `unpaid`, `canceled`, or `all`. Passing in a value of `canceled` will return all canceled subscriptions, including those belonging to deleted customers. Passing in a value of `all` will return subscriptions of all statuses.",
             "in": "query",
             "name": "status",
             "required": false,
@@ -34970,6 +36854,48 @@
       }
     },
     "/v1/terminal/locations/{location}": {
+      "delete": {
+        "description": "<p>Deletes a <code>Location</code> object.</p>",
+        "operationId": "DeleteTerminalLocationsLocation",
+        "parameters": [
+          {
+            "description": "The identifier of the location to be deleted.",
+            "in": "path",
+            "name": "location",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": false,
+            "schema": {
+              "properties": {
+                "operator_account": {
+                  "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/deleted_terminal.location"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
       "get": {
         "description": "<p>Retrieves a <code>Location</code> object.</p>",
         "operationId": "GetTerminalLocationsLocation",
@@ -35259,6 +37185,48 @@
       }
     },
     "/v1/terminal/readers/{reader}": {
+      "delete": {
+        "description": "<p>Deletes a <code>Reader</code> object.</p>",
+        "operationId": "DeleteTerminalReadersReader",
+        "parameters": [
+          {
+            "description": "The identifier of the reader to be deleted.",
+            "in": "path",
+            "name": "reader",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": false,
+            "schema": {
+              "properties": {
+                "operator_account": {
+                  "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/deleted_terminal.reader"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
       "get": {
         "description": "<p>Retrieves a <code>Reader</code> object.</p>",
         "operationId": "GetTerminalReadersReader",
@@ -35651,11 +37619,38 @@
                   "title": "connect_js_account_token_specs",
                   "type": "object"
                 },
-                "amount": {
-                  "type": "integer"
-                },
                 "bank_account": {
-                  "description": "The bank account this token will represent."
+                  "description": "The bank account this token will represent.",
+                  "properties": {
+                    "account_holder_name": {
+                      "type": "string"
+                    },
+                    "account_holder_type": {
+                      "enum": [
+                        "company",
+                        "individual"
+                      ],
+                      "type": "string"
+                    },
+                    "account_number": {
+                      "type": "string"
+                    },
+                    "country": {
+                      "type": "string"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "routing_number": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "account_number",
+                    "country"
+                  ],
+                  "title": "token_create_bank_account",
+                  "type": "object"
                 },
                 "card": {
                 },
@@ -35666,9 +37661,6 @@
                   "description": "The customer (owned by the application's account) for which to create a token. For use only with [Stripe Connect](https://stripe.com/docs/connect). Also, this can be used only with an [OAuth access token](https://stripe.com/docs/connect/standard-accounts) or [Stripe-Account header](https://stripe.com/docs/connect/authentication). For more details, see [Shared Customers](https://stripe.com/docs/connect/shared-customers).",
                   "type": "string"
                 },
-                "email": {
-                  "type": "string"
-                },
                 "expand": {
                   "description": "Specifies which fields in the response should be expanded.",
                   "items": {
@@ -35676,52 +37668,15 @@
                   },
                   "type": "array"
                 },
-                "external_id": {
-                  "type": "string"
-                },
-                "iovation_blackbox": {
-                  "type": "string"
-                },
-                "ip": {
-                  "type": "string"
-                },
-                "payment_user_agent": {
-                  "type": "string"
-                },
                 "pii": {
+                  "description": "The PII this token will represent.",
                   "properties": {
                     "id_number": {
                       "type": "string"
-                    },
-                    "ssn_last_4": {
-                      "type": "string"
-                    },
-                    "tax_id": {
-                      "type": "string"
                     }
                   },
-                  "title": "new_pii_token_specs",
+                  "title": "pii_token_specs",
                   "type": "object"
-                },
-                "recipient": {
-                  "type": "string"
-                },
-                "referrer": {
-                  "type": "string"
-                },
-                "request_id": {
-                  "type": "string"
-                },
-                "user_agent": {
-                  "type": "string"
-                },
-                "validation_type": {
-                  "enum": [
-                    "amount",
-                    "card",
-                    "none"
-                  ],
-                  "type": "string"
                 }
               },
               "type": "object"
@@ -36796,7 +38751,8 @@
                     "2018-10-31",
                     "2018-11-08",
                     "2019-02-11",
-                    "2019-02-19"
+                    "2019-02-19",
+                    "2019-03-14"
                   ],
                   "type": "string"
                 },
@@ -36848,6 +38804,7 @@
                       "charge.refunded",
                       "charge.succeeded",
                       "charge.updated",
+                      "checkout.session.completed",
                       "checkout_beta.session_succeeded",
                       "coupon.created",
                       "coupon.deleted",
@@ -37157,6 +39114,7 @@
                       "charge.refunded",
                       "charge.succeeded",
                       "charge.updated",
+                      "checkout.session.completed",
                       "checkout_beta.session_succeeded",
                       "coupon.created",
                       "coupon.deleted",

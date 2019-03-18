@@ -3,19 +3,6 @@ components:
   schemas:
     account:
       properties:
-        application_icon:
-          maxLength: 5000
-          type: string
-        application_logo:
-          maxLength: 5000
-          type: string
-        application_name:
-          maxLength: 5000
-          nullable: true
-          type: string
-        application_url:
-          maxLength: 5000
-          type: string
         business_profile:
           anyOf:
           - "$ref": "#/components/schemas/account_business_profile"
@@ -621,8 +608,13 @@ components:
             correct form field.
           maxLength: 5000
           type: string
+        payment_intent:
+          "$ref": "#/components/schemas/payment_intent"
+        payment_method:
+          "$ref": "#/components/schemas/payment_method"
         source:
           anyOf:
+          - "$ref": "#/components/schemas/bank_account"
           - "$ref": "#/components/schemas/card"
           - "$ref": "#/components/schemas/source"
           description: The source object for errors returned on a request involving
@@ -645,6 +637,8 @@ components:
       title: APIErrors
       type: object
       x-expandableFields:
+      - payment_intent
+      - payment_method
       - source
     apple_pay_domain:
       properties:
@@ -1153,17 +1147,10 @@ components:
           nullable: true
           type: string
         status:
-          description: Possible values are `new`, `validated`, `verified`, `verification_failed`,
-            or `errored`. A bank account that hasn't had any activity or validation
-            performed is `new`. If Stripe can determine that the bank account exists,
-            its status will be `validated`. Note that there often isn’t enough information
-            to know (e.g., for smaller credit unions), and the validation is not always
-            run. If customer bank account verification has succeeded, the bank account
-            status will be `verified`. If the verification failed for any reason,
-            such as microdeposit failure, the status will be `verification_failed`.
-            If a transfer sent to this bank account fails, we'll set the status to
-            `errored` and will not continue to send transfers until the bank details
-            are updated.
+          description: |-
+            For bank accounts, possible values are `new`, `validated`, `verified`, `verification_failed`, or `errored`. A bank account that hasn't had any activity or validation performed is `new`. If Stripe can determine that the bank account exists, its status will be `validated`. Note that there often isn’t enough information to know (e.g., for smaller credit unions), and the validation is not always run. If customer bank account verification has succeeded, the bank account status will be `verified`. If the verification failed for any reason, such as microdeposit failure, the status will be `verification_failed`. If a transfer sent to this bank account fails, we'll set the status to `errored` and will not continue to send transfers until the bank details are updated.
+
+            For external accounts, possible values are `new` and `errored`. Validations aren't run against external accounts because they're only used for payouts. This means the other statuses don't apply. If a transfer fails, the status is set to `errored` and transfers are stopped until account details are updated.
           maxLength: 5000
           type: string
       required:
@@ -1179,6 +1166,32 @@ components:
       - account
       - customer
       x-resourceId: bank_account
+    billing_details:
+      properties:
+        address:
+          anyOf:
+          - "$ref": "#/components/schemas/address"
+          description: Billing address.
+          nullable: true
+        email:
+          description: Email address.
+          maxLength: 5000
+          nullable: true
+          type: string
+        name:
+          description: Full name.
+          maxLength: 5000
+          nullable: true
+          type: string
+        phone:
+          description: Billing phone number (including extension).
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: billing_details
+      type: object
+      x-expandableFields:
+      - address
     bitcoin_receiver:
       properties:
         active:
@@ -1747,6 +1760,17 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        payment_method:
+          description: ID of the payment method used in this charge.
+          maxLength: 5000
+          nullable: true
+          type: string
+        payment_method_details:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_details"
+          description: Transaction-specific details of the payment method used in
+            the payment.
+          nullable: true
         receipt_email:
           description: This is the email address that the receipt for this charge
             was sent to.
@@ -1903,6 +1927,7 @@ components:
       - on_behalf_of
       - order
       - outcome
+      - payment_method_details
       - refunds
       - review
       - shipping
@@ -2014,6 +2039,40 @@ components:
       - destination
     checkout.session:
       properties:
+        cancel_url:
+          description: The URL the customer will be directed to if they decide to
+            go back to your website.
+          maxLength: 5000
+          type: string
+        client_reference_id:
+          description: |-
+            A unique string to reference the Checkout Session. This can be a
+            customer ID, a cart ID, or similar. It is included in the
+            `checkout_beta.session_succeeded` webhook and can be used to fulfill the
+            purchase.
+          maxLength: 5000
+          nullable: true
+          type: string
+        customer:
+          description: The ID of the customer created.
+          maxLength: 5000
+          nullable: true
+          type: string
+        customer_email:
+          description: The email address used to create the customer object.
+          maxLength: 5000
+          nullable: true
+          type: string
+        display_items:
+          description: The line items, plans, or SKUs that were purchased by the customer.
+          items:
+            anyOf:
+            - "$ref": "#/components/schemas/payment_pages_checkout_session_checkout_session_resource_custom_display_item"
+            - "$ref": "#/components/schemas/payment_pages_checkout_session_checkout_session_resource_plan_display_item"
+            - "$ref": "#/components/schemas/payment_pages_checkout_session_checkout_session_resource_sku_display_item"
+            - "$ref": "#/components/schemas/payment_pages_checkout_session_checkout_session_resource_subscription_data_display_item"
+            title: Polymorphic
+          type: array
         id:
           description: The token used to pass to `redirectToCheckout` in Stripe.js.
           maxLength: 5000
@@ -2022,19 +2081,68 @@ components:
           description: Has the value `true` if the object exists in live mode or the
             value `false` if the object exists in test mode.
           type: boolean
+        locale:
+          description: The IETF language tag of the locale Checkout is displayed in.
+            If blank or `auto`, the browser's locale is used.
+          enum:
+          - auto
+          - da
+          - de
+          - en
+          - es
+          - fi
+          - fr
+          - it
+          - ja
+          - nb
+          - nl
+          - pl
+          - pt
+          - sv
+          - zh
+          nullable: true
+          type: string
         object:
           description: String representing the object's type. Objects of the same
             type share the same value.
           enum:
           - checkout.session
           type: string
+        payment_intent:
+          description: The ID of the PaymentIntent created if SKUs or line items were
+            provided.
+          maxLength: 5000
+          nullable: true
+          type: string
+        payment_method_types:
+          description: The list of payment method types (e.g. card) that this Checkout
+            Session is allowed to use.
+          items:
+            type: string
+          nullable: true
+          type: array
+        subscription:
+          description: The ID of the subscription created if one or more plans were
+            provided.
+          maxLength: 5000
+          nullable: true
+          type: string
+        success_url:
+          description: The URL the customer will be directed to after a successful
+            payment.
+          maxLength: 5000
+          type: string
       required:
+      - cancel_url
+      - display_items
       - id
       - livemode
       - object
+      - success_url
       title: Session
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - display_items
       x-resourceId: checkout.session
     connect_collection_transfer:
       properties:
@@ -2958,6 +3066,56 @@ components:
       type: object
       x-expandableFields: []
       x-resourceId: deleted_subscription_item
+    deleted_terminal.location:
+      properties:
+        deleted:
+          description: Always true for a deleted object
+          enum:
+          - true
+          type: boolean
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - terminal.location
+          type: string
+      required:
+      - deleted
+      - id
+      - object
+      title: TerminalLocationDeletedLocation
+      type: object
+      x-expandableFields: []
+      x-resourceId: deleted_terminal.location
+    deleted_terminal.reader:
+      properties:
+        deleted:
+          description: Always true for a deleted object
+          enum:
+          - true
+          type: boolean
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - terminal.reader
+          type: string
+      required:
+      - deleted
+      - id
+      - object
+      title: TerminalReaderDeletedReader
+      type: object
+      x-expandableFields: []
+      x-resourceId: deleted_terminal.reader
     deleted_webhook_endpoint:
       properties:
         deleted:
@@ -3817,6 +3975,12 @@ components:
       x-resourceId: file_link
     financial_reporting_finance_report_run_run_parameters:
       properties:
+        columns:
+          description: The set of output columns requested for inclusion in the report
+            run.
+          items:
+            type: string
+          type: array
         connected_account:
           description: Connected account ID by which to filter the report run.
           maxLength: 5000
@@ -3977,12 +4141,6 @@ components:
             oneOf:
             - "$ref": "#/components/schemas/customer"
             - "$ref": "#/components/schemas/deleted_customer"
-        date:
-          description: Time at which the object was created. Measured in seconds since
-            the Unix epoch.
-          format: unix-time
-          nullable: true
-          type: integer
         default_source:
           anyOf:
           - maxLength: 5000
@@ -4025,11 +4183,6 @@ components:
             are finalized approximately an hour after successful webhook delivery
             or when payment collection is attempted for the invoice. If the invoice
             has not been finalized yet, this will be null.
-          nullable: true
-          type: integer
-        finalized_at:
-          description: The time that the invoice draft was finalized.
-          format: unix-time
           nullable: true
           type: integer
         footer:
@@ -5009,6 +5162,10 @@ components:
           description: The Bank Identification Number reflecting this settlement record.
           maxLength: 5000
           type: string
+        clearing_date:
+          description: The date that the transactions are cleared and posted to user's
+            accounts.
+          type: integer
         created:
           description: Time at which the object was created. Measured in seconds since
             the Unix epoch.
@@ -5054,9 +5211,6 @@ components:
           enum:
           - issuing.settlement
           type: string
-        settlement_date:
-          description: The date of the settlement event.
-          type: integer
         settlement_service:
           description: One of `international` or `uk_national_net`.
           maxLength: 5000
@@ -5067,11 +5221,9 @@ components:
         transaction_volume:
           description: The total transaction amount reflected in this settlement.
           type: integer
-        transactions_reconciled:
-          description: Whether or not the transactions have been reconciled.
-          type: boolean
       required:
       - bin
+      - clearing_date
       - created
       - currency
       - id
@@ -5082,11 +5234,9 @@ components:
       - network_fees
       - network_settlement_identifier
       - object
-      - settlement_date
       - settlement_service
       - transaction_count
       - transaction_volume
-      - transactions_reconciled
       title: IssuingSettlement
       type: object
       x-expandableFields: []
@@ -6209,26 +6359,6 @@ components:
       title: PackageDimensions
       type: object
       x-expandableFields: []
-    payment_flows_payment_intent_resource_transfer_data:
-      properties:
-        destination:
-          anyOf:
-          - maxLength: 5000
-            type: string
-          - "$ref": "#/components/schemas/account"
-          description: |-
-            The account (if any) the payment will be attributed to for tax
-            reporting, and where funds from the payment will be transferred to upon
-            payment success.
-          x-expansionResources:
-            oneOf:
-            - "$ref": "#/components/schemas/account"
-      required:
-      - destination
-      title: PaymentFlowsPaymentIntentResourceTransferData
-      type: object
-      x-expandableFields:
-      - destination
     payment_intent:
       properties:
         amount:
@@ -6401,6 +6531,16 @@ components:
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/account"
+        payment_method:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/payment_method"
+          description: ID of the payment method used in this PaymentIntent.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/payment_method"
         payment_method_types:
           description: The list of payment method types (e.g. card) that this PaymentIntent
             is allowed to use.
@@ -6432,12 +6572,14 @@ components:
           anyOf:
           - maxLength: 5000
             type: string
+          - "$ref": "#/components/schemas/bank_account"
           - "$ref": "#/components/schemas/card"
           - "$ref": "#/components/schemas/source"
           description: ID of the source used in this PaymentIntent.
           nullable: true
           x-expansionResources:
             oneOf:
+            - "$ref": "#/components/schemas/bank_account"
             - "$ref": "#/components/schemas/card"
             - "$ref": "#/components/schemas/source"
         statement_descriptor:
@@ -6463,7 +6605,7 @@ components:
           type: string
         transfer_data:
           anyOf:
-          - "$ref": "#/components/schemas/payment_flows_payment_intent_resource_transfer_data"
+          - "$ref": "#/components/schemas/transfer_data"
           description: The data with which to automatically create a Transfer when
             the payment is finalized. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect)
             for details.
@@ -6495,6 +6637,7 @@ components:
       - last_payment_error
       - next_action
       - on_behalf_of
+      - payment_method
       - review
       - shipping
       - source
@@ -6538,6 +6681,1127 @@ components:
       title: PaymentIntentNextActionRedirectToUrl
       type: object
       x-expandableFields: []
+    payment_method:
+      properties:
+        billing_details:
+          "$ref": "#/components/schemas/billing_details"
+        card:
+          "$ref": "#/components/schemas/payment_method_card"
+        card_present:
+          "$ref": "#/components/schemas/payment_method_card_present"
+        created:
+          description: Time at which the object was created. Measured in seconds since
+            the Unix epoch.
+          format: unix-time
+          type: integer
+        customer:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/customer"
+          description: The ID of the Customer to which this PaymentMethod is saved.
+            This will not be set when the PaymentMethod has not been saved to a Customer.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/customer"
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        livemode:
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+          type: boolean
+        metadata:
+          additionalProperties:
+            maxLength: 500
+            type: string
+          description: Set of key-value pairs that you can attach to an object. This
+            can be useful for storing additional information about the object in a
+            structured format.
+          type: object
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - payment_method
+          type: string
+        type:
+          description: The type of the PaymentMethod, one of `card` or `card_present`.
+            An additional hash is included on the PaymentMethod with a name matching
+            this value. It contains additional information specific to the PaymentMethod
+            type.
+          enum:
+          - card
+          - card_present
+          type: string
+      required:
+      - billing_details
+      - created
+      - id
+      - livemode
+      - metadata
+      - object
+      - type
+      title: PaymentMethod
+      type: object
+      x-expandableFields:
+      - billing_details
+      - card
+      - card_present
+      - customer
+      x-resourceId: payment_method
+    payment_method_card:
+      properties:
+        brand:
+          description: Card brand. Can be `amex`, `diners`, `discover`, `jcb`, `mastercard`,
+            `unionpay`, `visa`, or `unknown`.
+          maxLength: 5000
+          type: string
+        checks:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_card_checks"
+          description: Checks on Card address and CVC if provided.
+          nullable: true
+        country:
+          description: Two-letter ISO code representing the country of the card. You
+            could use this attribute to get a sense of the international breakdown
+            of cards you've collected.
+          maxLength: 5000
+          nullable: true
+          type: string
+        exp_month:
+          description: Two-digit number representing the card's expiration month.
+          type: integer
+        exp_year:
+          description: Four-digit number representing the card's expiration year.
+          type: integer
+        fingerprint:
+          description: Uniquely identifies this particular card number. You can use
+            this attribute to check whether two customers who've signed up with you
+            are using the same card number, for example.
+          maxLength: 5000
+          nullable: true
+          type: string
+        funding:
+          description: Card funding type. Can be `credit`, `debit`, `prepaid`, or
+            `unknown`.
+          maxLength: 5000
+          type: string
+        last4:
+          description: The last four digits of the card.
+          maxLength: 5000
+          type: string
+        three_d_secure_usage:
+          anyOf:
+          - "$ref": "#/components/schemas/three_d_secure_usage"
+          description: Contains details on how this Card maybe be used for 3D Secure
+            authentication.
+          nullable: true
+        wallet:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_card_wallet"
+          description: If this Card is part of a card wallet, this contains the details
+            of the card wallet.
+          nullable: true
+      required:
+      - brand
+      - exp_month
+      - exp_year
+      - funding
+      - last4
+      title: payment_method_card
+      type: object
+      x-expandableFields:
+      - checks
+      - three_d_secure_usage
+      - wallet
+    payment_method_card_checks:
+      properties:
+        address_line1_check:
+          description: If a address line1 was provided, results of the check, one
+            of 'pass', 'failed', 'unavailable' or 'unchecked'.
+          maxLength: 5000
+          nullable: true
+          type: string
+        address_postal_code_check:
+          description: If a address postal code was provided, results of the check,
+            one of 'pass', 'failed', 'unavailable' or 'unchecked'.
+          maxLength: 5000
+          nullable: true
+          type: string
+        cvc_check:
+          description: If a CVC was provided, results of the check, one of 'pass',
+            'failed', 'unavailable' or 'unchecked'.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_card_checks
+      type: object
+      x-expandableFields: []
+    payment_method_card_present:
+      properties: {}
+      title: payment_method_card_present
+      type: object
+      x-expandableFields: []
+    payment_method_card_wallet:
+      properties:
+        amex_express_checkout:
+          "$ref": "#/components/schemas/payment_method_card_wallet_amex_express_checkout"
+        apple_pay:
+          "$ref": "#/components/schemas/payment_method_card_wallet_apple_pay"
+        dynamic_last4:
+          description: "(For tokenized numbers only.) The last four digits of the
+            device account number."
+          maxLength: 5000
+          nullable: true
+          type: string
+        google_pay:
+          "$ref": "#/components/schemas/payment_method_card_wallet_google_pay"
+        masterpass:
+          "$ref": "#/components/schemas/payment_method_card_wallet_masterpass"
+        samsung_pay:
+          "$ref": "#/components/schemas/payment_method_card_wallet_samsung_pay"
+        type:
+          description: The type of the card wallet, one of `amex_express_checkout`,
+            `apple_pay`, `google_pay`, `masterpass`, `samsung_pay`, or `visa_checkout`.
+            An additional hash is included on the Wallet subhash with a name matching
+            this value. It contains additional information specific to the card wallet
+            type.
+          enum:
+          - amex_express_checkout
+          - apple_pay
+          - google_pay
+          - masterpass
+          - samsung_pay
+          - visa_checkout
+          type: string
+        visa_checkout:
+          "$ref": "#/components/schemas/payment_method_card_wallet_visa_checkout"
+      required:
+      - type
+      title: payment_method_card_wallet
+      type: object
+      x-expandableFields:
+      - amex_express_checkout
+      - apple_pay
+      - google_pay
+      - masterpass
+      - samsung_pay
+      - visa_checkout
+    payment_method_card_wallet_amex_express_checkout:
+      properties: {}
+      title: payment_method_card_wallet_amex_express_checkout
+      type: object
+      x-expandableFields: []
+    payment_method_card_wallet_apple_pay:
+      properties: {}
+      title: payment_method_card_wallet_apple_pay
+      type: object
+      x-expandableFields: []
+    payment_method_card_wallet_google_pay:
+      properties: {}
+      title: payment_method_card_wallet_google_pay
+      type: object
+      x-expandableFields: []
+    payment_method_card_wallet_masterpass:
+      properties:
+        billing_address:
+          anyOf:
+          - "$ref": "#/components/schemas/address"
+          description: Owner's verified billing address. Values are verified or provided
+            by the wallet directly (if supported) at the time of authorization or
+            settlement. They cannot be set or mutated.
+          nullable: true
+        email:
+          description: Owner's verified email. Values are verified or provided by
+            the wallet directly (if supported) at the time of authorization or settlement.
+            They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+        name:
+          description: Owner's verified full name. Values are verified or provided
+            by the wallet directly (if supported) at the time of authorization or
+            settlement. They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+        shipping_address:
+          anyOf:
+          - "$ref": "#/components/schemas/address"
+          description: Owner's verified shipping address. Values are verified or provided
+            by the wallet directly (if supported) at the time of authorization or
+            settlement. They cannot be set or mutated.
+          nullable: true
+      title: payment_method_card_wallet_masterpass
+      type: object
+      x-expandableFields:
+      - billing_address
+      - shipping_address
+    payment_method_card_wallet_samsung_pay:
+      properties: {}
+      title: payment_method_card_wallet_samsung_pay
+      type: object
+      x-expandableFields: []
+    payment_method_card_wallet_visa_checkout:
+      properties:
+        billing_address:
+          anyOf:
+          - "$ref": "#/components/schemas/address"
+          description: Owner's verified billing address. Values are verified or provided
+            by the wallet directly (if supported) at the time of authorization or
+            settlement. They cannot be set or mutated.
+          nullable: true
+        email:
+          description: Owner's verified email. Values are verified or provided by
+            the wallet directly (if supported) at the time of authorization or settlement.
+            They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+        name:
+          description: Owner's verified full name. Values are verified or provided
+            by the wallet directly (if supported) at the time of authorization or
+            settlement. They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+        shipping_address:
+          anyOf:
+          - "$ref": "#/components/schemas/address"
+          description: Owner's verified shipping address. Values are verified or provided
+            by the wallet directly (if supported) at the time of authorization or
+            settlement. They cannot be set or mutated.
+          nullable: true
+      title: payment_method_card_wallet_visa_checkout
+      type: object
+      x-expandableFields:
+      - billing_address
+      - shipping_address
+    payment_method_details:
+      properties:
+        ach_credit_transfer:
+          "$ref": "#/components/schemas/payment_method_details_ach_credit_transfer"
+        ach_debit:
+          "$ref": "#/components/schemas/payment_method_details_ach_debit"
+        alipay:
+          "$ref": "#/components/schemas/payment_method_details_alipay"
+        bancontact:
+          "$ref": "#/components/schemas/payment_method_details_bancontact"
+        card:
+          "$ref": "#/components/schemas/payment_method_details_card"
+        card_present:
+          "$ref": "#/components/schemas/payment_method_details_card_present"
+        eps:
+          "$ref": "#/components/schemas/payment_method_details_eps"
+        giropay:
+          "$ref": "#/components/schemas/payment_method_details_giropay"
+        ideal:
+          "$ref": "#/components/schemas/payment_method_details_ideal"
+        multibanco:
+          "$ref": "#/components/schemas/payment_method_details_multibanco"
+        p24:
+          "$ref": "#/components/schemas/payment_method_details_p24"
+        sepa_debit:
+          "$ref": "#/components/schemas/payment_method_details_sepa_debit"
+        sofort:
+          "$ref": "#/components/schemas/payment_method_details_sofort"
+        stripe_account:
+          "$ref": "#/components/schemas/payment_method_details_stripe_account"
+        type:
+          description: |-
+            The type of transaction-specific details of the payment method used in the payment, one of `ach_credit_transfer`, `alipay`, `bancontact`, `card`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `sepa_debit`, or `sofort`.
+            An additional hash is included on `payment_method_details` with a name matching this value.
+            It contains information specific to the payment method.
+          maxLength: 5000
+          type: string
+        wechat:
+          "$ref": "#/components/schemas/payment_method_details_wechat"
+      required:
+      - type
+      title: payment_method_details
+      type: object
+      x-expandableFields:
+      - ach_credit_transfer
+      - ach_debit
+      - alipay
+      - bancontact
+      - card
+      - card_present
+      - eps
+      - giropay
+      - ideal
+      - multibanco
+      - p24
+      - sepa_debit
+      - sofort
+      - stripe_account
+      - wechat
+    payment_method_details_ach_credit_transfer:
+      properties:
+        account_number:
+          description: Account number to transfer funds to.
+          maxLength: 5000
+          nullable: true
+          type: string
+        bank_name:
+          description: Name of the bank associated with the routing number.
+          maxLength: 5000
+          nullable: true
+          type: string
+        routing_number:
+          description: Routing transit number for the bank account to transfer funds
+            to.
+          maxLength: 5000
+          nullable: true
+          type: string
+        swift_code:
+          description: SWIFT code of the bank associated with the routing number.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_ach_credit_transfer
+      type: object
+      x-expandableFields: []
+    payment_method_details_ach_debit:
+      properties:
+        account_holder_type:
+          description: Type of entity that holds the account. This can be either `individual`
+            or `company`.
+          enum:
+          - company
+          - individual
+          nullable: true
+          type: string
+        bank_name:
+          description: Name of the bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        country:
+          description: Two-letter ISO code representing the country the bank account
+            is located in.
+          maxLength: 5000
+          nullable: true
+          type: string
+        fingerprint:
+          description: Uniquely identifies this particular bank account. You can use
+            this attribute to check whether two bank accounts are the same.
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          description: Last four digits of the bank account number.
+          maxLength: 5000
+          nullable: true
+          type: string
+        routing_number:
+          description: Routing transit number of the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_ach_debit
+      type: object
+      x-expandableFields: []
+    payment_method_details_alipay:
+      properties: {}
+      title: payment_method_details_alipay
+      type: object
+      x-expandableFields: []
+    payment_method_details_bancontact:
+      properties:
+        bank_code:
+          description: Bank code of bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        bank_name:
+          description: Name of the bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        bic:
+          description: Bank Identifier Code of the bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        iban_last4:
+          description: Last four characters of the IBAN.
+          maxLength: 5000
+          nullable: true
+          type: string
+        preferred_language:
+          description: |-
+            Preferred language of the Bancontact authorization page that the customer is redirected to.
+            Can be one of `en`, `de`, `fr`, or `nl`
+          enum:
+          - de
+          - en
+          - fr
+          - nl
+          nullable: true
+          type: string
+        verified_name:
+          description: |-
+            Owner's verified full name. Values are verified or provided by Bancontact directly
+            (if supported) at the time of authorization or settlement. They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_bancontact
+      type: object
+      x-expandableFields: []
+    payment_method_details_card:
+      properties:
+        brand:
+          description: Card brand. Can be `amex`, `diners`, `discover`, `jcb`, `mastercard`,
+            `unionpay`, `visa`, or `unknown`.
+          maxLength: 5000
+          nullable: true
+          type: string
+        checks:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_details_card_checks"
+          description: Check results by Card networks on Card address and CVC at time
+            of payment.
+          nullable: true
+        country:
+          description: Two-letter ISO code representing the country of the card. You
+            could use this attribute to get a sense of the international breakdown
+            of cards you've collected.
+          maxLength: 5000
+          nullable: true
+          type: string
+        exp_month:
+          description: Two-digit number representing the card's expiration month.
+          nullable: true
+          type: integer
+        exp_year:
+          description: Four-digit number representing the card's expiration year.
+          nullable: true
+          type: integer
+        fingerprint:
+          description: Uniquely identifies this particular card number. You can use
+            this attribute to check whether two customers who've signed up with you
+            are using the same card number, for example.
+          maxLength: 5000
+          nullable: true
+          type: string
+        funding:
+          description: Card funding type. Can be `credit`, `debit`, `prepaid`, or
+            `unknown`.
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          description: The last four digits of the card.
+          maxLength: 5000
+          nullable: true
+          type: string
+        three_d_secure:
+          anyOf:
+          - "$ref": "#/components/schemas/three_d_secure_details"
+          description: Populated if this transaction used 3D Secure authentication.
+          nullable: true
+        wallet:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_details_card_wallet"
+          description: If this Card is part of a card wallet, this contains the details
+            of the card wallet.
+          nullable: true
+      title: payment_method_details_card
+      type: object
+      x-expandableFields:
+      - checks
+      - three_d_secure
+      - wallet
+    payment_method_details_card_checks:
+      properties:
+        address_line1_check:
+          description: If a address line1 was provided, results of the check, one
+            of 'pass', 'failed', 'unavailable' or 'unchecked'.
+          maxLength: 5000
+          nullable: true
+          type: string
+        address_postal_code_check:
+          description: If a address postal code was provided, results of the check,
+            one of 'pass', 'failed', 'unavailable' or 'unchecked'.
+          maxLength: 5000
+          nullable: true
+          type: string
+        cvc_check:
+          description: If a CVC was provided, results of the check, one of 'pass',
+            'failed', 'unavailable' or 'unchecked'.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_card_checks
+      type: object
+      x-expandableFields: []
+    payment_method_details_card_present:
+      properties:
+        brand:
+          maxLength: 5000
+          nullable: true
+          type: string
+        country:
+          maxLength: 5000
+          nullable: true
+          type: string
+        emv_auth_data:
+          maxLength: 5000
+          nullable: true
+          type: string
+        exp_month:
+          nullable: true
+          type: integer
+        exp_year:
+          nullable: true
+          type: integer
+        fingerprint:
+          maxLength: 5000
+          nullable: true
+          type: string
+        funding:
+          maxLength: 5000
+          nullable: true
+          type: string
+        generated_card:
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          maxLength: 5000
+          nullable: true
+          type: string
+        read_method:
+          maxLength: 5000
+          nullable: true
+          type: string
+        receipt:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_details_card_present_receipt"
+          nullable: true
+      title: payment_method_details_card_present
+      type: object
+      x-expandableFields:
+      - receipt
+    payment_method_details_card_present_receipt:
+      properties:
+        application_cryptogram:
+          maxLength: 5000
+          nullable: true
+          type: string
+        application_preferred_name:
+          maxLength: 5000
+          nullable: true
+          type: string
+        authorization_code:
+          maxLength: 5000
+          nullable: true
+          type: string
+        authorization_response_code:
+          maxLength: 5000
+          nullable: true
+          type: string
+        cardholder_verification_method:
+          maxLength: 5000
+          nullable: true
+          type: string
+        dedicated_file_name:
+          maxLength: 5000
+          nullable: true
+          type: string
+        terminal_verification_results:
+          maxLength: 5000
+          nullable: true
+          type: string
+        transaction_status_information:
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_card_present_receipt
+      type: object
+      x-expandableFields: []
+    payment_method_details_card_wallet:
+      properties:
+        amex_express_checkout:
+          "$ref": "#/components/schemas/payment_method_details_card_wallet_amex_express_checkout"
+        apple_pay:
+          "$ref": "#/components/schemas/payment_method_details_card_wallet_apple_pay"
+        dynamic_last4:
+          description: "(For tokenized numbers only.) The last four digits of the
+            device account number."
+          maxLength: 5000
+          nullable: true
+          type: string
+        google_pay:
+          "$ref": "#/components/schemas/payment_method_details_card_wallet_google_pay"
+        masterpass:
+          "$ref": "#/components/schemas/payment_method_details_card_wallet_masterpass"
+        samsung_pay:
+          "$ref": "#/components/schemas/payment_method_details_card_wallet_samsung_pay"
+        type:
+          description: The type of the card wallet, one of `amex_express_checkout`,
+            `apple_pay`, `google_pay`, `masterpass`, `samsung_pay`, or `visa_checkout`.
+            An additional hash is included on the Wallet subhash with a name matching
+            this value. It contains additional information specific to the card wallet
+            type.
+          enum:
+          - amex_express_checkout
+          - apple_pay
+          - google_pay
+          - masterpass
+          - samsung_pay
+          - visa_checkout
+          type: string
+        visa_checkout:
+          "$ref": "#/components/schemas/payment_method_details_card_wallet_visa_checkout"
+      required:
+      - type
+      title: payment_method_details_card_wallet
+      type: object
+      x-expandableFields:
+      - amex_express_checkout
+      - apple_pay
+      - google_pay
+      - masterpass
+      - samsung_pay
+      - visa_checkout
+    payment_method_details_card_wallet_amex_express_checkout:
+      properties: {}
+      title: payment_method_details_card_wallet_amex_express_checkout
+      type: object
+      x-expandableFields: []
+    payment_method_details_card_wallet_apple_pay:
+      properties: {}
+      title: payment_method_details_card_wallet_apple_pay
+      type: object
+      x-expandableFields: []
+    payment_method_details_card_wallet_google_pay:
+      properties: {}
+      title: payment_method_details_card_wallet_google_pay
+      type: object
+      x-expandableFields: []
+    payment_method_details_card_wallet_masterpass:
+      properties:
+        billing_address:
+          anyOf:
+          - "$ref": "#/components/schemas/address"
+          description: Owner's verified billing address. Values are verified or provided
+            by the wallet directly (if supported) at the time of authorization or
+            settlement. They cannot be set or mutated.
+          nullable: true
+        email:
+          description: Owner's verified email. Values are verified or provided by
+            the wallet directly (if supported) at the time of authorization or settlement.
+            They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+        name:
+          description: Owner's verified full name. Values are verified or provided
+            by the wallet directly (if supported) at the time of authorization or
+            settlement. They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+        shipping_address:
+          anyOf:
+          - "$ref": "#/components/schemas/address"
+          description: Owner's verified shipping address. Values are verified or provided
+            by the wallet directly (if supported) at the time of authorization or
+            settlement. They cannot be set or mutated.
+          nullable: true
+      title: payment_method_details_card_wallet_masterpass
+      type: object
+      x-expandableFields:
+      - billing_address
+      - shipping_address
+    payment_method_details_card_wallet_samsung_pay:
+      properties: {}
+      title: payment_method_details_card_wallet_samsung_pay
+      type: object
+      x-expandableFields: []
+    payment_method_details_card_wallet_visa_checkout:
+      properties:
+        billing_address:
+          anyOf:
+          - "$ref": "#/components/schemas/address"
+          description: Owner's verified billing address. Values are verified or provided
+            by the wallet directly (if supported) at the time of authorization or
+            settlement. They cannot be set or mutated.
+          nullable: true
+        email:
+          description: Owner's verified email. Values are verified or provided by
+            the wallet directly (if supported) at the time of authorization or settlement.
+            They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+        name:
+          description: Owner's verified full name. Values are verified or provided
+            by the wallet directly (if supported) at the time of authorization or
+            settlement. They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+        shipping_address:
+          anyOf:
+          - "$ref": "#/components/schemas/address"
+          description: Owner's verified shipping address. Values are verified or provided
+            by the wallet directly (if supported) at the time of authorization or
+            settlement. They cannot be set or mutated.
+          nullable: true
+      title: payment_method_details_card_wallet_visa_checkout
+      type: object
+      x-expandableFields:
+      - billing_address
+      - shipping_address
+    payment_method_details_eps:
+      properties:
+        verified_name:
+          description: |-
+            Owner's verified full name. Values are verified or provided by EPS directly
+            (if supported) at the time of authorization or settlement. They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_eps
+      type: object
+      x-expandableFields: []
+    payment_method_details_giropay:
+      properties:
+        bank_code:
+          description: Bank code of bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        bank_name:
+          description: Name of the bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        bic:
+          description: Bank Identifier Code of the bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        verified_name:
+          description: |-
+            Owner's verified full name. Values are verified or provided by Giropay directly
+            (if supported) at the time of authorization or settlement. They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_giropay
+      type: object
+      x-expandableFields: []
+    payment_method_details_ideal:
+      properties:
+        bank:
+          description: The customer's bank. Can be one of `abn_amro`, `asn_bank`,
+            `bunq`, `handelsbanken`, `ing`, `knab`, `moneyou`, `rabobank`, `regiobank`,
+            `sns_bank`, `triodos_bank`, or `van_lanschot`.
+          enum:
+          - abn_amro
+          - asn_bank
+          - bunq
+          - handelsbanken
+          - ing
+          - knab
+          - moneyou
+          - rabobank
+          - regiobank
+          - sns_bank
+          - triodos_bank
+          - van_lanschot
+          nullable: true
+          type: string
+        bic:
+          description: The Bank Identifier Code of the customer's bank.
+          enum:
+          - ABNANL2A
+          - ASNBNL21
+          - BUNQNL2A
+          - FVLBNL22
+          - HANDNL2A
+          - INGBNL2A
+          - KNABNL2H
+          - MOYONL21
+          - RABONL2U
+          - RBRBNL21
+          - SNSBNL2A
+          - TRIONL2U
+          nullable: true
+          type: string
+        iban_last4:
+          description: Last four characters of the IBAN.
+          maxLength: 5000
+          nullable: true
+          type: string
+        verified_name:
+          description: |-
+            Owner's verified full name. Values are verified or provided by iDEAL directly
+            (if supported) at the time of authorization or settlement. They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_ideal
+      type: object
+      x-expandableFields: []
+    payment_method_details_multibanco:
+      properties:
+        entity:
+          description: Entity number associated with this Multibanco payment.
+          maxLength: 5000
+          nullable: true
+          type: string
+        reference:
+          description: Reference number associated with this Multibanco payment.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_multibanco
+      type: object
+      x-expandableFields: []
+    payment_method_details_p24:
+      properties:
+        reference:
+          description: Unique reference for this Przelewy24 payment.
+          maxLength: 5000
+          nullable: true
+          type: string
+        verified_name:
+          description: |-
+            Owner's verified full name. Values are verified or provided by Przelewy24 directly
+            (if supported) at the time of authorization or settlement. They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_p24
+      type: object
+      x-expandableFields: []
+    payment_method_details_sepa_debit:
+      properties:
+        bank_code:
+          description: Bank code of bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        branch_code:
+          description: Branch code of bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        country:
+          description: Two-letter ISO code representing the country the bank account
+            is located in.
+          maxLength: 5000
+          nullable: true
+          type: string
+        fingerprint:
+          description: Uniquely identifies this particular bank account. You can use
+            this attribute to check whether two bank accounts are the same.
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          description: Last four characters of the IBAN.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_sepa_debit
+      type: object
+      x-expandableFields: []
+    payment_method_details_sofort:
+      properties:
+        bank_code:
+          description: Bank code of bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        bank_name:
+          description: Name of the bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        bic:
+          description: Bank Identifier Code of the bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        country:
+          description: Two-letter ISO code representing the country the bank account
+            is located in.
+          maxLength: 5000
+          nullable: true
+          type: string
+        iban_last4:
+          description: Last four characters of the IBAN.
+          maxLength: 5000
+          nullable: true
+          type: string
+        verified_name:
+          description: |-
+            Owner's verified full name. Values are verified or provided by SOFORT directly
+            (if supported) at the time of authorization or settlement. They cannot be set or mutated.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_sofort
+      type: object
+      x-expandableFields: []
+    payment_method_details_stripe_account:
+      properties: {}
+      title: payment_method_details_stripe_account
+      type: object
+      x-expandableFields: []
+    payment_method_details_wechat:
+      properties: {}
+      title: payment_method_details_wechat
+      type: object
+      x-expandableFields: []
+    payment_pages_checkout_session_checkout_session_resource_custom_display_item:
+      properties:
+        amount:
+          description: Amount for the display item.
+          type: integer
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+          maxLength: 3
+          type: string
+        custom:
+          "$ref": "#/components/schemas/payment_pages_checkout_session_checkout_session_resource_custom_display_item_resource_custom_display_item_description"
+        quantity:
+          description: Quantity of the display item being purchased.
+          type: integer
+        type:
+          description: The type of display item.
+          maxLength: 5000
+          type: string
+      required:
+      - amount
+      - currency
+      - custom
+      - quantity
+      - type
+      title: PaymentPagesCheckoutSessionCheckoutSessionResourceCustomDisplayItem
+      type: object
+      x-expandableFields:
+      - custom
+    payment_pages_checkout_session_checkout_session_resource_custom_display_item_resource_custom_display_item_description:
+      properties:
+        description:
+          description: The description of the line item.
+          maxLength: 5000
+          nullable: true
+          type: string
+        images:
+          description: The images of the line item.
+          items:
+            type: string
+          nullable: true
+          type: array
+        name:
+          description: The name of the line item.
+          maxLength: 5000
+          type: string
+      required:
+      - name
+      title: PaymentPagesCheckoutSessionCheckoutSessionResourceCustomDisplayItemResourceCustomDisplayItemDescription
+      type: object
+      x-expandableFields: []
+    payment_pages_checkout_session_checkout_session_resource_plan_display_item:
+      properties:
+        amount:
+          description: Amount for the display item.
+          type: integer
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+          maxLength: 3
+          type: string
+        plan:
+          "$ref": "#/components/schemas/plan"
+        quantity:
+          description: Quantity of the display item being purchased.
+          type: integer
+        type:
+          description: The type of display item.
+          maxLength: 5000
+          type: string
+      required:
+      - amount
+      - currency
+      - plan
+      - quantity
+      - type
+      title: PaymentPagesCheckoutSessionCheckoutSessionResourcePlanDisplayItem
+      type: object
+      x-expandableFields:
+      - plan
+    payment_pages_checkout_session_checkout_session_resource_sku_display_item:
+      properties:
+        amount:
+          description: Amount for the display item.
+          type: integer
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+          maxLength: 3
+          type: string
+        quantity:
+          description: Quantity of the display item being purchased.
+          type: integer
+        sku:
+          "$ref": "#/components/schemas/sku"
+        type:
+          description: The type of display item.
+          maxLength: 5000
+          type: string
+      required:
+      - amount
+      - currency
+      - quantity
+      - sku
+      - type
+      title: PaymentPagesCheckoutSessionCheckoutSessionResourceSKUDisplayItem
+      type: object
+      x-expandableFields:
+      - sku
+    payment_pages_checkout_session_checkout_session_resource_subscription_data_display_item:
+      properties:
+        amount:
+          description: Amount for the display item.
+          type: integer
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+          maxLength: 3
+          type: string
+        plan:
+          "$ref": "#/components/schemas/plan"
+        quantity:
+          description: Quantity of the display item being purchased.
+          type: integer
+        type:
+          description: The type of display item.
+          maxLength: 5000
+          type: string
+      required:
+      - amount
+      - currency
+      - plan
+      - quantity
+      - type
+      title: PaymentPagesCheckoutSessionCheckoutSessionResourceSubscriptionDataDisplayItem
+      type: object
+      x-expandableFields:
+      - plan
     payment_source:
       anyOf:
       - "$ref": "#/components/schemas/account"
@@ -7736,6 +9000,14 @@ components:
             in seconds since the Unix epoch.
           format: unix-time
           type: integer
+        default_columns:
+          description: List of column names that are included by default when this
+            Report Type gets run. (If the Report Type doesn't support the `columns`
+            parameter, this will be null.)
+          items:
+            type: string
+          nullable: true
+          type: array
         id:
           description: The [ID of the Report Type](https://stripe.com/docs/reporting/statements/api#available-report-types),
             such as `balance.summary.1`.
@@ -7868,10 +9140,8 @@ components:
           description: If `true`, the review needs action.
           type: boolean
         opened_reason:
-          description: The reason the review was opened. One of `rule`, `manual`,
-            or `issuer_fraud_record`.
+          description: The reason the review was opened. One of `rule` or `manual`.
           enum:
-          - issuer_fraud_record
           - manual
           - rule
           type: string
@@ -7886,8 +9156,7 @@ components:
             - "$ref": "#/components/schemas/payment_intent"
         reason:
           description: The reason the review is currently open or closed. One of `rule`,
-            `manual`, `issuer_fraud_record`, `approved`, `refunded`, `refunded_as_fraud`,
-            or `disputed`.
+            `manual`, `approved`, `refunded`, `refunded_as_fraud`, or `disputed`.
           maxLength: 5000
           type: string
         session:
@@ -8770,9 +10039,6 @@ components:
         refund_account_holder_type:
           nullable: true
           type: string
-        refund_account_number:
-          nullable: true
-          type: string
         refund_routing_number:
           nullable: true
           type: string
@@ -8874,8 +10140,6 @@ components:
         name:
           nullable: true
           type: string
-        skip_validation:
-          type: boolean
         three_d_secure:
           type: string
         tokenization_method:
@@ -9102,8 +10366,6 @@ components:
         mandate_url:
           nullable: true
           type: string
-        skip_validation:
-          type: boolean
       type: object
     source_type_sofort:
       properties:
@@ -9175,8 +10437,6 @@ components:
         name:
           nullable: true
           type: string
-        skip_validation:
-          type: boolean
         three_d_secure:
           type: string
         tokenization_method:
@@ -9406,18 +10666,25 @@ components:
           format: unix-time
           type: integer
         status:
-          description: Possible values are `trialing`, `active`, `past_due`, `canceled`,
-            or `unpaid`. A subscription still in its trial period is `trialing` and
-            moves to `active` when the trial period is over. If subscription `billing=charge_automatically`
+          description: "Possible values are `incomplete`, `incomplete_expired`, `trialing`,
+            `active`, `past_due`, `canceled`, or `unpaid`. \n\nFor `billing=charge_automatically`
+            a subscription moves into `incomplete` if the initial payment attempt
+            fails. A subscription in this state can only have metadata and default_source
+            updated. Once the first invoice is paid, the subscription moves into an
+            `active` state. If the first invoice is not paid within 23 hours, the
+            subscription transitions to `incomplete_expired`. This is a terminal state,
+            the open invoice will be voided and no further invoices will be generated.
+            \n\nA subscription that is currently in a trial period is `trialing` and
+            moves to `active` when the trial period is over. \n\nIf subscription `billing=charge_automatically`
             it becomes `past_due` when payment to renew it fails and `canceled` or
             `unpaid` (depending on your subscriptions settings) when Stripe has exhausted
-            all payment retry attempts. If subscription `billing=send_invoice` it
-            becomes `past_due` when its invoice is not paid by the due date, and `canceled`
-            or `unpaid` if it is still not paid by an additional deadline after that.
-            Note that when a subscription has a status of `unpaid`, no subsequent
-            invoices will be attempted (invoices will be created, but then immediately
-            automatically closed.) After receiving updated payment information from
-            a customer, you may choose to reopen and pay their closed invoices.
+            all payment retry attempts. \n\nIf subscription `billing=send_invoice`
+            it becomes `past_due` when its invoice is not paid by the due date, and
+            `canceled` or `unpaid` if it is still not paid by an additional deadline
+            after that. Note that when a subscription has a status of `unpaid`, no
+            subsequent invoices will be attempted (invoices will be created, but then
+            immediately automatically closed). After receiving updated payment information
+            from a customer, you may choose to reopen and pay their closed invoices."
           enum:
           - active
           - canceled
@@ -10101,6 +11368,21 @@ components:
       x-expandableFields:
       - card
       x-resourceId: three_d_secure
+    three_d_secure_details:
+      properties: {}
+      title: three_d_secure_details
+      type: object
+      x-expandableFields: []
+    three_d_secure_usage:
+      properties:
+        supported:
+          description: 3D Secure is support on this card.
+          type: boolean
+      required:
+      - supported
+      title: three_d_secure_usage
+      type: object
+      x-expandableFields: []
     token:
       properties:
         bank_account:
@@ -10420,6 +11702,26 @@ components:
       - reversals
       - source_transaction
       x-resourceId: transfer
+    transfer_data:
+      properties:
+        destination:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/account"
+          description: |-
+            The account (if any) the payment will be attributed to for tax
+            reporting, and where funds from the payment will be transferred to upon
+            payment success.
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/account"
+      required:
+      - destination
+      title: transfer_data
+      type: object
+      x-expandableFields:
+      - destination
     transfer_reversal:
       properties:
         amount:
@@ -10717,7 +12019,7 @@ info:
     details.
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
-  version: '2019-02-19'
+  version: '2019-03-14'
   x-stripeSpecFilename: spec3
 openapi: 3.0.0
 paths:
@@ -10921,9 +12223,6 @@ paths:
               expand:
                 explode: true
                 style: deepObject
-              external_account:
-                explode: true
-                style: deepObject
               individual:
                 explode: true
                 style: deepObject
@@ -10949,7 +12248,37 @@ paths:
                   type: string
                 bank_account:
                   anyOf:
-                  - type: object
+                  - properties:
+                      account_holder_name:
+                        maxLength: 5000
+                        type: string
+                      account_holder_type:
+                        enum:
+                        - company
+                        - individual
+                        maxLength: 5000
+                        type: string
+                      account_number:
+                        maxLength: 5000
+                        type: string
+                      country:
+                        maxLength: 5000
+                        type: string
+                      currency:
+                        type: string
+                      object:
+                        enum:
+                        - bank_account
+                        maxLength: 5000
+                        type: string
+                      routing_number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - account_number
+                    - country
+                    title: external_account_payout_bank_account
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
@@ -11102,10 +12431,6 @@ paths:
                     type: string
                   type: array
                 external_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: A card or bank account to attach to the account. You
                     can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
                     or a dictionary, as documented in the `external_account` parameter
@@ -11115,6 +12440,9 @@ paths:
                     the old default if one exists. To add additional external accounts
                     without replacing the existing default for the currency, use the
                     bank account or card creation API.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
                 individual:
                   description: Information about the person represented by the account.
                     This field is null unless `business_type` is set to `individual`.
@@ -11268,10 +12596,10 @@ paths:
                   type: object
                 requested_capabilities:
                   description: The set of capabilities you want to unlock for this
-                    account. Each capability will be inactive until you have provided
-                    its specific requirements and Stripe has verified them. An account
-                    may have some of its requested capabilities be active and some
-                    be inactive.
+                    account (US only). Each capability will be inactive until you
+                    have provided its specific requirements and Stripe has verified
+                    them. An account may have some of its requested capabilities be
+                    active and some be inactive.
                   items:
                     enum:
                     - card_payments
@@ -11408,9 +12736,6 @@ paths:
               expand:
                 explode: true
                 style: deepObject
-              external_account:
-                explode: true
-                style: deepObject
               metadata:
                 explode: true
                 style: deepObject
@@ -11419,7 +12744,37 @@ paths:
               properties:
                 bank_account:
                   anyOf:
-                  - type: object
+                  - properties:
+                      account_holder_name:
+                        maxLength: 5000
+                        type: string
+                      account_holder_type:
+                        enum:
+                        - company
+                        - individual
+                        maxLength: 5000
+                        type: string
+                      account_number:
+                        maxLength: 5000
+                        type: string
+                      country:
+                        maxLength: 5000
+                        type: string
+                      currency:
+                        type: string
+                      object:
+                        enum:
+                        - bank_account
+                        maxLength: 5000
+                        type: string
+                      routing_number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - account_number
+                    - country
+                    title: external_account_payout_bank_account
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
@@ -11436,12 +12791,11 @@ paths:
                     type: string
                   type: array
                 external_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: Please refer to full [documentation](https://stripe.com/docs/api)
                     instead.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
                 metadata:
                   additionalProperties:
                     type: string
@@ -11763,9 +13117,6 @@ paths:
               expand:
                 explode: true
                 style: deepObject
-              external_account:
-                explode: true
-                style: deepObject
               metadata:
                 explode: true
                 style: deepObject
@@ -11774,7 +13125,37 @@ paths:
               properties:
                 bank_account:
                   anyOf:
-                  - type: object
+                  - properties:
+                      account_holder_name:
+                        maxLength: 5000
+                        type: string
+                      account_holder_type:
+                        enum:
+                        - company
+                        - individual
+                        maxLength: 5000
+                        type: string
+                      account_number:
+                        maxLength: 5000
+                        type: string
+                      country:
+                        maxLength: 5000
+                        type: string
+                      currency:
+                        type: string
+                      object:
+                        enum:
+                        - bank_account
+                        maxLength: 5000
+                        type: string
+                      routing_number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - account_number
+                    - country
+                    title: external_account_payout_bank_account
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
@@ -11791,12 +13172,11 @@ paths:
                     type: string
                   type: array
                 external_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: Please refer to full [documentation](https://stripe.com/docs/api)
                     instead.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
                 metadata:
                   additionalProperties:
                     type: string
@@ -13694,9 +15074,6 @@ paths:
               expand:
                 explode: true
                 style: deepObject
-              external_account:
-                explode: true
-                style: deepObject
               individual:
                 explode: true
                 style: deepObject
@@ -13722,7 +15099,37 @@ paths:
                   type: string
                 bank_account:
                   anyOf:
-                  - type: object
+                  - properties:
+                      account_holder_name:
+                        maxLength: 5000
+                        type: string
+                      account_holder_type:
+                        enum:
+                        - company
+                        - individual
+                        maxLength: 5000
+                        type: string
+                      account_number:
+                        maxLength: 5000
+                        type: string
+                      country:
+                        maxLength: 5000
+                        type: string
+                      currency:
+                        type: string
+                      object:
+                        enum:
+                        - bank_account
+                        maxLength: 5000
+                        type: string
+                      routing_number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - account_number
+                    - country
+                    title: external_account_payout_bank_account
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
@@ -13872,11 +15279,9 @@ paths:
                     supports in the account's country](https://stripe.com/docs/payouts).
                   type: string
                 email:
-                  description: 'The email address of the account holder. For Standard
-                    accounts, Stripe will email your user with instructions on how
-                    to set up their account. For Custom accounts, this is only to
-                    make the account easier to identify to you: Stripe will never
-                    directly email your users.'
+                  description: 'The email address of the account holder. For Custom
+                    accounts, this is only to make the account easier to identify
+                    to you: Stripe will never directly email your users.'
                   type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
@@ -13885,10 +15290,6 @@ paths:
                     type: string
                   type: array
                 external_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: A card or bank account to attach to the account. You
                     can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
                     or a dictionary, as documented in the `external_account` parameter
@@ -13898,6 +15299,9 @@ paths:
                     the old default if one exists. To add additional external accounts
                     without replacing the existing default for the currency, use the
                     bank account or card creation API.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
                 from_recipient:
                   maxLength: 5000
                   type: string
@@ -14054,10 +15458,10 @@ paths:
                   type: object
                 requested_capabilities:
                   description: The set of capabilities you want to unlock for this
-                    account. Each capability will be inactive until you have provided
-                    its specific requirements and Stripe has verified them. An account
-                    may have some of its requested capabilities be active and some
-                    be inactive.
+                    account (US only). Each capability will be inactive until you
+                    have provided its specific requirements and Stripe has verified
+                    them. An account may have some of its requested capabilities be
+                    active and some be inactive.
                   items:
                     enum:
                     - card_payments
@@ -14166,13 +15570,9 @@ paths:
                   title: tos_acceptance_specs
                   type: object
                 type:
-                  description: 'Whether you''d like to create a [Standard or Custom](https://stripe.com/docs/connect/accounts)
-                    account. Standard accounts are normal Stripe accounts: Stripe
-                    will email the account holder to set up a username and password,
-                    and will handle all account management directly with them. Custom
-                    accounts have extra parameters available to them, and require
-                    that you, the platform, handle all communication with the account
-                    holder. Possible values are `standard` and `custom`.'
+                  description: The type of Stripe account to create. Currently must
+                    be `custom`, as only [Custom accounts](https://stripe.com/docs/connect/custom-accounts)
+                    may be created via the API.
                   enum:
                   - custom
                   - express
@@ -14311,9 +15711,6 @@ paths:
               expand:
                 explode: true
                 style: deepObject
-              external_account:
-                explode: true
-                style: deepObject
               individual:
                 explode: true
                 style: deepObject
@@ -14339,7 +15736,37 @@ paths:
                   type: string
                 bank_account:
                   anyOf:
-                  - type: object
+                  - properties:
+                      account_holder_name:
+                        maxLength: 5000
+                        type: string
+                      account_holder_type:
+                        enum:
+                        - company
+                        - individual
+                        maxLength: 5000
+                        type: string
+                      account_number:
+                        maxLength: 5000
+                        type: string
+                      country:
+                        maxLength: 5000
+                        type: string
+                      currency:
+                        type: string
+                      object:
+                        enum:
+                        - bank_account
+                        maxLength: 5000
+                        type: string
+                      routing_number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - account_number
+                    - country
+                    title: external_account_payout_bank_account
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
@@ -14492,10 +15919,6 @@ paths:
                     type: string
                   type: array
                 external_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: A card or bank account to attach to the account. You
                     can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
                     or a dictionary, as documented in the `external_account` parameter
@@ -14505,6 +15928,9 @@ paths:
                     the old default if one exists. To add additional external accounts
                     without replacing the existing default for the currency, use the
                     bank account or card creation API.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
                 individual:
                   description: Information about the person represented by the account.
                     This field is null unless `business_type` is set to `individual`.
@@ -14658,10 +16084,10 @@ paths:
                   type: object
                 requested_capabilities:
                   description: The set of capabilities you want to unlock for this
-                    account. Each capability will be inactive until you have provided
-                    its specific requirements and Stripe has verified them. An account
-                    may have some of its requested capabilities be active and some
-                    be inactive.
+                    account (US only). Each capability will be inactive until you
+                    have provided its specific requirements and Stripe has verified
+                    them. An account may have some of its requested capabilities be
+                    active and some be inactive.
                   items:
                     enum:
                     - card_payments
@@ -14806,9 +16232,6 @@ paths:
               expand:
                 explode: true
                 style: deepObject
-              external_account:
-                explode: true
-                style: deepObject
               metadata:
                 explode: true
                 style: deepObject
@@ -14817,7 +16240,37 @@ paths:
               properties:
                 bank_account:
                   anyOf:
-                  - type: object
+                  - properties:
+                      account_holder_name:
+                        maxLength: 5000
+                        type: string
+                      account_holder_type:
+                        enum:
+                        - company
+                        - individual
+                        maxLength: 5000
+                        type: string
+                      account_number:
+                        maxLength: 5000
+                        type: string
+                      country:
+                        maxLength: 5000
+                        type: string
+                      currency:
+                        type: string
+                      object:
+                        enum:
+                        - bank_account
+                        maxLength: 5000
+                        type: string
+                      routing_number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - account_number
+                    - country
+                    title: external_account_payout_bank_account
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
@@ -14834,12 +16287,11 @@ paths:
                     type: string
                   type: array
                 external_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: Please refer to full [documentation](https://stripe.com/docs/api)
                     instead.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
                 metadata:
                   additionalProperties:
                     type: string
@@ -15197,9 +16649,6 @@ paths:
               expand:
                 explode: true
                 style: deepObject
-              external_account:
-                explode: true
-                style: deepObject
               metadata:
                 explode: true
                 style: deepObject
@@ -15208,7 +16657,37 @@ paths:
               properties:
                 bank_account:
                   anyOf:
-                  - type: object
+                  - properties:
+                      account_holder_name:
+                        maxLength: 5000
+                        type: string
+                      account_holder_type:
+                        enum:
+                        - company
+                        - individual
+                        maxLength: 5000
+                        type: string
+                      account_number:
+                        maxLength: 5000
+                        type: string
+                      country:
+                        maxLength: 5000
+                        type: string
+                      currency:
+                        type: string
+                      object:
+                        enum:
+                        - bank_account
+                        maxLength: 5000
+                        type: string
+                      routing_number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - account_number
+                    - country
+                    title: external_account_payout_bank_account
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
@@ -15225,12 +16704,11 @@ paths:
                     type: string
                   type: array
                 external_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: Please refer to full [documentation](https://stripe.com/docs/api)
                     instead.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
                 metadata:
                   additionalProperties:
                     type: string
@@ -18681,7 +20159,53 @@ paths:
                   type: boolean
                 card:
                   anyOf:
-                  - type: object
+                  - properties:
+                      address_city:
+                        maxLength: 5000
+                        type: string
+                      address_country:
+                        maxLength: 5000
+                        type: string
+                      address_line1:
+                        maxLength: 5000
+                        type: string
+                      address_line2:
+                        maxLength: 5000
+                        type: string
+                      address_state:
+                        maxLength: 5000
+                        type: string
+                      address_zip:
+                        maxLength: 5000
+                        type: string
+                      cvc:
+                        maxLength: 5000
+                        type: string
+                      exp_month:
+                        type: integer
+                      exp_year:
+                        type: integer
+                      metadata:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      name:
+                        maxLength: 5000
+                        type: string
+                      number:
+                        maxLength: 5000
+                        type: string
+                      object:
+                        enum:
+                        - card
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - exp_month
+                    - exp_year
+                    - number
+                    title: customer_payment_source_card
+                    type: object
                   - maxLength: 5000
                     type: string
                   - properties:
@@ -18722,6 +20246,7 @@ paths:
                     title: card_emv_auth_params
                     type: object
                   description: A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js).
+                  x-stripeBypassValidation: true
                 currency:
                   description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
                     in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
@@ -18827,7 +20352,6 @@ paths:
                   type: object
                 source:
                   anyOf:
-                  - type: object
                   - maxLength: 5000
                     type: string
                   - properties:
@@ -18876,6 +20400,7 @@ paths:
                     [bank accounts](https://stripe.com/docs/api#bank_accounts), and
                     attached [sources](https://stripe.com/docs/api#sources)---you
                     must also pass the ID of the associated customer.
+                  x-stripeBypassValidation: true
                 statement_descriptor:
                   description: An arbitrary string to be displayed on your customer's
                     credit card statement. This can be up to _22 characters_. As an
@@ -19829,15 +21354,33 @@ paths:
             schema:
               additionalProperties: false
               properties:
+                billing_address_collection:
+                  description: Specify whether Checkout should collect the customer's
+                    billing address. If set to `required`, Checkout will always collect
+                    the customer's billing address. If left blank or set to `auto`
+                    Checkout will only collect the billing address when necessary.
+                  enum:
+                  - auto
+                  - required
+                  type: string
                 cancel_url:
                   description: The URL the customer will be directed to if they decide
                     to go back to your website.
                   maxLength: 5000
                   type: string
                 client_reference_id:
-                  description: The reference to identify a payment made with Checkout.
-                    This reference will be echoed back in Checkout webhooks.
+                  description: |-
+                    A unique string to reference the Checkout Session. This can be a
+                    customer ID, a cart ID, or similar. It is included in the
+                    `checkout_beta.session_succeeded` webhook and can be used to fulfill the
+                    purchase.
                   maxLength: 200
+                  type: string
+                customer:
+                  description: ID of the customer this Checkout Session is for if
+                    one exists. May only be used with line_items. Usage with subscription_data
+                    is not yet available.
+                  maxLength: 5000
                   type: string
                 customer_email:
                   description: The email address used to create the customer object.
@@ -19907,6 +21450,12 @@ paths:
                   properties:
                     application_fee_amount:
                       type: integer
+                    capture_method:
+                      enum:
+                      - automatic
+                      - manual
+                      maxLength: 5000
+                      type: string
                     description:
                       maxLength: 1000
                       type: string
@@ -20024,6 +21573,52 @@ paths:
               - success_url
               type: object
         required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/checkout.session"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/checkout/sessions/{session}":
+    get:
+      description: "<p>Retrieves a Checkout Session object.</p>"
+      operationId: GetCheckoutSessionsSession
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - description: The ID of the Checkout Session.
+        in: path
+        name: session
+        required: true
+        schema:
+          maxLength: 64
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
       responses:
         '200':
           content:
@@ -20693,9 +22288,6 @@ paths:
               shipping:
                 explode: true
                 style: deepObject
-              source:
-                explode: true
-                style: deepObject
               tax_info:
                 explode: true
                 style: deepObject
@@ -20710,9 +22302,6 @@ paths:
                     on an invoice.
                   type: integer
                 coupon:
-                  maxLength: 5000
-                  type: string
-                customer:
                   maxLength: 5000
                   type: string
                 description:
@@ -20732,10 +22321,6 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
-                id:
-                  description: A custom ID to use for the customer
-                  maxLength: 5000
-                  type: string
                 invoice_prefix:
                   description: The prefix for the customer used to generate unique
                     invoice numbers. Must be 3–12 uppercase letters or numbers.
@@ -20775,6 +22360,8 @@ paths:
                     object. It can be useful for storing additional information about
                     the customer in a structured format.
                   type: object
+                payment_method:
+                  type: string
                 shipping:
                   anyOf:
                   - properties:
@@ -20819,10 +22406,9 @@ paths:
                   description: The customer's shipping information. Appears on invoices
                     emailed to this customer.
                 source:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
                 tax_info:
                   description: The customer's tax information. Appears on invoices
                     emailed to this customer.
@@ -20976,9 +22562,6 @@ paths:
               shipping:
                 explode: true
                 style: deepObject
-              source:
-                explode: true
-                style: deepObject
               tax_info:
                 explode: true
                 style: deepObject
@@ -20994,17 +22577,94 @@ paths:
                   type: integer
                 bank_account:
                   anyOf:
-                  - type: object
+                  - properties:
+                      account_holder_name:
+                        maxLength: 5000
+                        type: string
+                      account_holder_type:
+                        enum:
+                        - company
+                        - individual
+                        maxLength: 5000
+                        type: string
+                      account_number:
+                        maxLength: 5000
+                        type: string
+                      country:
+                        maxLength: 5000
+                        type: string
+                      currency:
+                        type: string
+                      object:
+                        enum:
+                        - bank_account
+                        maxLength: 5000
+                        type: string
+                      routing_number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - account_number
+                    - country
+                    title: customer_payment_source_bank_account
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
                     or a dictionary containing a user's bank account details.
                 card:
                   anyOf:
-                  - type: object
+                  - properties:
+                      address_city:
+                        maxLength: 5000
+                        type: string
+                      address_country:
+                        maxLength: 5000
+                        type: string
+                      address_line1:
+                        maxLength: 5000
+                        type: string
+                      address_line2:
+                        maxLength: 5000
+                        type: string
+                      address_state:
+                        maxLength: 5000
+                        type: string
+                      address_zip:
+                        maxLength: 5000
+                        type: string
+                      cvc:
+                        maxLength: 5000
+                        type: string
+                      exp_month:
+                        type: integer
+                      exp_year:
+                        type: integer
+                      metadata:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      name:
+                        maxLength: 5000
+                        type: string
+                      number:
+                        maxLength: 5000
+                        type: string
+                      object:
+                        enum:
+                        - card
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - exp_month
+                    - exp_year
+                    - number
+                    title: customer_payment_source_card
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js).
+                  x-stripeBypassValidation: true
                 coupon:
                   maxLength: 5000
                   type: string
@@ -21127,10 +22787,9 @@ paths:
                   description: The customer's shipping information. Appears on invoices
                     emailed to this customer.
                 source:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
                 tax_info:
                   description: The customer's tax information. Appears on invoices
                     emailed to this customer.
@@ -21301,9 +22960,6 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
-              alipay_account:
-                explode: true
-                style: deepObject
               bank_account:
                 explode: true
                 style: deepObject
@@ -21316,32 +22972,104 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
-              source:
-                explode: true
-                style: deepObject
             schema:
               additionalProperties: false
               properties:
                 alipay_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: A token returned by [Stripe.js](https://stripe.com/docs/stripe.js)
                     representing the user’s Alipay account details.
+                  maxLength: 5000
+                  type: string
                 bank_account:
                   anyOf:
-                  - type: object
+                  - properties:
+                      account_holder_name:
+                        maxLength: 5000
+                        type: string
+                      account_holder_type:
+                        enum:
+                        - company
+                        - individual
+                        maxLength: 5000
+                        type: string
+                      account_number:
+                        maxLength: 5000
+                        type: string
+                      country:
+                        maxLength: 5000
+                        type: string
+                      currency:
+                        type: string
+                      object:
+                        enum:
+                        - bank_account
+                        maxLength: 5000
+                        type: string
+                      routing_number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - account_number
+                    - country
+                    title: customer_payment_source_bank_account
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
                     or a dictionary containing a user's bank account details.
                 card:
                   anyOf:
-                  - type: object
+                  - properties:
+                      address_city:
+                        maxLength: 5000
+                        type: string
+                      address_country:
+                        maxLength: 5000
+                        type: string
+                      address_line1:
+                        maxLength: 5000
+                        type: string
+                      address_line2:
+                        maxLength: 5000
+                        type: string
+                      address_state:
+                        maxLength: 5000
+                        type: string
+                      address_zip:
+                        maxLength: 5000
+                        type: string
+                      cvc:
+                        maxLength: 5000
+                        type: string
+                      exp_month:
+                        type: integer
+                      exp_year:
+                        type: integer
+                      metadata:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      name:
+                        maxLength: 5000
+                        type: string
+                      number:
+                        maxLength: 5000
+                        type: string
+                      object:
+                        enum:
+                        - card
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - exp_month
+                    - exp_year
+                    - number
+                    title: customer_payment_source_card
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js).
+                  x-stripeBypassValidation: true
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -21356,12 +23084,11 @@ paths:
                     the card in a structured format.
                   type: object
                 source:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: Please refer to full [documentation](https://stripe.com/docs/api)
                     instead.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
               type: object
         required: false
       responses:
@@ -21814,9 +23541,6 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
-              alipay_account:
-                explode: true
-                style: deepObject
               bank_account:
                 explode: true
                 style: deepObject
@@ -21829,32 +23553,104 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
-              source:
-                explode: true
-                style: deepObject
             schema:
               additionalProperties: false
               properties:
                 alipay_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: A token returned by [Stripe.js](https://stripe.com/docs/stripe.js)
                     representing the user’s Alipay account details.
+                  maxLength: 5000
+                  type: string
                 bank_account:
                   anyOf:
-                  - type: object
+                  - properties:
+                      account_holder_name:
+                        maxLength: 5000
+                        type: string
+                      account_holder_type:
+                        enum:
+                        - company
+                        - individual
+                        maxLength: 5000
+                        type: string
+                      account_number:
+                        maxLength: 5000
+                        type: string
+                      country:
+                        maxLength: 5000
+                        type: string
+                      currency:
+                        type: string
+                      object:
+                        enum:
+                        - bank_account
+                        maxLength: 5000
+                        type: string
+                      routing_number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - account_number
+                    - country
+                    title: customer_payment_source_bank_account
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
                     or a dictionary containing a user's bank account details.
                 card:
                   anyOf:
-                  - type: object
+                  - properties:
+                      address_city:
+                        maxLength: 5000
+                        type: string
+                      address_country:
+                        maxLength: 5000
+                        type: string
+                      address_line1:
+                        maxLength: 5000
+                        type: string
+                      address_line2:
+                        maxLength: 5000
+                        type: string
+                      address_state:
+                        maxLength: 5000
+                        type: string
+                      address_zip:
+                        maxLength: 5000
+                        type: string
+                      cvc:
+                        maxLength: 5000
+                        type: string
+                      exp_month:
+                        type: integer
+                      exp_year:
+                        type: integer
+                      metadata:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      name:
+                        maxLength: 5000
+                        type: string
+                      number:
+                        maxLength: 5000
+                        type: string
+                      object:
+                        enum:
+                        - card
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - exp_month
+                    - exp_year
+                    - number
+                    title: customer_payment_source_card
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js).
+                  x-stripeBypassValidation: true
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -21869,12 +23665,11 @@ paths:
                     the card in a structured format.
                   type: object
                 source:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: Please refer to full [documentation](https://stripe.com/docs/api)
                     instead.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
               type: object
         required: false
       responses:
@@ -22361,9 +24156,6 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
-              alipay_account:
-                explode: true
-                style: deepObject
               bank_account:
                 explode: true
                 style: deepObject
@@ -22376,32 +24168,104 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
-              source:
-                explode: true
-                style: deepObject
             schema:
               additionalProperties: false
               properties:
                 alipay_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: A token returned by [Stripe.js](https://stripe.com/docs/stripe.js)
                     representing the user’s Alipay account details.
+                  maxLength: 5000
+                  type: string
                 bank_account:
                   anyOf:
-                  - type: object
+                  - properties:
+                      account_holder_name:
+                        maxLength: 5000
+                        type: string
+                      account_holder_type:
+                        enum:
+                        - company
+                        - individual
+                        maxLength: 5000
+                        type: string
+                      account_number:
+                        maxLength: 5000
+                        type: string
+                      country:
+                        maxLength: 5000
+                        type: string
+                      currency:
+                        type: string
+                      object:
+                        enum:
+                        - bank_account
+                        maxLength: 5000
+                        type: string
+                      routing_number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - account_number
+                    - country
+                    title: customer_payment_source_bank_account
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
                     or a dictionary containing a user's bank account details.
                 card:
                   anyOf:
-                  - type: object
+                  - properties:
+                      address_city:
+                        maxLength: 5000
+                        type: string
+                      address_country:
+                        maxLength: 5000
+                        type: string
+                      address_line1:
+                        maxLength: 5000
+                        type: string
+                      address_line2:
+                        maxLength: 5000
+                        type: string
+                      address_state:
+                        maxLength: 5000
+                        type: string
+                      address_zip:
+                        maxLength: 5000
+                        type: string
+                      cvc:
+                        maxLength: 5000
+                        type: string
+                      exp_month:
+                        type: integer
+                      exp_year:
+                        type: integer
+                      metadata:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      name:
+                        maxLength: 5000
+                        type: string
+                      number:
+                        maxLength: 5000
+                        type: string
+                      object:
+                        enum:
+                        - card
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - exp_month
+                    - exp_year
+                    - number
+                    title: customer_payment_source_card
+                    type: object
                   - maxLength: 5000
                     type: string
                   description: A token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js).
+                  x-stripeBypassValidation: true
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -22416,12 +24280,11 @@ paths:
                     the card in a structured format.
                   type: object
                 source:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: Please refer to full [documentation](https://stripe.com/docs/api)
                     instead.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
               type: object
         required: false
       responses:
@@ -23496,6 +25359,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -23526,6 +25390,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       requestBody:
@@ -24647,35 +26512,16 @@ paths:
         required: false
         schema:
           enum:
-          - additional_verification
-          - bootstrap_pilot_user_report
           - business_icon
           - business_logo
           - customer_signature
           - dispute_evidence
-          - dsar_report
-          - file_drop
           - finance_report_run
           - founders_stock_document
           - identity_document
-          - incorporation_article
-          - incorporation_document
-          - india_export_payment_advice
-          - invoice_statement
-          - onboarding_document_input
-          - paper_check_image
-          - payment_provider_transfer
           - pci_document
-          - product_feed
-          - radar_list_items
           - sigma_scheduled_query
-          - support_attachment
-          - tandem_accepted
-          - tandem_requested
-          - tandem_voidance
-          - tax_document
           - tax_document_user_upload
-          - works_with_image
           maxLength: 5000
           type: string
         style: form
@@ -31049,9 +32895,6 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
-              source:
-                explode: true
-                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -31087,16 +32930,15 @@ paths:
                   maxLength: 5000
                   type: string
                 source:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: A [Token](https://stripe.com/docs/api#tokens)'s or
                     a [Source](https://stripe.com/docs/api#sources)'s ID, as returned
                     by [Elements](https://stripe.com/docs/elements). If no customer
                     was attached to the order at creation, either `source` or `customer
                     is required. Otherwise, the specified source will be charged intead
                     of the customer attached to the order.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
               type: object
         required: false
       responses:
@@ -31340,10 +33182,10 @@ paths:
                   type: integer
                 application_fee_amount:
                   description: |-
-                    The amount of the application fee (if any) that will be applied to the payment and transferred to the
-                    application owner's Stripe account. To use an application fee, the request must be made on
-                    behalf of another account, using the `Stripe-Account` header or an OAuth key. For more
-                    information, see the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect).
+                    The amount of the application fee (if any) that will be applied to the
+                    payment and transferred to the application owner's Stripe account. For
+                    more information, see the PaymentIntents [Connect usage
+                    guide](/docs/payments/payment-intents/usage#connect).
                   type: integer
                 capture_method:
                   description: Capture method of this PaymentIntent, one of `automatic`
@@ -31355,8 +33197,10 @@ paths:
                   type: string
                 confirm:
                   description: Attempt to confirm this PaymentIntent immediately.
-                    If the payment method attached is a card, a return_url must be
-                    provided in case additional authentication is required.
+                    If the payment method attached is a card, a return_url may be
+                    provided in case additional authentication is required. Read the
+                    [expanded documentation](https://stripe.com/docs/payments/payment-intents/server-confirmation)
+                    to learn more about server-side confirmation.
                   type: boolean
                 currency:
                   description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
@@ -31389,6 +33233,9 @@ paths:
                   description: The Stripe account ID for which these funds are intended.
                     For details, see the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect).
                   type: string
+                payment_method:
+                  description: ID of the payment method to attach to this PaymentIntent.
+                  type: string
                 payment_method_types:
                   description: The list of payment method types (e.g. card) that this
                     PaymentIntent is allowed to use.
@@ -31408,12 +33255,13 @@ paths:
                     This param can only be used if `confirm=true`.
                   type: string
                 save_payment_method:
-                  description: Set to `true` to save this PaymentIntent's payment
-                    method to the associated Customer, if the payment method is not
-                    already attached. This parameter only applies to the payment method
-                    passed in the same request or the current payment method attached
-                    to the PaymentIntent and must be specified again if a new payment
-                    method is added.
+                  description: Set to `true` to save the PaymentIntent's payment method
+                    (either `source` or `payment_method`) to the associated customer.
+                    If the payment method is already attached, this parameter does
+                    nothing. This parameter defaults to `false` and applies to the
+                    payment method passed in the same request or the current payment
+                    method attached to the PaymentIntent and must be specified again
+                    if a new payment method is added.
                   type: boolean
                 shipping:
                   description: Shipping information for this PaymentIntent.
@@ -31577,6 +33425,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              application_fee_amount:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -31596,10 +33447,14 @@ paths:
                   description: Amount intended to be collected by this PaymentIntent
                   type: integer
                 application_fee_amount:
+                  anyOf:
+                  - type: integer
+                  - enum:
+                    - ''
+                    type: string
                   description: The amount of the application fee (if any) for the
                     resulting payment. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect)
                     for details.
-                  type: integer
                 currency:
                   description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
                     in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
@@ -31627,6 +33482,9 @@ paths:
                     This can be useful for storing additional information about the
                     object in a structured format.
                   type: object
+                payment_method:
+                  description: ID of the payment method to attach to this PaymentIntent.
+                  type: string
                 payment_method_types:
                   description: The list of payment method types (e.g. card) that this
                     PaymentIntent is allowed to use.
@@ -31640,57 +33498,62 @@ paths:
                   maxLength: 5000
                   type: string
                 save_payment_method:
-                  description: Set to `true` to save this PaymentIntent's payment
-                    method to the associated Customer, if the payment method is not
-                    already attached. This parameter only applies to the payment method
-                    passed in the same request or the current payment method attached
-                    to the PaymentIntent and must be specified again if a new payment
-                    method is added.
+                  description: Set to `true` to save the PaymentIntent's payment method
+                    (either `source` or `payment_method`) to the associated customer.
+                    If the payment method is already attached, this parameter does
+                    nothing. This parameter defaults to `false` and applies to the
+                    payment method passed in the same request or the current payment
+                    method attached to the PaymentIntent and must be specified again
+                    if a new payment method is added.
                   type: boolean
                 shipping:
+                  anyOf:
+                  - properties:
+                      address:
+                        properties:
+                          city:
+                            maxLength: 5000
+                            type: string
+                          country:
+                            maxLength: 5000
+                            type: string
+                          line1:
+                            maxLength: 5000
+                            type: string
+                          line2:
+                            maxLength: 5000
+                            type: string
+                          postal_code:
+                            maxLength: 5000
+                            type: string
+                          state:
+                            maxLength: 5000
+                            type: string
+                        required:
+                        - line1
+                        title: address
+                        type: object
+                      carrier:
+                        maxLength: 5000
+                        type: string
+                      name:
+                        maxLength: 5000
+                        type: string
+                      phone:
+                        maxLength: 5000
+                        type: string
+                      tracking_number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - address
+                    - name
+                    title: shipping
+                    type: object
+                  - enum:
+                    - ''
+                    type: string
                   description: Shipping information for this PaymentIntent.
-                  properties:
-                    address:
-                      properties:
-                        city:
-                          maxLength: 5000
-                          type: string
-                        country:
-                          maxLength: 5000
-                          type: string
-                        line1:
-                          maxLength: 5000
-                          type: string
-                        line2:
-                          maxLength: 5000
-                          type: string
-                        postal_code:
-                          maxLength: 5000
-                          type: string
-                        state:
-                          maxLength: 5000
-                          type: string
-                      required:
-                      - line1
-                      title: address
-                      type: object
-                    carrier:
-                      maxLength: 5000
-                      type: string
-                    name:
-                      maxLength: 5000
-                      type: string
-                    phone:
-                      maxLength: 5000
-                      type: string
-                    tracking_number:
-                      maxLength: 5000
-                      type: string
-                  required:
-                  - address
-                  - name
-                  title: shipping
-                  type: object
                 source:
                   description: ID of the Source object to attach to this PaymentIntent.
                   maxLength: 5000
@@ -31779,6 +33642,8 @@ paths:
         <p>Capture the funds of an existing uncaptured PaymentIntent where <code>required_action="requires_capture"</code>.</p>
 
         <p>Uncaptured PaymentIntents will be canceled exactly seven days after they are created.</p>
+
+        <p>Read the <a href="/docs/payments/payment-intents/creating-payment-intents#separate-auth-capture">expanded documentation</a> to learn more about separate authorization and capture.</p>
       operationId: PostPaymentIntentsIntentCapture
       parameters:
       - in: path
@@ -31806,11 +33671,10 @@ paths:
                   type: integer
                 application_fee_amount:
                   description: |-
-                    The amount of the application fee (if any) that will be applied to the payment and transferred to the
-                    application owner's Stripe account. To use an application fee, the
-                    request must be made on behalf of another account, using the
-                    `Stripe-Account` header or an OAuth key. For more
-                    information, see the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect).
+                    The amount of the application fee (if any) that will be applied to the
+                    payment and transferred to the application owner's Stripe account. For
+                    more information, see the PaymentIntents [Connect usage
+                    guide](/docs/payments/payment-intents/usage#connect).
                   type: integer
                 expand:
                   description: Specifies which fields in the response should be expanded.
@@ -31845,7 +33709,9 @@ paths:
         suggest additional actions via <code>next_source_action</code>. If payment fails,
         the PaymentIntent will transition to the <code>requires_payment_method</code> status. If
         payment succeeds, the PaymentIntent will transition to the <code>succeeded</code>
-        status (or <code>requires_capture</code>, if <code>capture_method</code> is set to <code>manual</code>).</p>
+        status (or <code>requires_capture</code>, if <code>capture_method</code> is set to <code>manual</code>).
+        Read the <a href="/docs/payments/payment-intents/server-confirmation">expanded documentation</a>
+        to learn more about server-side confirmation.</p>
 
         <p>When using a publishable key, the
         <a href="#payment_intent_object-client_secret">client_secret</a> must be provided
@@ -31884,6 +33750,9 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                payment_method:
+                  description: ID of the payment method to attach to this PaymentIntent.
+                  type: string
                 payment_method_types:
                   description: The list of payment method types (e.g. card) that this
                     PaymentIntent is allowed to use.
@@ -31903,15 +33772,412 @@ paths:
                     This parameter is only used for cards and other redirect-based payment methods.
                   type: string
                 save_payment_method:
-                  description: Set to `true` to save this PaymentIntent's payment
-                    method to the associated Customer, if the payment method is not
-                    already attached. This parameter only applies to the payment method
-                    passed in the same request or the current payment method attached
-                    to the PaymentIntent and must be specified again if a new payment
-                    method is added.
+                  description: Set to `true` to save the PaymentIntent's payment method
+                    (either `source` or `payment_method`) to the associated customer.
+                    If the payment method is already attached, this parameter does
+                    nothing. This parameter defaults to `false` and applies to the
+                    payment method passed in the same request or the current payment
+                    method attached to the PaymentIntent and must be specified again
+                    if a new payment method is added.
                   type: boolean
                 shipping:
+                  anyOf:
+                  - properties:
+                      address:
+                        properties:
+                          city:
+                            maxLength: 5000
+                            type: string
+                          country:
+                            maxLength: 5000
+                            type: string
+                          line1:
+                            maxLength: 5000
+                            type: string
+                          line2:
+                            maxLength: 5000
+                            type: string
+                          postal_code:
+                            maxLength: 5000
+                            type: string
+                          state:
+                            maxLength: 5000
+                            type: string
+                        required:
+                        - line1
+                        title: address
+                        type: object
+                      carrier:
+                        maxLength: 5000
+                        type: string
+                      name:
+                        maxLength: 5000
+                        type: string
+                      phone:
+                        maxLength: 5000
+                        type: string
+                      tracking_number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - address
+                    - name
+                    title: shipping
+                    type: object
+                  - enum:
+                    - ''
+                    type: string
                   description: Shipping information for this PaymentIntent.
+                source:
+                  description: ID of the Source object to attach to this PaymentIntent.
+                  maxLength: 5000
+                  type: string
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/payment_intent"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/payment_intents_with_legacy_charges":
+    get:
+      description: "<p>Returns a list of PaymentIntents + and Charges created without
+        PaymentIntents</p>"
+      operationId: GetPaymentIntentsWithLegacyCharges
+      parameters:
+      - explode: true
+        in: query
+        name: amount
+        required: false
+        schema:
+          anyOf:
+          - properties:
+              gt:
+                type: integer
+              gte:
+                type: integer
+              lt:
+                type: integer
+              lte:
+                type: integer
+            title: range_query_specs
+            type: object
+          - type: integer
+        style: deepObject
+      - explode: true
+        in: query
+        name: created
+        required: false
+        schema:
+          anyOf:
+          - properties:
+              gt:
+                type: integer
+              gte:
+                type: integer
+              lt:
+                type: integer
+              lte:
+                type: integer
+            title: range_query_specs
+            type: object
+          - type: integer
+        style: deepObject
+      - in: query
+        name: customer
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - in: query
+        name: invoice
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      - in: query
+        name: payment_intent
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: source
+        required: false
+        schema:
+          properties:
+            object:
+              maxLength: 5000
+              type: string
+          title: source_param
+          type: object
+        style: deepObject
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          items:
+            enum:
+            - canceled
+            - disputed
+            - failed
+            - incomplete
+            - partially_refunded
+            - pending
+            - refunded
+            - successful
+            - uncaptured
+            type: string
+          type: array
+        style: deepObject
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    items:
+                      anyOf:
+                      - "$ref": "#/components/schemas/charge"
+                      - "$ref": "#/components/schemas/payment_intent"
+                      title: Polymorphic
+                    type: array
+                  has_more:
+                    description: True if this list has another page of items after
+                      this one that can be fetched.
+                    type: boolean
+                  object:
+                    description: String representing the object's type. Objects of
+                      the same type share the same value. Always has the value `list`.
+                    enum:
+                    - list
+                    type: string
+                  url:
+                    description: The URL where this list can be accessed.
+                    maxLength: 5000
+                    pattern: "^/v1/payment_intents_with_legacy_charges"
+                    type: string
+                required:
+                - data
+                - has_more
+                - object
+                - url
+                title: PaymentFlowsPaymentIntentListWithLegacyCharges
+                type: object
+                x-expandableFields:
+                - data
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/payment_methods":
+    get:
+      description: "<p>Returns a list of PaymentMethods for a given Customer</p>"
+      operationId: GetPaymentMethods
+      parameters:
+      - description: The ID of the customer whose PaymentMethods will be retrieved.
+        in: query
+        name: customer
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: A required filter on the list, based on the object `type` field.
+        in: query
+        name: type
+        required: true
+        schema:
+          enum:
+          - card
+          - card_present
+          maxLength: 5000
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    items:
+                      "$ref": "#/components/schemas/payment_method"
+                    type: array
+                  has_more:
+                    description: True if this list has another page of items after
+                      this one that can be fetched.
+                    type: boolean
+                  object:
+                    description: String representing the object's type. Objects of
+                      the same type share the same value. Always has the value `list`.
+                    enum:
+                    - list
+                    type: string
+                  url:
+                    description: The URL where this list can be accessed.
+                    maxLength: 5000
+                    pattern: "^/v1/payment_methods"
+                    type: string
+                required:
+                - data
+                - has_more
+                - object
+                - url
+                title: PaymentFlowsPaymentMethodList
+                type: object
+                x-expandableFields:
+                - data
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+    post:
+      description: <p>Creates a PaymentMethod object. Read the <a href="/docs/stripe-js/reference#stripe-create-payment-method">Stripe.js
+        reference</a> to learn how to create PaymentMethods via Stripe.js.</p>
+      operationId: PostPaymentMethods
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              billing_details:
+                explode: true
+                style: deepObject
+              card:
+                explode: true
+                style: deepObject
+              expand:
+                explode: true
+                style: deepObject
+              metadata:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                billing_details:
+                  description: Billing information associated with the PaymentMethod
+                    that may be used or required by particular types of payment methods.
                   properties:
                     address:
                       properties:
@@ -31933,12 +34199,9 @@ paths:
                         state:
                           maxLength: 5000
                           type: string
-                      required:
-                      - line1
-                      title: address
+                      title: source_address
                       type: object
-                    carrier:
-                      maxLength: 5000
+                    email:
                       type: string
                     name:
                       maxLength: 5000
@@ -31946,16 +34209,77 @@ paths:
                     phone:
                       maxLength: 5000
                       type: string
-                    tracking_number:
-                      maxLength: 5000
-                      type: string
-                  required:
-                  - address
-                  - name
-                  title: shipping
+                  title: billing_details_inner_params
                   type: object
-                source:
-                  description: ID of the Source object to attach to this PaymentIntent.
+                card:
+                  anyOf:
+                  - properties:
+                      cvc:
+                        maxLength: 5000
+                        type: string
+                      exp_month:
+                        type: integer
+                      exp_year:
+                        type: integer
+                      number:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - exp_month
+                    - exp_year
+                    - number
+                    title: number_params
+                    type: object
+                  - properties:
+                      token:
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - token
+                    title: token_params
+                    type: object
+                  - properties: {}
+                    title: brand_wallet_params
+                    type: object
+                  description: If this is a `card` PaymentMethod, this hash contains
+                    the user's card details. For backwards compatibility, you can
+                    alternatively provide a Stripe token (e.g., for Apple Pay, Amex
+                    Express Checkout, or legacy Checkout). When creating with a card
+                    number, you must meet the requirements for [PCI compliance](https://stripe.com/docs/security#validating-pci-compliance).
+                    We strongly recommend using Stripe.js instead of interacting with
+                    this API directly.
+                customer:
+                  description: The `Customer` to whom the original PaymentMethod is
+                    attached.
+                  maxLength: 5000
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                metadata:
+                  additionalProperties:
+                    type: string
+                  description: Set of key-value pairs that you can attach to an object.
+                    This can be useful for storing additional information about the
+                    object in a structured format.
+                  type: object
+                payment_method:
+                  description: The PaymentMethod to share.
+                  maxLength: 5000
+                  type: string
+                type:
+                  description: The type of the PaymentMethod. An additional hash is
+                    included on the PaymentMethod with a name matching this value.
+                    It contains additional information specific to the PaymentMethod
+                    type. Required unless `payment_method` is specified (see the [Shared
+                    PaymentMethods](https://stripe.com/docs/payments/payment-methods/connect#shared-paymentmethods)
+                    guide)
+                  enum:
+                  - card
+                  - card_present
                   maxLength: 5000
                   type: string
               type: object
@@ -31965,7 +34289,244 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/payment_intent"
+                "$ref": "#/components/schemas/payment_method"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/payment_methods/{payment_method}":
+    get:
+      description: "<p>Retrieves a PaymentMethod object.</p>"
+      operationId: GetPaymentMethodsPaymentMethod
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - description: The ID of the PaymentMethod.
+        in: path
+        name: payment_method
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/payment_method"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+    post:
+      description: "<p>Updates a PaymentMethod object. A PaymentMethod must be attached
+        a customer to be updated.</p>"
+      operationId: PostPaymentMethodsPaymentMethod
+      parameters:
+      - in: path
+        name: payment_method
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              billing_details:
+                explode: true
+                style: deepObject
+              card:
+                explode: true
+                style: deepObject
+              expand:
+                explode: true
+                style: deepObject
+              metadata:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                billing_details:
+                  description: Billing information associated with the PaymentMethod
+                    that may be used or required by particular types of payment methods.
+                  properties:
+                    address:
+                      properties:
+                        city:
+                          maxLength: 5000
+                          type: string
+                        country:
+                          maxLength: 5000
+                          type: string
+                        line1:
+                          maxLength: 5000
+                          type: string
+                        line2:
+                          maxLength: 5000
+                          type: string
+                        postal_code:
+                          maxLength: 5000
+                          type: string
+                        state:
+                          maxLength: 5000
+                          type: string
+                      title: source_address
+                      type: object
+                    email:
+                      type: string
+                    name:
+                      maxLength: 5000
+                      type: string
+                    phone:
+                      maxLength: 5000
+                      type: string
+                  title: billing_details_inner_params
+                  type: object
+                card:
+                  properties:
+                    exp_month:
+                      type: integer
+                    exp_year:
+                      type: integer
+                  title: update_api_param
+                  type: object
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                metadata:
+                  additionalProperties:
+                    type: string
+                  description: Set of key-value pairs that you can attach to an object.
+                    This can be useful for storing additional information about the
+                    object in a structured format.
+                  type: object
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/payment_method"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/payment_methods/{payment_method}/attach":
+    post:
+      description: "<p>Attaches a PaymentMethod object to a Customer.</p>"
+      operationId: PostPaymentMethodsPaymentMethodAttach
+      parameters:
+      - in: path
+        name: payment_method
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                customer:
+                  description: The ID of the customer to which to attach the PaymentMethod.
+                  maxLength: 5000
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              required:
+              - customer
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/payment_method"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/payment_methods/{payment_method}/detach":
+    post:
+      description: "<p>Detaches a PaymentMethod object from a Customer.</p>"
+      operationId: PostPaymentMethodsPaymentMethodDetach
+      parameters:
+      - in: path
+        name: payment_method
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/payment_method"
           description: Successful response.
         default:
           content:
@@ -34247,12 +36808,6 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
-              bank_account:
-                explode: true
-                style: deepObject
-              card:
-                explode: true
-                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -34263,19 +36818,14 @@ paths:
               additionalProperties: false
               properties:
                 bank_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: A bank account to attach to the recipient. You can
                     provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js),
                     or a dictionary containing a user's bank account details, with
                     the options described below.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
                 card:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: A U.S. Visa or MasterCard debit card (_not_ prepaid)
                     to attach to the recipient. If the debit card is not valid, recipient
                     creation will fail. You can provide either a token, like the ones
@@ -34283,6 +36833,9 @@ paths:
                     a dictionary containing a user's debit card details, with the
                     options described below. Although not all information is required,
                     the extra info helps prevent fraud.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
                 description:
                   description: An arbitrary string which you can attach to a `Recipient`
                     object. It is displayed alongside the recipient in the web interface.
@@ -34449,12 +37002,6 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
-              bank_account:
-                explode: true
-                style: deepObject
-              card:
-                explode: true
-                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -34465,19 +37012,14 @@ paths:
               additionalProperties: false
               properties:
                 bank_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: A bank account to attach to the recipient. You can
                     provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js),
                     or a dictionary containing a user's bank account details, with
                     the options described below.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
                 card:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: A U.S. Visa or MasterCard debit card (not prepaid)
                     to attach to the recipient. You can provide either a token, like
                     the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js),
@@ -34488,6 +37030,9 @@ paths:
                     instead of replacing the existing default, use the [card creation
                     API](#create_card). Whenever you attach a card to a recipient,
                     Stripe will automatically validate the debit card.
+                  maxLength: 5000
+                  type: string
+                  x-stripeBypassValidation: true
                 default_card:
                   description: ID of the card to set as the recipient's new default
                     for payouts.
@@ -34978,6 +37523,11 @@ paths:
                     listed in the [API Access to Reports](https://stripe.com/docs/reporting/statements/api)
                     documentation.
                   properties:
+                    columns:
+                      items:
+                        maxLength: 5000
+                        type: string
+                      type: array
                     connected_account:
                       type: string
                     currency:
@@ -38328,6 +40878,44 @@ paths:
             type: object
           - type: integer
         style: deepObject
+      - explode: true
+        in: query
+        name: current_period_end
+        required: false
+        schema:
+          anyOf:
+          - properties:
+              gt:
+                type: integer
+              gte:
+                type: integer
+              lt:
+                type: integer
+              lte:
+                type: integer
+            title: range_query_specs
+            type: object
+          - type: integer
+        style: deepObject
+      - explode: true
+        in: query
+        name: current_period_start
+        required: false
+        schema:
+          anyOf:
+          - properties:
+              gt:
+                type: integer
+              gte:
+                type: integer
+              lt:
+                type: integer
+              lte:
+                type: integer
+            title: range_query_specs
+            type: object
+          - type: integer
+        style: deepObject
       - description: The ID of the customer whose subscriptions will be retrieved.
         in: query
         name: customer
@@ -38387,11 +40975,11 @@ paths:
           maxLength: 5000
           type: string
         style: form
-      - description: 'The status of the subscriptions to retrieve. One of: `trialing`,
-          `active`, `past_due`, `unpaid`, `canceled`, or `all`. Passing in a value
-          of `canceled` will return all canceled subscriptions, including those belonging
-          to deleted customers. Passing in a value of `all` will return subscriptions
-          of all statuses.'
+      - description: 'The status of the subscriptions to retrieve. One of: `incomplete`,
+          `incomplete_expired`, `trialing`, `active`, `past_due`, `unpaid`, `canceled`,
+          or `all`. Passing in a value of `canceled` will return all canceled subscriptions,
+          including those belonging to deleted customers. Passing in a value of `all`
+          will return subscriptions of all statuses.'
         in: query
         name: status
         required: false
@@ -39209,6 +41797,45 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
   "/v1/terminal/locations/{location}":
+    delete:
+      description: "<p>Deletes a <code>Location</code> object.</p>"
+      operationId: DeleteTerminalLocationsLocation
+      parameters:
+      - description: The identifier of the location to be deleted.
+        in: path
+        name: location
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties:
+                operator_account:
+                  description: To group objects on your platform account by connected
+                    account, set this parameter to the connected account operating
+                    your application.
+                  type: string
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/deleted_terminal.location"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
     get:
       description: "<p>Retrieves a <code>Location</code> object.</p>"
       operationId: GetTerminalLocationsLocation
@@ -39527,6 +42154,45 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
   "/v1/terminal/readers/{reader}":
+    delete:
+      description: "<p>Deletes a <code>Reader</code> object.</p>"
+      operationId: DeleteTerminalReadersReader
+      parameters:
+      - description: The identifier of the reader to be deleted.
+        in: path
+        name: reader
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties:
+                operator_account:
+                  description: To group objects on your platform account by connected
+                    account, set this parameter to the connected account operating
+                    your application.
+                  type: string
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/deleted_terminal.reader"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
     get:
       description: "<p>Retrieves a <code>Reader</code> object.</p>"
       operationId: GetTerminalReadersReader
@@ -39914,14 +42580,35 @@ paths:
                       type: boolean
                   title: connect_js_account_token_specs
                   type: object
-                amount:
-                  type: integer
                 bank_account:
-                  anyOf:
-                  - type: object
-                  - maxLength: 5000
-                    type: string
                   description: The bank account this token will represent.
+                  properties:
+                    account_holder_name:
+                      maxLength: 5000
+                      type: string
+                    account_holder_type:
+                      enum:
+                      - company
+                      - individual
+                      maxLength: 5000
+                      type: string
+                    account_number:
+                      maxLength: 5000
+                      type: string
+                    country:
+                      maxLength: 5000
+                      type: string
+                    currency:
+                      type: string
+                    routing_number:
+                      maxLength: 5000
+                      type: string
+                  required:
+                  - account_number
+                  - country
+                  title: token_create_bank_account
+                  type: object
+                  x-stripeBypassValidation: true
                 card:
                   anyOf:
                   - properties:
@@ -40087,58 +42774,20 @@ paths:
                     For more details, see [Shared Customers](https://stripe.com/docs/connect/shared-customers).
                   maxLength: 5000
                   type: string
-                email:
-                  maxLength: 5000
-                  type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
                     maxLength: 5000
                     type: string
                   type: array
-                external_id:
-                  maxLength: 5000
-                  type: string
-                iovation_blackbox:
-                  maxLength: 5000
-                  type: string
-                ip:
-                  maxLength: 5000
-                  type: string
-                payment_user_agent:
-                  maxLength: 5000
-                  type: string
                 pii:
+                  description: The PII this token will represent.
                   properties:
                     id_number:
                       maxLength: 5000
                       type: string
-                    ssn_last_4:
-                      type: string
-                    tax_id:
-                      maxLength: 5000
-                      type: string
-                  title: new_pii_token_specs
+                  title: pii_token_specs
                   type: object
-                recipient:
-                  maxLength: 5000
-                  type: string
-                referrer:
-                  maxLength: 40000
-                  type: string
-                request_id:
-                  maxLength: 5000
-                  type: string
-                user_agent:
-                  maxLength: 5000
-                  type: string
-                validation_type:
-                  enum:
-                  - amount
-                  - card
-                  - none
-                  maxLength: 5000
-                  type: string
               type: object
         required: false
       responses:
@@ -40256,6 +42905,7 @@ paths:
         name: ending_before
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -40286,6 +42936,7 @@ paths:
         name: starting_after
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Only return top-ups that have the given status. One of `canceled`,
@@ -40449,6 +43100,7 @@ paths:
         name: topup
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -40483,6 +43135,7 @@ paths:
         name: topup
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -40541,6 +43194,7 @@ paths:
         name: topup
         required: true
         schema:
+          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -41437,6 +44091,7 @@ paths:
                   - '2018-11-08'
                   - '2019-02-11'
                   - '2019-02-19'
+                  - '2019-03-14'
                   maxLength: 5000
                   type: string
                 connect:
@@ -41488,6 +44143,7 @@ paths:
                     - charge.refunded
                     - charge.succeeded
                     - charge.updated
+                    - checkout.session.completed
                     - checkout_beta.session_succeeded
                     - coupon.created
                     - coupon.deleted
@@ -41813,6 +44469,7 @@ paths:
                     - charge.refunded
                     - charge.succeeded
                     - charge.updated
+                    - checkout.session.completed
                     - checkout_beta.session_succeeded
                     - coupon.created
                     - coupon.deleted
