@@ -1332,6 +1332,8 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/balance_transaction"
+      billing_details:
+        "$ref": "#/definitions/billing_details"
       captured:
         description: If the charge was created without capturing, this Boolean represents
           whether it is still uncaptured or has since been captured.
@@ -1515,6 +1517,7 @@ definitions:
     required:
     - amount
     - amount_refunded
+    - billing_details
     - captured
     - created
     - currency
@@ -1526,7 +1529,6 @@ definitions:
     - receipt_url
     - refunded
     - refunds
-    - source
     - status
     title: Charge
     type: object
@@ -1534,6 +1536,7 @@ definitions:
     - application
     - application_fee
     - balance_transaction
+    - billing_details
     - customer
     - dispute
     - fraud_details
@@ -1643,7 +1646,7 @@ definitions:
         description: |-
           A unique string to reference the Checkout Session. This can be a
           customer ID, a cart ID, or similar. It is included in the
-          `checkout_beta.session_succeeded` webhook and can be used to fulfill the
+          `checkout.session.completed` webhook and can be used to fulfill the
           purchase.
         type: string
       customer:
@@ -1713,6 +1716,7 @@ definitions:
     - id
     - livemode
     - object
+    - payment_method_types
     - success_url
     title: Session
     type: object
@@ -1926,6 +1930,109 @@ definitions:
     type: object
     x-expandableFields: []
     x-resourceId: coupon
+  credit_note:
+    properties:
+      amount:
+        description: Credit note amount.
+        type: integer
+      created:
+        description: Time at which the object was created. Measured in seconds since
+          the Unix epoch.
+        type: integer
+      currency:
+        description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+          in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+        type: string
+      customer:
+        description: ID of the customer.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/customer"
+      id:
+        description: Unique identifier for the object.
+        type: string
+      invoice:
+        description: ID of the invoice.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/invoice"
+      livemode:
+        description: Has the value `true` if the object exists in live mode or the
+          value `false` if the object exists in test mode.
+        type: boolean
+      memo:
+        description: Credit note memo.
+        type: string
+      metadata:
+        description: Set of key-value pairs that you can attach to an object. This
+          can be useful for storing additional information about the object in a structured
+          format.
+        type: object
+      number:
+        description: Credit note number.
+        type: string
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - credit_note
+        type: string
+      pdf:
+        description: The link to download the PDF of the credit note.
+        type: string
+      reason:
+        description: Reason for issuing this credit note, one of `duplicate`, `fraudulent`,
+          `order_cancellation`, `order_change`, `other`, or `product_unsatisfactory`
+        enum:
+        - duplicate
+        - fraudulent
+        - order_cancellation
+        - order_change
+        - other
+        - product_unsatisfactory
+        type: string
+      refund:
+        description: Refund related to this credit note.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/refund"
+      status:
+        description: Status of this credit note, one of `issued` or `void`
+        enum:
+        - issued
+        - void
+        type: string
+      type:
+        description: Type of this credit note, one of `post_payment` or `pre_payment`
+        enum:
+        - post_payment
+        - pre_payment
+        type: string
+    required:
+    - amount
+    - created
+    - currency
+    - customer
+    - id
+    - invoice
+    - livemode
+    - metadata
+    - number
+    - object
+    - pdf
+    - reason
+    - status
+    - type
+    title: CreditNote
+    type: object
+    x-expandableFields:
+    - customer
+    - invoice
+    - refund
+    x-resourceId: credit_note
   customer:
     properties:
       account_balance:
@@ -2077,6 +2184,86 @@ definitions:
     - tax_info
     - tax_info_verification
     x-resourceId: customer
+  customer_balance_transaction:
+    properties:
+      amount:
+        description: The amount of the transaction. A negative value is a credit for
+          the customer's balance, and a positive value is a debit to the customer's
+          balance.
+        type: integer
+      created:
+        description: Time at which the object was created. Measured in seconds since
+          the Unix epoch.
+        type: integer
+      currency:
+        description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+          in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+        type: string
+      customer:
+        description: The ID of the customer the transaction belongs to.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/customer"
+      description:
+        description: An arbitrary string attached to the object. Often useful for
+          displaying to users.
+        type: string
+      ending_balance:
+        description: The customer's balance after the transaction was applied. A negative
+          value decrease the amount due on the customer's next invoice. A positive
+          value increase the amount due on the customer's next invoice.
+        type: integer
+      id:
+        description: Unique identifier for the object.
+        type: string
+      invoice:
+        description: The ID of the invoice (if any) related to the transaction.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/invoice"
+      metadata:
+        description: Set of key-value pairs that you can attach to an object. This
+          can be useful for storing additional information about the object in a structured
+          format.
+        type: object
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - customer_balance_transaction
+        type: string
+      type:
+        description: 'Transaction type: `adjustment`, `applied_to_invoice`, `credit_note`,
+          `initial`, `invoice_too_large`, `invoice_too_small`, `migration`, `receiver_source_mispayment`,
+          or `reversal`.'
+        enum:
+        - adjustment
+        - applied_to_invoice
+        - credit_note
+        - initial
+        - invoice_too_large
+        - invoice_too_small
+        - migration
+        - receiver_source_mispayment
+        - reversal
+        type: string
+    required:
+    - amount
+    - created
+    - currency
+    - customer
+    - ending_balance
+    - id
+    - object
+    - type
+    title: CustomerBalanceTransaction
+    type: object
+    x-expandableFields:
+    - customer
+    - invoice
+    x-resourceId: customer_balance_transaction
   deleted_account:
     properties:
       deleted:
@@ -3312,8 +3499,7 @@ definitions:
       purpose:
         description: The purpose of the file. Possible values are `business_icon`,
           `business_logo`, `customer_signature`, `dispute_evidence`, `finance_report_run`,
-          `founders_stock_document`, `identity_document`, `pci_document`, `sigma_scheduled_query`,
-          or `tax_document_user_upload`.
+          `identity_document`, `pci_document`, `sigma_scheduled_query`, or `tax_document_user_upload`.
         type: string
       size:
         description: The size in bytes of the file object.
@@ -5447,11 +5633,11 @@ definitions:
           guide on how `client_secret` should be handled.
         type: string
       confirmation_method:
-        description: Confirmation method of this PaymentIntent, one of `secret` or
-          `publishable`.
+        description: Confirmation method of this PaymentIntent, one of `manual` or
+          `automatic`.
         enum:
-        - publishable
-        - secret
+        - automatic
+        - manual
         type: string
       created:
         description: Time at which the object was created. Measured in seconds since
@@ -5534,6 +5720,8 @@ definitions:
           - "$ref": "#/definitions/bank_account"
           - "$ref": "#/definitions/card"
           - "$ref": "#/definitions/source"
+          - "$ref": "#/definitions/deleted_bank_account"
+          - "$ref": "#/definitions/deleted_card"
       statement_descriptor:
         description: Extra information about a PaymentIntent. This will appear on
           your customer's statement when this PaymentIntent succeeds in creating a
@@ -6056,24 +6244,42 @@ definitions:
   payment_method_details_card_present:
     properties:
       brand:
+        description: Card brand. Can be `amex`, `diners`, `discover`, `jcb`, `mastercard`,
+          `unionpay`, `visa`, or `unknown`.
         type: string
       country:
+        description: Two-letter ISO code representing the country of the card. You
+          could use this attribute to get a sense of the international breakdown of
+          cards you've collected.
         type: string
       emv_auth_data:
+        description: Authorization response cryptogram.
         type: string
       exp_month:
+        description: Two-digit number representing the card's expiration month.
         type: integer
       exp_year:
+        description: Four-digit number representing the card's expiration year.
         type: integer
       fingerprint:
+        description: Uniquely identifies this particular card number. You can use
+          this attribute to check whether two customers who've signed up with you
+          are using the same card number, for example.
         type: string
       funding:
+        description: Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.
         type: string
       generated_card:
+        description: ID of a card PaymentMethod generated from the card_present PaymentMethod
+          that may be attached to a Customer for future transactions. Only present
+          if it was possible to generate a card PaymentMethod.
         type: string
       last4:
+        description: The last four digits of the card.
         type: string
       read_method:
+        description: How were card details read in this transaction. Can be contact_emv,
+          contactless_emv, magnetic_stripe_fallback, magnetic_stripe_track2, or contactless_magstripe_mode
         type: string
       receipt:
         "$ref": "#/definitions/payment_method_details_card_present_receipt"
@@ -6084,20 +6290,31 @@ definitions:
   payment_method_details_card_present_receipt:
     properties:
       application_cryptogram:
+        description: EMV tag 9F26, cryptogram generated by the integrated circuit
+          chip.
         type: string
       application_preferred_name:
+        description: Mnenomic of the Application Identifier.
         type: string
       authorization_code:
+        description: Identifier for this transaction.
         type: string
       authorization_response_code:
+        description: EMV tag 8A. A code returned by the card issuer.
         type: string
       cardholder_verification_method:
+        description: How the cardholder verified ownership of the card.
         type: string
       dedicated_file_name:
+        description: EMV tag 84. Similar to the application identifier stored on the
+          integrated circuit chip.
         type: string
       terminal_verification_results:
+        description: The outcome of a series of EMV functions performed by the card
+          reader.
         type: string
       transaction_status_information:
+        description: An indication of various EMV functions performed during the transaction.
         type: string
     title: payment_method_details_card_present_receipt
     type: object
@@ -6606,8 +6823,7 @@ definitions:
         - payout
         type: string
       source_type:
-        description: The source balance this payout came from. One of `card`, `financing`,
-          `bank_account`, or `alipay_account`.
+        description: The source balance this payout came from. One of `card` or `bank_account`.
         type: string
       statement_descriptor:
         description: Extra information about a payout to be displayed on the user's
@@ -9397,7 +9613,7 @@ definitions:
   three_d_secure_usage:
     properties:
       supported:
-        description: 3D Secure is support on this card.
+        description: Whether 3D Secure is supported on this card.
         type: boolean
     required:
     - supported
@@ -9641,8 +9857,8 @@ definitions:
           oneOf:
           - "$ref": "#/definitions/charge"
       source_type:
-        description: The source balance this transfer came from. One of `card`, `financing`,
-          `bank_account`, or `alipay_account`.
+        description: The source balance this transfer came from. One of `card` or
+          `bank_account`.
         type: string
       transfer_group:
         description: A string that identifies this transaction as part of a group.
@@ -10080,7 +10296,7 @@ paths:
               description: Non-essential business information about the account
               properties:
                 mcc:
-                  type: integer
+                  type: string
                 name:
                   type: string
                 product_description:
@@ -10372,7 +10588,6 @@ paths:
                         interval:
                           enum:
                           - daily
-                          - four_times_monthly
                           - manual
                           - monthly
                           - weekly
@@ -10970,6 +11185,9 @@ paths:
         required: false
         schema:
           properties:
+            account:
+              description: The account that the person is associated with.
+              type: string
             address:
               description: The person's address.
               properties:
@@ -11086,6 +11304,10 @@ paths:
                 empty value to them. All keys can be unset by posting an empty value
                 to `metadata`.
               type: object
+            person_token:
+              description: A [person token](https://stripe.com/docs/connect/account-tokens),
+                used to securely provide details to the person.
+              type: string
             phone:
               description: The person's phone number.
               type: string
@@ -11188,6 +11410,9 @@ paths:
         required: false
         schema:
           properties:
+            account:
+              description: The account that the person is associated with.
+              type: string
             address:
               description: The person's address.
               properties:
@@ -11304,6 +11529,10 @@ paths:
                 empty value to them. All keys can be unset by posting an empty value
                 to `metadata`.
               type: object
+            person_token:
+              description: A [person token](https://stripe.com/docs/connect/account-tokens),
+                used to securely provide details to the person.
+              type: string
             phone:
               description: The person's phone number.
               type: string
@@ -11434,6 +11663,9 @@ paths:
         required: false
         schema:
           properties:
+            account:
+              description: The account that the person is associated with.
+              type: string
             address:
               description: The person's address.
               properties:
@@ -11550,6 +11782,10 @@ paths:
                 empty value to them. All keys can be unset by posting an empty value
                 to `metadata`.
               type: object
+            person_token:
+              description: A [person token](https://stripe.com/docs/connect/account-tokens),
+                used to securely provide details to the person.
+              type: string
             phone:
               description: The person's phone number.
               type: string
@@ -11652,6 +11888,9 @@ paths:
         required: false
         schema:
           properties:
+            account:
+              description: The account that the person is associated with.
+              type: string
             address:
               description: The person's address.
               properties:
@@ -11768,6 +12007,10 @@ paths:
                 empty value to them. All keys can be unset by posting an empty value
                 to `metadata`.
               type: object
+            person_token:
+              description: A [person token](https://stripe.com/docs/connect/account-tokens),
+                used to securely provide details to the person.
+              type: string
             phone:
               description: The person's phone number.
               type: string
@@ -11967,7 +12210,7 @@ paths:
               description: Non-essential business information about the account
               properties:
                 mcc:
-                  type: integer
+                  type: string
                 name:
                   type: string
                 product_description:
@@ -12094,8 +12337,6 @@ paths:
                 the old default if one exists. To add additional external accounts
                 without replacing the existing default for the currency, use the bank
                 account or card creation API.
-              type: string
-            from_recipient:
               type: string
             individual:
               description: Information about the person represented by the account.
@@ -12268,7 +12509,6 @@ paths:
                         interval:
                           enum:
                           - daily
-                          - four_times_monthly
                           - manual
                           - monthly
                           - weekly
@@ -12404,7 +12644,7 @@ paths:
               description: Non-essential business information about the account
               properties:
                 mcc:
-                  type: integer
+                  type: string
                 name:
                   type: string
                 product_description:
@@ -12696,7 +12936,6 @@ paths:
                         interval:
                           enum:
                           - daily
-                          - four_times_monthly
                           - manual
                           - monthly
                           - weekly
@@ -13328,7 +13567,8 @@ paths:
       description: "<p>Creates a new person.</p>"
       operationId: PostAccountsAccountPeople
       parameters:
-      - in: path
+      - description: The account that the person is associated with.
+        in: path
         name: account
         required: true
         type: string
@@ -13454,6 +13694,10 @@ paths:
                 empty value to them. All keys can be unset by posting an empty value
                 to `metadata`.
               type: object
+            person_token:
+              description: A [person token](https://stripe.com/docs/connect/account-tokens),
+                used to securely provide details to the person.
+              type: string
             phone:
               description: The person's phone number.
               type: string
@@ -13553,7 +13797,8 @@ paths:
       description: "<p>Updates an existing person.</p>"
       operationId: PostAccountsAccountPeoplePerson
       parameters:
-      - in: path
+      - description: The account that the person is associated with.
+        in: path
         name: account
         required: true
         type: string
@@ -13684,6 +13929,10 @@ paths:
                 empty value to them. All keys can be unset by posting an empty value
                 to `metadata`.
               type: object
+            person_token:
+              description: A [person token](https://stripe.com/docs/connect/account-tokens),
+                used to securely provide details to the person.
+              type: string
             phone:
               description: The person's phone number.
               type: string
@@ -13812,7 +14061,8 @@ paths:
       description: "<p>Creates a new person.</p>"
       operationId: PostAccountsAccountPersons
       parameters:
-      - in: path
+      - description: The account that the person is associated with.
+        in: path
         name: account
         required: true
         type: string
@@ -13938,6 +14188,10 @@ paths:
                 empty value to them. All keys can be unset by posting an empty value
                 to `metadata`.
               type: object
+            person_token:
+              description: A [person token](https://stripe.com/docs/connect/account-tokens),
+                used to securely provide details to the person.
+              type: string
             phone:
               description: The person's phone number.
               type: string
@@ -14037,7 +14291,8 @@ paths:
       description: "<p>Updates an existing person.</p>"
       operationId: PostAccountsAccountPersonsPerson
       parameters:
-      - in: path
+      - description: The account that the person is associated with.
+        in: path
         name: account
         required: true
         type: string
@@ -14168,6 +14423,10 @@ paths:
                 empty value to them. All keys can be unset by posting an empty value
                 to `metadata`.
               type: object
+            person_token:
+              description: A [person token](https://stripe.com/docs/connect/account-tokens),
+                used to securely provide details to the person.
+              type: string
             phone:
               description: The person's phone number.
               type: string
@@ -15825,8 +16084,6 @@ paths:
           properties:
             amount:
               type: integer
-            description:
-              type: string
             expand:
               description: Specifies which fields in the response should be expanded.
               items:
@@ -15948,8 +16205,6 @@ paths:
           properties:
             amount:
               type: integer
-            description:
-              type: string
             expand:
               description: Specifies which fields in the response should be expanded.
               items:
@@ -16067,7 +16322,7 @@ paths:
               description: |-
                 A unique string to reference the Checkout Session. This can be a
                 customer ID, a cart ID, or similar. It is included in the
-                `checkout_beta.session_succeeded` webhook and can be used to fulfill the
+                `checkout.session.completed` webhook and can be used to fulfill the
                 purchase.
               type: string
             customer:
@@ -16197,8 +16452,9 @@ paths:
               title: payment_intent_data_params
               type: object
             payment_method_types:
-              description: The list of payment method types (e.g. card) that this
-                Checkout Session is allowed to use.
+              description: 'The list of payment method types (e.g. card) that this
+                Checkout Session is allowed to use. Checkout today currently supports:
+                `card`.'
               items:
                 enum:
                 - card
@@ -16249,7 +16505,7 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/checkout/sessions/{session}":
     get:
-      description: "<p>Retrieves a Checkout Session object.</p>"
+      description: "<p>Retrieves a Session object.</p>"
       operationId: GetCheckoutSessionsSession
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -16610,6 +16866,241 @@ paths:
           description: Error response.
           schema:
             "$ref": "#/definitions/error"
+  "/v1/credit_notes":
+    get:
+      description: "<p>Returns a list of credit notes.</p>"
+      operationId: GetCreditNotes
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        type: string
+      - description: ID of the invoice.
+        in: query
+        name: invoice
+        required: false
+        type: string
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            properties:
+              data:
+                items:
+                  "$ref": "#/definitions/credit_note"
+                type: array
+              has_more:
+                description: True if this list has another page of items after this
+                  one that can be fetched.
+                type: boolean
+              object:
+                description: String representing the object's type. Objects of the
+                  same type share the same value. Always has the value `list`.
+                enum:
+                - list
+                type: string
+              url:
+                description: The URL where this list can be accessed.
+                type: string
+            required:
+            - data
+            - has_more
+            - object
+            - url
+            title: CreditNotesList
+            type: object
+            x-expandableFields:
+            - data
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      description: "<p>Creates a new credit note.</p>"
+      operationId: PostCreditNotes
+      parameters:
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            amount:
+              description: Credit note amount.
+              type: integer
+            credit_amount:
+              description: Amount to credit the customer balance.
+              type: integer
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            invoice:
+              description: ID of the invoice.
+              type: string
+            memo:
+              description: Credit note memo.
+              type: string
+            metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
+              type: object
+            reason:
+              description: Reason for issuing this credit note, one of `duplicate`,
+                `fraudulent`, `order_cancellation`, `order_change`, `other`, or `product_unsatisfactory`
+              enum:
+              - duplicate
+              - fraudulent
+              - order_cancellation
+              - order_change
+              - other
+              - product_unsatisfactory
+              type: string
+            refund:
+              description: ID of an existing refund to link this credit note to.
+              type: string
+            refund_amount:
+              description: Amount to refund. If set, a refund will be created for
+                the charge associated with the invoice.
+              type: integer
+          required:
+          - amount
+          - invoice
+          - reason
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/credit_note"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/credit_notes/{id}":
+    get:
+      description: "<p>Retrieves the credit note object with the given identifier.</p>"
+      operationId: GetCreditNotesId
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: ID of the credit note object to retrieve.
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/credit_note"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      description: "<p>Updates an existing credit note.</p>"
+      operationId: PostCreditNotesId
+      parameters:
+      - description: ID of the credit note object to update.
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            memo:
+              description: Credit note memo.
+              type: string
+            metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
+              type: object
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/credit_note"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/credit_notes/{id}/void":
+    post:
+      description: "<p>Marks a credit note as void.</p>"
+      operationId: PostCreditNotesIdVoid
+      parameters:
+      - description: ID of the credit note object to void.
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/credit_note"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
   "/v1/customers":
     get:
       description: "<p>Returns a list of your customers. The customers are returned
@@ -16745,7 +17236,7 @@ paths:
                     type: object
                 footer:
                   type: string
-              title: customer_param
+              title: customer_create_param
               type: object
             metadata:
               description: A set of key-value pairs that you can attach to a customer
@@ -16919,7 +17410,7 @@ paths:
                     type: object
                 footer:
                   type: string
-              title: customer_param
+              title: customer_update_param
               type: object
             metadata:
               description: A set of key-value pairs that you can attach to a customer
@@ -17285,8 +17776,6 @@ paths:
               items:
                 type: string
               type: array
-            verification_method:
-              type: string
           type: object
       responses:
         '200':
@@ -17580,6 +18069,163 @@ paths:
           description: Error response.
           schema:
             "$ref": "#/definitions/error"
+  "/v1/customers/{customer}/customer_balance_transactions":
+    get:
+      description: "<p>Retrieves the list of transactions applied to a customer’s
+        balance.</p>"
+      operationId: GetCustomersCustomerCustomerBalanceTransactions
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: The customer to retrieve transactions for.
+        in: path
+        name: customer
+        required: true
+        type: string
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        type: string
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            properties:
+              data:
+                items:
+                  "$ref": "#/definitions/customer_balance_transaction"
+                type: array
+              has_more:
+                description: True if this list has another page of items after this
+                  one that can be fetched.
+                type: boolean
+              object:
+                description: String representing the object's type. Objects of the
+                  same type share the same value. Always has the value `list`.
+                enum:
+                - list
+                type: string
+              url:
+                description: The URL where this list can be accessed.
+                type: string
+            required:
+            - data
+            - has_more
+            - object
+            - url
+            type: object
+            x-expandableFields:
+            - data
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      description: "<p>Creates an immutable transaction to apply to the customer’s
+        balance. This transaction updates the customer by adding the amount to the
+        customer’s current balance.</p>"
+      operationId: PostCustomersCustomerCustomerBalanceTransactions
+      parameters:
+      - description: The customer the transaction belongs to.
+        in: path
+        name: customer
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            amount:
+              description: The integer amount in **%s** to apply to the customer's
+                balance. Pass a negative amount to credit the customer's balance,
+                and pass in a positive amount to debit the customer's balance.
+              type: integer
+            currency:
+              description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+                If not set, the customer's currency will be updated to this value.
+              type: string
+            description:
+              description: An arbitrary string attached to the object. Often useful
+                for displaying to users.
+              type: string
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format.
+              type: object
+          required:
+          - amount
+          - currency
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/customer_balance_transaction"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/customers/{customer}/customer_balance_transactions/{transaction}":
+    get:
+      description: "<p>Retrieves a specific transaction applied to a customer’s balance.</p>"
+      operationId: GetCustomersCustomerCustomerBalanceTransactionsTransaction
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: The customer the transaction belongs to.
+        in: path
+        name: customer
+        required: true
+        type: string
+      - description: The transaction to retrieve.
+        in: path
+        name: transaction
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/customer_balance_transaction"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
   "/v1/customers/{customer}/discount":
     delete:
       description: "<p>Removes the currently applied discount on a customer.</p>"
@@ -17662,10 +18308,6 @@ paths:
           of the list.
         in: query
         name: starting_after
-        required: false
-        type: string
-      - in: query
-        name: type
         required: false
         type: string
       responses:
@@ -17938,8 +18580,6 @@ paths:
               items:
                 type: string
               type: array
-            verification_method:
-              type: string
           type: object
       responses:
         '200':
@@ -21216,7 +21856,7 @@ paths:
         required: false
         type: string
       - description: Only return cards that have the given status. One of `active`,
-          `inactive`, or `canceled`.
+          `inactive`, `canceled`, `lost`, or `stolen`.
         in: query
         name: status
         required: false
@@ -22843,8 +23483,7 @@ paths:
                 to `metadata`.
               type: object
             reason:
-              description: The reason for the dispute, which can be chosen out of
-                a set of valid values.
+              description: The reason for the dispute. One of `other` or `fraudulent`.
               enum:
               - fraudulent
               - other
@@ -23705,8 +24344,6 @@ paths:
                 object. Limited to 500 characters. Metadata can be useful for storing
                 additional information about the order in a structured format.
               type: object
-            shipping_method:
-              type: string
             source:
               description: A [Token](https://stripe.com/docs/api#tokens)'s or a [Source](https://stripe.com/docs/api#sources)'s
                 ID, as returned by [Elements](https://stripe.com/docs/elements). If
@@ -23882,9 +24519,10 @@ paths:
               - manual
               type: string
             confirm:
-              description: Attempt to confirm this PaymentIntent immediately. If the
-                payment method attached is a card, a return_url may be provided in
-                case additional authentication is required. Read the [expanded documentation](https://stripe.com/docs/payments/payment-intents/server-confirmation)
+              description: Set to `true` to attempt to confirm this PaymentIntent
+                immediately. This parameter defaults to `false`. If the payment method
+                attached is a card, a return_url may be provided in case additional
+                authentication is required. Read the [expanded documentation](https://stripe.com/docs/payments/payment-intents/server-confirmation)
                 to learn more about server-side confirmation.
               type: boolean
             currency:
@@ -23917,19 +24555,14 @@ paths:
               type: string
             payment_method_types:
               description: The list of payment method types (e.g. card) that this
-                PaymentIntent is allowed to use.
+                PaymentIntent is allowed to use. If this is not provided, defaults
+                to ["card"].
               items:
                 type: string
               type: array
             receipt_email:
               description: Email address that the receipt for the resulting payment
                 will be sent to.
-              type: string
-            return_url:
-              description: |-
-                The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site.
-                If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.
-                This param can only be used if `confirm=true`.
               type: string
             save_payment_method:
               description: Set to `true` to save the PaymentIntent's payment method
@@ -24001,7 +24634,6 @@ paths:
           required:
           - amount
           - currency
-          - payment_method_types
           type: object
       responses:
         '200':
@@ -24226,21 +24858,31 @@ paths:
     post:
       description: |-
         <p>Confirm that your customer intends to pay with current or provided
-        <code>source</code>. Upon confirmation, the PaymentIntent will attempt to initiate
+        payment method. Upon confirmation, the PaymentIntent will attempt to initiate
         a payment.</p>
 
-        <p>If the selected <code>source</code> requires additional authentication steps, the
+        <p>If the selected payment method requires additional authentication steps, the
         PaymentIntent will transition to the <code>requires_action</code> status and
-        suggest additional actions via <code>next_source_action</code>. If payment fails,
+        suggest additional actions via <code>next_action</code>. If payment fails,
         the PaymentIntent will transition to the <code>requires_payment_method</code> status. If
         payment succeeds, the PaymentIntent will transition to the <code>succeeded</code>
         status (or <code>requires_capture</code>, if <code>capture_method</code> is set to <code>manual</code>).
         Read the <a href="/docs/payments/payment-intents/server-confirmation">expanded documentation</a>
         to learn more about server-side confirmation.</p>
 
-        <p>When using a publishable key, the
-        <a href="#payment_intent_object-client_secret">client_secret</a> must be provided
-        to confirm the PaymentIntent.</p>
+        <p>If the <code>confirmation_method</code> is <code>automatic</code>, payment may be attempted
+        using our <a href="/docs/stripe-js/reference#stripe-handle-card-payment">client SDKs</a>
+        and the PaymentIntent’s <a href="#payment_intent_object-client_secret">client_secret</a>.
+        After <code>next_action</code>s are handled by the client, no additional
+        confirmation is required to complete the payment.</p>
+
+        <p>If the <code>confirmation_method</code> is <code>manual</code>, all payment attempts must be
+        initiated using a secret key.
+        If any actions are required for the payment, the PaymentIntent will
+        return to the <code>requires_confirmation</code> state
+        after those actions are completed. Your server needs to then
+        explicitly re-confirm the PaymentIntent to initiate the next payment
+        attempt.</p>
       operationId: PostPaymentIntentsIntentConfirm
       parameters:
       - in: path
@@ -24866,18 +25508,12 @@ paths:
               - standard
               type: string
             source_type:
-              description: 'The source balance to draw this payout from. Balances
-                for different payment sources are kept separately. You can find the
-                amounts with the balances API. Valid options are: **alipay_account**,
-                **bank_account**, and **card**.'
+              description: The source balance to draw this payout from. Balances for
+                different payment sources are kept separately. You can find the amounts
+                with the balances API. One of `bank_account` or `card`.
               enum:
-              - alipay_account
               - bank_account
-              - bitcoin_receiver
               - card
-              - financing
-              - source
-              - stripe_account
               type: string
             statement_descriptor:
               description: 'A string to be displayed on the recipient''s bank or card
@@ -25160,10 +25796,6 @@ paths:
                 object. It can be useful for storing additional information about
                 the plan in a structured format.
               type: object
-            name:
-              description: The plan name. Customers may see this value on Stripe-generated
-                invoices and receipts.
-              type: string
             nickname:
               description: A brief description of the plan, hidden from customers.
               type: string
@@ -25178,25 +25810,10 @@ paths:
                   type: string
                 metadata:
                   type: object
-                name:
-                  type: string
-                statement_descriptor:
-                  type: string
                 unit_label:
                   type: string
-              required:
-              - name
               title: inline_product_params
               type: object
-            statement_descriptor:
-              description: An arbitrary string to be displayed on your customer's
-                credit card statement. This may be up to 22 characters. The statement
-                description may not include <>"' characters, and will appear on your
-                customer's statement in capital letters. Non-ASCII characters are
-                automatically stripped. While most banks display this information
-                consistently, some may display it incorrectly or not at all. It must
-                contain at least one letter.
-              type: string
             tiers:
               description: Each element represents a pricing tier. This parameter
                 requires `billing_scheme` to be set to `tiered`. See also the documentation
@@ -25338,10 +25955,6 @@ paths:
                 object. It can be useful for storing additional information about
                 the plan in a structured format.
               type: object
-            name:
-              description: The plan name. Customers may see this value on Stripe-generated
-                invoices and receipts.
-              type: string
             nickname:
               description: A brief description of the plan, hidden from customers.
               type: string
@@ -25349,15 +25962,6 @@ paths:
               description: The product the plan belongs to. Note that after updating,
                 statement descriptors and line items of the plan in active subscriptions
                 will be affected.
-              type: string
-            statement_descriptor:
-              description: An arbitrary string to be displayed on your customer's
-                credit card statement. This may be up to 22 characters. The statement
-                description may not include <>"' characters, and will appear on your
-                customer's statement in capital letters. Non-ASCII characters are
-                automatically stripped. While most banks display this information
-                consistently, some may display it incorrectly or not at all. It must
-                contain at least one letter.
               type: string
             trial_period_days:
               description: Default number of trial days when subscribing a customer
@@ -25677,7 +26281,6 @@ paths:
                 the update will be deleted from the SKUs for this product.
               items:
                 type: string
-              type: array
             caption:
               description: A short one-line description of the product, meant to be
                 displayable to the customer.
@@ -25702,7 +26305,6 @@ paths:
                 to be displayable to the customer.
               items:
                 type: string
-              type: array
             metadata:
               description: A set of key-value pairs that you can attach to a product
                 object. It can be useful for storing additional information about
@@ -25716,22 +26318,6 @@ paths:
               description: The dimensions of this product for shipping purposes. A
                 SKU associated with this product can override this value by having
                 its own `package_dimensions`.
-              properties:
-                height:
-                  type: number
-                length:
-                  type: number
-                weight:
-                  type: number
-                width:
-                  type: number
-              required:
-              - height
-              - length
-              - weight
-              - width
-              title: package_dimensions_specs
-              type: object
             shippable:
               description: Whether this product is shipped (i.e., physical goods).
                 Defaults to `true`.
@@ -26538,8 +27124,6 @@ paths:
               type: integer
             charge:
               type: string
-            description:
-              type: string
             expand:
               description: Specifies which fields in the response should be expanded.
               items:
@@ -26752,6 +27336,7 @@ paths:
                   - dispute_reversal
                   - fee
                   - financing_paydown
+                  - financing_paydown_reversal
                   - financing_payout
                   - financing_payout_reversal
                   - issuing_authorization_hold
@@ -27427,22 +28012,6 @@ paths:
               type: object
             package_dimensions:
               description: The dimensions of this SKU for shipping purposes.
-              properties:
-                height:
-                  type: number
-                length:
-                  type: number
-                weight:
-                  type: number
-                width:
-                  type: number
-              required:
-              - height
-              - length
-              - weight
-              - width
-              title: package_dimensions_specs
-              type: object
             price:
               description: The cost of the item as a positive integer in the smallest
                 currency unit (that is, 100 cents to charge $1.00, or 100 to charge
@@ -27720,8 +28289,6 @@ paths:
               items:
                 type: string
               type: array
-            is_permitted_source_usage:
-              type: boolean
             mandate:
               description: Information about a mandate possibility attached to a source
                 object (generally for bank debits) as well as its acceptance status.
@@ -30614,17 +31181,11 @@ paths:
                 for details.
               type: string
             source_type:
-              description: The source balance to use for this transfer. One of `card`,
-                `financing`, `bank_account`, or `alipay_account`. For most users,
-                this will default to `card`.
+              description: The source balance to use for this transfer. One of `bank_account`
+                or `card`. For most users, this will default to `card`.
               enum:
-              - alipay_account
               - bank_account
-              - bitcoin_receiver
               - card
-              - financing
-              - source
-              - stripe_account
               type: string
             transfer_group:
               description: A string that identifies this transaction as part of a
@@ -31262,6 +31823,7 @@ paths:
                 - recipient_transfer.updated
                 - refund.created
                 - refund.failed
+                - refund.updated
                 - reporting.report_run.failed
                 - reporting.report_run.succeeded
                 - reporting.report_run.updated
@@ -31286,6 +31848,9 @@ paths:
                 - subscription_schedule.expiring
                 - subscription_schedule.released
                 - subscription_schedule.updated
+                - tax_id.created
+                - tax_id.deleted
+                - tax_id.updated
                 - topup.canceled
                 - topup.created
                 - topup.failed
@@ -31533,6 +32098,7 @@ paths:
                 - recipient_transfer.updated
                 - refund.created
                 - refund.failed
+                - refund.updated
                 - reporting.report_run.failed
                 - reporting.report_run.succeeded
                 - reporting.report_run.updated
@@ -31557,6 +32123,9 @@ paths:
                 - subscription_schedule.expiring
                 - subscription_schedule.released
                 - subscription_schedule.updated
+                - tax_id.created
+                - tax_id.deleted
+                - tax_id.updated
                 - topup.canceled
                 - topup.created
                 - topup.failed
