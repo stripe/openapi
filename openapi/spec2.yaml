@@ -2033,7 +2033,7 @@ definitions:
           value `false` if the object exists in test mode.
         type: boolean
       memo:
-        description: Credit note memo.
+        description: Customer-facing text that appears on the credit note PDF.
         type: string
       metadata:
         description: Set of key-value pairs that you can attach to an object. This
@@ -2041,7 +2041,8 @@ definitions:
           format.
         type: object
       number:
-        description: Credit note number.
+        description: A unique number that identifies this particular credit note and
+          appears on the PDF of the credit note and its associated invoice.
         type: string
       object:
         description: String representing the object's type. Objects of the same type
@@ -2068,13 +2069,16 @@ definitions:
           oneOf:
           - "$ref": "#/definitions/refund"
       status:
-        description: Status of this credit note, one of `issued` or `void`
+        description: Status of this credit note, one of `issued` or `void`. Learn
+          more about [voiding credit notes](https://stripe.com/docs/billing/invoices/credit-notes#voiding).
         enum:
         - issued
         - void
         type: string
       type:
-        description: Type of this credit note, one of `post_payment` or `pre_payment`
+        description: Type of this credit note, one of `post_payment` or `pre_payment`.
+          A `pre_payment` credit note means it was issued when the invoice was open.
+          A `post_payment` credit note means it was issued when the invoice was paid.
         enum:
         - post_payment
         - pre_payment
@@ -2111,6 +2115,8 @@ definitions:
           This balance is only taken into account as invoices are finalized. Note
           that the balance does not include unpaid invoices.
         type: integer
+      address:
+        "$ref": "#/definitions/address"
       created:
         description: Time at which the object was created. Measured in seconds since
           the Unix epoch.
@@ -2161,12 +2167,23 @@ definitions:
           can be useful for storing additional information about the object in a structured
           format.
         type: object
+      name:
+        description: The customer's full name or business name.
+        type: string
       object:
         description: String representing the object's type. Objects of the same type
           share the same value.
         enum:
         - customer
         type: string
+      phone:
+        description: The customer's phone number.
+        type: string
+      preferred_locales:
+        description: The customer's preferred locales (languages), ordered by preference.
+        items:
+          type: string
+        type: array
       shipping:
         "$ref": "#/definitions/shipping"
       sources:
@@ -2242,6 +2259,7 @@ definitions:
     title: Customer
     type: object
     x-expandableFields:
+    - address
     - default_source
     - discount
     - invoice_settings
@@ -3721,6 +3739,14 @@ definitions:
     x-expandableFields: []
   invoice:
     properties:
+      account_country:
+        description: The country of the business associated with this invoice, most
+          often the business creating the invoice.
+        type: string
+      account_name:
+        description: The public name of the business associated with this invoice,
+          most often the business creating the invoice.
+        type: string
       amount_due:
         description: Final amount due at this time for this invoice. If the invoice's
           total is smaller than the minimum charge amount, for example, or if there
@@ -3812,6 +3838,25 @@ definitions:
           oneOf:
           - "$ref": "#/definitions/customer"
           - "$ref": "#/definitions/deleted_customer"
+      customer_address:
+        "$ref": "#/definitions/address"
+      customer_email:
+        description: The customer's email. Until the invoice is finalized, this field
+          will equal `customer.email`. Once the invoice is finalized, this field will
+          no longer be updated.
+        type: string
+      customer_name:
+        description: The customer's name. Until the invoice is finalized, this field
+          will equal `customer.name`. Once the invoice is finalized, this field will
+          no longer be updated.
+        type: string
+      customer_phone:
+        description: The customer's phone number. Until the invoice is finalized,
+          this field will equal `customer.phone`. Once the invoice is finalized, this
+          field will no longer be updated.
+        type: string
+      customer_shipping:
+        "$ref": "#/definitions/shipping"
       default_payment_method:
         description: ID of the default payment method for the invoice. It must belong
           to the customer associated with the invoice. If not set, defaults to the
@@ -3941,6 +3986,14 @@ definitions:
         description: Start of the usage period during which invoice items were added
           to this invoice.
         type: integer
+      post_payment_credit_notes_amount:
+        description: Total amount of all post-payment credit notes issued for this
+          invoice.
+        type: integer
+      pre_payment_credit_notes_amount:
+        description: Total amount of all pre-payment credit notes issued for this
+          invoice.
+        type: integer
       receipt_number:
         description: This is the transaction number that appears on email receipts
           sent for this invoice.
@@ -3956,7 +4009,7 @@ definitions:
         type: string
       status:
         description: The status of the invoice, one of `draft`, `open`, `paid`, `uncollectible`,
-          or `void`.
+          or `void`. [Learn more](https://stripe.com/docs/billing/invoices/workflow#workflow-overview)
         enum:
         - deleted
         - draft
@@ -4017,6 +4070,8 @@ definitions:
     - paid
     - period_end
     - period_start
+    - post_payment_credit_notes_amount
+    - pre_payment_credit_notes_amount
     - starting_balance
     - status_transitions
     - subtotal
@@ -4027,6 +4082,8 @@ definitions:
     - charge
     - custom_fields
     - customer
+    - customer_address
+    - customer_shipping
     - default_payment_method
     - default_source
     - discount
@@ -5957,7 +6014,6 @@ definitions:
         - canceled
         - processing
         - requires_action
-        - requires_authorization
         - requires_capture
         - requires_confirmation
         - requires_payment_method
@@ -9660,6 +9716,66 @@ definitions:
     title: TaxInfoVerification
     type: object
     x-expandableFields: []
+  tax_rate:
+    properties:
+      active:
+        description: Flag determining whether the tax rate is active or inactive.
+          Inactive tax rates continue to work where they are currently applied however
+          they cannot be used for new applications.
+        type: boolean
+      created:
+        description: Time at which the object was created. Measured in seconds since
+          the Unix epoch.
+        type: integer
+      description:
+        description: An arbitrary string attached to the tax rate for your internal
+          use only. It will not be visible to your customers.
+        type: string
+      display_name:
+        description: The name of the tax rate. This will not be shown to users and
+          could be useful for you to identify it internally.
+        type: string
+      id:
+        description: Unique identifier for the object.
+        type: string
+      inclusive:
+        description: This specifies if the tax rate is inclusive or exclusive.
+        type: boolean
+      jurisdiction:
+        description: The jurisdiction for the tax rate.
+        type: string
+      livemode:
+        description: Has the value `true` if the object exists in live mode or the
+          value `false` if the object exists in test mode.
+        type: boolean
+      metadata:
+        description: Set of key-value pairs that you can attach to an object. This
+          can be useful for storing additional information about the object in a structured
+          format.
+        type: object
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - tax_rate
+        type: string
+      percentage:
+        description: This represents the tax rate percent out of 100.
+        type: number
+    required:
+    - active
+    - created
+    - display_name
+    - id
+    - inclusive
+    - livemode
+    - metadata
+    - object
+    - percentage
+    title: TaxRate
+    type: object
+    x-expandableFields: []
+    x-resourceId: tax_rate
   terminal.connection_token:
     properties:
       object:
@@ -17300,7 +17416,8 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/credit_notes/{id}/void":
     post:
-      description: "<p>Marks a credit note as void.</p>"
+      description: <p>Marks a credit note as void. Learn more about <a href="/docs/billing/invoices/credit-notes#voiding">voiding
+        credit notes</a>.</p>
       operationId: PostCreditNotesIdVoid
       parameters:
       - description: ID of the credit note object to void.
@@ -17424,6 +17541,8 @@ paths:
                 amount represents a credit that decreases the amount due on an invoice;
                 a positive amount increases the amount due on an invoice.
               type: integer
+            address:
+              description: The customer's address.
             coupon:
               description: The code of the coupon to apply to this subscription. A
                 coupon applied to a subscription will only affect invoices created
@@ -17473,9 +17592,20 @@ paths:
                 object. It can be useful for storing additional information about
                 the customer in a structured format.
               type: object
+            name:
+              description: The customer's full name or business name.
+              type: string
             payment_method:
               description: ID of the PaymentMethod to attach to the customer
               type: string
+            phone:
+              description: The customer's phone number.
+              type: string
+            preferred_locales:
+              description: Customer's preferred languages, ordered by preference.
+              items:
+                type: string
+              type: array
             shipping:
               description: The customer's shipping information. Appears on invoices
                 emailed to this customer.
@@ -17580,6 +17710,8 @@ paths:
                 amount represents a credit that decreases the amount due on an invoice;
                 a positive amount increases the amount due on an invoice.
               type: integer
+            address:
+              description: The customer's address.
             bank_account:
               description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
                 or a dictionary containing a user's bank account details.
@@ -17603,7 +17735,11 @@ paths:
                 payments.
               type: string
             default_source:
-              description: ID of the default payment source for the customer.
+              description: Provide the ID of a payment source already attached to
+                this customer to make it this customer's default payment source. If
+                you want to add a new payment source and make it the default, see
+                the [source](https://stripe.com/docs/api/customers/update#update_customer-source)
+                property.
               type: string
             description:
               description: An arbitrary string that you can attach to a customer object.
@@ -17649,6 +17785,17 @@ paths:
                 object. It can be useful for storing additional information about
                 the customer in a structured format.
               type: object
+            name:
+              description: The customer's full name or business name.
+              type: string
+            phone:
+              description: The customer's phone number.
+              type: string
+            preferred_locales:
+              description: Customer's preferred languages, ordered by preference.
+              items:
+                type: string
+              type: array
             shipping:
               description: The customer's shipping information. Appears on invoices
                 emailed to this customer.
@@ -27375,7 +27522,7 @@ paths:
                 When the confirmation method is `automatic`, a PaymentIntent can be confirmed using a publishable key. After `next_action`s are handled, no additional confirmation is required to complete the payment.
 
                 When the confirmation method is `manual`, all payment attempts must be made using a secret key. The PaymentIntent will return to the `requires_confirmation` state after handling `next_action`s, and requires your server to initiate each payment attempt with an explicit confirmation.
-                Read the [expanded documentation](https://stripe.com/docs/payments/payment-intents/quickstart#flow-manual-confirmation)
+                Read the [expanded documentation](https://stripe.com/docs/payments/payment-intents/quickstart#manual-confirmation-flow)
                 to learn more about manual confirmation.
               enum:
               - automatic
@@ -27741,7 +27888,7 @@ paths:
         return to the <code>requires_confirmation</code> state
         after those actions are completed. Your server needs to then
         explicitly re-confirm the PaymentIntent to initiate the next payment
-        attempt. Read the <a href="/docs/payments/payment-intents/quickstart#flow-manual-confirmation">expanded documentation</a>
+        attempt. Read the <a href="/docs/payments/payment-intents/quickstart#manual-confirmation-flow">expanded documentation</a>
         to learn more about manual confirmation.</p>
       operationId: PostPaymentIntentsIntentConfirm
       parameters:
@@ -32873,6 +33020,232 @@ paths:
           description: Successful response.
           schema:
             "$ref": "#/definitions/deleted_discount"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/tax_rates":
+    get:
+      description: "<p>Returns a list of your tax rates. Tax rates are returned sorted
+        by creation date, with the most recently created tax rates appearing first.</p>"
+      operationId: GetTaxRates
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: Optional flag to filter by tax rates that are either active or
+          not active (archived)
+        in: query
+        name: active
+        required: false
+        type: boolean
+      - description: Optional range for filtering created date
+        in: query
+        name: created
+        required: false
+        type: integer
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        type: string
+      - description: Optional flag to filter by tax rates that are inclusive (or those
+          that are not inclusive)
+        in: query
+        name: inclusive
+        required: false
+        type: boolean
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - description: Optional range for tax rate percentage filtering
+        in: query
+        name: percentage
+        required: false
+        type: integer
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            properties:
+              data:
+                items:
+                  "$ref": "#/definitions/tax_rate"
+                type: array
+              has_more:
+                description: True if this list has another page of items after this
+                  one that can be fetched.
+                type: boolean
+              object:
+                description: String representing the object's type. Objects of the
+                  same type share the same value. Always has the value `list`.
+                enum:
+                - list
+                type: string
+              url:
+                description: The URL where this list can be accessed.
+                type: string
+            required:
+            - data
+            - has_more
+            - object
+            - url
+            type: object
+            x-expandableFields:
+            - data
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      description: "<p>Creates a new tax rate.</p>"
+      operationId: PostTaxRates
+      parameters:
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            active:
+              description: Flag determining whether the tax rate is active or inactive.
+                Inactive tax rates continue to work where they are currently applied
+                however they cannot be used for new applications.
+              type: boolean
+            description:
+              description: An arbitrary string attached to the tax rate for your internal
+                use only. It will not be visible to your customers.
+              type: string
+            display_name:
+              description: The display name of the tax rate, which will be shown to
+                users.
+              type: string
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            inclusive:
+              description: This specifies if the tax rate is inclusive or exclusive.
+              type: boolean
+            jurisdiction:
+              description: The jurisdiction for the tax rate.
+              type: string
+            metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
+              type: object
+            percentage:
+              description: This represents the tax rate percent out of 100.
+              type: number
+          required:
+          - display_name
+          - inclusive
+          - percentage
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/tax_rate"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/tax_rates/{tax_rate}":
+    get:
+      description: "<p>Retrieves a tax rate with the given ID</p>"
+      operationId: GetTaxRatesTaxRate
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: The ID of the desired tax rate.
+        in: path
+        name: tax_rate
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/tax_rate"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      description: "<p>Updates an existing tax rate.</p>"
+      operationId: PostTaxRatesTaxRate
+      parameters:
+      - description: ID of the tax rate to update.
+        in: path
+        name: tax_rate
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            active:
+              description: Flag determining whether the tax rate is active or inactive.
+                Inactive tax rates continue to work where they are currently applied
+                however they cannot be used for new applications.
+              type: boolean
+            description:
+              description: An arbitrary string attached to the tax rate for your internal
+                use only. It will not be visible to your customers.
+              type: string
+            display_name:
+              description: The display name of the tax rate, which will be shown to
+                users.
+              type: string
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            jurisdiction:
+              description: The jurisdiction for the tax rate.
+              type: string
+            metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
+              type: object
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/tax_rate"
         default:
           description: Error response.
           schema:
