@@ -379,7 +379,7 @@
           "type": "integer"
         },
         "currently_due": {
-          "description": "The fields that need to be collected to keep the account enabled. If not collected by the `current_deadline`, these fields will appear in `past_due` as well, and the account will be disabled.",
+          "description": "The fields that need to be collected to keep the account enabled. If not collected by the `current_deadline`, these fields appear in `past_due` as well, and the account is disabled.",
           "items": {
             "type": "string"
           },
@@ -390,7 +390,7 @@
           "type": "string"
         },
         "eventually_due": {
-          "description": "The fields that need to be collected assuming all volume thresholds are reached. As they become required, these fields will appear in `currently_due` as well, and the `current_deadline` will be set.",
+          "description": "The fields that need to be collected assuming all volume thresholds are reached. As they become required, these fields appear in `currently_due` as well, and the `current_deadline` is set.",
           "items": {
             "type": "string"
           },
@@ -2745,6 +2745,52 @@
             "data"
           ]
         },
+        "tax_exempt": {
+          "description": "Describes the customer's tax exemption status. One of `none`, `exempt`, or `reverse`. When set to `reverse`, invoice and receipt PDFs include the text **\"Reverse charge\"**.",
+          "enum": [
+            "exempt",
+            "none",
+            "reverse"
+          ],
+          "type": "string"
+        },
+        "tax_ids": {
+          "description": "The customer's tax IDs.",
+          "properties": {
+            "data": {
+              "items": {
+                "$ref": "#/definitions/tax_id"
+              },
+              "type": "array"
+            },
+            "has_more": {
+              "description": "True if this list has another page of items after this one that can be fetched.",
+              "type": "boolean"
+            },
+            "object": {
+              "description": "String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
+              "enum": [
+                "list"
+              ],
+              "type": "string"
+            },
+            "url": {
+              "description": "The URL where this list can be accessed.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "data",
+            "has_more",
+            "object",
+            "url"
+          ],
+          "title": "TaxIDsList",
+          "type": "object",
+          "x-expandableFields": [
+            "data"
+          ]
+        },
         "tax_info": {
           "$ref": "#/definitions/tax_info"
         },
@@ -2769,6 +2815,7 @@
         "shipping",
         "sources",
         "subscriptions",
+        "tax_ids",
         "tax_info",
         "tax_info_verification"
       ],
@@ -4786,6 +4833,22 @@
         "customer_shipping": {
           "$ref": "#/definitions/shipping"
         },
+        "customer_tax_exempt": {
+          "description": "The customer's tax exempt status. Until the invoice is finalized, this field will equal `customer.tax_exempt`. Once the invoice is finalized, this field will no longer be updated.",
+          "enum": [
+            "exempt",
+            "none",
+            "reverse"
+          ],
+          "type": "string"
+        },
+        "customer_tax_ids": {
+          "description": "The customer's tax IDs. Until the invoice is finalized, this field will contain the same tax IDs as `customer.tax_ids`. Once the invoice is finalized, this field will no longer be updated.",
+          "items": {
+            "$ref": "#/definitions/invoices_resource_invoice_tax_id"
+          },
+          "type": "array"
+        },
         "default_payment_method": {
           "description": "ID of the default payment method for the invoice. It must belong to the customer associated with the invoice. If not set, defaults to the subscription's default payment method, if any, or to the default payment method in the customer's invoice settings.",
           "type": "string",
@@ -4819,6 +4882,13 @@
               }
             ]
           }
+        },
+        "default_tax_rates": {
+          "description": "The tax rates applied to this invoice, if any.",
+          "items": {
+            "$ref": "#/definitions/tax_rate"
+          },
+          "type": "array"
         },
         "description": {
           "description": "An arbitrary string attached to the object. Often useful for displaying to users. Referenced as 'memo' in the Dashboard.",
@@ -4989,7 +5059,7 @@
           "type": "integer"
         },
         "tax": {
-          "description": "The amount of tax included in the total, calculated from `tax_percent` and the subtotal. If no `tax_percent` is defined, this value will be null.",
+          "description": "The amount of tax on this invoice. This is the sum of all the tax amounts on this invoice.",
           "type": "integer"
         },
         "tax_percent": {
@@ -5002,6 +5072,13 @@
         "total": {
           "description": "Total after discount.",
           "type": "integer"
+        },
+        "total_tax_amounts": {
+          "description": "The aggregate amounts calculated per tax rate for all line items.",
+          "items": {
+            "$ref": "#/definitions/tax_amount"
+          },
+          "type": "array"
         },
         "webhooks_delivered_at": {
           "description": "The time at which webhooks for this invoice were successfully delivered (if the invoice had no webhooks to deliver, this will match `created`). Invoice payment is delayed until webhooks are delivered, or until all webhook delivery attempts have been exhausted.",
@@ -5038,14 +5115,17 @@
         "customer",
         "customer_address",
         "customer_shipping",
+        "customer_tax_ids",
         "default_payment_method",
         "default_source",
+        "default_tax_rates",
         "discount",
         "lines",
         "payment_intent",
         "status_transitions",
         "subscription",
-        "threshold_reason"
+        "threshold_reason",
+        "total_tax_amounts"
       ],
       "x-resourceId": "invoice"
     },
@@ -5276,6 +5356,13 @@
         "subscription_item": {
           "type": "string"
         },
+        "tax_rates": {
+          "description": "The tax rates which apply to the invoice item. When set, the `default_tax_rates` on the invoice do not apply to this invoice item.",
+          "items": {
+            "$ref": "#/definitions/tax_rate"
+          },
+          "type": "array"
+        },
         "unit_amount": {
           "description": "Unit Amount (in the `currency` specified) of the invoice item.",
           "type": "integer"
@@ -5303,9 +5390,36 @@
         "invoice",
         "period",
         "plan",
-        "subscription"
+        "subscription",
+        "tax_rates"
       ],
       "x-resourceId": "invoiceitem"
+    },
+    "invoices_resource_invoice_tax_id": {
+      "properties": {
+        "type": {
+          "description": "The type of the tax ID, one of `eu_vat`, `nz_gst`, `au_abn`, or `unknown`",
+          "enum": [
+            "au_abn",
+            "eu_vat",
+            "nz_gst",
+            "unknown"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "description": "The value of the tax ID.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "InvoicesResourceInvoiceTaxID",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
     },
     "invoices_status_transitions": {
       "properties": {
@@ -5597,6 +5711,27 @@
           ],
           "type": "string"
         },
+        "replacement_for": {
+          "description": "The card this card replaces, if any.",
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/issuing.card"
+              }
+            ]
+          }
+        },
+        "replacement_reason": {
+          "description": "Why the card that this card replaces (if any) needed to be replaced.",
+          "enum": [
+            "damage",
+            "expiration",
+            "loss",
+            "theft"
+          ],
+          "type": "string"
+        },
         "shipping": {
           "$ref": "#/definitions/issuing_card_shipping"
         },
@@ -5638,6 +5773,7 @@
       "x-expandableFields": [
         "authorization_controls",
         "cardholder",
+        "replacement_for",
         "shipping"
       ],
       "x-resourceId": "issuing.card"
@@ -6106,7 +6242,7 @@
           "type": "string"
         },
         "scope": {
-          "description": "The scope of the verification",
+          "description": "The scope of the verification (one of `card_pin_retrieve` or `card_pin_update`)",
           "enum": [
             "card_pin_retrieve",
             "card_pin_update"
@@ -6114,7 +6250,7 @@
           "type": "string"
         },
         "verification_method": {
-          "description": "The method by which the cardholder will be sent a one-time password",
+          "description": "The method by which the cardholder will be sent a one-time code (one of `email` or `sms`)",
           "enum": [
             "email",
             "sms"
@@ -6782,6 +6918,20 @@
           "description": "The subscription item that generated this invoice item. Left empty if the line item is not an explicit result of a subscription.",
           "type": "string"
         },
+        "tax_amounts": {
+          "description": "The amount of tax calculated per tax rate for this line item",
+          "items": {
+            "$ref": "#/definitions/tax_amount"
+          },
+          "type": "array"
+        },
+        "tax_rates": {
+          "description": "The tax rates which apply to the line item.",
+          "items": {
+            "$ref": "#/definitions/tax_rate"
+          },
+          "type": "array"
+        },
         "type": {
           "description": "A string identifying the type of the source of this line item, either an `invoiceitem` or a `subscription`.",
           "enum": [
@@ -6807,7 +6957,9 @@
       "type": "object",
       "x-expandableFields": [
         "period",
-        "plan"
+        "plan",
+        "tax_amounts",
+        "tax_rates"
       ],
       "x-resourceId": "line_item"
     },
@@ -7263,7 +7415,7 @@
           "type": "string"
         },
         "charges": {
-          "description": "Charges that were created by this PaymentIntent, if any.",
+          "description": "Charges that were created by this PaymentIntent, if any. By default we only include the latest charge, use [pagnination](https://stripe.com/docs/api/pagination) to fetch more charges.",
           "properties": {
             "data": {
               "description": "The list contains all Charges that have been created by this PaymentIntent.",
@@ -7301,7 +7453,7 @@
           ]
         },
         "client_secret": {
-          "description": "The client secret of this PaymentIntent. Used for client-side retrieval using a publishable key. Please refer to [dynamic authentication](https://stripe.com/docs/payments/dynamic-authentication) guide on how `client_secret` should be handled.",
+          "description": "The client secret of this PaymentIntent. Used for client-side retrieval using a publishable key. Please refer to our [automatic confirmation quickstart guide](https://stripe.com/docs/payments/payment-intents/quickstart#automatic-confirmation-flow) to learn about how `client_secret` should be handled.",
           "type": "string"
         },
         "confirmation_method": {
@@ -7449,7 +7601,7 @@
           "type": "string"
         },
         "status": {
-          "description": "Status of this PaymentIntent, one of `requires_payment_method`, `requires_confirmation`, `requires_action`, `processing`, `requires_capture`, `canceled`, or `succeeded`.",
+          "description": "Status of this PaymentIntent, one of `requires_payment_method`, `requires_confirmation`, `requires_action`, `processing`, `requires_capture`, `canceled`, or `succeeded`. You can read more about PaymentIntent statuses [here](https://stripe.com/docs/payments/payment-intents/usage#paymentintent-status-overview).",
           "enum": [
             "canceled",
             "processing",
@@ -7585,7 +7737,7 @@
           "type": "string"
         },
         "type": {
-          "description": "The type of the PaymentMethod, one of `card` or `card_present`. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
+          "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
           "enum": [
             "card",
             "card_present"
@@ -10255,17 +10407,11 @@
         "p24": {
           "$ref": "#/definitions/source_type_p24"
         },
-        "paper_check": {
-          "$ref": "#/definitions/source_type_paper_check"
-        },
         "receiver": {
           "$ref": "#/definitions/source_receiver_flow"
         },
         "redirect": {
           "$ref": "#/definitions/source_redirect_flow"
-        },
-        "sepa_credit_transfer": {
-          "$ref": "#/definitions/source_type_sepa_credit_transfer"
         },
         "sepa_debit": {
           "$ref": "#/definitions/source_type_sepa_debit"
@@ -10285,7 +10431,7 @@
           "$ref": "#/definitions/source_type_three_d_secure"
         },
         "type": {
-          "description": "The `type` of the source. The `type` is a payment method, one of `ach_credit_transfer`, `ach_debit`, `alipay`, `bancontact`, `card`, `card_present`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `paper_check`, `sepa_credit_transfer`, `sepa_debit`, `sofort`, `three_d_secure`, or `wechat`. An additional hash is included on the source with a name matching this value. It contains additional information specific to the [payment method](https://stripe.com/docs/sources) used.",
+          "description": "The `type` of the source. The `type` is a payment method, one of `ach_credit_transfer`, `ach_debit`, `alipay`, `bancontact`, `card`, `card_present`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `sepa_debit`, `sofort`, `three_d_secure`, or `wechat`. An additional hash is included on the source with a name matching this value. It contains additional information specific to the [payment method](https://stripe.com/docs/sources) used.",
           "enum": [
             "ach_credit_transfer",
             "ach_debit",
@@ -10298,8 +10444,6 @@
             "ideal",
             "multibanco",
             "p24",
-            "paper_check",
-            "sepa_credit_transfer",
             "sepa_debit",
             "sofort",
             "three_d_secure",
@@ -10629,8 +10773,6 @@
             "ideal",
             "multibanco",
             "p24",
-            "paper_check",
-            "sepa_credit_transfer",
             "sepa_debit",
             "sofort",
             "three_d_secure",
@@ -11050,67 +11192,6 @@
       },
       "type": "object"
     },
-    "source_type_paper_check": {
-      "properties": {
-        "mailing_address_city": {
-          "type": "string"
-        },
-        "mailing_address_country": {
-          "type": "string"
-        },
-        "mailing_address_line1": {
-          "type": "string"
-        },
-        "mailing_address_line2": {
-          "type": "string"
-        },
-        "mailing_address_postal_code": {
-          "type": "string"
-        },
-        "mailing_address_state": {
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "source_type_sepa_credit_transfer": {
-      "properties": {
-        "bank_name": {
-          "type": "string"
-        },
-        "bic": {
-          "type": "string"
-        },
-        "iban": {
-          "type": "string"
-        },
-        "refund_account_holder_address_city": {
-          "type": "string"
-        },
-        "refund_account_holder_address_country": {
-          "type": "string"
-        },
-        "refund_account_holder_address_line1": {
-          "type": "string"
-        },
-        "refund_account_holder_address_line2": {
-          "type": "string"
-        },
-        "refund_account_holder_address_postal_code": {
-          "type": "string"
-        },
-        "refund_account_holder_address_state": {
-          "type": "string"
-        },
-        "refund_account_holder_name": {
-          "type": "string"
-        },
-        "refund_iban": {
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
     "source_type_sepa_debit": {
       "properties": {
         "bank_code": {
@@ -11350,6 +11431,13 @@
             ]
           }
         },
+        "default_tax_rates": {
+          "description": "The tax rates that will apply to any subscription item that does not have `tax_rates` set. Invoices created will have their `default_tax_rates` populated from the subscription.",
+          "items": {
+            "$ref": "#/definitions/tax_rate"
+          },
+          "type": "array"
+        },
         "discount": {
           "$ref": "#/definitions/discount"
         },
@@ -11484,6 +11572,7 @@
         "customer",
         "default_payment_method",
         "default_source",
+        "default_tax_rates",
         "discount",
         "items",
         "latest_invoice",
@@ -11542,6 +11631,13 @@
         "subscription": {
           "description": "The `subscription` this `subscription_item` belongs to.",
           "type": "string"
+        },
+        "tax_rates": {
+          "description": "The tax rates which apply to this `subscription_item`. When set, the `default_tax_rates` on the subscription do not apply to this `subscription_item`.",
+          "items": {
+            "$ref": "#/definitions/tax_rate"
+          },
+          "type": "array"
         }
       },
       "required": [
@@ -11556,7 +11652,8 @@
       "type": "object",
       "x-expandableFields": [
         "billing_thresholds",
-        "plan"
+        "plan",
+        "tax_rates"
       ],
       "x-resourceId": "subscription_item"
     },
@@ -11737,6 +11834,13 @@
         "quantity": {
           "description": "Quantity of the plan to which the customer should be subscribed.",
           "type": "integer"
+        },
+        "tax_rates": {
+          "description": "The tax rates which apply to this `phase_item`. When set, the `default_tax_rates` on the phase do not apply to this `phase_item`.",
+          "items": {
+            "$ref": "#/definitions/tax_rate"
+          },
+          "type": "array"
         }
       },
       "required": [
@@ -11746,7 +11850,8 @@
       "type": "object",
       "x-expandableFields": [
         "billing_thresholds",
-        "plan"
+        "plan",
+        "tax_rates"
       ]
     },
     "subscription_schedule_current_phase": {
@@ -11785,6 +11890,12 @@
             ]
           }
         },
+        "default_tax_rates": {
+          "items": {
+            "$ref": "#/definitions/tax_rate"
+          },
+          "type": "array"
+        },
         "end_date": {
           "description": "The end of this phase of the subscription schedule.",
           "type": "integer"
@@ -11818,6 +11929,7 @@
       "type": "object",
       "x-expandableFields": [
         "coupon",
+        "default_tax_rates",
         "plans"
       ]
     },
@@ -11920,6 +12032,39 @@
         "renewal_interval"
       ],
       "x-resourceId": "subscription_schedule_revision"
+    },
+    "tax_amount": {
+      "properties": {
+        "amount": {
+          "description": "The amount, in %s, of the tax.",
+          "type": "integer"
+        },
+        "inclusive": {
+          "description": "Whether this tax amount is inclusive or exclusive.",
+          "type": "boolean"
+        },
+        "tax_rate": {
+          "description": "The tax rate that was applied to get this tax amount.",
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/tax_rate"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "amount",
+        "inclusive",
+        "tax_rate"
+      ],
+      "title": "TaxAmount",
+      "type": "object",
+      "x-expandableFields": [
+        "tax_rate"
+      ]
     },
     "tax_id": {
       "properties": {
@@ -12063,7 +12208,7 @@
     "tax_rate": {
       "properties": {
         "active": {
-          "description": "Flag determining whether the tax rate is active or inactive. Inactive tax rates continue to work where they are currently applied however they cannot be used for new applications.",
+          "description": "Defaults to `true`. When set to `false`, this tax rate cannot be applied to objects in the API, but will still be applied to subscriptions and invoices that already have it set.",
           "type": "boolean"
         },
         "created": {
@@ -12075,7 +12220,7 @@
           "type": "string"
         },
         "display_name": {
-          "description": "The name of the tax rate. This will not be shown to users and could be useful for you to identify it internally.",
+          "description": "The display name of the tax rates as it will appear to your customer on their receipt email, PDF, and the hosted invoice page.",
           "type": "string"
         },
         "id": {
@@ -13513,6 +13658,7 @@
                   "description": "The set of capabilities you want to unlock for this account (US only). Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
                   "items": {
                     "enum": [
+                      "card_issuing",
                       "card_payments",
                       "platform_payments"
                     ],
@@ -16063,6 +16209,7 @@
                   "description": "The set of capabilities you want to unlock for this account (US only). Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
                   "items": {
                     "enum": [
+                      "card_issuing",
                       "card_payments",
                       "platform_payments"
                     ],
@@ -16635,6 +16782,7 @@
                   "description": "The set of capabilities you want to unlock for this account (US only). Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
                   "items": {
                     "enum": [
+                      "card_issuing",
                       "card_payments",
                       "platform_payments"
                     ],
@@ -22247,8 +22395,43 @@
                   "description": "The source can be a [Token](https://stripe.com/docs/api#tokens) or a [Source](https://stripe.com/docs/api#sources), as returned by [Elements](https://stripe.com/docs/elements). You must provide a source if the customer does not already have a valid source attached, and you are subscribing the customer to be charged automatically for a plan that is not free.\n\nPassing `source` will create a new source object, make it the customer default source, and delete the old customer default if one exists. If you want to add an additional source, instead use the [card creation API](https://stripe.com/docs/api#create_card) to add the card and then the [customer update API](https://stripe.com/docs/api#update_customer) to set it as the default.\n\nWhenever you attach a card to a customer, Stripe will automatically validate the card.",
                   "type": "string"
                 },
+                "tax_exempt": {
+                  "description": "The customer's tax exemption. One of `none`, `exempt`, or `reverse`.",
+                  "enum": [
+                    "",
+                    "exempt",
+                    "none",
+                    "reverse"
+                  ],
+                  "type": "string"
+                },
+                "tax_id_data": {
+                  "description": "The customer's tax IDs.",
+                  "items": {
+                    "properties": {
+                      "type": {
+                        "enum": [
+                          "au_abn",
+                          "eu_vat",
+                          "nz_gst"
+                        ],
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "value"
+                    ],
+                    "title": "data_params",
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "tax_info": {
-                  "description": "The customer's tax information. Appears on invoices emailed to this customer.",
+                  "description": "The customer's tax information. Appears on invoices emailed to this customer. This parameter has been deprecated and will be removed in a future API version, for further information view the [migration guide](https://stripe.com/docs/billing/migration/taxes#moving-from-taxinfo-to-customer-tax-ids).",
                   "properties": {
                     "tax_id": {
                       "type": "string"
@@ -22477,8 +22660,18 @@
                   "description": "The source can be a [Token](https://stripe.com/docs/api#tokens) or a [Source](https://stripe.com/docs/api#sources), as returned by [Elements](https://stripe.com/docs/elements). You must provide a source if the customer does not already have a valid source attached, and you are subscribing the customer to be charged automatically for a plan that is not free.\n\nPassing `source` will create a new source object, make it the customer default source, and delete the old customer default if one exists. If you want to add an additional source, instead use the [card creation API](https://stripe.com/docs/api#create_card) to add the card and then the [customer update API](https://stripe.com/docs/api#update_customer) to set it as the default.\n\nWhenever you attach a card to a customer, Stripe will automatically validate the card.",
                   "type": "string"
                 },
+                "tax_exempt": {
+                  "description": "The customer's tax exemption. One of `none`, `exempt`, or `reverse`.",
+                  "enum": [
+                    "",
+                    "exempt",
+                    "none",
+                    "reverse"
+                  ],
+                  "type": "string"
+                },
                 "tax_info": {
-                  "description": "The customer's tax information. Appears on invoices emailed to this customer.",
+                  "description": "The customer's tax information. Appears on invoices emailed to this customer. This parameter has been deprecated and will be removed in a future API version, for further information view the [migration guide](https://stripe.com/docs/billing/migration/taxes#moving-from-taxinfo-to-customer-tax-ids).",
                   "properties": {
                     "tax_id": {
                       "type": "string"
@@ -22498,7 +22691,7 @@
                   "type": "object"
                 },
                 "trial_end": {
-                  "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately."
+                  "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately. Can be at most two years from `billing_cycle_anchor`."
                 }
               },
               "type": "object"
@@ -24161,6 +24354,12 @@
                   "description": "ID of the default payment source for the subscription. It must belong to the customer associated with the subscription and be in a chargeable state. If not set, defaults to the customer's default source.",
                   "type": "string"
                 },
+                "default_tax_rates": {
+                  "description": "The tax rates that will apply to any subscription item that does not have `tax_rates` set. Invoices created will have their `default_tax_rates` populated from the subscription.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "expand": {
                   "description": "Specifies which fields in the response should be expanded.",
                   "items": {
@@ -24182,6 +24381,11 @@
                       },
                       "quantity": {
                         "type": "integer"
+                      },
+                      "tax_rates": {
+                        "items": {
+                          "type": "string"
+                        }
                       }
                     },
                     "required": [
@@ -24201,10 +24405,10 @@
                   "type": "boolean"
                 },
                 "tax_percent": {
-                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string."
+                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) to `tax_rates`"
                 },
                 "trial_end": {
-                  "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately."
+                  "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately. Can be at most two years from `billing_cycle_anchor`."
                 },
                 "trial_from_plan": {
                   "description": "Indicates if a plan's `trial_period_days` should be applied to the subscription. Setting `trial_end` per subscription is preferred, and this defaults to `false`. Setting this flag to `true` together with `trial_end` is not allowed.",
@@ -24395,6 +24599,12 @@
                   "description": "ID of the default payment source for the subscription. It must belong to the customer associated with the subscription and be in a chargeable state. If not set, defaults to the customer's default source.",
                   "type": "string"
                 },
+                "default_tax_rates": {
+                  "description": "The tax rates that will apply to any subscription item that does not have `tax_rates` set. Invoices created will have their `default_tax_rates` populated from the subscription.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "expand": {
                   "description": "Specifies which fields in the response should be expanded.",
                   "items": {
@@ -24425,6 +24635,11 @@
                       },
                       "quantity": {
                         "type": "integer"
+                      },
+                      "tax_rates": {
+                        "items": {
+                          "type": "string"
+                        }
                       }
                     },
                     "title": "subscription_item_update_params",
@@ -24445,10 +24660,10 @@
                   "type": "integer"
                 },
                 "tax_percent": {
-                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string."
+                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) to `tax_rates`"
                 },
                 "trial_end": {
-                  "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately."
+                  "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately. Can be at most two years from `billing_cycle_anchor`."
                 },
                 "trial_from_plan": {
                   "description": "Indicates if a plan's `trial_period_days` should be applied to the subscription. Setting `trial_end` per subscription is preferred, and this defaults to `false`. Setting this flag to `true` together with `trial_end` is not allowed.",
@@ -25335,6 +25550,9 @@
                     "type": "string"
                   },
                   "type": "array"
+                },
+                "webhook_endpoint": {
+                  "type": "string"
                 }
               },
               "type": "object"
@@ -26106,6 +26324,13 @@
                   "description": "The ID of a subscription to add this invoice item to. When left blank, the invoice item will be be added to the next upcoming scheduled invoice. When set, scheduled invoices for subscriptions other than the specified subscription will ignore the invoice item. Use this when you want to express that an invoice item has been accrued within the context of a particular subscription.",
                   "type": "string"
                 },
+                "tax_rates": {
+                  "description": "The tax rates which apply to the invoice item. When set, the `default_tax_rates` on the invoice do not apply to this invoice item.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
                 "unit_amount": {
                   "description": "The integer unit amount in **%s** of the charge to be applied to the upcoming invoice. This unit_amount will be multiplied by the quantity to get the full amount. If you want to apply a credit to the customer's account, pass a negative unit_amount.",
                   "type": "integer"
@@ -26257,6 +26482,12 @@
                 "quantity": {
                   "description": "Non-negative integer. The quantity of units for the invoice item.",
                   "type": "integer"
+                },
+                "tax_rates": {
+                  "description": "The tax rates which apply to the invoice item. When set, the `default_tax_rates` on the invoice do not apply to this invoice item.",
+                  "items": {
+                    "type": "string"
+                  }
                 },
                 "unit_amount": {
                   "description": "The integer unit amount in **%s** of the charge to be applied to the upcoming invoice. This unit_amount will be multiplied by the quantity to get the full amount. If you want to apply a credit to the customer's account, pass a negative unit_amount.",
@@ -26458,6 +26689,12 @@
                   "description": "ID of the default payment source for the invoice. It must belong to the customer associated with the invoice and be in a chargeable state. If not set, defaults to the subscription's default source, if any, or to the customer's default source.",
                   "type": "string"
                 },
+                "default_tax_rates": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
                 "description": {
                   "type": "string"
                 },
@@ -26488,7 +26725,7 @@
                   "type": "string"
                 },
                 "tax_percent": {
-                  "description": "The percent tax rate applied to the invoice, represented as a decimal number.",
+                  "description": "The percent tax rate applied to the invoice, represented as a decimal number. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) to `tax_rates`",
                   "type": "number"
                 }
               },
@@ -26574,6 +26811,12 @@
             "name": "subscription_cancel_now",
             "required": false,
             "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "subscription_default_tax_rates",
+            "required": false,
+            "type": "string"
           },
           {
             "description": "List of subscription items, each with an attached plan.",
@@ -26714,6 +26957,12 @@
             "name": "subscription_cancel_now",
             "required": false,
             "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "subscription_default_tax_rates",
+            "required": false,
+            "type": "string"
           },
           {
             "description": "List of subscription items, each with an attached plan.",
@@ -26925,6 +27174,11 @@
                   "description": "ID of the default payment source for the invoice. It must belong to the customer associated with the invoice and be in a chargeable state. If not set, defaults to the subscription's default source, if any, or to the customer's default source.",
                   "type": "string"
                 },
+                "default_tax_rates": {
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "description": {
                   "type": "string"
                 },
@@ -26951,7 +27205,7 @@
                   "type": "string"
                 },
                 "tax_percent": {
-                  "description": "The percent tax rate applied to the invoice, represented as a non-negative decimal number (with at most four decimal places) between 0 and 100. To unset a previously-set value, pass an empty string. This field can be updated only on `draft` invoices."
+                  "description": "The percent tax rate applied to the invoice, represented as a non-negative decimal number (with at most four decimal places) between 0 and 100. To unset a previously-set value, pass an empty string. This field can be updated only on `draft` invoices. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) to `tax_rates`"
                 }
               },
               "type": "object"
@@ -31039,6 +31293,20 @@
                 "metadata": {
                   "type": "object"
                 },
+                "replacement_for": {
+                  "description": "The card this is meant to be a replacement for (if any).",
+                  "type": "string"
+                },
+                "replacement_reason": {
+                  "description": "If `replacement_for` is specified, this should indicate why that card is being replaced.",
+                  "enum": [
+                    "damage",
+                    "expiration",
+                    "loss",
+                    "theft"
+                  ],
+                  "type": "string"
+                },
                 "shipping": {
                   "description": "The address where the card will be shipped. This will default to the cardholder's billing address for physical cards.",
                   "properties": {
@@ -32961,7 +33229,7 @@
                   "type": "array"
                 },
                 "scope": {
-                  "description": "The scope of the verification (one of card_pin_retrieve, card_pin_update)",
+                  "description": "The scope of the verification (one of `card_pin_retrieve` or `card_pin_update`)",
                   "enum": [
                     "card_pin_retrieve",
                     "card_pin_update"
@@ -32969,7 +33237,7 @@
                   "type": "string"
                 },
                 "verification_method": {
-                  "description": "The method used to send the cardholder the verification (one of email, sms)",
+                  "description": "The method used to send the cardholder the verification (one of `email` or `sms`)",
                   "enum": [
                     "email",
                     "sms"
@@ -33678,6 +33946,13 @@
             "type": "integer"
           },
           {
+            "description": "Only return PaymentIntents for the customer specified by this customer ID.",
+            "in": "query",
+            "name": "customer",
+            "required": false,
+            "type": "string"
+          },
+          {
             "description": "A cursor for use in pagination. `ending_before` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, starting with `obj_bar`, your subsequent call can include `ending_before=obj_bar` in order to fetch the previous page of the list.",
             "in": "query",
             "name": "ending_before",
@@ -33748,7 +34023,7 @@
         }
       },
       "post": {
-        "description": "<p>Creates a PaymentIntent object.</p>",
+        "description": "<p>Creates a PaymentIntent object.</p>\n\n<p>After the PaymentIntent is created, attach a payment method and <a href=\"/docs/api/payment_intents/confirm\">confirm</a>\nto continue the payment. You can read more about the different payment flows\navailable via the Payment Intents API <a href=\"/docs/payments/payment-intents\">here</a>.</p>\n\n<p>When <code>confirm=true</code> is used during creation, it is equivalent to creating\nand confirming the PaymentIntent in the same call. You may use any parameters\navailable in the <a href=\"/docs/api/payment_intents/confirm\">confirm API</a> when <code>confirm=true</code>\nis supplied.</p>",
         "operationId": "PostPaymentIntents",
         "parameters": [
           {
@@ -38921,6 +39196,12 @@
                 "subscription": {
                   "description": "The identifier of the subscription to modify.",
                   "type": "string"
+                },
+                "tax_rates": {
+                  "description": "The tax rates which apply to this `subscription_item`. When set, the `default_tax_rates` on the subscription do not apply to this `subscription_item`.",
+                  "items": {
+                    "type": "string"
+                  }
                 }
               },
               "required": [
@@ -39079,6 +39360,12 @@
                 "quantity": {
                   "description": "The quantity you'd like to apply to the subscription item you're creating.",
                   "type": "integer"
+                },
+                "tax_rates": {
+                  "description": "The tax rates which apply to this `subscription_item`. When set, the `default_tax_rates` on the subscription do not apply to this `subscription_item`.",
+                  "items": {
+                    "type": "string"
+                  }
                 }
               },
               "type": "object"
@@ -39441,6 +39728,11 @@
                       "coupon": {
                         "type": "string"
                       },
+                      "default_tax_rates": {
+                        "items": {
+                          "type": "string"
+                        }
+                      },
                       "end_date": {
                         "type": "integer"
                       },
@@ -39457,6 +39749,11 @@
                             },
                             "quantity": {
                               "type": "integer"
+                            },
+                            "tax_rates": {
+                              "items": {
+                                "type": "string"
+                              }
                             }
                           },
                           "required": [
@@ -39635,6 +39932,11 @@
                       "coupon": {
                         "type": "string"
                       },
+                      "default_tax_rates": {
+                        "items": {
+                          "type": "string"
+                        }
+                      },
                       "end_date": {
                       },
                       "iterations": {
@@ -39650,6 +39952,11 @@
                             },
                             "quantity": {
                               "type": "integer"
+                            },
+                            "tax_rates": {
+                              "items": {
+                                "type": "string"
+                              }
                             }
                           },
                           "required": [
@@ -40155,6 +40462,12 @@
                   "description": "ID of the default payment source for the subscription. It must belong to the customer associated with the subscription and be in a chargeable state. If not set, defaults to the customer's default source.",
                   "type": "string"
                 },
+                "default_tax_rates": {
+                  "description": "The tax rates that will apply to any subscription item that does not have `tax_rates` set. Invoices created will have their `default_tax_rates` populated from the subscription.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "expand": {
                   "description": "Specifies which fields in the response should be expanded.",
                   "items": {
@@ -40176,6 +40489,11 @@
                       },
                       "quantity": {
                         "type": "integer"
+                      },
+                      "tax_rates": {
+                        "items": {
+                          "type": "string"
+                        }
                       }
                     },
                     "required": [
@@ -40195,10 +40513,10 @@
                   "type": "boolean"
                 },
                 "tax_percent": {
-                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string."
+                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) to `tax_rates`"
                 },
                 "trial_end": {
-                  "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately."
+                  "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately. Can be at most two years from `billing_cycle_anchor`."
                 },
                 "trial_from_plan": {
                   "description": "Indicates if a plan's `trial_period_days` should be applied to the subscription. Setting `trial_end` per subscription is preferred, and this defaults to `false`. Setting this flag to `true` together with `trial_end` is not allowed.",
@@ -40371,6 +40689,12 @@
                   "description": "ID of the default payment source for the subscription. It must belong to the customer associated with the subscription and be in a chargeable state. If not set, defaults to the customer's default source.",
                   "type": "string"
                 },
+                "default_tax_rates": {
+                  "description": "The tax rates that will apply to any subscription item that does not have `tax_rates` set. Invoices created will have their `default_tax_rates` populated from the subscription.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "expand": {
                   "description": "Specifies which fields in the response should be expanded.",
                   "items": {
@@ -40401,6 +40725,11 @@
                       },
                       "quantity": {
                         "type": "integer"
+                      },
+                      "tax_rates": {
+                        "items": {
+                          "type": "string"
+                        }
                       }
                     },
                     "title": "subscription_item_update_params",
@@ -40421,10 +40750,10 @@
                   "type": "integer"
                 },
                 "tax_percent": {
-                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string."
+                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) to `tax_rates`"
                 },
                 "trial_end": {
-                  "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately."
+                  "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately. Can be at most two years from `billing_cycle_anchor`."
                 },
                 "trial_from_plan": {
                   "description": "Indicates if a plan's `trial_period_days` should be applied to the subscription. Setting `trial_end` per subscription is preferred, and this defaults to `false`. Setting this flag to `true` together with `trial_end` is not allowed.",
@@ -40781,7 +41110,7 @@
                   "type": "array"
                 },
                 "operator_account": {
-                  "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
                   "type": "string"
                 }
               },
@@ -40832,7 +41161,7 @@
             "type": "integer"
           },
           {
-            "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+            "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
             "in": "query",
             "name": "operator_account",
             "required": false,
@@ -40948,7 +41277,7 @@
                   "type": "array"
                 },
                 "operator_account": {
-                  "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
                   "type": "string"
                 }
               },
@@ -40996,7 +41325,7 @@
             "schema": {
               "properties": {
                 "operator_account": {
-                  "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
                   "type": "string"
                 }
               },
@@ -41038,7 +41367,7 @@
             "type": "string"
           },
           {
-            "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+            "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
             "in": "query",
             "name": "operator_account",
             "required": false,
@@ -41121,7 +41450,7 @@
                   "type": "array"
                 },
                 "operator_account": {
-                  "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
                   "type": "string"
                 }
               },
@@ -41179,7 +41508,7 @@
             "type": "string"
           },
           {
-            "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+            "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
             "in": "query",
             "name": "operator_account",
             "required": false,
@@ -41276,7 +41605,7 @@
                   "type": "string"
                 },
                 "operator_account": {
-                  "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
                   "type": "string"
                 },
                 "registration_code": {
@@ -41327,7 +41656,7 @@
             "schema": {
               "properties": {
                 "operator_account": {
-                  "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
                   "type": "string"
                 }
               },
@@ -41362,7 +41691,7 @@
             "type": "array"
           },
           {
-            "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+            "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
             "in": "query",
             "name": "operator_account",
             "required": false,
@@ -41421,7 +41750,7 @@
                   "type": "string"
                 },
                 "operator_account": {
-                  "description": "To group objects on your platform account by connected account, set this parameter to the connected account operating your application.",
+                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
                   "type": "string"
                 }
               },
@@ -42907,6 +43236,9 @@
                       "coupon.created",
                       "coupon.deleted",
                       "coupon.updated",
+                      "credit_note.created",
+                      "credit_note.updated",
+                      "credit_note.voided",
                       "customer.created",
                       "customer.deleted",
                       "customer.discount.created",
@@ -42920,6 +43252,9 @@
                       "customer.subscription.deleted",
                       "customer.subscription.trial_will_end",
                       "customer.subscription.updated",
+                      "customer.tax_id.created",
+                      "customer.tax_id.deleted",
+                      "customer.tax_id.updated",
                       "customer.updated",
                       "file.created",
                       "invoice.created",
@@ -42961,6 +43296,7 @@
                       "payment_method.attached",
                       "payment_method.card_automatically_updated",
                       "payment_method.detached",
+                      "payment_method.updated",
                       "payout.canceled",
                       "payout.created",
                       "payout.failed",
@@ -42994,6 +43330,8 @@
                       "source.refund_attributes_required",
                       "source.transaction.created",
                       "source.transaction.updated",
+                      "tax_rate.created",
+                      "tax_rate.updated",
                       "topup.canceled",
                       "topup.created",
                       "topup.failed",
@@ -43161,6 +43499,9 @@
                       "coupon.created",
                       "coupon.deleted",
                       "coupon.updated",
+                      "credit_note.created",
+                      "credit_note.updated",
+                      "credit_note.voided",
                       "customer.created",
                       "customer.deleted",
                       "customer.discount.created",
@@ -43174,6 +43515,9 @@
                       "customer.subscription.deleted",
                       "customer.subscription.trial_will_end",
                       "customer.subscription.updated",
+                      "customer.tax_id.created",
+                      "customer.tax_id.deleted",
+                      "customer.tax_id.updated",
                       "customer.updated",
                       "file.created",
                       "invoice.created",
@@ -43215,6 +43559,7 @@
                       "payment_method.attached",
                       "payment_method.card_automatically_updated",
                       "payment_method.detached",
+                      "payment_method.updated",
                       "payout.canceled",
                       "payout.created",
                       "payout.failed",
@@ -43248,6 +43593,8 @@
                       "source.refund_attributes_required",
                       "source.transaction.created",
                       "source.transaction.updated",
+                      "tax_rate.created",
+                      "tax_rate.updated",
                       "topup.canceled",
                       "topup.created",
                       "topup.failed",
