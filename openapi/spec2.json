@@ -246,6 +246,49 @@
 
       ]
     },
+    "account_capability_requirements": {
+      "properties": {
+        "current_deadline": {
+          "description": "The date the fields in `currently_due` must be collected by to keep the capability enabled for the account.",
+          "type": "integer"
+        },
+        "currently_due": {
+          "description": "The fields that need to be collected to keep the capability enabled. If not collected by the `current_deadline`, these fields appear in `past_due` as well, and the capability is disabled.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "disabled_reason": {
+          "description": "If the capability is disabled, this string describes why. Possible values are `requirement.fields_needed`, `pending.onboarding`, `pending.review`, `rejected_fraud`, or `rejected.other`.",
+          "type": "string"
+        },
+        "eventually_due": {
+          "description": "The fields that need to be collected assuming all volume thresholds are reached. As they become required, these fields appear in `currently_due` as well, and the `current_deadline` is set.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "past_due": {
+          "description": "The fields that weren't collected by the `current_deadline`. These fields need to be collected to enable the capability for the account.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "currently_due",
+        "eventually_due",
+        "past_due"
+      ],
+      "title": "AccountCapabilityRequirements",
+      "type": "object",
+      "x-expandableFields": [
+
+      ]
+    },
     "account_card_payments_settings": {
       "properties": {
         "decline_on": {
@@ -339,6 +382,14 @@
       "properties": {
         "statement_descriptor": {
           "description": "The default text that appears on credit card statements when a charge is made. This field prefixes any dynamic `statement_descriptor` specified on the charge.",
+          "type": "string"
+        },
+        "statement_descriptor_kana": {
+          "description": "The Kana variation of the default text that appears on credit card statements when a charge is made (Japan only)",
+          "type": "string"
+        },
+        "statement_descriptor_kanji": {
+          "description": "The Kanji variation of the default text that appears on credit card statements when a charge is made (Japan only)",
           "type": "string"
         }
       },
@@ -1428,6 +1479,68 @@
 
       ],
       "x-resourceId": "bitcoin_transaction"
+    },
+    "capability": {
+      "properties": {
+        "account": {
+          "description": "The account for which the capability enables functionality.",
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/account"
+              }
+            ]
+          }
+        },
+        "id": {
+          "description": "Unique identifier for the object.",
+          "type": "string"
+        },
+        "object": {
+          "description": "String representing the object's type. Objects of the same type share the same value.",
+          "enum": [
+            "capability"
+          ],
+          "type": "string"
+        },
+        "requested": {
+          "description": "Whether the capability has been requested.",
+          "type": "boolean"
+        },
+        "requested_at": {
+          "description": "Time at which the capability was requested. Measured in seconds since the Unix epoch.",
+          "type": "integer"
+        },
+        "requirements": {
+          "$ref": "#/definitions/account_capability_requirements"
+        },
+        "status": {
+          "description": "The status of the capability. Can be `active`, `inactive`, `pending`, or `unrequested`.",
+          "enum": [
+            "active",
+            "disabled",
+            "inactive",
+            "pending",
+            "unrequested"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "account",
+        "id",
+        "object",
+        "requested",
+        "status"
+      ],
+      "title": "AccountCapability",
+      "type": "object",
+      "x-expandableFields": [
+        "account",
+        "requirements"
+      ],
+      "x-resourceId": "capability"
     },
     "card": {
       "properties": {
@@ -2831,6 +2944,17 @@
           "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
           "type": "integer"
         },
+        "credit_note": {
+          "description": "The ID of the credit note (if any) related to the transaction.",
+          "type": "string",
+          "x-expansionResources": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/credit_note"
+              }
+            ]
+          }
+        },
         "currency": {
           "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
           "type": "string"
@@ -2869,6 +2993,9 @@
             ]
           }
         },
+        "livemode": {
+          "type": "boolean"
+        },
         "metadata": {
           "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
           "type": "object"
@@ -2903,12 +3030,14 @@
         "customer",
         "ending_balance",
         "id",
+        "livemode",
         "object",
         "type"
       ],
       "title": "CustomerBalanceTransaction",
       "type": "object",
       "x-expandableFields": [
+        "credit_note",
         "customer",
         "invoice"
       ],
@@ -5723,7 +5852,7 @@
           }
         },
         "replacement_reason": {
-          "description": "Why the card that this card replaces (if any) needed to be replaced.",
+          "description": "Why the card that this card replaces (if any) needed to be replaced. One of `damage`, `expiration`, `loss`, or `theft`.",
           "enum": [
             "damage",
             "expiration",
@@ -6392,6 +6521,292 @@
         "allowed_categories": {
           "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations permitted on this card.",
           "items": {
+            "enum": [
+              "ac_refrigeration_repair",
+              "accounting_bookkeeping_services",
+              "advertising_services",
+              "agricultural_cooperative",
+              "airlines_air_carriers",
+              "airports_flying_fields",
+              "ambulance_services",
+              "amusement_parks_carnivals",
+              "antique_reproductions",
+              "antique_shops",
+              "aquariums",
+              "architectural_surveying_services",
+              "art_dealers_and_galleries",
+              "artists_supply_and_craft_shops",
+              "auto_and_home_supply_stores",
+              "auto_body_repair_shops",
+              "auto_paint_shops",
+              "auto_service_shops",
+              "automated_cash_disburse",
+              "automated_fuel_dispensers",
+              "automobile_associations",
+              "automotive_parts_and_accessories_stores",
+              "automotive_tire_stores",
+              "bail_and_bond_payments",
+              "bakeries",
+              "bands_orchestras",
+              "barber_and_beauty_shops",
+              "betting_casino_gambling",
+              "bicycle_shops",
+              "billiard_pool_establishments",
+              "boat_dealers",
+              "boat_rentals_and_leases",
+              "book_stores",
+              "books_periodicals_and_newspapers",
+              "bowling_alleys",
+              "bus_lines",
+              "business_secretarial_schools",
+              "buying_shopping_services",
+              "cable_satellite_and_other_pay_television_and_radio",
+              "camera_and_photographic_supply_stores",
+              "candy_nut_and_confectionery_stores",
+              "car_and_truck_dealers_new_used",
+              "car_and_truck_dealers_used_only",
+              "car_rental_agencies",
+              "car_washes",
+              "carpentry_services",
+              "carpet_upholstery_cleaning",
+              "caterers",
+              "charitable_and_social_service_organizations_fundraising",
+              "chemicals_and_allied_products",
+              "chidrens_and_infants_wear_stores",
+              "child_care_services",
+              "chiropodists_podiatrists",
+              "chiropractors",
+              "cigar_stores_and_stands",
+              "civic_social_fraternal_associations",
+              "cleaning_and_maintenance",
+              "clothing_rental",
+              "colleges_universities",
+              "commercial_equipment",
+              "commercial_footwear",
+              "commercial_photography_art_and_graphics",
+              "commuter_transport_and_ferries",
+              "computer_network_services",
+              "computer_programming",
+              "computer_repair",
+              "computer_software_stores",
+              "computers_peripherals_and_software",
+              "concrete_work_services",
+              "construction_materials",
+              "consulting_public_relations",
+              "correspondence_schools",
+              "cosmetic_stores",
+              "counseling_services",
+              "country_clubs",
+              "courier_services",
+              "court_costs",
+              "credit_reporting_agencies",
+              "cruise_lines",
+              "dairy_products_stores",
+              "dance_hall_studios_schools",
+              "dating_escort_services",
+              "dentists_orthodontists",
+              "department_stores",
+              "detective_agencies",
+              "direct_marketing_catalog_merchant",
+              "direct_marketing_combination_catalog_and_retail_merchant",
+              "direct_marketing_inbound_telemarketing",
+              "direct_marketing_insurance_services",
+              "direct_marketing_other",
+              "direct_marketing_outbound_telemarketing",
+              "direct_marketing_subscription",
+              "direct_marketing_travel",
+              "discount_stores",
+              "doctors",
+              "door_to_door_sales",
+              "drapery_window_covering_and_upholstery_stores",
+              "drinking_places",
+              "drug_stores_and_pharmacies",
+              "drugs_drug_proprietaries_and_druggist_sundries",
+              "dry_cleaners",
+              "durable_goods",
+              "duty_free_stores",
+              "eating_places_restaurants",
+              "educational_services",
+              "electric_razor_stores",
+              "electrical_parts_and_equipment",
+              "electrical_services",
+              "electronics_repair_shops",
+              "electronics_stores",
+              "elementary_secondary_schools",
+              "employment_temp_agencies",
+              "equipment_rental",
+              "exterminating_services",
+              "family_clothing_stores",
+              "fast_food_restaurants",
+              "financial_institutions",
+              "fines_government_administrative_entities",
+              "fireplace_fireplace_screens_and_accessories_stores",
+              "floor_covering_stores",
+              "florists",
+              "florists_supplies_nursery_stock_and_flowers",
+              "freezer_and_locker_meat_provisioners",
+              "fuel_dealers_non_automotive",
+              "funeral_services_crematories",
+              "furniture_home_furnishings_and_equipment_stores_except_appliances",
+              "furniture_repair_refinishing",
+              "furriers_and_fur_shops",
+              "general_services",
+              "gift_card_novelty_and_souvenir_shops",
+              "glass_paint_and_wallpaper_stores",
+              "glassware_crystal_stores",
+              "golf_courses_public",
+              "government_services",
+              "grocery_stores_supermarkets",
+              "hardware_equipment_and_supplies",
+              "hardware_stores",
+              "health_and_beauty_spas",
+              "hearing_aids_sales_and_supplies",
+              "heating_plumbing_a_c",
+              "hobby_toy_and_game_shops",
+              "home_supply_warehouse_stores",
+              "hospitals",
+              "hotels_motels_and_resorts",
+              "household_appliance_stores",
+              "industrial_supplies",
+              "information_retrieval_services",
+              "insurance_default",
+              "insurance_underwriting_premiums",
+              "intra_company_purchases",
+              "jewelry_stores_watches_clocks_and_silverware_stores",
+              "landscaping_services",
+              "laundries",
+              "laundry_cleaning_services",
+              "legal_services_attorneys",
+              "luggage_and_leather_goods_stores",
+              "lumber_building_materials_stores",
+              "manual_cash_disburse",
+              "marinas_service_and_supplies",
+              "masonry_stonework_and_plaster",
+              "massage_parlors",
+              "medical_and_dental_labs",
+              "medical_dental_ophthalmic_and_hospital_equipment_and_supplies",
+              "medical_services",
+              "membership_organizations",
+              "mens_and_boys_clothing_and_accessories_stores",
+              "mens_womens_clothing_stores",
+              "metal_service_centers",
+              "miscellaneous",
+              "miscellaneous_apparel_and_accessory_shops",
+              "miscellaneous_auto_dealers",
+              "miscellaneous_business_services",
+              "miscellaneous_food_stores",
+              "miscellaneous_general_merchandise",
+              "miscellaneous_general_services",
+              "miscellaneous_home_furnishing_specialty_stores",
+              "miscellaneous_publishing_and_printing",
+              "miscellaneous_recreation_services",
+              "miscellaneous_repair_shops",
+              "miscellaneous_specialty_retail",
+              "mobile_home_dealers",
+              "motion_picture_theaters",
+              "motor_freight_carriers_and_trucking",
+              "motor_homes_dealers",
+              "motor_vehicle_supplies_and_new_parts",
+              "motorcycle_shops_and_dealers",
+              "motorcycle_shops_dealers",
+              "music_stores_musical_instruments_pianos_and_sheet_music",
+              "news_dealers_and_newsstands",
+              "non_fi_money_orders",
+              "non_fi_stored_value_card_purchase_load",
+              "nondurable_goods",
+              "nurseries_lawn_and_garden_supply_stores",
+              "nursing_personal_care",
+              "office_and_commercial_furniture",
+              "opticians_eyeglasses",
+              "optometrists_ophthalmologist",
+              "orthopedic_goods_prosthetic_devices",
+              "osteopaths",
+              "package_stores_beer_wine_and_liquor",
+              "paints_varnishes_and_supplies",
+              "parking_lots_garages",
+              "passenger_railways",
+              "pawn_shops",
+              "pet_shops_pet_food_and_supplies",
+              "petroleum_and_petroleum_products",
+              "photo_developing",
+              "photographic_photocopy_microfilm_equipment_and_supplies",
+              "photographic_studios",
+              "picture_video_production",
+              "piece_goods_notions_and_other_dry_goods",
+              "plumbing_heating_equipment_and_supplies",
+              "political_organizations",
+              "postal_services_government_only",
+              "precious_stones_and_metals_watches_and_jewelry",
+              "professional_services",
+              "public_warehousing_and_storage",
+              "quick_copy_repro_and_blueprint",
+              "railroads",
+              "real_estate_agents_and_managers_rentals",
+              "record_stores",
+              "recreational_vehicle_rentals",
+              "religious_goods_stores",
+              "religious_organizations",
+              "roofing_siding_sheet_metal",
+              "secretarial_support_services",
+              "security_brokers_dealers",
+              "service_stations",
+              "sewing_needlework_fabric_and_piece_goods_stores",
+              "shoe_repair_hat_cleaning",
+              "shoe_stores",
+              "small_appliance_repair",
+              "snowmobile_dealers",
+              "special_trade_services",
+              "specialty_cleaning",
+              "sporting_goods_stores",
+              "sporting_recreation_camps",
+              "sports_and_riding_apparel_stores",
+              "sports_clubs_fields",
+              "stamp_and_coin_stores",
+              "stationary_office_supplies_printing_and_writing_paper",
+              "stationery_stores_office_and_school_supply_stores",
+              "swimming_pools_sales",
+              "t_ui_travel_germany",
+              "tailors_alterations",
+              "tax_payments_government_agencies",
+              "tax_preparation_services",
+              "taxicabs_limousines",
+              "telecommunication_equipment_and_telephone_sales",
+              "telecommunication_services",
+              "telegraph_services",
+              "tent_and_awning_shops",
+              "testing_laboratories",
+              "theatrical_ticket_agencies",
+              "timeshares",
+              "tire_retreading_and_repair",
+              "tolls_bridge_fees",
+              "tourist_attractions_and_exhibits",
+              "towing_services",
+              "trailer_parks_campgrounds",
+              "transportation_services",
+              "travel_agencies_tour_operators",
+              "truck_stop_iteration",
+              "truck_utility_trailer_rentals",
+              "typesetting_plate_making_and_related_services",
+              "typewriter_stores",
+              "u_s_federal_government_agencies_or_departments",
+              "uniforms_commercial_clothing",
+              "used_merchandise_and_secondhand_stores",
+              "utilities",
+              "variety_stores",
+              "veterinary_services",
+              "video_amusement_game_supplies",
+              "video_game_arcades",
+              "video_tape_rental_stores",
+              "vocational_trade_schools",
+              "watch_jewelry_repair",
+              "welding_repair",
+              "wholesale_clubs",
+              "wig_and_toupee_stores",
+              "wires_money_orders",
+              "womens_accessory_and_specialty_shops",
+              "womens_ready_to_wear_stores",
+              "wrecking_and_salvage_yards"
+            ],
             "type": "string"
           },
           "type": "array"
@@ -6399,6 +6814,292 @@
         "blocked_categories": {
           "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to always decline on this card.",
           "items": {
+            "enum": [
+              "ac_refrigeration_repair",
+              "accounting_bookkeeping_services",
+              "advertising_services",
+              "agricultural_cooperative",
+              "airlines_air_carriers",
+              "airports_flying_fields",
+              "ambulance_services",
+              "amusement_parks_carnivals",
+              "antique_reproductions",
+              "antique_shops",
+              "aquariums",
+              "architectural_surveying_services",
+              "art_dealers_and_galleries",
+              "artists_supply_and_craft_shops",
+              "auto_and_home_supply_stores",
+              "auto_body_repair_shops",
+              "auto_paint_shops",
+              "auto_service_shops",
+              "automated_cash_disburse",
+              "automated_fuel_dispensers",
+              "automobile_associations",
+              "automotive_parts_and_accessories_stores",
+              "automotive_tire_stores",
+              "bail_and_bond_payments",
+              "bakeries",
+              "bands_orchestras",
+              "barber_and_beauty_shops",
+              "betting_casino_gambling",
+              "bicycle_shops",
+              "billiard_pool_establishments",
+              "boat_dealers",
+              "boat_rentals_and_leases",
+              "book_stores",
+              "books_periodicals_and_newspapers",
+              "bowling_alleys",
+              "bus_lines",
+              "business_secretarial_schools",
+              "buying_shopping_services",
+              "cable_satellite_and_other_pay_television_and_radio",
+              "camera_and_photographic_supply_stores",
+              "candy_nut_and_confectionery_stores",
+              "car_and_truck_dealers_new_used",
+              "car_and_truck_dealers_used_only",
+              "car_rental_agencies",
+              "car_washes",
+              "carpentry_services",
+              "carpet_upholstery_cleaning",
+              "caterers",
+              "charitable_and_social_service_organizations_fundraising",
+              "chemicals_and_allied_products",
+              "chidrens_and_infants_wear_stores",
+              "child_care_services",
+              "chiropodists_podiatrists",
+              "chiropractors",
+              "cigar_stores_and_stands",
+              "civic_social_fraternal_associations",
+              "cleaning_and_maintenance",
+              "clothing_rental",
+              "colleges_universities",
+              "commercial_equipment",
+              "commercial_footwear",
+              "commercial_photography_art_and_graphics",
+              "commuter_transport_and_ferries",
+              "computer_network_services",
+              "computer_programming",
+              "computer_repair",
+              "computer_software_stores",
+              "computers_peripherals_and_software",
+              "concrete_work_services",
+              "construction_materials",
+              "consulting_public_relations",
+              "correspondence_schools",
+              "cosmetic_stores",
+              "counseling_services",
+              "country_clubs",
+              "courier_services",
+              "court_costs",
+              "credit_reporting_agencies",
+              "cruise_lines",
+              "dairy_products_stores",
+              "dance_hall_studios_schools",
+              "dating_escort_services",
+              "dentists_orthodontists",
+              "department_stores",
+              "detective_agencies",
+              "direct_marketing_catalog_merchant",
+              "direct_marketing_combination_catalog_and_retail_merchant",
+              "direct_marketing_inbound_telemarketing",
+              "direct_marketing_insurance_services",
+              "direct_marketing_other",
+              "direct_marketing_outbound_telemarketing",
+              "direct_marketing_subscription",
+              "direct_marketing_travel",
+              "discount_stores",
+              "doctors",
+              "door_to_door_sales",
+              "drapery_window_covering_and_upholstery_stores",
+              "drinking_places",
+              "drug_stores_and_pharmacies",
+              "drugs_drug_proprietaries_and_druggist_sundries",
+              "dry_cleaners",
+              "durable_goods",
+              "duty_free_stores",
+              "eating_places_restaurants",
+              "educational_services",
+              "electric_razor_stores",
+              "electrical_parts_and_equipment",
+              "electrical_services",
+              "electronics_repair_shops",
+              "electronics_stores",
+              "elementary_secondary_schools",
+              "employment_temp_agencies",
+              "equipment_rental",
+              "exterminating_services",
+              "family_clothing_stores",
+              "fast_food_restaurants",
+              "financial_institutions",
+              "fines_government_administrative_entities",
+              "fireplace_fireplace_screens_and_accessories_stores",
+              "floor_covering_stores",
+              "florists",
+              "florists_supplies_nursery_stock_and_flowers",
+              "freezer_and_locker_meat_provisioners",
+              "fuel_dealers_non_automotive",
+              "funeral_services_crematories",
+              "furniture_home_furnishings_and_equipment_stores_except_appliances",
+              "furniture_repair_refinishing",
+              "furriers_and_fur_shops",
+              "general_services",
+              "gift_card_novelty_and_souvenir_shops",
+              "glass_paint_and_wallpaper_stores",
+              "glassware_crystal_stores",
+              "golf_courses_public",
+              "government_services",
+              "grocery_stores_supermarkets",
+              "hardware_equipment_and_supplies",
+              "hardware_stores",
+              "health_and_beauty_spas",
+              "hearing_aids_sales_and_supplies",
+              "heating_plumbing_a_c",
+              "hobby_toy_and_game_shops",
+              "home_supply_warehouse_stores",
+              "hospitals",
+              "hotels_motels_and_resorts",
+              "household_appliance_stores",
+              "industrial_supplies",
+              "information_retrieval_services",
+              "insurance_default",
+              "insurance_underwriting_premiums",
+              "intra_company_purchases",
+              "jewelry_stores_watches_clocks_and_silverware_stores",
+              "landscaping_services",
+              "laundries",
+              "laundry_cleaning_services",
+              "legal_services_attorneys",
+              "luggage_and_leather_goods_stores",
+              "lumber_building_materials_stores",
+              "manual_cash_disburse",
+              "marinas_service_and_supplies",
+              "masonry_stonework_and_plaster",
+              "massage_parlors",
+              "medical_and_dental_labs",
+              "medical_dental_ophthalmic_and_hospital_equipment_and_supplies",
+              "medical_services",
+              "membership_organizations",
+              "mens_and_boys_clothing_and_accessories_stores",
+              "mens_womens_clothing_stores",
+              "metal_service_centers",
+              "miscellaneous",
+              "miscellaneous_apparel_and_accessory_shops",
+              "miscellaneous_auto_dealers",
+              "miscellaneous_business_services",
+              "miscellaneous_food_stores",
+              "miscellaneous_general_merchandise",
+              "miscellaneous_general_services",
+              "miscellaneous_home_furnishing_specialty_stores",
+              "miscellaneous_publishing_and_printing",
+              "miscellaneous_recreation_services",
+              "miscellaneous_repair_shops",
+              "miscellaneous_specialty_retail",
+              "mobile_home_dealers",
+              "motion_picture_theaters",
+              "motor_freight_carriers_and_trucking",
+              "motor_homes_dealers",
+              "motor_vehicle_supplies_and_new_parts",
+              "motorcycle_shops_and_dealers",
+              "motorcycle_shops_dealers",
+              "music_stores_musical_instruments_pianos_and_sheet_music",
+              "news_dealers_and_newsstands",
+              "non_fi_money_orders",
+              "non_fi_stored_value_card_purchase_load",
+              "nondurable_goods",
+              "nurseries_lawn_and_garden_supply_stores",
+              "nursing_personal_care",
+              "office_and_commercial_furniture",
+              "opticians_eyeglasses",
+              "optometrists_ophthalmologist",
+              "orthopedic_goods_prosthetic_devices",
+              "osteopaths",
+              "package_stores_beer_wine_and_liquor",
+              "paints_varnishes_and_supplies",
+              "parking_lots_garages",
+              "passenger_railways",
+              "pawn_shops",
+              "pet_shops_pet_food_and_supplies",
+              "petroleum_and_petroleum_products",
+              "photo_developing",
+              "photographic_photocopy_microfilm_equipment_and_supplies",
+              "photographic_studios",
+              "picture_video_production",
+              "piece_goods_notions_and_other_dry_goods",
+              "plumbing_heating_equipment_and_supplies",
+              "political_organizations",
+              "postal_services_government_only",
+              "precious_stones_and_metals_watches_and_jewelry",
+              "professional_services",
+              "public_warehousing_and_storage",
+              "quick_copy_repro_and_blueprint",
+              "railroads",
+              "real_estate_agents_and_managers_rentals",
+              "record_stores",
+              "recreational_vehicle_rentals",
+              "religious_goods_stores",
+              "religious_organizations",
+              "roofing_siding_sheet_metal",
+              "secretarial_support_services",
+              "security_brokers_dealers",
+              "service_stations",
+              "sewing_needlework_fabric_and_piece_goods_stores",
+              "shoe_repair_hat_cleaning",
+              "shoe_stores",
+              "small_appliance_repair",
+              "snowmobile_dealers",
+              "special_trade_services",
+              "specialty_cleaning",
+              "sporting_goods_stores",
+              "sporting_recreation_camps",
+              "sports_and_riding_apparel_stores",
+              "sports_clubs_fields",
+              "stamp_and_coin_stores",
+              "stationary_office_supplies_printing_and_writing_paper",
+              "stationery_stores_office_and_school_supply_stores",
+              "swimming_pools_sales",
+              "t_ui_travel_germany",
+              "tailors_alterations",
+              "tax_payments_government_agencies",
+              "tax_preparation_services",
+              "taxicabs_limousines",
+              "telecommunication_equipment_and_telephone_sales",
+              "telecommunication_services",
+              "telegraph_services",
+              "tent_and_awning_shops",
+              "testing_laboratories",
+              "theatrical_ticket_agencies",
+              "timeshares",
+              "tire_retreading_and_repair",
+              "tolls_bridge_fees",
+              "tourist_attractions_and_exhibits",
+              "towing_services",
+              "trailer_parks_campgrounds",
+              "transportation_services",
+              "travel_agencies_tour_operators",
+              "truck_stop_iteration",
+              "truck_utility_trailer_rentals",
+              "typesetting_plate_making_and_related_services",
+              "typewriter_stores",
+              "u_s_federal_government_agencies_or_departments",
+              "uniforms_commercial_clothing",
+              "used_merchandise_and_secondhand_stores",
+              "utilities",
+              "variety_stores",
+              "veterinary_services",
+              "video_amusement_game_supplies",
+              "video_game_arcades",
+              "video_tape_rental_stores",
+              "vocational_trade_schools",
+              "watch_jewelry_repair",
+              "welding_repair",
+              "wholesale_clubs",
+              "wig_and_toupee_stores",
+              "wires_money_orders",
+              "womens_accessory_and_specialty_shops",
+              "womens_ready_to_wear_stores",
+              "wrecking_and_salvage_yards"
+            ],
             "type": "string"
           },
           "type": "array"
@@ -6446,26 +7147,27 @@
           "description": "Recipient name.",
           "type": "string"
         },
-        "phone": {
-          "description": "Recipient phone (including extension).",
-          "type": "string"
-        },
         "status": {
           "description": "The delivery status of the card. One of `pending`, `shipped`, `delivered`, `returned`, `failure`, or `canceled`.",
           "type": "string"
         },
         "tracking_number": {
-          "description": "The tracking number for a physical product, obtained from the delivery service. If multiple tracking numbers were generated for this purchase, please separate them with commas.",
+          "description": "A tracking number for a card shipment.",
           "type": "string"
         },
         "tracking_url": {
           "description": "A link to the shipping carrier's site where you can view detailed information about a card shipment.",
           "type": "string"
+        },
+        "type": {
+          "description": "One of `bulk` or `individual`. Bulk shipments will be grouped and mailed together, while individual ones will not.",
+          "type": "string"
         }
       },
       "required": [
         "address",
-        "name"
+        "name",
+        "type"
       ],
       "title": "IssuingCardShipping",
       "type": "object",
@@ -6482,6 +7184,292 @@
         "categories": {
           "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) on which to apply the spending limit. Leave this blank to limit all charges.",
           "items": {
+            "enum": [
+              "ac_refrigeration_repair",
+              "accounting_bookkeeping_services",
+              "advertising_services",
+              "agricultural_cooperative",
+              "airlines_air_carriers",
+              "airports_flying_fields",
+              "ambulance_services",
+              "amusement_parks_carnivals",
+              "antique_reproductions",
+              "antique_shops",
+              "aquariums",
+              "architectural_surveying_services",
+              "art_dealers_and_galleries",
+              "artists_supply_and_craft_shops",
+              "auto_and_home_supply_stores",
+              "auto_body_repair_shops",
+              "auto_paint_shops",
+              "auto_service_shops",
+              "automated_cash_disburse",
+              "automated_fuel_dispensers",
+              "automobile_associations",
+              "automotive_parts_and_accessories_stores",
+              "automotive_tire_stores",
+              "bail_and_bond_payments",
+              "bakeries",
+              "bands_orchestras",
+              "barber_and_beauty_shops",
+              "betting_casino_gambling",
+              "bicycle_shops",
+              "billiard_pool_establishments",
+              "boat_dealers",
+              "boat_rentals_and_leases",
+              "book_stores",
+              "books_periodicals_and_newspapers",
+              "bowling_alleys",
+              "bus_lines",
+              "business_secretarial_schools",
+              "buying_shopping_services",
+              "cable_satellite_and_other_pay_television_and_radio",
+              "camera_and_photographic_supply_stores",
+              "candy_nut_and_confectionery_stores",
+              "car_and_truck_dealers_new_used",
+              "car_and_truck_dealers_used_only",
+              "car_rental_agencies",
+              "car_washes",
+              "carpentry_services",
+              "carpet_upholstery_cleaning",
+              "caterers",
+              "charitable_and_social_service_organizations_fundraising",
+              "chemicals_and_allied_products",
+              "chidrens_and_infants_wear_stores",
+              "child_care_services",
+              "chiropodists_podiatrists",
+              "chiropractors",
+              "cigar_stores_and_stands",
+              "civic_social_fraternal_associations",
+              "cleaning_and_maintenance",
+              "clothing_rental",
+              "colleges_universities",
+              "commercial_equipment",
+              "commercial_footwear",
+              "commercial_photography_art_and_graphics",
+              "commuter_transport_and_ferries",
+              "computer_network_services",
+              "computer_programming",
+              "computer_repair",
+              "computer_software_stores",
+              "computers_peripherals_and_software",
+              "concrete_work_services",
+              "construction_materials",
+              "consulting_public_relations",
+              "correspondence_schools",
+              "cosmetic_stores",
+              "counseling_services",
+              "country_clubs",
+              "courier_services",
+              "court_costs",
+              "credit_reporting_agencies",
+              "cruise_lines",
+              "dairy_products_stores",
+              "dance_hall_studios_schools",
+              "dating_escort_services",
+              "dentists_orthodontists",
+              "department_stores",
+              "detective_agencies",
+              "direct_marketing_catalog_merchant",
+              "direct_marketing_combination_catalog_and_retail_merchant",
+              "direct_marketing_inbound_telemarketing",
+              "direct_marketing_insurance_services",
+              "direct_marketing_other",
+              "direct_marketing_outbound_telemarketing",
+              "direct_marketing_subscription",
+              "direct_marketing_travel",
+              "discount_stores",
+              "doctors",
+              "door_to_door_sales",
+              "drapery_window_covering_and_upholstery_stores",
+              "drinking_places",
+              "drug_stores_and_pharmacies",
+              "drugs_drug_proprietaries_and_druggist_sundries",
+              "dry_cleaners",
+              "durable_goods",
+              "duty_free_stores",
+              "eating_places_restaurants",
+              "educational_services",
+              "electric_razor_stores",
+              "electrical_parts_and_equipment",
+              "electrical_services",
+              "electronics_repair_shops",
+              "electronics_stores",
+              "elementary_secondary_schools",
+              "employment_temp_agencies",
+              "equipment_rental",
+              "exterminating_services",
+              "family_clothing_stores",
+              "fast_food_restaurants",
+              "financial_institutions",
+              "fines_government_administrative_entities",
+              "fireplace_fireplace_screens_and_accessories_stores",
+              "floor_covering_stores",
+              "florists",
+              "florists_supplies_nursery_stock_and_flowers",
+              "freezer_and_locker_meat_provisioners",
+              "fuel_dealers_non_automotive",
+              "funeral_services_crematories",
+              "furniture_home_furnishings_and_equipment_stores_except_appliances",
+              "furniture_repair_refinishing",
+              "furriers_and_fur_shops",
+              "general_services",
+              "gift_card_novelty_and_souvenir_shops",
+              "glass_paint_and_wallpaper_stores",
+              "glassware_crystal_stores",
+              "golf_courses_public",
+              "government_services",
+              "grocery_stores_supermarkets",
+              "hardware_equipment_and_supplies",
+              "hardware_stores",
+              "health_and_beauty_spas",
+              "hearing_aids_sales_and_supplies",
+              "heating_plumbing_a_c",
+              "hobby_toy_and_game_shops",
+              "home_supply_warehouse_stores",
+              "hospitals",
+              "hotels_motels_and_resorts",
+              "household_appliance_stores",
+              "industrial_supplies",
+              "information_retrieval_services",
+              "insurance_default",
+              "insurance_underwriting_premiums",
+              "intra_company_purchases",
+              "jewelry_stores_watches_clocks_and_silverware_stores",
+              "landscaping_services",
+              "laundries",
+              "laundry_cleaning_services",
+              "legal_services_attorneys",
+              "luggage_and_leather_goods_stores",
+              "lumber_building_materials_stores",
+              "manual_cash_disburse",
+              "marinas_service_and_supplies",
+              "masonry_stonework_and_plaster",
+              "massage_parlors",
+              "medical_and_dental_labs",
+              "medical_dental_ophthalmic_and_hospital_equipment_and_supplies",
+              "medical_services",
+              "membership_organizations",
+              "mens_and_boys_clothing_and_accessories_stores",
+              "mens_womens_clothing_stores",
+              "metal_service_centers",
+              "miscellaneous",
+              "miscellaneous_apparel_and_accessory_shops",
+              "miscellaneous_auto_dealers",
+              "miscellaneous_business_services",
+              "miscellaneous_food_stores",
+              "miscellaneous_general_merchandise",
+              "miscellaneous_general_services",
+              "miscellaneous_home_furnishing_specialty_stores",
+              "miscellaneous_publishing_and_printing",
+              "miscellaneous_recreation_services",
+              "miscellaneous_repair_shops",
+              "miscellaneous_specialty_retail",
+              "mobile_home_dealers",
+              "motion_picture_theaters",
+              "motor_freight_carriers_and_trucking",
+              "motor_homes_dealers",
+              "motor_vehicle_supplies_and_new_parts",
+              "motorcycle_shops_and_dealers",
+              "motorcycle_shops_dealers",
+              "music_stores_musical_instruments_pianos_and_sheet_music",
+              "news_dealers_and_newsstands",
+              "non_fi_money_orders",
+              "non_fi_stored_value_card_purchase_load",
+              "nondurable_goods",
+              "nurseries_lawn_and_garden_supply_stores",
+              "nursing_personal_care",
+              "office_and_commercial_furniture",
+              "opticians_eyeglasses",
+              "optometrists_ophthalmologist",
+              "orthopedic_goods_prosthetic_devices",
+              "osteopaths",
+              "package_stores_beer_wine_and_liquor",
+              "paints_varnishes_and_supplies",
+              "parking_lots_garages",
+              "passenger_railways",
+              "pawn_shops",
+              "pet_shops_pet_food_and_supplies",
+              "petroleum_and_petroleum_products",
+              "photo_developing",
+              "photographic_photocopy_microfilm_equipment_and_supplies",
+              "photographic_studios",
+              "picture_video_production",
+              "piece_goods_notions_and_other_dry_goods",
+              "plumbing_heating_equipment_and_supplies",
+              "political_organizations",
+              "postal_services_government_only",
+              "precious_stones_and_metals_watches_and_jewelry",
+              "professional_services",
+              "public_warehousing_and_storage",
+              "quick_copy_repro_and_blueprint",
+              "railroads",
+              "real_estate_agents_and_managers_rentals",
+              "record_stores",
+              "recreational_vehicle_rentals",
+              "religious_goods_stores",
+              "religious_organizations",
+              "roofing_siding_sheet_metal",
+              "secretarial_support_services",
+              "security_brokers_dealers",
+              "service_stations",
+              "sewing_needlework_fabric_and_piece_goods_stores",
+              "shoe_repair_hat_cleaning",
+              "shoe_stores",
+              "small_appliance_repair",
+              "snowmobile_dealers",
+              "special_trade_services",
+              "specialty_cleaning",
+              "sporting_goods_stores",
+              "sporting_recreation_camps",
+              "sports_and_riding_apparel_stores",
+              "sports_clubs_fields",
+              "stamp_and_coin_stores",
+              "stationary_office_supplies_printing_and_writing_paper",
+              "stationery_stores_office_and_school_supply_stores",
+              "swimming_pools_sales",
+              "t_ui_travel_germany",
+              "tailors_alterations",
+              "tax_payments_government_agencies",
+              "tax_preparation_services",
+              "taxicabs_limousines",
+              "telecommunication_equipment_and_telephone_sales",
+              "telecommunication_services",
+              "telegraph_services",
+              "tent_and_awning_shops",
+              "testing_laboratories",
+              "theatrical_ticket_agencies",
+              "timeshares",
+              "tire_retreading_and_repair",
+              "tolls_bridge_fees",
+              "tourist_attractions_and_exhibits",
+              "towing_services",
+              "trailer_parks_campgrounds",
+              "transportation_services",
+              "travel_agencies_tour_operators",
+              "truck_stop_iteration",
+              "truck_utility_trailer_rentals",
+              "typesetting_plate_making_and_related_services",
+              "typewriter_stores",
+              "u_s_federal_government_agencies_or_departments",
+              "uniforms_commercial_clothing",
+              "used_merchandise_and_secondhand_stores",
+              "utilities",
+              "variety_stores",
+              "veterinary_services",
+              "video_amusement_game_supplies",
+              "video_game_arcades",
+              "video_tape_rental_stores",
+              "vocational_trade_schools",
+              "watch_jewelry_repair",
+              "welding_repair",
+              "wholesale_clubs",
+              "wig_and_toupee_stores",
+              "wires_money_orders",
+              "womens_accessory_and_specialty_shops",
+              "womens_ready_to_wear_stores",
+              "wrecking_and_salvage_yards"
+            ],
             "type": "string"
           },
           "type": "array"
@@ -6532,6 +7520,292 @@
         "allowed_categories": {
           "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations permitted on this card.",
           "items": {
+            "enum": [
+              "ac_refrigeration_repair",
+              "accounting_bookkeeping_services",
+              "advertising_services",
+              "agricultural_cooperative",
+              "airlines_air_carriers",
+              "airports_flying_fields",
+              "ambulance_services",
+              "amusement_parks_carnivals",
+              "antique_reproductions",
+              "antique_shops",
+              "aquariums",
+              "architectural_surveying_services",
+              "art_dealers_and_galleries",
+              "artists_supply_and_craft_shops",
+              "auto_and_home_supply_stores",
+              "auto_body_repair_shops",
+              "auto_paint_shops",
+              "auto_service_shops",
+              "automated_cash_disburse",
+              "automated_fuel_dispensers",
+              "automobile_associations",
+              "automotive_parts_and_accessories_stores",
+              "automotive_tire_stores",
+              "bail_and_bond_payments",
+              "bakeries",
+              "bands_orchestras",
+              "barber_and_beauty_shops",
+              "betting_casino_gambling",
+              "bicycle_shops",
+              "billiard_pool_establishments",
+              "boat_dealers",
+              "boat_rentals_and_leases",
+              "book_stores",
+              "books_periodicals_and_newspapers",
+              "bowling_alleys",
+              "bus_lines",
+              "business_secretarial_schools",
+              "buying_shopping_services",
+              "cable_satellite_and_other_pay_television_and_radio",
+              "camera_and_photographic_supply_stores",
+              "candy_nut_and_confectionery_stores",
+              "car_and_truck_dealers_new_used",
+              "car_and_truck_dealers_used_only",
+              "car_rental_agencies",
+              "car_washes",
+              "carpentry_services",
+              "carpet_upholstery_cleaning",
+              "caterers",
+              "charitable_and_social_service_organizations_fundraising",
+              "chemicals_and_allied_products",
+              "chidrens_and_infants_wear_stores",
+              "child_care_services",
+              "chiropodists_podiatrists",
+              "chiropractors",
+              "cigar_stores_and_stands",
+              "civic_social_fraternal_associations",
+              "cleaning_and_maintenance",
+              "clothing_rental",
+              "colleges_universities",
+              "commercial_equipment",
+              "commercial_footwear",
+              "commercial_photography_art_and_graphics",
+              "commuter_transport_and_ferries",
+              "computer_network_services",
+              "computer_programming",
+              "computer_repair",
+              "computer_software_stores",
+              "computers_peripherals_and_software",
+              "concrete_work_services",
+              "construction_materials",
+              "consulting_public_relations",
+              "correspondence_schools",
+              "cosmetic_stores",
+              "counseling_services",
+              "country_clubs",
+              "courier_services",
+              "court_costs",
+              "credit_reporting_agencies",
+              "cruise_lines",
+              "dairy_products_stores",
+              "dance_hall_studios_schools",
+              "dating_escort_services",
+              "dentists_orthodontists",
+              "department_stores",
+              "detective_agencies",
+              "direct_marketing_catalog_merchant",
+              "direct_marketing_combination_catalog_and_retail_merchant",
+              "direct_marketing_inbound_telemarketing",
+              "direct_marketing_insurance_services",
+              "direct_marketing_other",
+              "direct_marketing_outbound_telemarketing",
+              "direct_marketing_subscription",
+              "direct_marketing_travel",
+              "discount_stores",
+              "doctors",
+              "door_to_door_sales",
+              "drapery_window_covering_and_upholstery_stores",
+              "drinking_places",
+              "drug_stores_and_pharmacies",
+              "drugs_drug_proprietaries_and_druggist_sundries",
+              "dry_cleaners",
+              "durable_goods",
+              "duty_free_stores",
+              "eating_places_restaurants",
+              "educational_services",
+              "electric_razor_stores",
+              "electrical_parts_and_equipment",
+              "electrical_services",
+              "electronics_repair_shops",
+              "electronics_stores",
+              "elementary_secondary_schools",
+              "employment_temp_agencies",
+              "equipment_rental",
+              "exterminating_services",
+              "family_clothing_stores",
+              "fast_food_restaurants",
+              "financial_institutions",
+              "fines_government_administrative_entities",
+              "fireplace_fireplace_screens_and_accessories_stores",
+              "floor_covering_stores",
+              "florists",
+              "florists_supplies_nursery_stock_and_flowers",
+              "freezer_and_locker_meat_provisioners",
+              "fuel_dealers_non_automotive",
+              "funeral_services_crematories",
+              "furniture_home_furnishings_and_equipment_stores_except_appliances",
+              "furniture_repair_refinishing",
+              "furriers_and_fur_shops",
+              "general_services",
+              "gift_card_novelty_and_souvenir_shops",
+              "glass_paint_and_wallpaper_stores",
+              "glassware_crystal_stores",
+              "golf_courses_public",
+              "government_services",
+              "grocery_stores_supermarkets",
+              "hardware_equipment_and_supplies",
+              "hardware_stores",
+              "health_and_beauty_spas",
+              "hearing_aids_sales_and_supplies",
+              "heating_plumbing_a_c",
+              "hobby_toy_and_game_shops",
+              "home_supply_warehouse_stores",
+              "hospitals",
+              "hotels_motels_and_resorts",
+              "household_appliance_stores",
+              "industrial_supplies",
+              "information_retrieval_services",
+              "insurance_default",
+              "insurance_underwriting_premiums",
+              "intra_company_purchases",
+              "jewelry_stores_watches_clocks_and_silverware_stores",
+              "landscaping_services",
+              "laundries",
+              "laundry_cleaning_services",
+              "legal_services_attorneys",
+              "luggage_and_leather_goods_stores",
+              "lumber_building_materials_stores",
+              "manual_cash_disburse",
+              "marinas_service_and_supplies",
+              "masonry_stonework_and_plaster",
+              "massage_parlors",
+              "medical_and_dental_labs",
+              "medical_dental_ophthalmic_and_hospital_equipment_and_supplies",
+              "medical_services",
+              "membership_organizations",
+              "mens_and_boys_clothing_and_accessories_stores",
+              "mens_womens_clothing_stores",
+              "metal_service_centers",
+              "miscellaneous",
+              "miscellaneous_apparel_and_accessory_shops",
+              "miscellaneous_auto_dealers",
+              "miscellaneous_business_services",
+              "miscellaneous_food_stores",
+              "miscellaneous_general_merchandise",
+              "miscellaneous_general_services",
+              "miscellaneous_home_furnishing_specialty_stores",
+              "miscellaneous_publishing_and_printing",
+              "miscellaneous_recreation_services",
+              "miscellaneous_repair_shops",
+              "miscellaneous_specialty_retail",
+              "mobile_home_dealers",
+              "motion_picture_theaters",
+              "motor_freight_carriers_and_trucking",
+              "motor_homes_dealers",
+              "motor_vehicle_supplies_and_new_parts",
+              "motorcycle_shops_and_dealers",
+              "motorcycle_shops_dealers",
+              "music_stores_musical_instruments_pianos_and_sheet_music",
+              "news_dealers_and_newsstands",
+              "non_fi_money_orders",
+              "non_fi_stored_value_card_purchase_load",
+              "nondurable_goods",
+              "nurseries_lawn_and_garden_supply_stores",
+              "nursing_personal_care",
+              "office_and_commercial_furniture",
+              "opticians_eyeglasses",
+              "optometrists_ophthalmologist",
+              "orthopedic_goods_prosthetic_devices",
+              "osteopaths",
+              "package_stores_beer_wine_and_liquor",
+              "paints_varnishes_and_supplies",
+              "parking_lots_garages",
+              "passenger_railways",
+              "pawn_shops",
+              "pet_shops_pet_food_and_supplies",
+              "petroleum_and_petroleum_products",
+              "photo_developing",
+              "photographic_photocopy_microfilm_equipment_and_supplies",
+              "photographic_studios",
+              "picture_video_production",
+              "piece_goods_notions_and_other_dry_goods",
+              "plumbing_heating_equipment_and_supplies",
+              "political_organizations",
+              "postal_services_government_only",
+              "precious_stones_and_metals_watches_and_jewelry",
+              "professional_services",
+              "public_warehousing_and_storage",
+              "quick_copy_repro_and_blueprint",
+              "railroads",
+              "real_estate_agents_and_managers_rentals",
+              "record_stores",
+              "recreational_vehicle_rentals",
+              "religious_goods_stores",
+              "religious_organizations",
+              "roofing_siding_sheet_metal",
+              "secretarial_support_services",
+              "security_brokers_dealers",
+              "service_stations",
+              "sewing_needlework_fabric_and_piece_goods_stores",
+              "shoe_repair_hat_cleaning",
+              "shoe_stores",
+              "small_appliance_repair",
+              "snowmobile_dealers",
+              "special_trade_services",
+              "specialty_cleaning",
+              "sporting_goods_stores",
+              "sporting_recreation_camps",
+              "sports_and_riding_apparel_stores",
+              "sports_clubs_fields",
+              "stamp_and_coin_stores",
+              "stationary_office_supplies_printing_and_writing_paper",
+              "stationery_stores_office_and_school_supply_stores",
+              "swimming_pools_sales",
+              "t_ui_travel_germany",
+              "tailors_alterations",
+              "tax_payments_government_agencies",
+              "tax_preparation_services",
+              "taxicabs_limousines",
+              "telecommunication_equipment_and_telephone_sales",
+              "telecommunication_services",
+              "telegraph_services",
+              "tent_and_awning_shops",
+              "testing_laboratories",
+              "theatrical_ticket_agencies",
+              "timeshares",
+              "tire_retreading_and_repair",
+              "tolls_bridge_fees",
+              "tourist_attractions_and_exhibits",
+              "towing_services",
+              "trailer_parks_campgrounds",
+              "transportation_services",
+              "travel_agencies_tour_operators",
+              "truck_stop_iteration",
+              "truck_utility_trailer_rentals",
+              "typesetting_plate_making_and_related_services",
+              "typewriter_stores",
+              "u_s_federal_government_agencies_or_departments",
+              "uniforms_commercial_clothing",
+              "used_merchandise_and_secondhand_stores",
+              "utilities",
+              "variety_stores",
+              "veterinary_services",
+              "video_amusement_game_supplies",
+              "video_game_arcades",
+              "video_tape_rental_stores",
+              "vocational_trade_schools",
+              "watch_jewelry_repair",
+              "welding_repair",
+              "wholesale_clubs",
+              "wig_and_toupee_stores",
+              "wires_money_orders",
+              "womens_accessory_and_specialty_shops",
+              "womens_ready_to_wear_stores",
+              "wrecking_and_salvage_yards"
+            ],
             "type": "string"
           },
           "type": "array"
@@ -6539,6 +7813,292 @@
         "blocked_categories": {
           "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to always decline on this card.",
           "items": {
+            "enum": [
+              "ac_refrigeration_repair",
+              "accounting_bookkeeping_services",
+              "advertising_services",
+              "agricultural_cooperative",
+              "airlines_air_carriers",
+              "airports_flying_fields",
+              "ambulance_services",
+              "amusement_parks_carnivals",
+              "antique_reproductions",
+              "antique_shops",
+              "aquariums",
+              "architectural_surveying_services",
+              "art_dealers_and_galleries",
+              "artists_supply_and_craft_shops",
+              "auto_and_home_supply_stores",
+              "auto_body_repair_shops",
+              "auto_paint_shops",
+              "auto_service_shops",
+              "automated_cash_disburse",
+              "automated_fuel_dispensers",
+              "automobile_associations",
+              "automotive_parts_and_accessories_stores",
+              "automotive_tire_stores",
+              "bail_and_bond_payments",
+              "bakeries",
+              "bands_orchestras",
+              "barber_and_beauty_shops",
+              "betting_casino_gambling",
+              "bicycle_shops",
+              "billiard_pool_establishments",
+              "boat_dealers",
+              "boat_rentals_and_leases",
+              "book_stores",
+              "books_periodicals_and_newspapers",
+              "bowling_alleys",
+              "bus_lines",
+              "business_secretarial_schools",
+              "buying_shopping_services",
+              "cable_satellite_and_other_pay_television_and_radio",
+              "camera_and_photographic_supply_stores",
+              "candy_nut_and_confectionery_stores",
+              "car_and_truck_dealers_new_used",
+              "car_and_truck_dealers_used_only",
+              "car_rental_agencies",
+              "car_washes",
+              "carpentry_services",
+              "carpet_upholstery_cleaning",
+              "caterers",
+              "charitable_and_social_service_organizations_fundraising",
+              "chemicals_and_allied_products",
+              "chidrens_and_infants_wear_stores",
+              "child_care_services",
+              "chiropodists_podiatrists",
+              "chiropractors",
+              "cigar_stores_and_stands",
+              "civic_social_fraternal_associations",
+              "cleaning_and_maintenance",
+              "clothing_rental",
+              "colleges_universities",
+              "commercial_equipment",
+              "commercial_footwear",
+              "commercial_photography_art_and_graphics",
+              "commuter_transport_and_ferries",
+              "computer_network_services",
+              "computer_programming",
+              "computer_repair",
+              "computer_software_stores",
+              "computers_peripherals_and_software",
+              "concrete_work_services",
+              "construction_materials",
+              "consulting_public_relations",
+              "correspondence_schools",
+              "cosmetic_stores",
+              "counseling_services",
+              "country_clubs",
+              "courier_services",
+              "court_costs",
+              "credit_reporting_agencies",
+              "cruise_lines",
+              "dairy_products_stores",
+              "dance_hall_studios_schools",
+              "dating_escort_services",
+              "dentists_orthodontists",
+              "department_stores",
+              "detective_agencies",
+              "direct_marketing_catalog_merchant",
+              "direct_marketing_combination_catalog_and_retail_merchant",
+              "direct_marketing_inbound_telemarketing",
+              "direct_marketing_insurance_services",
+              "direct_marketing_other",
+              "direct_marketing_outbound_telemarketing",
+              "direct_marketing_subscription",
+              "direct_marketing_travel",
+              "discount_stores",
+              "doctors",
+              "door_to_door_sales",
+              "drapery_window_covering_and_upholstery_stores",
+              "drinking_places",
+              "drug_stores_and_pharmacies",
+              "drugs_drug_proprietaries_and_druggist_sundries",
+              "dry_cleaners",
+              "durable_goods",
+              "duty_free_stores",
+              "eating_places_restaurants",
+              "educational_services",
+              "electric_razor_stores",
+              "electrical_parts_and_equipment",
+              "electrical_services",
+              "electronics_repair_shops",
+              "electronics_stores",
+              "elementary_secondary_schools",
+              "employment_temp_agencies",
+              "equipment_rental",
+              "exterminating_services",
+              "family_clothing_stores",
+              "fast_food_restaurants",
+              "financial_institutions",
+              "fines_government_administrative_entities",
+              "fireplace_fireplace_screens_and_accessories_stores",
+              "floor_covering_stores",
+              "florists",
+              "florists_supplies_nursery_stock_and_flowers",
+              "freezer_and_locker_meat_provisioners",
+              "fuel_dealers_non_automotive",
+              "funeral_services_crematories",
+              "furniture_home_furnishings_and_equipment_stores_except_appliances",
+              "furniture_repair_refinishing",
+              "furriers_and_fur_shops",
+              "general_services",
+              "gift_card_novelty_and_souvenir_shops",
+              "glass_paint_and_wallpaper_stores",
+              "glassware_crystal_stores",
+              "golf_courses_public",
+              "government_services",
+              "grocery_stores_supermarkets",
+              "hardware_equipment_and_supplies",
+              "hardware_stores",
+              "health_and_beauty_spas",
+              "hearing_aids_sales_and_supplies",
+              "heating_plumbing_a_c",
+              "hobby_toy_and_game_shops",
+              "home_supply_warehouse_stores",
+              "hospitals",
+              "hotels_motels_and_resorts",
+              "household_appliance_stores",
+              "industrial_supplies",
+              "information_retrieval_services",
+              "insurance_default",
+              "insurance_underwriting_premiums",
+              "intra_company_purchases",
+              "jewelry_stores_watches_clocks_and_silverware_stores",
+              "landscaping_services",
+              "laundries",
+              "laundry_cleaning_services",
+              "legal_services_attorneys",
+              "luggage_and_leather_goods_stores",
+              "lumber_building_materials_stores",
+              "manual_cash_disburse",
+              "marinas_service_and_supplies",
+              "masonry_stonework_and_plaster",
+              "massage_parlors",
+              "medical_and_dental_labs",
+              "medical_dental_ophthalmic_and_hospital_equipment_and_supplies",
+              "medical_services",
+              "membership_organizations",
+              "mens_and_boys_clothing_and_accessories_stores",
+              "mens_womens_clothing_stores",
+              "metal_service_centers",
+              "miscellaneous",
+              "miscellaneous_apparel_and_accessory_shops",
+              "miscellaneous_auto_dealers",
+              "miscellaneous_business_services",
+              "miscellaneous_food_stores",
+              "miscellaneous_general_merchandise",
+              "miscellaneous_general_services",
+              "miscellaneous_home_furnishing_specialty_stores",
+              "miscellaneous_publishing_and_printing",
+              "miscellaneous_recreation_services",
+              "miscellaneous_repair_shops",
+              "miscellaneous_specialty_retail",
+              "mobile_home_dealers",
+              "motion_picture_theaters",
+              "motor_freight_carriers_and_trucking",
+              "motor_homes_dealers",
+              "motor_vehicle_supplies_and_new_parts",
+              "motorcycle_shops_and_dealers",
+              "motorcycle_shops_dealers",
+              "music_stores_musical_instruments_pianos_and_sheet_music",
+              "news_dealers_and_newsstands",
+              "non_fi_money_orders",
+              "non_fi_stored_value_card_purchase_load",
+              "nondurable_goods",
+              "nurseries_lawn_and_garden_supply_stores",
+              "nursing_personal_care",
+              "office_and_commercial_furniture",
+              "opticians_eyeglasses",
+              "optometrists_ophthalmologist",
+              "orthopedic_goods_prosthetic_devices",
+              "osteopaths",
+              "package_stores_beer_wine_and_liquor",
+              "paints_varnishes_and_supplies",
+              "parking_lots_garages",
+              "passenger_railways",
+              "pawn_shops",
+              "pet_shops_pet_food_and_supplies",
+              "petroleum_and_petroleum_products",
+              "photo_developing",
+              "photographic_photocopy_microfilm_equipment_and_supplies",
+              "photographic_studios",
+              "picture_video_production",
+              "piece_goods_notions_and_other_dry_goods",
+              "plumbing_heating_equipment_and_supplies",
+              "political_organizations",
+              "postal_services_government_only",
+              "precious_stones_and_metals_watches_and_jewelry",
+              "professional_services",
+              "public_warehousing_and_storage",
+              "quick_copy_repro_and_blueprint",
+              "railroads",
+              "real_estate_agents_and_managers_rentals",
+              "record_stores",
+              "recreational_vehicle_rentals",
+              "religious_goods_stores",
+              "religious_organizations",
+              "roofing_siding_sheet_metal",
+              "secretarial_support_services",
+              "security_brokers_dealers",
+              "service_stations",
+              "sewing_needlework_fabric_and_piece_goods_stores",
+              "shoe_repair_hat_cleaning",
+              "shoe_stores",
+              "small_appliance_repair",
+              "snowmobile_dealers",
+              "special_trade_services",
+              "specialty_cleaning",
+              "sporting_goods_stores",
+              "sporting_recreation_camps",
+              "sports_and_riding_apparel_stores",
+              "sports_clubs_fields",
+              "stamp_and_coin_stores",
+              "stationary_office_supplies_printing_and_writing_paper",
+              "stationery_stores_office_and_school_supply_stores",
+              "swimming_pools_sales",
+              "t_ui_travel_germany",
+              "tailors_alterations",
+              "tax_payments_government_agencies",
+              "tax_preparation_services",
+              "taxicabs_limousines",
+              "telecommunication_equipment_and_telephone_sales",
+              "telecommunication_services",
+              "telegraph_services",
+              "tent_and_awning_shops",
+              "testing_laboratories",
+              "theatrical_ticket_agencies",
+              "timeshares",
+              "tire_retreading_and_repair",
+              "tolls_bridge_fees",
+              "tourist_attractions_and_exhibits",
+              "towing_services",
+              "trailer_parks_campgrounds",
+              "transportation_services",
+              "travel_agencies_tour_operators",
+              "truck_stop_iteration",
+              "truck_utility_trailer_rentals",
+              "typesetting_plate_making_and_related_services",
+              "typewriter_stores",
+              "u_s_federal_government_agencies_or_departments",
+              "uniforms_commercial_clothing",
+              "used_merchandise_and_secondhand_stores",
+              "utilities",
+              "variety_stores",
+              "veterinary_services",
+              "video_amusement_game_supplies",
+              "video_game_arcades",
+              "video_tape_rental_stores",
+              "vocational_trade_schools",
+              "watch_jewelry_repair",
+              "welding_repair",
+              "wholesale_clubs",
+              "wig_and_toupee_stores",
+              "wires_money_orders",
+              "womens_accessory_and_specialty_shops",
+              "womens_ready_to_wear_stores",
+              "wrecking_and_salvage_yards"
+            ],
             "type": "string"
           },
           "type": "array"
@@ -6566,6 +8126,292 @@
         "categories": {
           "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) on which to apply the spending limit. Leave this blank to limit all charges.",
           "items": {
+            "enum": [
+              "ac_refrigeration_repair",
+              "accounting_bookkeeping_services",
+              "advertising_services",
+              "agricultural_cooperative",
+              "airlines_air_carriers",
+              "airports_flying_fields",
+              "ambulance_services",
+              "amusement_parks_carnivals",
+              "antique_reproductions",
+              "antique_shops",
+              "aquariums",
+              "architectural_surveying_services",
+              "art_dealers_and_galleries",
+              "artists_supply_and_craft_shops",
+              "auto_and_home_supply_stores",
+              "auto_body_repair_shops",
+              "auto_paint_shops",
+              "auto_service_shops",
+              "automated_cash_disburse",
+              "automated_fuel_dispensers",
+              "automobile_associations",
+              "automotive_parts_and_accessories_stores",
+              "automotive_tire_stores",
+              "bail_and_bond_payments",
+              "bakeries",
+              "bands_orchestras",
+              "barber_and_beauty_shops",
+              "betting_casino_gambling",
+              "bicycle_shops",
+              "billiard_pool_establishments",
+              "boat_dealers",
+              "boat_rentals_and_leases",
+              "book_stores",
+              "books_periodicals_and_newspapers",
+              "bowling_alleys",
+              "bus_lines",
+              "business_secretarial_schools",
+              "buying_shopping_services",
+              "cable_satellite_and_other_pay_television_and_radio",
+              "camera_and_photographic_supply_stores",
+              "candy_nut_and_confectionery_stores",
+              "car_and_truck_dealers_new_used",
+              "car_and_truck_dealers_used_only",
+              "car_rental_agencies",
+              "car_washes",
+              "carpentry_services",
+              "carpet_upholstery_cleaning",
+              "caterers",
+              "charitable_and_social_service_organizations_fundraising",
+              "chemicals_and_allied_products",
+              "chidrens_and_infants_wear_stores",
+              "child_care_services",
+              "chiropodists_podiatrists",
+              "chiropractors",
+              "cigar_stores_and_stands",
+              "civic_social_fraternal_associations",
+              "cleaning_and_maintenance",
+              "clothing_rental",
+              "colleges_universities",
+              "commercial_equipment",
+              "commercial_footwear",
+              "commercial_photography_art_and_graphics",
+              "commuter_transport_and_ferries",
+              "computer_network_services",
+              "computer_programming",
+              "computer_repair",
+              "computer_software_stores",
+              "computers_peripherals_and_software",
+              "concrete_work_services",
+              "construction_materials",
+              "consulting_public_relations",
+              "correspondence_schools",
+              "cosmetic_stores",
+              "counseling_services",
+              "country_clubs",
+              "courier_services",
+              "court_costs",
+              "credit_reporting_agencies",
+              "cruise_lines",
+              "dairy_products_stores",
+              "dance_hall_studios_schools",
+              "dating_escort_services",
+              "dentists_orthodontists",
+              "department_stores",
+              "detective_agencies",
+              "direct_marketing_catalog_merchant",
+              "direct_marketing_combination_catalog_and_retail_merchant",
+              "direct_marketing_inbound_telemarketing",
+              "direct_marketing_insurance_services",
+              "direct_marketing_other",
+              "direct_marketing_outbound_telemarketing",
+              "direct_marketing_subscription",
+              "direct_marketing_travel",
+              "discount_stores",
+              "doctors",
+              "door_to_door_sales",
+              "drapery_window_covering_and_upholstery_stores",
+              "drinking_places",
+              "drug_stores_and_pharmacies",
+              "drugs_drug_proprietaries_and_druggist_sundries",
+              "dry_cleaners",
+              "durable_goods",
+              "duty_free_stores",
+              "eating_places_restaurants",
+              "educational_services",
+              "electric_razor_stores",
+              "electrical_parts_and_equipment",
+              "electrical_services",
+              "electronics_repair_shops",
+              "electronics_stores",
+              "elementary_secondary_schools",
+              "employment_temp_agencies",
+              "equipment_rental",
+              "exterminating_services",
+              "family_clothing_stores",
+              "fast_food_restaurants",
+              "financial_institutions",
+              "fines_government_administrative_entities",
+              "fireplace_fireplace_screens_and_accessories_stores",
+              "floor_covering_stores",
+              "florists",
+              "florists_supplies_nursery_stock_and_flowers",
+              "freezer_and_locker_meat_provisioners",
+              "fuel_dealers_non_automotive",
+              "funeral_services_crematories",
+              "furniture_home_furnishings_and_equipment_stores_except_appliances",
+              "furniture_repair_refinishing",
+              "furriers_and_fur_shops",
+              "general_services",
+              "gift_card_novelty_and_souvenir_shops",
+              "glass_paint_and_wallpaper_stores",
+              "glassware_crystal_stores",
+              "golf_courses_public",
+              "government_services",
+              "grocery_stores_supermarkets",
+              "hardware_equipment_and_supplies",
+              "hardware_stores",
+              "health_and_beauty_spas",
+              "hearing_aids_sales_and_supplies",
+              "heating_plumbing_a_c",
+              "hobby_toy_and_game_shops",
+              "home_supply_warehouse_stores",
+              "hospitals",
+              "hotels_motels_and_resorts",
+              "household_appliance_stores",
+              "industrial_supplies",
+              "information_retrieval_services",
+              "insurance_default",
+              "insurance_underwriting_premiums",
+              "intra_company_purchases",
+              "jewelry_stores_watches_clocks_and_silverware_stores",
+              "landscaping_services",
+              "laundries",
+              "laundry_cleaning_services",
+              "legal_services_attorneys",
+              "luggage_and_leather_goods_stores",
+              "lumber_building_materials_stores",
+              "manual_cash_disburse",
+              "marinas_service_and_supplies",
+              "masonry_stonework_and_plaster",
+              "massage_parlors",
+              "medical_and_dental_labs",
+              "medical_dental_ophthalmic_and_hospital_equipment_and_supplies",
+              "medical_services",
+              "membership_organizations",
+              "mens_and_boys_clothing_and_accessories_stores",
+              "mens_womens_clothing_stores",
+              "metal_service_centers",
+              "miscellaneous",
+              "miscellaneous_apparel_and_accessory_shops",
+              "miscellaneous_auto_dealers",
+              "miscellaneous_business_services",
+              "miscellaneous_food_stores",
+              "miscellaneous_general_merchandise",
+              "miscellaneous_general_services",
+              "miscellaneous_home_furnishing_specialty_stores",
+              "miscellaneous_publishing_and_printing",
+              "miscellaneous_recreation_services",
+              "miscellaneous_repair_shops",
+              "miscellaneous_specialty_retail",
+              "mobile_home_dealers",
+              "motion_picture_theaters",
+              "motor_freight_carriers_and_trucking",
+              "motor_homes_dealers",
+              "motor_vehicle_supplies_and_new_parts",
+              "motorcycle_shops_and_dealers",
+              "motorcycle_shops_dealers",
+              "music_stores_musical_instruments_pianos_and_sheet_music",
+              "news_dealers_and_newsstands",
+              "non_fi_money_orders",
+              "non_fi_stored_value_card_purchase_load",
+              "nondurable_goods",
+              "nurseries_lawn_and_garden_supply_stores",
+              "nursing_personal_care",
+              "office_and_commercial_furniture",
+              "opticians_eyeglasses",
+              "optometrists_ophthalmologist",
+              "orthopedic_goods_prosthetic_devices",
+              "osteopaths",
+              "package_stores_beer_wine_and_liquor",
+              "paints_varnishes_and_supplies",
+              "parking_lots_garages",
+              "passenger_railways",
+              "pawn_shops",
+              "pet_shops_pet_food_and_supplies",
+              "petroleum_and_petroleum_products",
+              "photo_developing",
+              "photographic_photocopy_microfilm_equipment_and_supplies",
+              "photographic_studios",
+              "picture_video_production",
+              "piece_goods_notions_and_other_dry_goods",
+              "plumbing_heating_equipment_and_supplies",
+              "political_organizations",
+              "postal_services_government_only",
+              "precious_stones_and_metals_watches_and_jewelry",
+              "professional_services",
+              "public_warehousing_and_storage",
+              "quick_copy_repro_and_blueprint",
+              "railroads",
+              "real_estate_agents_and_managers_rentals",
+              "record_stores",
+              "recreational_vehicle_rentals",
+              "religious_goods_stores",
+              "religious_organizations",
+              "roofing_siding_sheet_metal",
+              "secretarial_support_services",
+              "security_brokers_dealers",
+              "service_stations",
+              "sewing_needlework_fabric_and_piece_goods_stores",
+              "shoe_repair_hat_cleaning",
+              "shoe_stores",
+              "small_appliance_repair",
+              "snowmobile_dealers",
+              "special_trade_services",
+              "specialty_cleaning",
+              "sporting_goods_stores",
+              "sporting_recreation_camps",
+              "sports_and_riding_apparel_stores",
+              "sports_clubs_fields",
+              "stamp_and_coin_stores",
+              "stationary_office_supplies_printing_and_writing_paper",
+              "stationery_stores_office_and_school_supply_stores",
+              "swimming_pools_sales",
+              "t_ui_travel_germany",
+              "tailors_alterations",
+              "tax_payments_government_agencies",
+              "tax_preparation_services",
+              "taxicabs_limousines",
+              "telecommunication_equipment_and_telephone_sales",
+              "telecommunication_services",
+              "telegraph_services",
+              "tent_and_awning_shops",
+              "testing_laboratories",
+              "theatrical_ticket_agencies",
+              "timeshares",
+              "tire_retreading_and_repair",
+              "tolls_bridge_fees",
+              "tourist_attractions_and_exhibits",
+              "towing_services",
+              "trailer_parks_campgrounds",
+              "transportation_services",
+              "travel_agencies_tour_operators",
+              "truck_stop_iteration",
+              "truck_utility_trailer_rentals",
+              "typesetting_plate_making_and_related_services",
+              "typewriter_stores",
+              "u_s_federal_government_agencies_or_departments",
+              "uniforms_commercial_clothing",
+              "used_merchandise_and_secondhand_stores",
+              "utilities",
+              "variety_stores",
+              "veterinary_services",
+              "video_amusement_game_supplies",
+              "video_game_arcades",
+              "video_tape_rental_stores",
+              "vocational_trade_schools",
+              "watch_jewelry_repair",
+              "welding_repair",
+              "wholesale_clubs",
+              "wig_and_toupee_stores",
+              "wires_money_orders",
+              "womens_accessory_and_specialty_shops",
+              "womens_ready_to_wear_stores",
+              "wrecking_and_salvage_yards"
+            ],
             "type": "string"
           },
           "type": "array"
@@ -6778,7 +8624,7 @@
 
       ]
     },
-    "legal_entity_verification": {
+    "legal_entity_person_verification": {
       "properties": {
         "details": {
           "description": "A user-displayable string describing the verification state for the person. For example, this may say \"Provided identity information could not be verified\".",
@@ -6789,7 +8635,7 @@
           "type": "string"
         },
         "document": {
-          "$ref": "#/definitions/legal_entity_verification_document"
+          "$ref": "#/definitions/legal_entity_person_verification_document"
         },
         "status": {
           "description": "The state of verification for the person. Possible values are `unverified`, `pending`, or `verified`.",
@@ -6800,13 +8646,13 @@
         "document",
         "status"
       ],
-      "title": "LegalEntityVerification",
+      "title": "LegalEntityPersonVerification",
       "type": "object",
       "x-expandableFields": [
         "document"
       ]
     },
-    "legal_entity_verification_document": {
+    "legal_entity_person_verification_document": {
       "properties": {
         "back": {
           "description": "The back of an ID returned by a [file upload](#create_file) with a `purpose` value of `identity_document`.",
@@ -6839,7 +8685,7 @@
           }
         }
       },
-      "title": "LegalEntityVerificationDocument",
+      "title": "LegalEntityPersonVerificationDocument",
       "type": "object",
       "x-expandableFields": [
         "back",
@@ -7389,7 +9235,7 @@
           }
         },
         "application_fee_amount": {
-          "description": "The amount of the application fee (if any) for the resulting payment. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect) for details.",
+          "description": "The amount of the application fee (if any) for the resulting payment. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts) for details.",
           "type": "integer"
         },
         "canceled_at": {
@@ -7397,12 +9243,15 @@
           "type": "integer"
         },
         "cancellation_reason": {
-          "description": "User-given reason for cancellation of this PaymentIntent, one of `duplicate`, `fraudulent`, `requested_by_customer`, or `failed_invoice`.",
+          "description": "Reason for cancellation of this PaymentIntent, either user-provided (`duplicate`, `fraudulent`, `requested_by_customer`, or `abandoned`) or generated by Stripe internally (`failed_invoice`, `void_invoice`, or `automatic`).",
           "enum": [
+            "abandoned",
+            "automatic",
             "duplicate",
             "failed_invoice",
             "fraudulent",
-            "requested_by_customer"
+            "requested_by_customer",
+            "void_invoice"
           ],
           "type": "string"
         },
@@ -7415,10 +9264,10 @@
           "type": "string"
         },
         "charges": {
-          "description": "Charges that were created by this PaymentIntent, if any. By default we only include the latest charge, use [pagnination](https://stripe.com/docs/api/pagination) to fetch more charges.",
+          "description": "Charges that were created by this PaymentIntent, if any.",
           "properties": {
             "data": {
-              "description": "The list contains all Charges that have been created by this PaymentIntent.",
+              "description": "This list only contains the latest charge, even if there were previously multiple unsuccessful charges. To view all previous charges for a PaymentIntent, you can filter the charges list using the `payment_intent` [parameter](https://stripe.com/docs/api/charges/list#list_charges-payment_intent).",
               "items": {
                 "$ref": "#/definitions/charge"
               },
@@ -7527,7 +9376,7 @@
           "type": "string"
         },
         "on_behalf_of": {
-          "description": "The account (if any) for which the funds of the PaymentIntent are intended. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect) for details.",
+          "description": "The account (if any) for which the funds of the PaymentIntent are intended. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts) for details.",
           "type": "string",
           "x-expansionResources": {
             "oneOf": [
@@ -7601,7 +9450,7 @@
           "type": "string"
         },
         "status": {
-          "description": "Status of this PaymentIntent, one of `requires_payment_method`, `requires_confirmation`, `requires_action`, `processing`, `requires_capture`, `canceled`, or `succeeded`. You can read more about PaymentIntent statuses [here](https://stripe.com/docs/payments/payment-intents/usage#paymentintent-status-overview).",
+          "description": "Status of this PaymentIntent, one of `requires_payment_method`, `requires_confirmation`, `requires_action`, `processing`, `requires_capture`, `canceled`, or `succeeded`. Read more about each PaymentIntent [status](https://stripe.com/docs/payments/payment-intents/status).",
           "enum": [
             "canceled",
             "processing",
@@ -7617,7 +9466,7 @@
           "$ref": "#/definitions/transfer_data"
         },
         "transfer_group": {
-          "description": "A string that identifies the resulting payment as part of a group. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect) for details.",
+          "description": "A string that identifies the resulting payment as part of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts) for details.",
           "type": "string"
         }
       },
@@ -8049,7 +9898,7 @@
           "$ref": "#/definitions/payment_method_details_stripe_account"
         },
         "type": {
-          "description": "The type of transaction-specific details of the payment method used in the payment, one of `ach_credit_transfer`, `alipay`, `bancontact`, `card`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `sepa_debit`, or `sofort`.\nAn additional hash is included on `payment_method_details` with a name matching this value.\nIt contains information specific to the payment method.",
+          "description": "The type of transaction-specific details of the payment method used in the payment, one of `ach_credit_transfer`, `ach_debit`, `alipay`, `bancontact`, `card`, `card_present`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `sepa_debit`, `sofort`, `stripe_account`, or `wechat`.\nAn additional hash is included on `payment_method_details` with a name matching this value.\nIt contains information specific to the payment method.",
           "type": "string"
         },
         "wechat": {
@@ -8979,7 +10828,7 @@
           "type": "boolean"
         },
         "verification": {
-          "$ref": "#/definitions/legal_entity_verification"
+          "$ref": "#/definitions/legal_entity_person_verification"
         }
       },
       "required": [
@@ -11523,6 +13372,10 @@
           "description": "Date of the last substantial change to this subscription. For example, a change to the items array, or a change of status, will reset this timestamp.",
           "type": "integer"
         },
+        "start_date": {
+          "description": "Date when the subscription was first created. The date might differ from the `created` date due to backdating.",
+          "type": "integer"
+        },
         "status": {
           "description": "Possible values are `incomplete`, `incomplete_expired`, `trialing`, `active`, `past_due`, `canceled`, or `unpaid`. \n\nFor `billing=charge_automatically` a subscription moves into `incomplete` if the initial payment attempt fails. A subscription in this state can only have metadata and default_source updated. Once the first invoice is paid, the subscription moves into an `active` state. If the first invoice is not paid within 23 hours, the subscription transitions to `incomplete_expired`. This is a terminal state, the open invoice will be voided and no further invoices will be generated. \n\nA subscription that is currently in a trial period is `trialing` and moves to `active` when the trial period is over. \n\nIf subscription `billing=charge_automatically` it becomes `past_due` when payment to renew it fails and `canceled` or `unpaid` (depending on your subscriptions settings) when Stripe has exhausted all payment retry attempts. \n\nIf subscription `billing=send_invoice` it becomes `past_due` when its invoice is not paid by the due date, and `canceled` or `unpaid` if it is still not paid by an additional deadline after that. Note that when a subscription has a status of `unpaid`, no subsequent invoices will be attempted (invoices will be created, but then immediately automatically closed). After receiving updated payment information from a customer, you may choose to reopen and pay their closed invoices.",
           "enum": [
@@ -11562,7 +13415,6 @@
         "livemode",
         "metadata",
         "object",
-        "start",
         "status"
       ],
       "title": "Subscription",
@@ -13660,6 +15512,7 @@
                     "enum": [
                       "card_issuing",
                       "card_payments",
+                      "legacy_payments",
                       "platform_payments"
                     ],
                     "type": "string"
@@ -13708,6 +15561,12 @@
                     "payments": {
                       "properties": {
                         "statement_descriptor": {
+                          "type": "string"
+                        },
+                        "statement_descriptor_kana": {
+                          "type": "string"
+                        },
+                        "statement_descriptor_kanji": {
                           "type": "string"
                         }
                       },
@@ -14010,6 +15869,152 @@
             "description": "Successful response.",
             "schema": {
               "$ref": "#/definitions/external_account"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/account/capabilities": {
+      "get": {
+        "description": "<p>Returns a list of capabilities associated with the account. The capabilities are returned sorted by creation date, with the most recent capability appearing first.</p>",
+        "operationId": "GetAccountCapabilities",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "type": "array"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "properties": {
+                "data": {
+                  "items": {
+                    "$ref": "#/definitions/capability"
+                  },
+                  "type": "array"
+                },
+                "has_more": {
+                  "description": "True if this list has another page of items after this one that can be fetched.",
+                  "type": "boolean"
+                },
+                "object": {
+                  "description": "String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
+                  "enum": [
+                    "list"
+                  ],
+                  "type": "string"
+                },
+                "url": {
+                  "description": "The URL where this list can be accessed.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "data",
+                "has_more",
+                "object",
+                "url"
+              ],
+              "type": "object",
+              "x-expandableFields": [
+                "data"
+              ]
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/account/capabilities/{capability}": {
+      "get": {
+        "description": "<p>Retrieves an existing Account Capability.</p>",
+        "operationId": "GetAccountCapabilitiesCapability",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "description": "The ID of an account capability to retrieve.",
+            "in": "path",
+            "name": "capability",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/capability"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "<p>Updates an existing Account Capability.</p>",
+        "operationId": "PostAccountCapabilitiesCapability",
+        "parameters": [
+          {
+            "description": "The ID of an account capability to update.",
+            "in": "path",
+            "name": "capability",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": false,
+            "schema": {
+              "properties": {
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "requested": {
+                  "description": "Passing true requests the capability for the account, if it is not already requested. A requested capability may not immediately become active. Any requirements to activate the capability are returned in the `requirements` arrays.",
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/capability"
             }
           },
           "default": {
@@ -16211,6 +18216,7 @@
                     "enum": [
                       "card_issuing",
                       "card_payments",
+                      "legacy_payments",
                       "platform_payments"
                     ],
                     "type": "string"
@@ -16259,6 +18265,12 @@
                     "payments": {
                       "properties": {
                         "statement_descriptor": {
+                          "type": "string"
+                        },
+                        "statement_descriptor_kana": {
+                          "type": "string"
+                        },
+                        "statement_descriptor_kanji": {
                           "type": "string"
                         }
                       },
@@ -16784,6 +18796,7 @@
                     "enum": [
                       "card_issuing",
                       "card_payments",
+                      "legacy_payments",
                       "platform_payments"
                     ],
                     "type": "string"
@@ -16832,6 +18845,12 @@
                     "payments": {
                       "properties": {
                         "statement_descriptor": {
+                          "type": "string"
+                        },
+                        "statement_descriptor_kana": {
+                          "type": "string"
+                        },
+                        "statement_descriptor_kanji": {
                           "type": "string"
                         }
                       },
@@ -17158,6 +19177,170 @@
             "description": "Successful response.",
             "schema": {
               "$ref": "#/definitions/external_account"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{account}/capabilities": {
+      "get": {
+        "description": "<p>Returns a list of capabilities associated with the account. The capabilities are returned sorted by creation date, with the most recent capability appearing first.</p>",
+        "operationId": "GetAccountsAccountCapabilities",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "in": "path",
+            "name": "account",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "properties": {
+                "data": {
+                  "items": {
+                    "$ref": "#/definitions/capability"
+                  },
+                  "type": "array"
+                },
+                "has_more": {
+                  "description": "True if this list has another page of items after this one that can be fetched.",
+                  "type": "boolean"
+                },
+                "object": {
+                  "description": "String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
+                  "enum": [
+                    "list"
+                  ],
+                  "type": "string"
+                },
+                "url": {
+                  "description": "The URL where this list can be accessed.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "data",
+                "has_more",
+                "object",
+                "url"
+              ],
+              "type": "object",
+              "x-expandableFields": [
+                "data"
+              ]
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{account}/capabilities/{capability}": {
+      "get": {
+        "description": "<p>Retrieves an existing Account Capability.</p>",
+        "operationId": "GetAccountsAccountCapabilitiesCapability",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "in": "path",
+            "name": "account",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "The ID of an account capability to retrieve.",
+            "in": "path",
+            "name": "capability",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/capability"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "<p>Updates an existing Account Capability.</p>",
+        "operationId": "PostAccountsAccountCapabilitiesCapability",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "The ID of an account capability to update.",
+            "in": "path",
+            "name": "capability",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": false,
+            "schema": {
+              "properties": {
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "requested": {
+                  "description": "Passing true requests the capability for the account, if it is not already requested. A requested capability may not immediately become active. Any requirements to activate the capability are returned in the `requirements` arrays.",
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/capability"
             }
           },
           "default": {
@@ -20157,6 +22340,13 @@
             "name": "limit",
             "required": false,
             "type": "integer"
+          },
+          {
+            "description": "Only return charges that were created by the PaymentIntent specified by this PaymentIntent ID.",
+            "in": "query",
+            "name": "payment_intent",
+            "required": false,
+            "type": "string"
           },
           {
             "description": "A cursor for use in pagination. `starting_after` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with `obj_foo`, your subsequent call can include `starting_after=obj_foo` in order to fetch the next page of the list.",
@@ -23709,6 +25899,66 @@
             }
           }
         }
+      },
+      "post": {
+        "description": "<p>Most customer balance transaction fields are immutable, but you may update its <code>description</code> and <code>metadata</code>.</p>",
+        "operationId": "PostCustomersCustomerCustomerBalanceTransactionsTransaction",
+        "parameters": [
+          {
+            "description": "The customer the transaction belongs to.",
+            "in": "path",
+            "name": "customer",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "The transaction to update.",
+            "in": "path",
+            "name": "transaction",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": false,
+            "schema": {
+              "properties": {
+                "description": {
+                  "description": "An arbitrary string attached to the object. Often useful for displaying to users.",
+                  "type": "string"
+                },
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "metadata": {
+                  "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/customer_balance_transaction"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
       }
     },
     "/v1/customers/{customer}/discount": {
@@ -24405,7 +26655,7 @@
                   "type": "boolean"
                 },
                 "tax_percent": {
-                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) to `tax_rates`"
+                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`."
                 },
                 "trial_end": {
                   "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately. Can be at most two years from `billing_cycle_anchor`."
@@ -24660,7 +26910,7 @@
                   "type": "integer"
                 },
                 "tax_percent": {
-                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) to `tax_rates`"
+                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`."
                 },
                 "trial_end": {
                   "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately. Can be at most two years from `billing_cycle_anchor`."
@@ -26690,6 +28940,7 @@
                   "type": "string"
                 },
                 "default_tax_rates": {
+                  "description": "The tax rates that will apply to any line item that does not have `tax_rates` set.",
                   "items": {
                     "type": "string"
                   },
@@ -26721,11 +28972,11 @@
                   "type": "string"
                 },
                 "subscription": {
-                  "description": "The ID of the subscription to invoice, if any. If not set, the created invoice will include all pending invoice items for the customer. If set, the created invoice will exclude pending invoice items that pertain to other subscriptions. The subscription's billing cycle and regular subscription events won't be affected.",
+                  "description": "The ID of the subscription to invoice, if any. If not set, the created invoice will include all pending invoice items for the customer. If set, the created invoice will only include pending invoice items for that subscription and pending invoice items not associated with any subscription. The subscription's billing cycle and regular subscription events won't be affected.",
                   "type": "string"
                 },
                 "tax_percent": {
-                  "description": "The percent tax rate applied to the invoice, represented as a decimal number. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) to `tax_rates`",
+                  "description": "The percent tax rate applied to the invoice, represented as a decimal number. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`.",
                   "type": "number"
                 }
               },
@@ -26813,6 +29064,7 @@
             "type": "boolean"
           },
           {
+            "description": "If provided, the invoice returned will preview updating or creating a subscription with these default tax rates. The default tax rates will apply to any line item that does not have `tax_rates` set.",
             "in": "query",
             "name": "subscription_default_tax_rates",
             "required": false,
@@ -26840,7 +29092,7 @@
             "type": "integer"
           },
           {
-            "description": "If provided, the invoice returned will preview updating or creating a subscription with that tax percent. If set, one of `subscription_items` or `subscription` is required.",
+            "description": "If provided, the invoice returned will preview updating or creating a subscription with that tax percent. If set, one of `subscription_items` or `subscription` is required. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`.",
             "in": "query",
             "name": "subscription_tax_percent",
             "required": false,
@@ -26959,6 +29211,7 @@
             "type": "boolean"
           },
           {
+            "description": "If provided, the invoice returned will preview updating or creating a subscription with these default tax rates. The default tax rates will apply to any line item that does not have `tax_rates` set.",
             "in": "query",
             "name": "subscription_default_tax_rates",
             "required": false,
@@ -26986,7 +29239,7 @@
             "type": "integer"
           },
           {
-            "description": "If provided, the invoice returned will preview updating or creating a subscription with that tax percent. If set, one of `subscription_items` or `subscription` is required.",
+            "description": "If provided, the invoice returned will preview updating or creating a subscription with that tax percent. If set, one of `subscription_items` or `subscription` is required. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`.",
             "in": "query",
             "name": "subscription_tax_percent",
             "required": false,
@@ -27175,6 +29428,7 @@
                   "type": "string"
                 },
                 "default_tax_rates": {
+                  "description": "The tax rates that will apply to any line item that does not have `tax_rates` set. Pass an empty string to remove previously-set default tax rates.",
                   "items": {
                     "type": "string"
                   }
@@ -27205,7 +29459,7 @@
                   "type": "string"
                 },
                 "tax_percent": {
-                  "description": "The percent tax rate applied to the invoice, represented as a non-negative decimal number (with at most four decimal places) between 0 and 100. To unset a previously-set value, pass an empty string. This field can be updated only on `draft` invoices. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) to `tax_rates`"
+                  "description": "The percent tax rate applied to the invoice, represented as a non-negative decimal number (with at most four decimal places) between 0 and 100. To unset a previously-set value, pass an empty string. This field can be updated only on `draft` invoices. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`."
                 }
               },
               "type": "object"
@@ -29067,15 +31321,12 @@
                       ],
                       "title": "required_address",
                       "type": "object"
-                    },
-                    "name": {
-                      "type": "string"
                     }
                   },
                   "required": [
                     "address"
                   ],
-                  "title": "address_param",
+                  "title": "billing_specs",
                   "type": "object"
                 },
                 "email": {
@@ -30141,15 +32392,12 @@
                       ],
                       "title": "required_address",
                       "type": "object"
-                    },
-                    "name": {
-                      "type": "string"
                     }
                   },
                   "required": [
                     "address"
                   ],
-                  "title": "address_param",
+                  "title": "billing_specs",
                   "type": "object"
                 },
                 "email": {
@@ -31298,7 +33546,7 @@
                   "type": "string"
                 },
                 "replacement_reason": {
-                  "description": "If `replacement_for` is specified, this should indicate why that card is being replaced.",
+                  "description": "If `replacement_for` is specified, this should indicate why that card is being replaced. One of `damage`, `expiration`, `loss`, or `theft`.",
                   "enum": [
                     "damage",
                     "expiration",
@@ -31308,7 +33556,7 @@
                   "type": "string"
                 },
                 "shipping": {
-                  "description": "The address where the card will be shipped. This will default to the cardholder's billing address for physical cards.",
+                  "description": "The address where the card will be shipped.",
                   "properties": {
                     "address": {
                       "properties": {
@@ -31342,13 +33590,21 @@
                     },
                     "name": {
                       "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "",
+                        "bulk",
+                        "individual"
+                      ],
+                      "type": "string"
                     }
                   },
                   "required": [
                     "address",
                     "name"
                   ],
-                  "title": "shipping_param",
+                  "title": "shipping_specs",
                   "type": "object"
                 },
                 "status": {
@@ -34038,7 +36294,7 @@
                   "type": "integer"
                 },
                 "application_fee_amount": {
-                  "description": "The amount of the application fee (if any) that will be applied to the\npayment and transferred to the application owner's Stripe account. For\nmore information, see the PaymentIntents [Connect usage\nguide](/docs/payments/payment-intents/usage#connect).",
+                  "description": "The amount of the application fee (if any) that will be applied to the\npayment and transferred to the application owner's Stripe account. For\nmore information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).",
                   "type": "integer"
                 },
                 "capture_method": {
@@ -34084,8 +36340,16 @@
                   "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
                   "type": "object"
                 },
+                "off_session": {
+                  "description": "Used in payment flows that collect payment details and charge later when the customer is not available to complete additional required steps for the payment. Setting this parameter indicates that this payment attempt is happening while the customer is not in your checkout flow. Use `recurring` for payments made on a recurring basis (for example, subscriptions) and `one_off` for all other off-session payments.",
+                  "enum": [
+                    "one_off",
+                    "recurring"
+                  ],
+                  "type": "string"
+                },
                 "on_behalf_of": {
-                  "description": "The Stripe account ID for which these funds are intended. For details, see the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect).",
+                  "description": "The Stripe account ID for which these funds are intended. For details, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).",
                   "type": "string"
                 },
                 "payment_method": {
@@ -34104,7 +36368,7 @@
                   "type": "string"
                 },
                 "save_payment_method": {
-                  "description": "Set to `true` to save the PaymentIntent's payment method (either `source` or `payment_method`) to the associated customer. If the payment method is already attached, this parameter does nothing. This parameter defaults to `false` and applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.",
+                  "description": "Set to `true` to [save the PaymentIntent's payment method](https://stripe.com/docs/payments/payment-methods/saving) (either `source` or `payment_method`) to the associated customer. Defaults to `false`.\nIf the payment method is already attached, this parameter does nothing.\nThis parameter errors for payment methods that are not permitted to be attached to customers.\nThe parameter applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.",
                   "type": "boolean"
                 },
                 "shipping": {
@@ -34166,7 +36430,7 @@
                   "type": "string"
                 },
                 "transfer_data": {
-                  "description": "The parameters used to automatically create a Transfer when the payment succeeds.\nFor more information, see the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect).",
+                  "description": "The parameters used to automatically create a Transfer when the payment succeeds.\nFor more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).",
                   "properties": {
                     "destination": {
                       "type": "string"
@@ -34179,7 +36443,7 @@
                   "type": "object"
                 },
                 "transfer_group": {
-                  "description": "A string that identifies the resulting payment as part of a group. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect) for details.",
+                  "description": "A string that identifies the resulting payment as part of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts) for details.",
                   "type": "string"
                 }
               },
@@ -34270,7 +36534,7 @@
                   "type": "integer"
                 },
                 "application_fee_amount": {
-                  "description": "The amount of the application fee (if any) for the resulting payment. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect) for details."
+                  "description": "The amount of the application fee (if any) for the resulting payment. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts) for details."
                 },
                 "currency": {
                   "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -34311,7 +36575,7 @@
                   "type": "string"
                 },
                 "save_payment_method": {
-                  "description": "Set to `true` to save the PaymentIntent's payment method (either `source` or `payment_method`) to the associated customer. If the payment method is already attached, this parameter does nothing. This parameter defaults to `false` and applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.",
+                  "description": "Set to `true` to [save the PaymentIntent's payment method](https://stripe.com/docs/payments/payment-methods/saving) (either `source` or `payment_method`) to the associated customer. Defaults to `false`.\nIf the payment method is already attached, this parameter does nothing.\nThis parameter errors for payment methods that are not permitted to be attached to customers.\nThe parameter applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.",
                   "type": "boolean"
                 },
                 "shipping": {
@@ -34326,7 +36590,7 @@
                   "type": "string"
                 },
                 "transfer_group": {
-                  "description": "A string that identifies the resulting payment as part of a group. `transfer_group` may only be provided if it has not been set. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect) for details.",
+                  "description": "A string that identifies the resulting payment as part of a group. `transfer_group` may only be provided if it has not been set. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts) for details.",
                   "type": "string"
                 }
               },
@@ -34369,10 +36633,10 @@
             "schema": {
               "properties": {
                 "cancellation_reason": {
-                  "description": "Reason for canceling this PaymentIntent. If set, possible values are `duplicate`, `fraudulent`, `requested_by_customer`, or `failed_invoice`",
+                  "description": "Reason for canceling this PaymentIntent. Possible values are `duplicate`, `fraudulent`, `requested_by_customer`, or `abandoned`",
                   "enum": [
+                    "abandoned",
                     "duplicate",
-                    "failed_invoice",
                     "fraudulent",
                     "requested_by_customer"
                   ],
@@ -34429,7 +36693,7 @@
                   "type": "integer"
                 },
                 "application_fee_amount": {
-                  "description": "The amount of the application fee (if any) that will be applied to the\npayment and transferred to the application owner's Stripe account. For\nmore information, see the PaymentIntents [Connect usage\nguide](/docs/payments/payment-intents/usage#connect).",
+                  "description": "The amount of the application fee (if any) that will be applied to the\npayment and transferred to the application owner's Stripe account. For\nmore information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).",
                   "type": "integer"
                 },
                 "expand": {
@@ -34489,6 +36753,14 @@
                   },
                   "type": "array"
                 },
+                "off_session": {
+                  "description": "Used in payment flows that collect payment details and charge later when the customer is not available to complete additional required steps for the payment. Setting this parameter indicates that this payment attempt is happening while the customer is not in your checkout flow. Use `recurring` for payments made on a recurring basis (for example, subscriptions) and `one_off` for all other off-session payments.",
+                  "enum": [
+                    "one_off",
+                    "recurring"
+                  ],
+                  "type": "string"
+                },
                 "payment_method": {
                   "description": "ID of the payment method to attach to this PaymentIntent.",
                   "type": "string"
@@ -34509,7 +36781,7 @@
                   "type": "string"
                 },
                 "save_payment_method": {
-                  "description": "Set to `true` to save the PaymentIntent's payment method (either `source` or `payment_method`) to the associated customer. If the payment method is already attached, this parameter does nothing. This parameter defaults to `false` and applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.",
+                  "description": "Set to `true` to [save the PaymentIntent's payment method](https://stripe.com/docs/payments/payment-methods/saving) (either `source` or `payment_method`) to the associated customer. Defaults to `false`.\nIf the payment method is already attached, this parameter does nothing.\nThis parameter errors for payment methods that are not permitted to be attached to customers.\nThe parameter applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.",
                   "type": "boolean"
                 },
                 "shipping": {
@@ -34796,7 +37068,7 @@
                           "type": "string"
                         }
                       },
-                      "title": "source_address",
+                      "title": "billing_details_address",
                       "type": "object"
                     },
                     "email": {
@@ -34940,7 +37212,7 @@
                           "type": "string"
                         }
                       },
-                      "title": "source_address",
+                      "title": "billing_details_address",
                       "type": "object"
                     },
                     "email": {
@@ -40513,7 +42785,7 @@
                   "type": "boolean"
                 },
                 "tax_percent": {
-                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) to `tax_rates`"
+                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`."
                 },
                 "trial_end": {
                   "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately. Can be at most two years from `billing_cycle_anchor`."
@@ -40750,7 +43022,7 @@
                   "type": "integer"
                 },
                 "tax_percent": {
-                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) to `tax_rates`"
+                  "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`."
                 },
                 "trial_end": {
                   "description": "Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately. Can be at most two years from `billing_cycle_anchor`."
@@ -41108,10 +43380,6 @@
                     "type": "string"
                   },
                   "type": "array"
-                },
-                "operator_account": {
-                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
-                  "type": "string"
                 }
               },
               "type": "object"
@@ -41159,13 +43427,6 @@
             "name": "limit",
             "required": false,
             "type": "integer"
-          },
-          {
-            "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
-            "in": "query",
-            "name": "operator_account",
-            "required": false,
-            "type": "string"
           },
           {
             "description": "A cursor for use in pagination. `starting_after` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with `obj_foo`, your subsequent call can include `starting_after=obj_foo` in order to fetch the next page of the list.",
@@ -41275,10 +43536,6 @@
                     "type": "string"
                   },
                   "type": "array"
-                },
-                "operator_account": {
-                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
-                  "type": "string"
                 }
               },
               "required": [
@@ -41316,21 +43573,6 @@
             "name": "location",
             "required": true,
             "type": "string"
-          },
-          {
-            "description": "Body parameters for the request.",
-            "in": "body",
-            "name": "payload",
-            "required": false,
-            "schema": {
-              "properties": {
-                "operator_account": {
-                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
-                  "type": "string"
-                }
-              },
-              "type": "object"
-            }
           }
         ],
         "responses": {
@@ -41364,13 +43606,6 @@
             "in": "path",
             "name": "location",
             "required": true,
-            "type": "string"
-          },
-          {
-            "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
-            "in": "query",
-            "name": "operator_account",
-            "required": false,
             "type": "string"
           }
         ],
@@ -41448,10 +43683,6 @@
                     "type": "string"
                   },
                   "type": "array"
-                },
-                "operator_account": {
-                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
-                  "type": "string"
                 }
               },
               "type": "object"
@@ -41504,13 +43735,6 @@
             "description": "A location id to filter the response list to only readers at the specific location",
             "in": "query",
             "name": "location",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
-            "in": "query",
-            "name": "operator_account",
             "required": false,
             "type": "string"
           },
@@ -41604,10 +43828,6 @@
                   "description": "The location to assign the reader to. If no location is specified, the reader will be assigned to the account's default location.",
                   "type": "string"
                 },
-                "operator_account": {
-                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
-                  "type": "string"
-                },
                 "registration_code": {
                   "description": "A code generated by the reader used for registering to an account.",
                   "type": "string"
@@ -41647,21 +43867,6 @@
             "name": "reader",
             "required": true,
             "type": "string"
-          },
-          {
-            "description": "Body parameters for the request.",
-            "in": "body",
-            "name": "payload",
-            "required": false,
-            "schema": {
-              "properties": {
-                "operator_account": {
-                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
-                  "type": "string"
-                }
-              },
-              "type": "object"
-            }
           }
         ],
         "responses": {
@@ -41689,13 +43894,6 @@
             "name": "expand",
             "required": false,
             "type": "array"
-          },
-          {
-            "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
-            "in": "query",
-            "name": "operator_account",
-            "required": false,
-            "type": "string"
           },
           {
             "description": "The identifier of the reader to be retrieved.",
@@ -41747,10 +43945,6 @@
                 },
                 "label": {
                   "description": "The new label of the reader.",
-                  "type": "string"
-                },
-                "operator_account": {
-                  "description": "To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account) on your platform account by connected account, set this parameter to the connected account ID.",
                   "type": "string"
                 }
               },

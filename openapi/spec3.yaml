@@ -247,6 +247,51 @@ components:
       title: AccountCapabilities
       type: object
       x-expandableFields: []
+    account_capability_requirements:
+      properties:
+        current_deadline:
+          description: The date the fields in `currently_due` must be collected by
+            to keep the capability enabled for the account.
+          format: unix-time
+          nullable: true
+          type: integer
+        currently_due:
+          description: The fields that need to be collected to keep the capability
+            enabled. If not collected by the `current_deadline`, these fields appear
+            in `past_due` as well, and the capability is disabled.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        disabled_reason:
+          description: If the capability is disabled, this string describes why. Possible
+            values are `requirement.fields_needed`, `pending.onboarding`, `pending.review`,
+            `rejected_fraud`, or `rejected.other`.
+          maxLength: 5000
+          nullable: true
+          type: string
+        eventually_due:
+          description: The fields that need to be collected assuming all volume thresholds
+            are reached. As they become required, these fields appear in `currently_due`
+            as well, and the `current_deadline` is set.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        past_due:
+          description: The fields that weren't collected by the `current_deadline`.
+            These fields need to be collected to enable the capability for the account.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+      required:
+      - currently_due
+      - eventually_due
+      - past_due
+      title: AccountCapabilityRequirements
+      type: object
+      x-expandableFields: []
     account_card_payments_settings:
       properties:
         decline_on:
@@ -337,6 +382,18 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        statement_descriptor_kana:
+          description: The Kana variation of the default text that appears on credit
+            card statements when a charge is made (Japan only)
+          maxLength: 5000
+          nullable: true
+          type: string
+        statement_descriptor_kanji:
+          description: The Kanji variation of the default text that appears on credit
+            card statements when a charge is made (Japan only)
+          maxLength: 5000
+          nullable: true
+          type: string
       title: AccountPaymentsSettings
       type: object
       x-expandableFields: []
@@ -379,6 +436,7 @@ components:
             If not collected by the `current_deadline`, these fields appear in `past_due`
             as well, and the account is disabled.
           items:
+            maxLength: 5000
             type: string
           nullable: true
           type: array
@@ -395,6 +453,7 @@ components:
             are reached. As they become required, these fields appear in `currently_due`
             as well, and the `current_deadline` is set.
           items:
+            maxLength: 5000
             type: string
           nullable: true
           type: array
@@ -402,6 +461,7 @@ components:
           description: The fields that weren't collected by the `current_deadline`.
             These fields need to be collected to re-enable the account.
           items:
+            maxLength: 5000
             type: string
           nullable: true
           type: array
@@ -1391,6 +1451,60 @@ components:
       type: object
       x-expandableFields: []
       x-resourceId: bitcoin_transaction
+    capability:
+      properties:
+        account:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/account"
+          description: The account for which the capability enables functionality.
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/account"
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - capability
+          type: string
+        requested:
+          description: Whether the capability has been requested.
+          type: boolean
+        requested_at:
+          description: Time at which the capability was requested. Measured in seconds
+            since the Unix epoch.
+          format: unix-time
+          nullable: true
+          type: integer
+        requirements:
+          "$ref": "#/components/schemas/account_capability_requirements"
+        status:
+          description: The status of the capability. Can be `active`, `inactive`,
+            `pending`, or `unrequested`.
+          enum:
+          - active
+          - disabled
+          - inactive
+          - pending
+          - unrequested
+          type: string
+      required:
+      - account
+      - id
+      - object
+      - requested
+      - status
+      title: AccountCapability
+      type: object
+      x-expandableFields:
+      - account
+      - requirements
+      x-resourceId: capability
     card:
       properties:
         account:
@@ -1451,6 +1565,7 @@ components:
             `["standard"]` or `["standard", "instant"]`. Only values from this set
             should be passed as the `method` when creating a transfer.
           items:
+            maxLength: 5000
             type: string
           nullable: true
           type: array
@@ -2139,6 +2254,7 @@ components:
           description: A list of the types of payment methods (e.g. card) this Checkout
             Session is allowed to accept.
           items:
+            maxLength: 5000
             type: string
           type: array
         subscription:
@@ -2183,6 +2299,7 @@ components:
         images:
           description: The images of the line item.
           items:
+            maxLength: 5000
             type: string
           nullable: true
           type: array
@@ -2289,6 +2406,7 @@ components:
         supported_bank_account_currencies:
           additionalProperties:
             items:
+              maxLength: 5000
               type: string
             type: array
           description: Currencies that can be accepted in the specific country (for
@@ -2298,6 +2416,7 @@ components:
           description: Currencies that can be accepted in the specified country (for
             payments).
           items:
+            maxLength: 5000
             type: string
           type: array
         supported_payment_methods:
@@ -2306,11 +2425,13 @@ components:
             on your account before they appear in this list. The `stripe` payment
             method refers to [charging through your platform](https://stripe.com/docs/connect/destination-charges).
           items:
+            maxLength: 5000
             type: string
           type: array
         supported_transfer_countries:
           description: Countries that can accept transfers from the specified country.
           items:
+            maxLength: 5000
             type: string
           type: array
         verification_fields:
@@ -2334,11 +2455,13 @@ components:
         additional:
           description: Additional fields which are only required for some users.
           items:
+            maxLength: 5000
             type: string
           type: array
         minimum:
           description: Fields which every account must eventually provide.
           items:
+            maxLength: 5000
             type: string
           type: array
       required:
@@ -2696,6 +2819,7 @@ components:
         preferred_locales:
           description: The customer's preferred locales (languages), ordered by preference.
           items:
+            maxLength: 5000
             type: string
           nullable: true
           type: array
@@ -2859,6 +2983,16 @@ components:
             the Unix epoch.
           format: unix-time
           type: integer
+        credit_note:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/credit_note"
+          description: The ID of the credit note (if any) related to the transaction.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/credit_note"
         currency:
           description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
             in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
@@ -2898,6 +3032,8 @@ components:
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/invoice"
+        livemode:
+          type: boolean
         metadata:
           additionalProperties:
             maxLength: 500
@@ -2935,11 +3071,13 @@ components:
       - customer
       - ending_balance
       - id
+      - livemode
       - object
       - type
       title: CustomerBalanceTransaction
       type: object
       x-expandableFields:
+      - credit_note
       - customer
       - invoice
       x-resourceId: customer_balance_transaction
@@ -4372,6 +4510,7 @@ components:
           description: The set of output columns requested for inclusion in the report
             run.
           items:
+            maxLength: 5000
             type: string
           type: array
         connected_account:
@@ -4910,6 +5049,7 @@ components:
         line_item_ids:
           description: The IDs of the line items that triggered the threshold invoice.
           items:
+            maxLength: 5000
             type: string
           type: array
         usage_gte:
@@ -5467,7 +5607,7 @@ components:
             - "$ref": "#/components/schemas/issuing.card"
         replacement_reason:
           description: Why the card that this card replaces (if any) needed to be
-            replaced.
+            replaced. One of `damage`, `expiration`, `loss`, or `theft`.
           enum:
           - damage
           - expiration
@@ -6097,6 +6237,291 @@ components:
           description: Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category)
             of authorizations permitted on this card.
           items:
+            enum:
+            - ac_refrigeration_repair
+            - accounting_bookkeeping_services
+            - advertising_services
+            - agricultural_cooperative
+            - airlines_air_carriers
+            - airports_flying_fields
+            - ambulance_services
+            - amusement_parks_carnivals
+            - antique_reproductions
+            - antique_shops
+            - aquariums
+            - architectural_surveying_services
+            - art_dealers_and_galleries
+            - artists_supply_and_craft_shops
+            - auto_and_home_supply_stores
+            - auto_body_repair_shops
+            - auto_paint_shops
+            - auto_service_shops
+            - automated_cash_disburse
+            - automated_fuel_dispensers
+            - automobile_associations
+            - automotive_parts_and_accessories_stores
+            - automotive_tire_stores
+            - bail_and_bond_payments
+            - bakeries
+            - bands_orchestras
+            - barber_and_beauty_shops
+            - betting_casino_gambling
+            - bicycle_shops
+            - billiard_pool_establishments
+            - boat_dealers
+            - boat_rentals_and_leases
+            - book_stores
+            - books_periodicals_and_newspapers
+            - bowling_alleys
+            - bus_lines
+            - business_secretarial_schools
+            - buying_shopping_services
+            - cable_satellite_and_other_pay_television_and_radio
+            - camera_and_photographic_supply_stores
+            - candy_nut_and_confectionery_stores
+            - car_and_truck_dealers_new_used
+            - car_and_truck_dealers_used_only
+            - car_rental_agencies
+            - car_washes
+            - carpentry_services
+            - carpet_upholstery_cleaning
+            - caterers
+            - charitable_and_social_service_organizations_fundraising
+            - chemicals_and_allied_products
+            - chidrens_and_infants_wear_stores
+            - child_care_services
+            - chiropodists_podiatrists
+            - chiropractors
+            - cigar_stores_and_stands
+            - civic_social_fraternal_associations
+            - cleaning_and_maintenance
+            - clothing_rental
+            - colleges_universities
+            - commercial_equipment
+            - commercial_footwear
+            - commercial_photography_art_and_graphics
+            - commuter_transport_and_ferries
+            - computer_network_services
+            - computer_programming
+            - computer_repair
+            - computer_software_stores
+            - computers_peripherals_and_software
+            - concrete_work_services
+            - construction_materials
+            - consulting_public_relations
+            - correspondence_schools
+            - cosmetic_stores
+            - counseling_services
+            - country_clubs
+            - courier_services
+            - court_costs
+            - credit_reporting_agencies
+            - cruise_lines
+            - dairy_products_stores
+            - dance_hall_studios_schools
+            - dating_escort_services
+            - dentists_orthodontists
+            - department_stores
+            - detective_agencies
+            - direct_marketing_catalog_merchant
+            - direct_marketing_combination_catalog_and_retail_merchant
+            - direct_marketing_inbound_telemarketing
+            - direct_marketing_insurance_services
+            - direct_marketing_other
+            - direct_marketing_outbound_telemarketing
+            - direct_marketing_subscription
+            - direct_marketing_travel
+            - discount_stores
+            - doctors
+            - door_to_door_sales
+            - drapery_window_covering_and_upholstery_stores
+            - drinking_places
+            - drug_stores_and_pharmacies
+            - drugs_drug_proprietaries_and_druggist_sundries
+            - dry_cleaners
+            - durable_goods
+            - duty_free_stores
+            - eating_places_restaurants
+            - educational_services
+            - electric_razor_stores
+            - electrical_parts_and_equipment
+            - electrical_services
+            - electronics_repair_shops
+            - electronics_stores
+            - elementary_secondary_schools
+            - employment_temp_agencies
+            - equipment_rental
+            - exterminating_services
+            - family_clothing_stores
+            - fast_food_restaurants
+            - financial_institutions
+            - fines_government_administrative_entities
+            - fireplace_fireplace_screens_and_accessories_stores
+            - floor_covering_stores
+            - florists
+            - florists_supplies_nursery_stock_and_flowers
+            - freezer_and_locker_meat_provisioners
+            - fuel_dealers_non_automotive
+            - funeral_services_crematories
+            - furniture_home_furnishings_and_equipment_stores_except_appliances
+            - furniture_repair_refinishing
+            - furriers_and_fur_shops
+            - general_services
+            - gift_card_novelty_and_souvenir_shops
+            - glass_paint_and_wallpaper_stores
+            - glassware_crystal_stores
+            - golf_courses_public
+            - government_services
+            - grocery_stores_supermarkets
+            - hardware_equipment_and_supplies
+            - hardware_stores
+            - health_and_beauty_spas
+            - hearing_aids_sales_and_supplies
+            - heating_plumbing_a_c
+            - hobby_toy_and_game_shops
+            - home_supply_warehouse_stores
+            - hospitals
+            - hotels_motels_and_resorts
+            - household_appliance_stores
+            - industrial_supplies
+            - information_retrieval_services
+            - insurance_default
+            - insurance_underwriting_premiums
+            - intra_company_purchases
+            - jewelry_stores_watches_clocks_and_silverware_stores
+            - landscaping_services
+            - laundries
+            - laundry_cleaning_services
+            - legal_services_attorneys
+            - luggage_and_leather_goods_stores
+            - lumber_building_materials_stores
+            - manual_cash_disburse
+            - marinas_service_and_supplies
+            - masonry_stonework_and_plaster
+            - massage_parlors
+            - medical_and_dental_labs
+            - medical_dental_ophthalmic_and_hospital_equipment_and_supplies
+            - medical_services
+            - membership_organizations
+            - mens_and_boys_clothing_and_accessories_stores
+            - mens_womens_clothing_stores
+            - metal_service_centers
+            - miscellaneous
+            - miscellaneous_apparel_and_accessory_shops
+            - miscellaneous_auto_dealers
+            - miscellaneous_business_services
+            - miscellaneous_food_stores
+            - miscellaneous_general_merchandise
+            - miscellaneous_general_services
+            - miscellaneous_home_furnishing_specialty_stores
+            - miscellaneous_publishing_and_printing
+            - miscellaneous_recreation_services
+            - miscellaneous_repair_shops
+            - miscellaneous_specialty_retail
+            - mobile_home_dealers
+            - motion_picture_theaters
+            - motor_freight_carriers_and_trucking
+            - motor_homes_dealers
+            - motor_vehicle_supplies_and_new_parts
+            - motorcycle_shops_and_dealers
+            - motorcycle_shops_dealers
+            - music_stores_musical_instruments_pianos_and_sheet_music
+            - news_dealers_and_newsstands
+            - non_fi_money_orders
+            - non_fi_stored_value_card_purchase_load
+            - nondurable_goods
+            - nurseries_lawn_and_garden_supply_stores
+            - nursing_personal_care
+            - office_and_commercial_furniture
+            - opticians_eyeglasses
+            - optometrists_ophthalmologist
+            - orthopedic_goods_prosthetic_devices
+            - osteopaths
+            - package_stores_beer_wine_and_liquor
+            - paints_varnishes_and_supplies
+            - parking_lots_garages
+            - passenger_railways
+            - pawn_shops
+            - pet_shops_pet_food_and_supplies
+            - petroleum_and_petroleum_products
+            - photo_developing
+            - photographic_photocopy_microfilm_equipment_and_supplies
+            - photographic_studios
+            - picture_video_production
+            - piece_goods_notions_and_other_dry_goods
+            - plumbing_heating_equipment_and_supplies
+            - political_organizations
+            - postal_services_government_only
+            - precious_stones_and_metals_watches_and_jewelry
+            - professional_services
+            - public_warehousing_and_storage
+            - quick_copy_repro_and_blueprint
+            - railroads
+            - real_estate_agents_and_managers_rentals
+            - record_stores
+            - recreational_vehicle_rentals
+            - religious_goods_stores
+            - religious_organizations
+            - roofing_siding_sheet_metal
+            - secretarial_support_services
+            - security_brokers_dealers
+            - service_stations
+            - sewing_needlework_fabric_and_piece_goods_stores
+            - shoe_repair_hat_cleaning
+            - shoe_stores
+            - small_appliance_repair
+            - snowmobile_dealers
+            - special_trade_services
+            - specialty_cleaning
+            - sporting_goods_stores
+            - sporting_recreation_camps
+            - sports_and_riding_apparel_stores
+            - sports_clubs_fields
+            - stamp_and_coin_stores
+            - stationary_office_supplies_printing_and_writing_paper
+            - stationery_stores_office_and_school_supply_stores
+            - swimming_pools_sales
+            - t_ui_travel_germany
+            - tailors_alterations
+            - tax_payments_government_agencies
+            - tax_preparation_services
+            - taxicabs_limousines
+            - telecommunication_equipment_and_telephone_sales
+            - telecommunication_services
+            - telegraph_services
+            - tent_and_awning_shops
+            - testing_laboratories
+            - theatrical_ticket_agencies
+            - timeshares
+            - tire_retreading_and_repair
+            - tolls_bridge_fees
+            - tourist_attractions_and_exhibits
+            - towing_services
+            - trailer_parks_campgrounds
+            - transportation_services
+            - travel_agencies_tour_operators
+            - truck_stop_iteration
+            - truck_utility_trailer_rentals
+            - typesetting_plate_making_and_related_services
+            - typewriter_stores
+            - u_s_federal_government_agencies_or_departments
+            - uniforms_commercial_clothing
+            - used_merchandise_and_secondhand_stores
+            - utilities
+            - variety_stores
+            - veterinary_services
+            - video_amusement_game_supplies
+            - video_game_arcades
+            - video_tape_rental_stores
+            - vocational_trade_schools
+            - watch_jewelry_repair
+            - welding_repair
+            - wholesale_clubs
+            - wig_and_toupee_stores
+            - wires_money_orders
+            - womens_accessory_and_specialty_shops
+            - womens_ready_to_wear_stores
+            - wrecking_and_salvage_yards
             type: string
           nullable: true
           type: array
@@ -6104,6 +6529,291 @@ components:
           description: Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category)
             of authorizations to always decline on this card.
           items:
+            enum:
+            - ac_refrigeration_repair
+            - accounting_bookkeeping_services
+            - advertising_services
+            - agricultural_cooperative
+            - airlines_air_carriers
+            - airports_flying_fields
+            - ambulance_services
+            - amusement_parks_carnivals
+            - antique_reproductions
+            - antique_shops
+            - aquariums
+            - architectural_surveying_services
+            - art_dealers_and_galleries
+            - artists_supply_and_craft_shops
+            - auto_and_home_supply_stores
+            - auto_body_repair_shops
+            - auto_paint_shops
+            - auto_service_shops
+            - automated_cash_disburse
+            - automated_fuel_dispensers
+            - automobile_associations
+            - automotive_parts_and_accessories_stores
+            - automotive_tire_stores
+            - bail_and_bond_payments
+            - bakeries
+            - bands_orchestras
+            - barber_and_beauty_shops
+            - betting_casino_gambling
+            - bicycle_shops
+            - billiard_pool_establishments
+            - boat_dealers
+            - boat_rentals_and_leases
+            - book_stores
+            - books_periodicals_and_newspapers
+            - bowling_alleys
+            - bus_lines
+            - business_secretarial_schools
+            - buying_shopping_services
+            - cable_satellite_and_other_pay_television_and_radio
+            - camera_and_photographic_supply_stores
+            - candy_nut_and_confectionery_stores
+            - car_and_truck_dealers_new_used
+            - car_and_truck_dealers_used_only
+            - car_rental_agencies
+            - car_washes
+            - carpentry_services
+            - carpet_upholstery_cleaning
+            - caterers
+            - charitable_and_social_service_organizations_fundraising
+            - chemicals_and_allied_products
+            - chidrens_and_infants_wear_stores
+            - child_care_services
+            - chiropodists_podiatrists
+            - chiropractors
+            - cigar_stores_and_stands
+            - civic_social_fraternal_associations
+            - cleaning_and_maintenance
+            - clothing_rental
+            - colleges_universities
+            - commercial_equipment
+            - commercial_footwear
+            - commercial_photography_art_and_graphics
+            - commuter_transport_and_ferries
+            - computer_network_services
+            - computer_programming
+            - computer_repair
+            - computer_software_stores
+            - computers_peripherals_and_software
+            - concrete_work_services
+            - construction_materials
+            - consulting_public_relations
+            - correspondence_schools
+            - cosmetic_stores
+            - counseling_services
+            - country_clubs
+            - courier_services
+            - court_costs
+            - credit_reporting_agencies
+            - cruise_lines
+            - dairy_products_stores
+            - dance_hall_studios_schools
+            - dating_escort_services
+            - dentists_orthodontists
+            - department_stores
+            - detective_agencies
+            - direct_marketing_catalog_merchant
+            - direct_marketing_combination_catalog_and_retail_merchant
+            - direct_marketing_inbound_telemarketing
+            - direct_marketing_insurance_services
+            - direct_marketing_other
+            - direct_marketing_outbound_telemarketing
+            - direct_marketing_subscription
+            - direct_marketing_travel
+            - discount_stores
+            - doctors
+            - door_to_door_sales
+            - drapery_window_covering_and_upholstery_stores
+            - drinking_places
+            - drug_stores_and_pharmacies
+            - drugs_drug_proprietaries_and_druggist_sundries
+            - dry_cleaners
+            - durable_goods
+            - duty_free_stores
+            - eating_places_restaurants
+            - educational_services
+            - electric_razor_stores
+            - electrical_parts_and_equipment
+            - electrical_services
+            - electronics_repair_shops
+            - electronics_stores
+            - elementary_secondary_schools
+            - employment_temp_agencies
+            - equipment_rental
+            - exterminating_services
+            - family_clothing_stores
+            - fast_food_restaurants
+            - financial_institutions
+            - fines_government_administrative_entities
+            - fireplace_fireplace_screens_and_accessories_stores
+            - floor_covering_stores
+            - florists
+            - florists_supplies_nursery_stock_and_flowers
+            - freezer_and_locker_meat_provisioners
+            - fuel_dealers_non_automotive
+            - funeral_services_crematories
+            - furniture_home_furnishings_and_equipment_stores_except_appliances
+            - furniture_repair_refinishing
+            - furriers_and_fur_shops
+            - general_services
+            - gift_card_novelty_and_souvenir_shops
+            - glass_paint_and_wallpaper_stores
+            - glassware_crystal_stores
+            - golf_courses_public
+            - government_services
+            - grocery_stores_supermarkets
+            - hardware_equipment_and_supplies
+            - hardware_stores
+            - health_and_beauty_spas
+            - hearing_aids_sales_and_supplies
+            - heating_plumbing_a_c
+            - hobby_toy_and_game_shops
+            - home_supply_warehouse_stores
+            - hospitals
+            - hotels_motels_and_resorts
+            - household_appliance_stores
+            - industrial_supplies
+            - information_retrieval_services
+            - insurance_default
+            - insurance_underwriting_premiums
+            - intra_company_purchases
+            - jewelry_stores_watches_clocks_and_silverware_stores
+            - landscaping_services
+            - laundries
+            - laundry_cleaning_services
+            - legal_services_attorneys
+            - luggage_and_leather_goods_stores
+            - lumber_building_materials_stores
+            - manual_cash_disburse
+            - marinas_service_and_supplies
+            - masonry_stonework_and_plaster
+            - massage_parlors
+            - medical_and_dental_labs
+            - medical_dental_ophthalmic_and_hospital_equipment_and_supplies
+            - medical_services
+            - membership_organizations
+            - mens_and_boys_clothing_and_accessories_stores
+            - mens_womens_clothing_stores
+            - metal_service_centers
+            - miscellaneous
+            - miscellaneous_apparel_and_accessory_shops
+            - miscellaneous_auto_dealers
+            - miscellaneous_business_services
+            - miscellaneous_food_stores
+            - miscellaneous_general_merchandise
+            - miscellaneous_general_services
+            - miscellaneous_home_furnishing_specialty_stores
+            - miscellaneous_publishing_and_printing
+            - miscellaneous_recreation_services
+            - miscellaneous_repair_shops
+            - miscellaneous_specialty_retail
+            - mobile_home_dealers
+            - motion_picture_theaters
+            - motor_freight_carriers_and_trucking
+            - motor_homes_dealers
+            - motor_vehicle_supplies_and_new_parts
+            - motorcycle_shops_and_dealers
+            - motorcycle_shops_dealers
+            - music_stores_musical_instruments_pianos_and_sheet_music
+            - news_dealers_and_newsstands
+            - non_fi_money_orders
+            - non_fi_stored_value_card_purchase_load
+            - nondurable_goods
+            - nurseries_lawn_and_garden_supply_stores
+            - nursing_personal_care
+            - office_and_commercial_furniture
+            - opticians_eyeglasses
+            - optometrists_ophthalmologist
+            - orthopedic_goods_prosthetic_devices
+            - osteopaths
+            - package_stores_beer_wine_and_liquor
+            - paints_varnishes_and_supplies
+            - parking_lots_garages
+            - passenger_railways
+            - pawn_shops
+            - pet_shops_pet_food_and_supplies
+            - petroleum_and_petroleum_products
+            - photo_developing
+            - photographic_photocopy_microfilm_equipment_and_supplies
+            - photographic_studios
+            - picture_video_production
+            - piece_goods_notions_and_other_dry_goods
+            - plumbing_heating_equipment_and_supplies
+            - political_organizations
+            - postal_services_government_only
+            - precious_stones_and_metals_watches_and_jewelry
+            - professional_services
+            - public_warehousing_and_storage
+            - quick_copy_repro_and_blueprint
+            - railroads
+            - real_estate_agents_and_managers_rentals
+            - record_stores
+            - recreational_vehicle_rentals
+            - religious_goods_stores
+            - religious_organizations
+            - roofing_siding_sheet_metal
+            - secretarial_support_services
+            - security_brokers_dealers
+            - service_stations
+            - sewing_needlework_fabric_and_piece_goods_stores
+            - shoe_repair_hat_cleaning
+            - shoe_stores
+            - small_appliance_repair
+            - snowmobile_dealers
+            - special_trade_services
+            - specialty_cleaning
+            - sporting_goods_stores
+            - sporting_recreation_camps
+            - sports_and_riding_apparel_stores
+            - sports_clubs_fields
+            - stamp_and_coin_stores
+            - stationary_office_supplies_printing_and_writing_paper
+            - stationery_stores_office_and_school_supply_stores
+            - swimming_pools_sales
+            - t_ui_travel_germany
+            - tailors_alterations
+            - tax_payments_government_agencies
+            - tax_preparation_services
+            - taxicabs_limousines
+            - telecommunication_equipment_and_telephone_sales
+            - telecommunication_services
+            - telegraph_services
+            - tent_and_awning_shops
+            - testing_laboratories
+            - theatrical_ticket_agencies
+            - timeshares
+            - tire_retreading_and_repair
+            - tolls_bridge_fees
+            - tourist_attractions_and_exhibits
+            - towing_services
+            - trailer_parks_campgrounds
+            - transportation_services
+            - travel_agencies_tour_operators
+            - truck_stop_iteration
+            - truck_utility_trailer_rentals
+            - typesetting_plate_making_and_related_services
+            - typewriter_stores
+            - u_s_federal_government_agencies_or_departments
+            - uniforms_commercial_clothing
+            - used_merchandise_and_secondhand_stores
+            - utilities
+            - variety_stores
+            - veterinary_services
+            - video_amusement_game_supplies
+            - video_game_arcades
+            - video_tape_rental_stores
+            - vocational_trade_schools
+            - watch_jewelry_repair
+            - welding_repair
+            - wholesale_clubs
+            - wig_and_toupee_stores
+            - wires_money_orders
+            - womens_accessory_and_specialty_shops
+            - womens_ready_to_wear_stores
+            - wrecking_and_salvage_yards
             type: string
           nullable: true
           type: array
@@ -6153,11 +6863,6 @@ components:
           description: Recipient name.
           maxLength: 5000
           type: string
-        phone:
-          description: Recipient phone (including extension).
-          maxLength: 5000
-          nullable: true
-          type: string
         status:
           description: The delivery status of the card. One of `pending`, `shipped`,
             `delivered`, `returned`, `failure`, or `canceled`.
@@ -6165,9 +6870,7 @@ components:
           nullable: true
           type: string
         tracking_number:
-          description: The tracking number for a physical product, obtained from the
-            delivery service. If multiple tracking numbers were generated for this
-            purchase, please separate them with commas.
+          description: A tracking number for a card shipment.
           maxLength: 5000
           nullable: true
           type: string
@@ -6177,9 +6880,15 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        type:
+          description: One of `bulk` or `individual`. Bulk shipments will be grouped
+            and mailed together, while individual ones will not.
+          maxLength: 5000
+          type: string
       required:
       - address
       - name
+      - type
       title: IssuingCardShipping
       type: object
       x-expandableFields:
@@ -6193,6 +6902,291 @@ components:
           description: Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category)
             on which to apply the spending limit. Leave this blank to limit all charges.
           items:
+            enum:
+            - ac_refrigeration_repair
+            - accounting_bookkeeping_services
+            - advertising_services
+            - agricultural_cooperative
+            - airlines_air_carriers
+            - airports_flying_fields
+            - ambulance_services
+            - amusement_parks_carnivals
+            - antique_reproductions
+            - antique_shops
+            - aquariums
+            - architectural_surveying_services
+            - art_dealers_and_galleries
+            - artists_supply_and_craft_shops
+            - auto_and_home_supply_stores
+            - auto_body_repair_shops
+            - auto_paint_shops
+            - auto_service_shops
+            - automated_cash_disburse
+            - automated_fuel_dispensers
+            - automobile_associations
+            - automotive_parts_and_accessories_stores
+            - automotive_tire_stores
+            - bail_and_bond_payments
+            - bakeries
+            - bands_orchestras
+            - barber_and_beauty_shops
+            - betting_casino_gambling
+            - bicycle_shops
+            - billiard_pool_establishments
+            - boat_dealers
+            - boat_rentals_and_leases
+            - book_stores
+            - books_periodicals_and_newspapers
+            - bowling_alleys
+            - bus_lines
+            - business_secretarial_schools
+            - buying_shopping_services
+            - cable_satellite_and_other_pay_television_and_radio
+            - camera_and_photographic_supply_stores
+            - candy_nut_and_confectionery_stores
+            - car_and_truck_dealers_new_used
+            - car_and_truck_dealers_used_only
+            - car_rental_agencies
+            - car_washes
+            - carpentry_services
+            - carpet_upholstery_cleaning
+            - caterers
+            - charitable_and_social_service_organizations_fundraising
+            - chemicals_and_allied_products
+            - chidrens_and_infants_wear_stores
+            - child_care_services
+            - chiropodists_podiatrists
+            - chiropractors
+            - cigar_stores_and_stands
+            - civic_social_fraternal_associations
+            - cleaning_and_maintenance
+            - clothing_rental
+            - colleges_universities
+            - commercial_equipment
+            - commercial_footwear
+            - commercial_photography_art_and_graphics
+            - commuter_transport_and_ferries
+            - computer_network_services
+            - computer_programming
+            - computer_repair
+            - computer_software_stores
+            - computers_peripherals_and_software
+            - concrete_work_services
+            - construction_materials
+            - consulting_public_relations
+            - correspondence_schools
+            - cosmetic_stores
+            - counseling_services
+            - country_clubs
+            - courier_services
+            - court_costs
+            - credit_reporting_agencies
+            - cruise_lines
+            - dairy_products_stores
+            - dance_hall_studios_schools
+            - dating_escort_services
+            - dentists_orthodontists
+            - department_stores
+            - detective_agencies
+            - direct_marketing_catalog_merchant
+            - direct_marketing_combination_catalog_and_retail_merchant
+            - direct_marketing_inbound_telemarketing
+            - direct_marketing_insurance_services
+            - direct_marketing_other
+            - direct_marketing_outbound_telemarketing
+            - direct_marketing_subscription
+            - direct_marketing_travel
+            - discount_stores
+            - doctors
+            - door_to_door_sales
+            - drapery_window_covering_and_upholstery_stores
+            - drinking_places
+            - drug_stores_and_pharmacies
+            - drugs_drug_proprietaries_and_druggist_sundries
+            - dry_cleaners
+            - durable_goods
+            - duty_free_stores
+            - eating_places_restaurants
+            - educational_services
+            - electric_razor_stores
+            - electrical_parts_and_equipment
+            - electrical_services
+            - electronics_repair_shops
+            - electronics_stores
+            - elementary_secondary_schools
+            - employment_temp_agencies
+            - equipment_rental
+            - exterminating_services
+            - family_clothing_stores
+            - fast_food_restaurants
+            - financial_institutions
+            - fines_government_administrative_entities
+            - fireplace_fireplace_screens_and_accessories_stores
+            - floor_covering_stores
+            - florists
+            - florists_supplies_nursery_stock_and_flowers
+            - freezer_and_locker_meat_provisioners
+            - fuel_dealers_non_automotive
+            - funeral_services_crematories
+            - furniture_home_furnishings_and_equipment_stores_except_appliances
+            - furniture_repair_refinishing
+            - furriers_and_fur_shops
+            - general_services
+            - gift_card_novelty_and_souvenir_shops
+            - glass_paint_and_wallpaper_stores
+            - glassware_crystal_stores
+            - golf_courses_public
+            - government_services
+            - grocery_stores_supermarkets
+            - hardware_equipment_and_supplies
+            - hardware_stores
+            - health_and_beauty_spas
+            - hearing_aids_sales_and_supplies
+            - heating_plumbing_a_c
+            - hobby_toy_and_game_shops
+            - home_supply_warehouse_stores
+            - hospitals
+            - hotels_motels_and_resorts
+            - household_appliance_stores
+            - industrial_supplies
+            - information_retrieval_services
+            - insurance_default
+            - insurance_underwriting_premiums
+            - intra_company_purchases
+            - jewelry_stores_watches_clocks_and_silverware_stores
+            - landscaping_services
+            - laundries
+            - laundry_cleaning_services
+            - legal_services_attorneys
+            - luggage_and_leather_goods_stores
+            - lumber_building_materials_stores
+            - manual_cash_disburse
+            - marinas_service_and_supplies
+            - masonry_stonework_and_plaster
+            - massage_parlors
+            - medical_and_dental_labs
+            - medical_dental_ophthalmic_and_hospital_equipment_and_supplies
+            - medical_services
+            - membership_organizations
+            - mens_and_boys_clothing_and_accessories_stores
+            - mens_womens_clothing_stores
+            - metal_service_centers
+            - miscellaneous
+            - miscellaneous_apparel_and_accessory_shops
+            - miscellaneous_auto_dealers
+            - miscellaneous_business_services
+            - miscellaneous_food_stores
+            - miscellaneous_general_merchandise
+            - miscellaneous_general_services
+            - miscellaneous_home_furnishing_specialty_stores
+            - miscellaneous_publishing_and_printing
+            - miscellaneous_recreation_services
+            - miscellaneous_repair_shops
+            - miscellaneous_specialty_retail
+            - mobile_home_dealers
+            - motion_picture_theaters
+            - motor_freight_carriers_and_trucking
+            - motor_homes_dealers
+            - motor_vehicle_supplies_and_new_parts
+            - motorcycle_shops_and_dealers
+            - motorcycle_shops_dealers
+            - music_stores_musical_instruments_pianos_and_sheet_music
+            - news_dealers_and_newsstands
+            - non_fi_money_orders
+            - non_fi_stored_value_card_purchase_load
+            - nondurable_goods
+            - nurseries_lawn_and_garden_supply_stores
+            - nursing_personal_care
+            - office_and_commercial_furniture
+            - opticians_eyeglasses
+            - optometrists_ophthalmologist
+            - orthopedic_goods_prosthetic_devices
+            - osteopaths
+            - package_stores_beer_wine_and_liquor
+            - paints_varnishes_and_supplies
+            - parking_lots_garages
+            - passenger_railways
+            - pawn_shops
+            - pet_shops_pet_food_and_supplies
+            - petroleum_and_petroleum_products
+            - photo_developing
+            - photographic_photocopy_microfilm_equipment_and_supplies
+            - photographic_studios
+            - picture_video_production
+            - piece_goods_notions_and_other_dry_goods
+            - plumbing_heating_equipment_and_supplies
+            - political_organizations
+            - postal_services_government_only
+            - precious_stones_and_metals_watches_and_jewelry
+            - professional_services
+            - public_warehousing_and_storage
+            - quick_copy_repro_and_blueprint
+            - railroads
+            - real_estate_agents_and_managers_rentals
+            - record_stores
+            - recreational_vehicle_rentals
+            - religious_goods_stores
+            - religious_organizations
+            - roofing_siding_sheet_metal
+            - secretarial_support_services
+            - security_brokers_dealers
+            - service_stations
+            - sewing_needlework_fabric_and_piece_goods_stores
+            - shoe_repair_hat_cleaning
+            - shoe_stores
+            - small_appliance_repair
+            - snowmobile_dealers
+            - special_trade_services
+            - specialty_cleaning
+            - sporting_goods_stores
+            - sporting_recreation_camps
+            - sports_and_riding_apparel_stores
+            - sports_clubs_fields
+            - stamp_and_coin_stores
+            - stationary_office_supplies_printing_and_writing_paper
+            - stationery_stores_office_and_school_supply_stores
+            - swimming_pools_sales
+            - t_ui_travel_germany
+            - tailors_alterations
+            - tax_payments_government_agencies
+            - tax_preparation_services
+            - taxicabs_limousines
+            - telecommunication_equipment_and_telephone_sales
+            - telecommunication_services
+            - telegraph_services
+            - tent_and_awning_shops
+            - testing_laboratories
+            - theatrical_ticket_agencies
+            - timeshares
+            - tire_retreading_and_repair
+            - tolls_bridge_fees
+            - tourist_attractions_and_exhibits
+            - towing_services
+            - trailer_parks_campgrounds
+            - transportation_services
+            - travel_agencies_tour_operators
+            - truck_stop_iteration
+            - truck_utility_trailer_rentals
+            - typesetting_plate_making_and_related_services
+            - typewriter_stores
+            - u_s_federal_government_agencies_or_departments
+            - uniforms_commercial_clothing
+            - used_merchandise_and_secondhand_stores
+            - utilities
+            - variety_stores
+            - veterinary_services
+            - video_amusement_game_supplies
+            - video_game_arcades
+            - video_tape_rental_stores
+            - vocational_trade_schools
+            - watch_jewelry_repair
+            - welding_repair
+            - wholesale_clubs
+            - wig_and_toupee_stores
+            - wires_money_orders
+            - womens_accessory_and_specialty_shops
+            - womens_ready_to_wear_stores
+            - wrecking_and_salvage_yards
             type: string
           nullable: true
           type: array
@@ -6234,6 +7228,291 @@ components:
           description: Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category)
             of authorizations permitted on this card.
           items:
+            enum:
+            - ac_refrigeration_repair
+            - accounting_bookkeeping_services
+            - advertising_services
+            - agricultural_cooperative
+            - airlines_air_carriers
+            - airports_flying_fields
+            - ambulance_services
+            - amusement_parks_carnivals
+            - antique_reproductions
+            - antique_shops
+            - aquariums
+            - architectural_surveying_services
+            - art_dealers_and_galleries
+            - artists_supply_and_craft_shops
+            - auto_and_home_supply_stores
+            - auto_body_repair_shops
+            - auto_paint_shops
+            - auto_service_shops
+            - automated_cash_disburse
+            - automated_fuel_dispensers
+            - automobile_associations
+            - automotive_parts_and_accessories_stores
+            - automotive_tire_stores
+            - bail_and_bond_payments
+            - bakeries
+            - bands_orchestras
+            - barber_and_beauty_shops
+            - betting_casino_gambling
+            - bicycle_shops
+            - billiard_pool_establishments
+            - boat_dealers
+            - boat_rentals_and_leases
+            - book_stores
+            - books_periodicals_and_newspapers
+            - bowling_alleys
+            - bus_lines
+            - business_secretarial_schools
+            - buying_shopping_services
+            - cable_satellite_and_other_pay_television_and_radio
+            - camera_and_photographic_supply_stores
+            - candy_nut_and_confectionery_stores
+            - car_and_truck_dealers_new_used
+            - car_and_truck_dealers_used_only
+            - car_rental_agencies
+            - car_washes
+            - carpentry_services
+            - carpet_upholstery_cleaning
+            - caterers
+            - charitable_and_social_service_organizations_fundraising
+            - chemicals_and_allied_products
+            - chidrens_and_infants_wear_stores
+            - child_care_services
+            - chiropodists_podiatrists
+            - chiropractors
+            - cigar_stores_and_stands
+            - civic_social_fraternal_associations
+            - cleaning_and_maintenance
+            - clothing_rental
+            - colleges_universities
+            - commercial_equipment
+            - commercial_footwear
+            - commercial_photography_art_and_graphics
+            - commuter_transport_and_ferries
+            - computer_network_services
+            - computer_programming
+            - computer_repair
+            - computer_software_stores
+            - computers_peripherals_and_software
+            - concrete_work_services
+            - construction_materials
+            - consulting_public_relations
+            - correspondence_schools
+            - cosmetic_stores
+            - counseling_services
+            - country_clubs
+            - courier_services
+            - court_costs
+            - credit_reporting_agencies
+            - cruise_lines
+            - dairy_products_stores
+            - dance_hall_studios_schools
+            - dating_escort_services
+            - dentists_orthodontists
+            - department_stores
+            - detective_agencies
+            - direct_marketing_catalog_merchant
+            - direct_marketing_combination_catalog_and_retail_merchant
+            - direct_marketing_inbound_telemarketing
+            - direct_marketing_insurance_services
+            - direct_marketing_other
+            - direct_marketing_outbound_telemarketing
+            - direct_marketing_subscription
+            - direct_marketing_travel
+            - discount_stores
+            - doctors
+            - door_to_door_sales
+            - drapery_window_covering_and_upholstery_stores
+            - drinking_places
+            - drug_stores_and_pharmacies
+            - drugs_drug_proprietaries_and_druggist_sundries
+            - dry_cleaners
+            - durable_goods
+            - duty_free_stores
+            - eating_places_restaurants
+            - educational_services
+            - electric_razor_stores
+            - electrical_parts_and_equipment
+            - electrical_services
+            - electronics_repair_shops
+            - electronics_stores
+            - elementary_secondary_schools
+            - employment_temp_agencies
+            - equipment_rental
+            - exterminating_services
+            - family_clothing_stores
+            - fast_food_restaurants
+            - financial_institutions
+            - fines_government_administrative_entities
+            - fireplace_fireplace_screens_and_accessories_stores
+            - floor_covering_stores
+            - florists
+            - florists_supplies_nursery_stock_and_flowers
+            - freezer_and_locker_meat_provisioners
+            - fuel_dealers_non_automotive
+            - funeral_services_crematories
+            - furniture_home_furnishings_and_equipment_stores_except_appliances
+            - furniture_repair_refinishing
+            - furriers_and_fur_shops
+            - general_services
+            - gift_card_novelty_and_souvenir_shops
+            - glass_paint_and_wallpaper_stores
+            - glassware_crystal_stores
+            - golf_courses_public
+            - government_services
+            - grocery_stores_supermarkets
+            - hardware_equipment_and_supplies
+            - hardware_stores
+            - health_and_beauty_spas
+            - hearing_aids_sales_and_supplies
+            - heating_plumbing_a_c
+            - hobby_toy_and_game_shops
+            - home_supply_warehouse_stores
+            - hospitals
+            - hotels_motels_and_resorts
+            - household_appliance_stores
+            - industrial_supplies
+            - information_retrieval_services
+            - insurance_default
+            - insurance_underwriting_premiums
+            - intra_company_purchases
+            - jewelry_stores_watches_clocks_and_silverware_stores
+            - landscaping_services
+            - laundries
+            - laundry_cleaning_services
+            - legal_services_attorneys
+            - luggage_and_leather_goods_stores
+            - lumber_building_materials_stores
+            - manual_cash_disburse
+            - marinas_service_and_supplies
+            - masonry_stonework_and_plaster
+            - massage_parlors
+            - medical_and_dental_labs
+            - medical_dental_ophthalmic_and_hospital_equipment_and_supplies
+            - medical_services
+            - membership_organizations
+            - mens_and_boys_clothing_and_accessories_stores
+            - mens_womens_clothing_stores
+            - metal_service_centers
+            - miscellaneous
+            - miscellaneous_apparel_and_accessory_shops
+            - miscellaneous_auto_dealers
+            - miscellaneous_business_services
+            - miscellaneous_food_stores
+            - miscellaneous_general_merchandise
+            - miscellaneous_general_services
+            - miscellaneous_home_furnishing_specialty_stores
+            - miscellaneous_publishing_and_printing
+            - miscellaneous_recreation_services
+            - miscellaneous_repair_shops
+            - miscellaneous_specialty_retail
+            - mobile_home_dealers
+            - motion_picture_theaters
+            - motor_freight_carriers_and_trucking
+            - motor_homes_dealers
+            - motor_vehicle_supplies_and_new_parts
+            - motorcycle_shops_and_dealers
+            - motorcycle_shops_dealers
+            - music_stores_musical_instruments_pianos_and_sheet_music
+            - news_dealers_and_newsstands
+            - non_fi_money_orders
+            - non_fi_stored_value_card_purchase_load
+            - nondurable_goods
+            - nurseries_lawn_and_garden_supply_stores
+            - nursing_personal_care
+            - office_and_commercial_furniture
+            - opticians_eyeglasses
+            - optometrists_ophthalmologist
+            - orthopedic_goods_prosthetic_devices
+            - osteopaths
+            - package_stores_beer_wine_and_liquor
+            - paints_varnishes_and_supplies
+            - parking_lots_garages
+            - passenger_railways
+            - pawn_shops
+            - pet_shops_pet_food_and_supplies
+            - petroleum_and_petroleum_products
+            - photo_developing
+            - photographic_photocopy_microfilm_equipment_and_supplies
+            - photographic_studios
+            - picture_video_production
+            - piece_goods_notions_and_other_dry_goods
+            - plumbing_heating_equipment_and_supplies
+            - political_organizations
+            - postal_services_government_only
+            - precious_stones_and_metals_watches_and_jewelry
+            - professional_services
+            - public_warehousing_and_storage
+            - quick_copy_repro_and_blueprint
+            - railroads
+            - real_estate_agents_and_managers_rentals
+            - record_stores
+            - recreational_vehicle_rentals
+            - religious_goods_stores
+            - religious_organizations
+            - roofing_siding_sheet_metal
+            - secretarial_support_services
+            - security_brokers_dealers
+            - service_stations
+            - sewing_needlework_fabric_and_piece_goods_stores
+            - shoe_repair_hat_cleaning
+            - shoe_stores
+            - small_appliance_repair
+            - snowmobile_dealers
+            - special_trade_services
+            - specialty_cleaning
+            - sporting_goods_stores
+            - sporting_recreation_camps
+            - sports_and_riding_apparel_stores
+            - sports_clubs_fields
+            - stamp_and_coin_stores
+            - stationary_office_supplies_printing_and_writing_paper
+            - stationery_stores_office_and_school_supply_stores
+            - swimming_pools_sales
+            - t_ui_travel_germany
+            - tailors_alterations
+            - tax_payments_government_agencies
+            - tax_preparation_services
+            - taxicabs_limousines
+            - telecommunication_equipment_and_telephone_sales
+            - telecommunication_services
+            - telegraph_services
+            - tent_and_awning_shops
+            - testing_laboratories
+            - theatrical_ticket_agencies
+            - timeshares
+            - tire_retreading_and_repair
+            - tolls_bridge_fees
+            - tourist_attractions_and_exhibits
+            - towing_services
+            - trailer_parks_campgrounds
+            - transportation_services
+            - travel_agencies_tour_operators
+            - truck_stop_iteration
+            - truck_utility_trailer_rentals
+            - typesetting_plate_making_and_related_services
+            - typewriter_stores
+            - u_s_federal_government_agencies_or_departments
+            - uniforms_commercial_clothing
+            - used_merchandise_and_secondhand_stores
+            - utilities
+            - variety_stores
+            - veterinary_services
+            - video_amusement_game_supplies
+            - video_game_arcades
+            - video_tape_rental_stores
+            - vocational_trade_schools
+            - watch_jewelry_repair
+            - welding_repair
+            - wholesale_clubs
+            - wig_and_toupee_stores
+            - wires_money_orders
+            - womens_accessory_and_specialty_shops
+            - womens_ready_to_wear_stores
+            - wrecking_and_salvage_yards
             type: string
           nullable: true
           type: array
@@ -6241,6 +7520,291 @@ components:
           description: Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category)
             of authorizations to always decline on this card.
           items:
+            enum:
+            - ac_refrigeration_repair
+            - accounting_bookkeeping_services
+            - advertising_services
+            - agricultural_cooperative
+            - airlines_air_carriers
+            - airports_flying_fields
+            - ambulance_services
+            - amusement_parks_carnivals
+            - antique_reproductions
+            - antique_shops
+            - aquariums
+            - architectural_surveying_services
+            - art_dealers_and_galleries
+            - artists_supply_and_craft_shops
+            - auto_and_home_supply_stores
+            - auto_body_repair_shops
+            - auto_paint_shops
+            - auto_service_shops
+            - automated_cash_disburse
+            - automated_fuel_dispensers
+            - automobile_associations
+            - automotive_parts_and_accessories_stores
+            - automotive_tire_stores
+            - bail_and_bond_payments
+            - bakeries
+            - bands_orchestras
+            - barber_and_beauty_shops
+            - betting_casino_gambling
+            - bicycle_shops
+            - billiard_pool_establishments
+            - boat_dealers
+            - boat_rentals_and_leases
+            - book_stores
+            - books_periodicals_and_newspapers
+            - bowling_alleys
+            - bus_lines
+            - business_secretarial_schools
+            - buying_shopping_services
+            - cable_satellite_and_other_pay_television_and_radio
+            - camera_and_photographic_supply_stores
+            - candy_nut_and_confectionery_stores
+            - car_and_truck_dealers_new_used
+            - car_and_truck_dealers_used_only
+            - car_rental_agencies
+            - car_washes
+            - carpentry_services
+            - carpet_upholstery_cleaning
+            - caterers
+            - charitable_and_social_service_organizations_fundraising
+            - chemicals_and_allied_products
+            - chidrens_and_infants_wear_stores
+            - child_care_services
+            - chiropodists_podiatrists
+            - chiropractors
+            - cigar_stores_and_stands
+            - civic_social_fraternal_associations
+            - cleaning_and_maintenance
+            - clothing_rental
+            - colleges_universities
+            - commercial_equipment
+            - commercial_footwear
+            - commercial_photography_art_and_graphics
+            - commuter_transport_and_ferries
+            - computer_network_services
+            - computer_programming
+            - computer_repair
+            - computer_software_stores
+            - computers_peripherals_and_software
+            - concrete_work_services
+            - construction_materials
+            - consulting_public_relations
+            - correspondence_schools
+            - cosmetic_stores
+            - counseling_services
+            - country_clubs
+            - courier_services
+            - court_costs
+            - credit_reporting_agencies
+            - cruise_lines
+            - dairy_products_stores
+            - dance_hall_studios_schools
+            - dating_escort_services
+            - dentists_orthodontists
+            - department_stores
+            - detective_agencies
+            - direct_marketing_catalog_merchant
+            - direct_marketing_combination_catalog_and_retail_merchant
+            - direct_marketing_inbound_telemarketing
+            - direct_marketing_insurance_services
+            - direct_marketing_other
+            - direct_marketing_outbound_telemarketing
+            - direct_marketing_subscription
+            - direct_marketing_travel
+            - discount_stores
+            - doctors
+            - door_to_door_sales
+            - drapery_window_covering_and_upholstery_stores
+            - drinking_places
+            - drug_stores_and_pharmacies
+            - drugs_drug_proprietaries_and_druggist_sundries
+            - dry_cleaners
+            - durable_goods
+            - duty_free_stores
+            - eating_places_restaurants
+            - educational_services
+            - electric_razor_stores
+            - electrical_parts_and_equipment
+            - electrical_services
+            - electronics_repair_shops
+            - electronics_stores
+            - elementary_secondary_schools
+            - employment_temp_agencies
+            - equipment_rental
+            - exterminating_services
+            - family_clothing_stores
+            - fast_food_restaurants
+            - financial_institutions
+            - fines_government_administrative_entities
+            - fireplace_fireplace_screens_and_accessories_stores
+            - floor_covering_stores
+            - florists
+            - florists_supplies_nursery_stock_and_flowers
+            - freezer_and_locker_meat_provisioners
+            - fuel_dealers_non_automotive
+            - funeral_services_crematories
+            - furniture_home_furnishings_and_equipment_stores_except_appliances
+            - furniture_repair_refinishing
+            - furriers_and_fur_shops
+            - general_services
+            - gift_card_novelty_and_souvenir_shops
+            - glass_paint_and_wallpaper_stores
+            - glassware_crystal_stores
+            - golf_courses_public
+            - government_services
+            - grocery_stores_supermarkets
+            - hardware_equipment_and_supplies
+            - hardware_stores
+            - health_and_beauty_spas
+            - hearing_aids_sales_and_supplies
+            - heating_plumbing_a_c
+            - hobby_toy_and_game_shops
+            - home_supply_warehouse_stores
+            - hospitals
+            - hotels_motels_and_resorts
+            - household_appliance_stores
+            - industrial_supplies
+            - information_retrieval_services
+            - insurance_default
+            - insurance_underwriting_premiums
+            - intra_company_purchases
+            - jewelry_stores_watches_clocks_and_silverware_stores
+            - landscaping_services
+            - laundries
+            - laundry_cleaning_services
+            - legal_services_attorneys
+            - luggage_and_leather_goods_stores
+            - lumber_building_materials_stores
+            - manual_cash_disburse
+            - marinas_service_and_supplies
+            - masonry_stonework_and_plaster
+            - massage_parlors
+            - medical_and_dental_labs
+            - medical_dental_ophthalmic_and_hospital_equipment_and_supplies
+            - medical_services
+            - membership_organizations
+            - mens_and_boys_clothing_and_accessories_stores
+            - mens_womens_clothing_stores
+            - metal_service_centers
+            - miscellaneous
+            - miscellaneous_apparel_and_accessory_shops
+            - miscellaneous_auto_dealers
+            - miscellaneous_business_services
+            - miscellaneous_food_stores
+            - miscellaneous_general_merchandise
+            - miscellaneous_general_services
+            - miscellaneous_home_furnishing_specialty_stores
+            - miscellaneous_publishing_and_printing
+            - miscellaneous_recreation_services
+            - miscellaneous_repair_shops
+            - miscellaneous_specialty_retail
+            - mobile_home_dealers
+            - motion_picture_theaters
+            - motor_freight_carriers_and_trucking
+            - motor_homes_dealers
+            - motor_vehicle_supplies_and_new_parts
+            - motorcycle_shops_and_dealers
+            - motorcycle_shops_dealers
+            - music_stores_musical_instruments_pianos_and_sheet_music
+            - news_dealers_and_newsstands
+            - non_fi_money_orders
+            - non_fi_stored_value_card_purchase_load
+            - nondurable_goods
+            - nurseries_lawn_and_garden_supply_stores
+            - nursing_personal_care
+            - office_and_commercial_furniture
+            - opticians_eyeglasses
+            - optometrists_ophthalmologist
+            - orthopedic_goods_prosthetic_devices
+            - osteopaths
+            - package_stores_beer_wine_and_liquor
+            - paints_varnishes_and_supplies
+            - parking_lots_garages
+            - passenger_railways
+            - pawn_shops
+            - pet_shops_pet_food_and_supplies
+            - petroleum_and_petroleum_products
+            - photo_developing
+            - photographic_photocopy_microfilm_equipment_and_supplies
+            - photographic_studios
+            - picture_video_production
+            - piece_goods_notions_and_other_dry_goods
+            - plumbing_heating_equipment_and_supplies
+            - political_organizations
+            - postal_services_government_only
+            - precious_stones_and_metals_watches_and_jewelry
+            - professional_services
+            - public_warehousing_and_storage
+            - quick_copy_repro_and_blueprint
+            - railroads
+            - real_estate_agents_and_managers_rentals
+            - record_stores
+            - recreational_vehicle_rentals
+            - religious_goods_stores
+            - religious_organizations
+            - roofing_siding_sheet_metal
+            - secretarial_support_services
+            - security_brokers_dealers
+            - service_stations
+            - sewing_needlework_fabric_and_piece_goods_stores
+            - shoe_repair_hat_cleaning
+            - shoe_stores
+            - small_appliance_repair
+            - snowmobile_dealers
+            - special_trade_services
+            - specialty_cleaning
+            - sporting_goods_stores
+            - sporting_recreation_camps
+            - sports_and_riding_apparel_stores
+            - sports_clubs_fields
+            - stamp_and_coin_stores
+            - stationary_office_supplies_printing_and_writing_paper
+            - stationery_stores_office_and_school_supply_stores
+            - swimming_pools_sales
+            - t_ui_travel_germany
+            - tailors_alterations
+            - tax_payments_government_agencies
+            - tax_preparation_services
+            - taxicabs_limousines
+            - telecommunication_equipment_and_telephone_sales
+            - telecommunication_services
+            - telegraph_services
+            - tent_and_awning_shops
+            - testing_laboratories
+            - theatrical_ticket_agencies
+            - timeshares
+            - tire_retreading_and_repair
+            - tolls_bridge_fees
+            - tourist_attractions_and_exhibits
+            - towing_services
+            - trailer_parks_campgrounds
+            - transportation_services
+            - travel_agencies_tour_operators
+            - truck_stop_iteration
+            - truck_utility_trailer_rentals
+            - typesetting_plate_making_and_related_services
+            - typewriter_stores
+            - u_s_federal_government_agencies_or_departments
+            - uniforms_commercial_clothing
+            - used_merchandise_and_secondhand_stores
+            - utilities
+            - variety_stores
+            - veterinary_services
+            - video_amusement_game_supplies
+            - video_game_arcades
+            - video_tape_rental_stores
+            - vocational_trade_schools
+            - watch_jewelry_repair
+            - welding_repair
+            - wholesale_clubs
+            - wig_and_toupee_stores
+            - wires_money_orders
+            - womens_accessory_and_specialty_shops
+            - womens_ready_to_wear_stores
+            - wrecking_and_salvage_yards
             type: string
           nullable: true
           type: array
@@ -6263,6 +7827,291 @@ components:
           description: Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category)
             on which to apply the spending limit. Leave this blank to limit all charges.
           items:
+            enum:
+            - ac_refrigeration_repair
+            - accounting_bookkeeping_services
+            - advertising_services
+            - agricultural_cooperative
+            - airlines_air_carriers
+            - airports_flying_fields
+            - ambulance_services
+            - amusement_parks_carnivals
+            - antique_reproductions
+            - antique_shops
+            - aquariums
+            - architectural_surveying_services
+            - art_dealers_and_galleries
+            - artists_supply_and_craft_shops
+            - auto_and_home_supply_stores
+            - auto_body_repair_shops
+            - auto_paint_shops
+            - auto_service_shops
+            - automated_cash_disburse
+            - automated_fuel_dispensers
+            - automobile_associations
+            - automotive_parts_and_accessories_stores
+            - automotive_tire_stores
+            - bail_and_bond_payments
+            - bakeries
+            - bands_orchestras
+            - barber_and_beauty_shops
+            - betting_casino_gambling
+            - bicycle_shops
+            - billiard_pool_establishments
+            - boat_dealers
+            - boat_rentals_and_leases
+            - book_stores
+            - books_periodicals_and_newspapers
+            - bowling_alleys
+            - bus_lines
+            - business_secretarial_schools
+            - buying_shopping_services
+            - cable_satellite_and_other_pay_television_and_radio
+            - camera_and_photographic_supply_stores
+            - candy_nut_and_confectionery_stores
+            - car_and_truck_dealers_new_used
+            - car_and_truck_dealers_used_only
+            - car_rental_agencies
+            - car_washes
+            - carpentry_services
+            - carpet_upholstery_cleaning
+            - caterers
+            - charitable_and_social_service_organizations_fundraising
+            - chemicals_and_allied_products
+            - chidrens_and_infants_wear_stores
+            - child_care_services
+            - chiropodists_podiatrists
+            - chiropractors
+            - cigar_stores_and_stands
+            - civic_social_fraternal_associations
+            - cleaning_and_maintenance
+            - clothing_rental
+            - colleges_universities
+            - commercial_equipment
+            - commercial_footwear
+            - commercial_photography_art_and_graphics
+            - commuter_transport_and_ferries
+            - computer_network_services
+            - computer_programming
+            - computer_repair
+            - computer_software_stores
+            - computers_peripherals_and_software
+            - concrete_work_services
+            - construction_materials
+            - consulting_public_relations
+            - correspondence_schools
+            - cosmetic_stores
+            - counseling_services
+            - country_clubs
+            - courier_services
+            - court_costs
+            - credit_reporting_agencies
+            - cruise_lines
+            - dairy_products_stores
+            - dance_hall_studios_schools
+            - dating_escort_services
+            - dentists_orthodontists
+            - department_stores
+            - detective_agencies
+            - direct_marketing_catalog_merchant
+            - direct_marketing_combination_catalog_and_retail_merchant
+            - direct_marketing_inbound_telemarketing
+            - direct_marketing_insurance_services
+            - direct_marketing_other
+            - direct_marketing_outbound_telemarketing
+            - direct_marketing_subscription
+            - direct_marketing_travel
+            - discount_stores
+            - doctors
+            - door_to_door_sales
+            - drapery_window_covering_and_upholstery_stores
+            - drinking_places
+            - drug_stores_and_pharmacies
+            - drugs_drug_proprietaries_and_druggist_sundries
+            - dry_cleaners
+            - durable_goods
+            - duty_free_stores
+            - eating_places_restaurants
+            - educational_services
+            - electric_razor_stores
+            - electrical_parts_and_equipment
+            - electrical_services
+            - electronics_repair_shops
+            - electronics_stores
+            - elementary_secondary_schools
+            - employment_temp_agencies
+            - equipment_rental
+            - exterminating_services
+            - family_clothing_stores
+            - fast_food_restaurants
+            - financial_institutions
+            - fines_government_administrative_entities
+            - fireplace_fireplace_screens_and_accessories_stores
+            - floor_covering_stores
+            - florists
+            - florists_supplies_nursery_stock_and_flowers
+            - freezer_and_locker_meat_provisioners
+            - fuel_dealers_non_automotive
+            - funeral_services_crematories
+            - furniture_home_furnishings_and_equipment_stores_except_appliances
+            - furniture_repair_refinishing
+            - furriers_and_fur_shops
+            - general_services
+            - gift_card_novelty_and_souvenir_shops
+            - glass_paint_and_wallpaper_stores
+            - glassware_crystal_stores
+            - golf_courses_public
+            - government_services
+            - grocery_stores_supermarkets
+            - hardware_equipment_and_supplies
+            - hardware_stores
+            - health_and_beauty_spas
+            - hearing_aids_sales_and_supplies
+            - heating_plumbing_a_c
+            - hobby_toy_and_game_shops
+            - home_supply_warehouse_stores
+            - hospitals
+            - hotels_motels_and_resorts
+            - household_appliance_stores
+            - industrial_supplies
+            - information_retrieval_services
+            - insurance_default
+            - insurance_underwriting_premiums
+            - intra_company_purchases
+            - jewelry_stores_watches_clocks_and_silverware_stores
+            - landscaping_services
+            - laundries
+            - laundry_cleaning_services
+            - legal_services_attorneys
+            - luggage_and_leather_goods_stores
+            - lumber_building_materials_stores
+            - manual_cash_disburse
+            - marinas_service_and_supplies
+            - masonry_stonework_and_plaster
+            - massage_parlors
+            - medical_and_dental_labs
+            - medical_dental_ophthalmic_and_hospital_equipment_and_supplies
+            - medical_services
+            - membership_organizations
+            - mens_and_boys_clothing_and_accessories_stores
+            - mens_womens_clothing_stores
+            - metal_service_centers
+            - miscellaneous
+            - miscellaneous_apparel_and_accessory_shops
+            - miscellaneous_auto_dealers
+            - miscellaneous_business_services
+            - miscellaneous_food_stores
+            - miscellaneous_general_merchandise
+            - miscellaneous_general_services
+            - miscellaneous_home_furnishing_specialty_stores
+            - miscellaneous_publishing_and_printing
+            - miscellaneous_recreation_services
+            - miscellaneous_repair_shops
+            - miscellaneous_specialty_retail
+            - mobile_home_dealers
+            - motion_picture_theaters
+            - motor_freight_carriers_and_trucking
+            - motor_homes_dealers
+            - motor_vehicle_supplies_and_new_parts
+            - motorcycle_shops_and_dealers
+            - motorcycle_shops_dealers
+            - music_stores_musical_instruments_pianos_and_sheet_music
+            - news_dealers_and_newsstands
+            - non_fi_money_orders
+            - non_fi_stored_value_card_purchase_load
+            - nondurable_goods
+            - nurseries_lawn_and_garden_supply_stores
+            - nursing_personal_care
+            - office_and_commercial_furniture
+            - opticians_eyeglasses
+            - optometrists_ophthalmologist
+            - orthopedic_goods_prosthetic_devices
+            - osteopaths
+            - package_stores_beer_wine_and_liquor
+            - paints_varnishes_and_supplies
+            - parking_lots_garages
+            - passenger_railways
+            - pawn_shops
+            - pet_shops_pet_food_and_supplies
+            - petroleum_and_petroleum_products
+            - photo_developing
+            - photographic_photocopy_microfilm_equipment_and_supplies
+            - photographic_studios
+            - picture_video_production
+            - piece_goods_notions_and_other_dry_goods
+            - plumbing_heating_equipment_and_supplies
+            - political_organizations
+            - postal_services_government_only
+            - precious_stones_and_metals_watches_and_jewelry
+            - professional_services
+            - public_warehousing_and_storage
+            - quick_copy_repro_and_blueprint
+            - railroads
+            - real_estate_agents_and_managers_rentals
+            - record_stores
+            - recreational_vehicle_rentals
+            - religious_goods_stores
+            - religious_organizations
+            - roofing_siding_sheet_metal
+            - secretarial_support_services
+            - security_brokers_dealers
+            - service_stations
+            - sewing_needlework_fabric_and_piece_goods_stores
+            - shoe_repair_hat_cleaning
+            - shoe_stores
+            - small_appliance_repair
+            - snowmobile_dealers
+            - special_trade_services
+            - specialty_cleaning
+            - sporting_goods_stores
+            - sporting_recreation_camps
+            - sports_and_riding_apparel_stores
+            - sports_clubs_fields
+            - stamp_and_coin_stores
+            - stationary_office_supplies_printing_and_writing_paper
+            - stationery_stores_office_and_school_supply_stores
+            - swimming_pools_sales
+            - t_ui_travel_germany
+            - tailors_alterations
+            - tax_payments_government_agencies
+            - tax_preparation_services
+            - taxicabs_limousines
+            - telecommunication_equipment_and_telephone_sales
+            - telecommunication_services
+            - telegraph_services
+            - tent_and_awning_shops
+            - testing_laboratories
+            - theatrical_ticket_agencies
+            - timeshares
+            - tire_retreading_and_repair
+            - tolls_bridge_fees
+            - tourist_attractions_and_exhibits
+            - towing_services
+            - trailer_parks_campgrounds
+            - transportation_services
+            - travel_agencies_tour_operators
+            - truck_stop_iteration
+            - truck_utility_trailer_rentals
+            - typesetting_plate_making_and_related_services
+            - typewriter_stores
+            - u_s_federal_government_agencies_or_departments
+            - uniforms_commercial_clothing
+            - used_merchandise_and_secondhand_stores
+            - utilities
+            - variety_stores
+            - veterinary_services
+            - video_amusement_game_supplies
+            - video_game_arcades
+            - video_tape_rental_stores
+            - vocational_trade_schools
+            - watch_jewelry_repair
+            - welding_repair
+            - wholesale_clubs
+            - wig_and_toupee_stores
+            - wires_money_orders
+            - womens_accessory_and_specialty_shops
+            - womens_ready_to_wear_stores
+            - wrecking_and_salvage_yards
             type: string
           nullable: true
           type: array
@@ -6475,7 +8324,7 @@ components:
       title: LegalEntityJapanAddress
       type: object
       x-expandableFields: []
-    legal_entity_verification:
+    legal_entity_person_verification:
       properties:
         details:
           description: A user-displayable string describing the verification state
@@ -6491,7 +8340,7 @@ components:
           nullable: true
           type: string
         document:
-          "$ref": "#/components/schemas/legal_entity_verification_document"
+          "$ref": "#/components/schemas/legal_entity_person_verification_document"
         status:
           description: The state of verification for the person. Possible values are
             `unverified`, `pending`, or `verified`.
@@ -6500,11 +8349,11 @@ components:
       required:
       - document
       - status
-      title: LegalEntityVerification
+      title: LegalEntityPersonVerification
       type: object
       x-expandableFields:
       - document
-    legal_entity_verification_document:
+    legal_entity_person_verification_document:
       properties:
         back:
           anyOf:
@@ -6545,7 +8394,7 @@ components:
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/file"
-      title: LegalEntityVerificationDocument
+      title: LegalEntityPersonVerificationDocument
       type: object
       x-expandableFields:
       - back
@@ -7078,7 +8927,7 @@ components:
             - "$ref": "#/components/schemas/application"
         application_fee_amount:
           description: The amount of the application fee (if any) for the resulting
-            payment. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect)
+            payment. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts)
             for details.
           nullable: true
           type: integer
@@ -7090,13 +8939,17 @@ components:
           nullable: true
           type: integer
         cancellation_reason:
-          description: User-given reason for cancellation of this PaymentIntent, one
-            of `duplicate`, `fraudulent`, `requested_by_customer`, or `failed_invoice`.
+          description: Reason for cancellation of this PaymentIntent, either user-provided
+            (`duplicate`, `fraudulent`, `requested_by_customer`, or `abandoned`) or
+            generated by Stripe internally (`failed_invoice`, `void_invoice`, or `automatic`).
           enum:
+          - abandoned
+          - automatic
           - duplicate
           - failed_invoice
           - fraudulent
           - requested_by_customer
+          - void_invoice
           nullable: true
           type: string
         capture_method:
@@ -7107,13 +8960,13 @@ components:
           - manual
           type: string
         charges:
-          description: Charges that were created by this PaymentIntent, if any. By
-            default we only include the latest charge, use [pagnination](https://stripe.com/docs/api/pagination)
-            to fetch more charges.
+          description: Charges that were created by this PaymentIntent, if any.
           properties:
             data:
-              description: The list contains all Charges that have been created by
-                this PaymentIntent.
+              description: This list only contains the latest charge, even if there
+                were previously multiple unsuccessful charges. To view all previous
+                charges for a PaymentIntent, you can filter the charges list using
+                the `payment_intent` [parameter](https://stripe.com/docs/api/charges/list#list_charges-payment_intent).
               items:
                 "$ref": "#/components/schemas/charge"
               type: array
@@ -7234,7 +9087,7 @@ components:
             type: string
           - "$ref": "#/components/schemas/account"
           description: The account (if any) for which the funds of the PaymentIntent
-            are intended. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect)
+            are intended. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts)
             for details.
           nullable: true
           x-expansionResources:
@@ -7254,6 +9107,7 @@ components:
           description: The list of payment method types (e.g. card) that this PaymentIntent
             is allowed to use.
           items:
+            maxLength: 5000
             type: string
           type: array
         receipt_email:
@@ -7305,8 +9159,7 @@ components:
         status:
           description: Status of this PaymentIntent, one of `requires_payment_method`,
             `requires_confirmation`, `requires_action`, `processing`, `requires_capture`,
-            `canceled`, or `succeeded`. You can read more about PaymentIntent statuses
-            [here](https://stripe.com/docs/payments/payment-intents/usage#paymentintent-status-overview).
+            `canceled`, or `succeeded`. Read more about each PaymentIntent [status](https://stripe.com/docs/payments/payment-intents/status).
           enum:
           - canceled
           - processing
@@ -7320,12 +9173,13 @@ components:
           anyOf:
           - "$ref": "#/components/schemas/transfer_data"
           description: The data with which to automatically create a Transfer when
-            the payment is finalized. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect)
+            the payment is finalized. See the PaymentIntents [use case for connected
+            accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts)
             for details.
           nullable: true
         transfer_group:
           description: A string that identifies the resulting payment as part of a
-            group. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect)
+            group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts)
             for details.
           maxLength: 5000
           nullable: true
@@ -7748,7 +9602,7 @@ components:
           "$ref": "#/components/schemas/payment_method_details_stripe_account"
         type:
           description: |-
-            The type of transaction-specific details of the payment method used in the payment, one of `ach_credit_transfer`, `alipay`, `bancontact`, `card`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `sepa_debit`, or `sofort`.
+            The type of transaction-specific details of the payment method used in the payment, one of `ach_credit_transfer`, `ach_debit`, `alipay`, `bancontact`, `card`, `card_present`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `sepa_debit`, `sofort`, `stripe_account`, or `wechat`.
             An additional hash is included on `payment_method_details` with a name matching this value.
             It contains information specific to the payment method.
           maxLength: 5000
@@ -8711,7 +10565,7 @@ components:
         ssn_last_4_provided:
           type: boolean
         verification:
-          "$ref": "#/components/schemas/legal_entity_verification"
+          "$ref": "#/components/schemas/legal_entity_person_verification"
       required:
       - account
       - created
@@ -8765,6 +10619,7 @@ components:
             enabled. If not collected by the account's `current_deadline`, these fields
             are moved to `past_due` and the account is disabled.
           items:
+            maxLength: 5000
             type: string
           type: array
         eventually_due:
@@ -8772,12 +10627,14 @@ components:
             are reached. As fields are needed, they are moved to `currently_due` and
             the account's `current_deadline` is set.
           items:
+            maxLength: 5000
             type: string
           type: array
         past_due:
           description: Fields that weren't collected by the account's `current_deadline`.
             These fields need to be collected to enable payouts for the person's account.
           items:
+            maxLength: 5000
             type: string
           type: array
       required:
@@ -8969,6 +10826,7 @@ components:
           description: A list of up to 5 attributes that each SKU can provide values
             for (e.g., `["color", "size"]`). Only applicable to products of `type=good`.
           items:
+            maxLength: 5000
             type: string
           nullable: true
           type: array
@@ -8987,6 +10845,7 @@ components:
           description: An array of connect application identifiers that cannot purchase
             this product. Only applicable to products of `type=good`.
           items:
+            maxLength: 5000
             type: string
           type: array
         description:
@@ -9003,6 +10862,7 @@ components:
           description: A list of up to 8 URLs of images for this product, meant to
             be displayable to the customer. Only applicable to products of `type=good`.
           items:
+            maxLength: 5000
             type: string
           type: array
         livemode:
@@ -9640,6 +11500,7 @@ components:
             Report Type gets run. (If the Report Type doesn't support the `columns`
             parameter, this will be null.)
           items:
+            maxLength: 5000
             type: string
           nullable: true
           type: array
@@ -11255,6 +13116,13 @@ components:
             example, a change to the items array, or a change of status, will reset
             this timestamp.
           format: unix-time
+          nullable: true
+          type: integer
+        start_date:
+          description: Date when the subscription was first created. The date might
+            differ from the `created` date due to backdating.
+          format: unix-time
+          nullable: true
           type: integer
         status:
           description: "Possible values are `incomplete`, `incomplete_expired`, `trialing`,
@@ -11313,7 +13181,6 @@ components:
       - livemode
       - metadata
       - object
-      - start
       - status
       title: Subscription
       type: object
@@ -12767,6 +14634,7 @@ components:
           description: The list of events to enable for this endpoint. You may specify
             `['*']` to enable all events.
           items:
+            maxLength: 5000
             type: string
           type: array
         id:
@@ -13415,6 +15283,7 @@ paths:
                     enum:
                     - card_issuing
                     - card_payments
+                    - legacy_payments
                     - platform_payments
                     maxLength: 5000
                     type: string
@@ -13456,6 +15325,12 @@ paths:
                         statement_descriptor:
                           maxLength: 22
                           type: string
+                        statement_descriptor_kana:
+                          maxLength: 22
+                          type: string
+                        statement_descriptor_kanji:
+                          maxLength: 22
+                          type: string
                       title: payments_settings_specs
                       type: object
                     payouts:
@@ -13479,6 +15354,7 @@ paths:
                               - weekly
                               maxLength: 5000
                               type: string
+                              x-stripeBypassValidation: true
                             monthly_anchor:
                               type: integer
                             weekly_anchor:
@@ -13807,6 +15683,165 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/external_account"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/account/capabilities":
+    get:
+      description: "<p>Returns a list of capabilities associated with the account.
+        The capabilities are returned sorted by creation date, with the most recent
+        capability appearing first.</p>"
+      operationId: GetAccountCapabilities
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    items:
+                      "$ref": "#/components/schemas/capability"
+                    type: array
+                  has_more:
+                    description: True if this list has another page of items after
+                      this one that can be fetched.
+                    type: boolean
+                  object:
+                    description: String representing the object's type. Objects of
+                      the same type share the same value. Always has the value `list`.
+                    enum:
+                    - list
+                    type: string
+                  url:
+                    description: The URL where this list can be accessed.
+                    maxLength: 5000
+                    type: string
+                required:
+                - data
+                - has_more
+                - object
+                - url
+                type: object
+                x-expandableFields:
+                - data
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/account/capabilities/{capability}":
+    get:
+      description: "<p>Retrieves an existing Account Capability.</p>"
+      operationId: GetAccountCapabilitiesCapability
+      parameters:
+      - description: The ID of an account capability to retrieve.
+        in: path
+        name: capability
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/capability"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+    post:
+      description: "<p>Updates an existing Account Capability.</p>"
+      operationId: PostAccountCapabilitiesCapability
+      parameters:
+      - description: The ID of an account capability to update.
+        in: path
+        name: capability
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                requested:
+                  description: Passing true requests the capability for the account,
+                    if it is not already requested. A requested capability may not
+                    immediately become active. Any requirements to activate the capability
+                    are returned in the `requirements` arrays.
+                  type: boolean
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/capability"
           description: Successful response.
         default:
           content:
@@ -16307,6 +18342,7 @@ paths:
                     enum:
                     - card_issuing
                     - card_payments
+                    - legacy_payments
                     - platform_payments
                     maxLength: 5000
                     type: string
@@ -16348,6 +18384,12 @@ paths:
                         statement_descriptor:
                           maxLength: 22
                           type: string
+                        statement_descriptor_kana:
+                          maxLength: 22
+                          type: string
+                        statement_descriptor_kanji:
+                          maxLength: 22
+                          type: string
                       title: payments_settings_specs
                       type: object
                     payouts:
@@ -16371,6 +18413,7 @@ paths:
                               - weekly
                               maxLength: 5000
                               type: string
+                              x-stripeBypassValidation: true
                             monthly_anchor:
                               type: integer
                             weekly_anchor:
@@ -16934,6 +18977,7 @@ paths:
                     enum:
                     - card_issuing
                     - card_payments
+                    - legacy_payments
                     - platform_payments
                     maxLength: 5000
                     type: string
@@ -16975,6 +19019,12 @@ paths:
                         statement_descriptor:
                           maxLength: 22
                           type: string
+                        statement_descriptor_kana:
+                          maxLength: 22
+                          type: string
+                        statement_descriptor_kanji:
+                          maxLength: 22
+                          type: string
                       title: payments_settings_specs
                       type: object
                     payouts:
@@ -16998,6 +19048,7 @@ paths:
                               - weekly
                               maxLength: 5000
                               type: string
+                              x-stripeBypassValidation: true
                             monthly_anchor:
                               type: integer
                             weekly_anchor:
@@ -17355,6 +19406,186 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/external_account"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/accounts/{account}/capabilities":
+    get:
+      description: "<p>Returns a list of capabilities associated with the account.
+        The capabilities are returned sorted by creation date, with the most recent
+        capability appearing first.</p>"
+      operationId: GetAccountsAccountCapabilities
+      parameters:
+      - in: path
+        name: account
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    items:
+                      "$ref": "#/components/schemas/capability"
+                    type: array
+                  has_more:
+                    description: True if this list has another page of items after
+                      this one that can be fetched.
+                    type: boolean
+                  object:
+                    description: String representing the object's type. Objects of
+                      the same type share the same value. Always has the value `list`.
+                    enum:
+                    - list
+                    type: string
+                  url:
+                    description: The URL where this list can be accessed.
+                    maxLength: 5000
+                    type: string
+                required:
+                - data
+                - has_more
+                - object
+                - url
+                type: object
+                x-expandableFields:
+                - data
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/accounts/{account}/capabilities/{capability}":
+    get:
+      description: "<p>Retrieves an existing Account Capability.</p>"
+      operationId: GetAccountsAccountCapabilitiesCapability
+      parameters:
+      - in: path
+        name: account
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      - description: The ID of an account capability to retrieve.
+        in: path
+        name: capability
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/capability"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+    post:
+      description: "<p>Updates an existing Account Capability.</p>"
+      operationId: PostAccountsAccountCapabilitiesCapability
+      parameters:
+      - in: path
+        name: account
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      - description: The ID of an account capability to update.
+        in: path
+        name: capability
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                requested:
+                  description: Passing true requests the capability for the account,
+                    if it is not already requested. A requested capability may not
+                    immediately become active. Any requirements to activate the capability
+                    are returned in the `requirements` arrays.
+                  type: boolean
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/capability"
           description: Successful response.
         default:
           content:
@@ -20877,6 +23108,15 @@ paths:
         required: false
         schema:
           type: integer
+        style: form
+      - description: Only return charges that were created by the PaymentIntent specified
+          by this PaymentIntent ID.
+        in: query
+        name: payment_intent
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
         style: form
       - description: A cursor for use in pagination. `starting_after` is an object
           ID that defines your place in the list. For instance, if you make a list
@@ -25455,6 +27695,73 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
+    post:
+      description: "<p>Most customer balance transaction fields are immutable, but
+        you may update its <code>description</code> and <code>metadata</code>.</p>"
+      operationId: PostCustomersCustomerCustomerBalanceTransactionsTransaction
+      parameters:
+      - description: The customer the transaction belongs to.
+        in: path
+        name: customer
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      - description: The transaction to update.
+        in: path
+        name: transaction
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+              metadata:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                description:
+                  description: An arbitrary string attached to the object. Often useful
+                    for displaying to users.
+                  maxLength: 350
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                metadata:
+                  additionalProperties:
+                    type: string
+                  description: Set of key-value pairs that you can attach to an object.
+                    This can be useful for storing additional information about the
+                    object in a structured format.
+                  type: object
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/customer_balance_transaction"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
   "/v1/customers/{customer}/discount":
     delete:
       description: "<p>Removes the currently applied discount on a customer.</p>"
@@ -26426,7 +28733,7 @@ paths:
                     per invoice. To unset a previously-set value, pass an empty string.
                     This field has been deprecated and will be removed in a future
                     API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes)
-                    to `tax_rates`
+                    for `tax_rates`.
                 trial_end:
                   anyOf:
                   - enum:
@@ -26802,7 +29109,7 @@ paths:
                     per invoice. To unset a previously-set value, pass an empty string.
                     This field has been deprecated and will be removed in a future
                     API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes)
-                    to `tax_rates`
+                    for `tax_rates`.
                 trial_end:
                   anyOf:
                   - enum:
@@ -28390,6 +30697,7 @@ paths:
           - tax_document_user_upload
           maxLength: 5000
           type: string
+          x-stripeBypassValidation: true
         style: form
       - description: A cursor for use in pagination. `starting_after` is an object
           ID that defines your place in the list. For instance, if you make a list
@@ -28513,6 +30821,7 @@ paths:
                   - tax_document_user_upload
                   maxLength: 5000
                   type: string
+                  x-stripeBypassValidation: true
               required:
               - file
               - purpose
@@ -29306,6 +31615,8 @@ paths:
                   maxLength: 5000
                   type: string
                 default_tax_rates:
+                  description: The tax rates that will apply to any line item that
+                    does not have `tax_rates` set.
                   items:
                     maxLength: 5000
                     type: string
@@ -29343,8 +31654,9 @@ paths:
                 subscription:
                   description: The ID of the subscription to invoice, if any. If not
                     set, the created invoice will include all pending invoice items
-                    for the customer. If set, the created invoice will exclude pending
-                    invoice items that pertain to other subscriptions. The subscription's
+                    for the customer. If set, the created invoice will only include
+                    pending invoice items for that subscription and pending invoice
+                    items not associated with any subscription. The subscription's
                     billing cycle and regular subscription events won't be affected.
                   maxLength: 5000
                   type: string
@@ -29353,7 +31665,7 @@ paths:
                     as a decimal number. This field has been deprecated and will be
                     removed in a future API version, for further information view
                     the [migration docs](https://stripe.com/docs/billing/migration/taxes)
-                    to `tax_rates`
+                    for `tax_rates`.
                   type: number
               required:
               - customer
@@ -29515,7 +31827,10 @@ paths:
         schema:
           type: boolean
         style: form
-      - explode: true
+      - description: If provided, the invoice returned will preview updating or creating
+          a subscription with these default tax rates. The default tax rates will
+          apply to any line item that does not have `tax_rates` set.
+        explode: true
         in: query
         name: subscription_default_tax_rates
         required: false
@@ -29604,7 +31919,9 @@ paths:
         style: form
       - description: If provided, the invoice returned will preview updating or creating
           a subscription with that tax percent. If set, one of `subscription_items`
-          or `subscription` is required.
+          or `subscription` is required. This field has been deprecated and will be
+          removed in a future API version, for further information view the [migration
+          docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`.
         in: query
         name: subscription_tax_percent
         required: false
@@ -29832,7 +32149,10 @@ paths:
         schema:
           type: boolean
         style: form
-      - explode: true
+      - description: If provided, the invoice returned will preview updating or creating
+          a subscription with these default tax rates. The default tax rates will
+          apply to any line item that does not have `tax_rates` set.
+        explode: true
         in: query
         name: subscription_default_tax_rates
         required: false
@@ -29921,7 +32241,9 @@ paths:
         style: form
       - description: If provided, the invoice returned will preview updating or creating
           a subscription with that tax percent. If set, one of `subscription_items`
-          or `subscription` is required.
+          or `subscription` is required. This field has been deprecated and will be
+          removed in a future API version, for further information view the [migration
+          docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`.
         in: query
         name: subscription_tax_percent
         required: false
@@ -30187,6 +32509,9 @@ paths:
                   - enum:
                     - ''
                     type: string
+                  description: The tax rates that will apply to any line item that
+                    does not have `tax_rates` set. Pass an empty string to remove
+                    previously-set default tax rates.
                 description:
                   maxLength: 1500
                   type: string
@@ -30230,7 +32555,7 @@ paths:
                     string. This field can be updated only on `draft` invoices. This
                     field has been deprecated and will be removed in a future API
                     version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes)
-                    to `tax_rates`
+                    for `tax_rates`.
               type: object
         required: false
       responses:
@@ -32234,12 +34559,9 @@ paths:
                       - postal_code
                       title: required_address
                       type: object
-                    name:
-                      maxLength: 5000
-                      type: string
                   required:
                   - address
-                  title: address_param
+                  title: billing_specs
                   type: object
                 email:
                   description: The cardholder's email address.
@@ -33308,12 +35630,9 @@ paths:
                       - postal_code
                       title: required_address
                       type: object
-                    name:
-                      maxLength: 5000
-                      type: string
                   required:
                   - address
-                  title: address_param
+                  title: billing_specs
                   type: object
                 email:
                   description: The cardholder's email address.
@@ -34505,7 +36824,8 @@ paths:
                   type: string
                 replacement_reason:
                   description: If `replacement_for` is specified, this should indicate
-                    why that card is being replaced.
+                    why that card is being replaced. One of `damage`, `expiration`,
+                    `loss`, or `theft`.
                   enum:
                   - damage
                   - expiration
@@ -34513,8 +36833,7 @@ paths:
                   - theft
                   type: string
                 shipping:
-                  description: The address where the card will be shipped. This will
-                    default to the cardholder's billing address for physical cards.
+                  description: The address where the card will be shipped.
                   properties:
                     address:
                       properties:
@@ -34546,10 +36865,17 @@ paths:
                     name:
                       maxLength: 5000
                       type: string
+                    type:
+                      enum:
+                      - ''
+                      - bulk
+                      - individual
+                      maxLength: 5000
+                      type: string
                   required:
                   - address
                   - name
-                  title: shipping_param
+                  title: shipping_specs
                   type: object
                 status:
                   description: Specifies whether to permit authorizations on this
@@ -37646,8 +39972,7 @@ paths:
                   description: |-
                     The amount of the application fee (if any) that will be applied to the
                     payment and transferred to the application owner's Stripe account. For
-                    more information, see the PaymentIntents [Connect usage
-                    guide](/docs/payments/payment-intents/usage#connect).
+                    more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).
                   type: integer
                 capture_method:
                   description: Capture method of this PaymentIntent, one of `automatic`
@@ -37704,9 +40029,22 @@ paths:
                     This can be useful for storing additional information about the
                     object in a structured format.
                   type: object
+                off_session:
+                  description: Used in payment flows that collect payment details
+                    and charge later when the customer is not available to complete
+                    additional required steps for the payment. Setting this parameter
+                    indicates that this payment attempt is happening while the customer
+                    is not in your checkout flow. Use `recurring` for payments made
+                    on a recurring basis (for example, subscriptions) and `one_off`
+                    for all other off-session payments.
+                  enum:
+                  - one_off
+                  - recurring
+                  maxLength: 5000
+                  type: string
                 on_behalf_of:
                   description: The Stripe account ID for which these funds are intended.
-                    For details, see the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect).
+                    For details, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).
                   type: string
                 payment_method:
                   description: ID of the payment method to attach to this PaymentIntent.
@@ -37726,13 +40064,11 @@ paths:
                   maxLength: 5000
                   type: string
                 save_payment_method:
-                  description: Set to `true` to save the PaymentIntent's payment method
-                    (either `source` or `payment_method`) to the associated customer.
-                    If the payment method is already attached, this parameter does
-                    nothing. This parameter defaults to `false` and applies to the
-                    payment method passed in the same request or the current payment
-                    method attached to the PaymentIntent and must be specified again
-                    if a new payment method is added.
+                  description: |-
+                    Set to `true` to [save the PaymentIntent's payment method](https://stripe.com/docs/payments/payment-methods/saving) (either `source` or `payment_method`) to the associated customer. Defaults to `false`.
+                    If the payment method is already attached, this parameter does nothing.
+                    This parameter errors for payment methods that are not permitted to be attached to customers.
+                    The parameter applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.
                   type: boolean
                 shipping:
                   description: Shipping information for this PaymentIntent.
@@ -37791,7 +40127,7 @@ paths:
                 transfer_data:
                   description: |-
                     The parameters used to automatically create a Transfer when the payment succeeds.
-                    For more information, see the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect).
+                    For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).
                   properties:
                     destination:
                       type: string
@@ -37801,7 +40137,7 @@ paths:
                   type: object
                 transfer_group:
                   description: A string that identifies the resulting payment as part
-                    of a group. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect)
+                    of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts)
                     for details.
                   type: string
               required:
@@ -37923,7 +40259,8 @@ paths:
                     - ''
                     type: string
                   description: The amount of the application fee (if any) for the
-                    resulting payment. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect)
+                    resulting payment. See the PaymentIntents [use case for connected
+                    accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts)
                     for details.
                 currency:
                   description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
@@ -37969,13 +40306,11 @@ paths:
                   maxLength: 5000
                   type: string
                 save_payment_method:
-                  description: Set to `true` to save the PaymentIntent's payment method
-                    (either `source` or `payment_method`) to the associated customer.
-                    If the payment method is already attached, this parameter does
-                    nothing. This parameter defaults to `false` and applies to the
-                    payment method passed in the same request or the current payment
-                    method attached to the PaymentIntent and must be specified again
-                    if a new payment method is added.
+                  description: |-
+                    Set to `true` to [save the PaymentIntent's payment method](https://stripe.com/docs/payments/payment-methods/saving) (either `source` or `payment_method`) to the associated customer. Defaults to `false`.
+                    If the payment method is already attached, this parameter does nothing.
+                    This parameter errors for payment methods that are not permitted to be attached to customers.
+                    The parameter applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.
                   type: boolean
                 shipping:
                   anyOf:
@@ -38038,7 +40373,7 @@ paths:
                 transfer_group:
                   description: A string that identifies the resulting payment as part
                     of a group. `transfer_group` may only be provided if it has not
-                    been set. See the PaymentIntents [Connect usage guide](https://stripe.com/docs/payments/payment-intents/usage#connect)
+                    been set. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts)
                     for details.
                   type: string
               type: object
@@ -38082,16 +40417,16 @@ paths:
               additionalProperties: false
               properties:
                 cancellation_reason:
-                  description: Reason for canceling this PaymentIntent. If set, possible
-                    values are `duplicate`, `fraudulent`, `requested_by_customer`,
-                    or `failed_invoice`
+                  description: Reason for canceling this PaymentIntent. Possible values
+                    are `duplicate`, `fraudulent`, `requested_by_customer`, or `abandoned`
                   enum:
+                  - abandoned
                   - duplicate
-                  - failed_invoice
                   - fraudulent
                   - requested_by_customer
                   maxLength: 5000
                   type: string
+                  x-stripeBypassValidation: true
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -38150,8 +40485,7 @@ paths:
                   description: |-
                     The amount of the application fee (if any) that will be applied to the
                     payment and transferred to the application owner's Stripe account. For
-                    more information, see the PaymentIntents [Connect usage
-                    guide](/docs/payments/payment-intents/usage#connect).
+                    more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).
                   type: integer
                 expand:
                   description: Specifies which fields in the response should be expanded.
@@ -38236,6 +40570,19 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                off_session:
+                  description: Used in payment flows that collect payment details
+                    and charge later when the customer is not available to complete
+                    additional required steps for the payment. Setting this parameter
+                    indicates that this payment attempt is happening while the customer
+                    is not in your checkout flow. Use `recurring` for payments made
+                    on a recurring basis (for example, subscriptions) and `one_off`
+                    for all other off-session payments.
+                  enum:
+                  - one_off
+                  - recurring
+                  maxLength: 5000
+                  type: string
                 payment_method:
                   description: ID of the payment method to attach to this PaymentIntent.
                   maxLength: 5000
@@ -38259,13 +40606,11 @@ paths:
                     This parameter is only used for cards and other redirect-based payment methods.
                   type: string
                 save_payment_method:
-                  description: Set to `true` to save the PaymentIntent's payment method
-                    (either `source` or `payment_method`) to the associated customer.
-                    If the payment method is already attached, this parameter does
-                    nothing. This parameter defaults to `false` and applies to the
-                    payment method passed in the same request or the current payment
-                    method attached to the PaymentIntent and must be specified again
-                    if a new payment method is added.
+                  description: |-
+                    Set to `true` to [save the PaymentIntent's payment method](https://stripe.com/docs/payments/payment-methods/saving) (either `source` or `payment_method`) to the associated customer. Defaults to `false`.
+                    If the payment method is already attached, this parameter does nothing.
+                    This parameter errors for payment methods that are not permitted to be attached to customers.
+                    The parameter applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.
                   type: boolean
                 shipping:
                   anyOf:
@@ -38588,6 +40933,7 @@ paths:
           - card_present
           maxLength: 5000
           type: string
+          x-stripeBypassValidation: true
         style: form
       requestBody:
         content:
@@ -38686,7 +41032,7 @@ paths:
                         state:
                           maxLength: 5000
                           type: string
-                      title: source_address
+                      title: billing_details_address
                       type: object
                     email:
                       type: string
@@ -38768,6 +41114,7 @@ paths:
                   - card_present
                   maxLength: 5000
                   type: string
+                  x-stripeBypassValidation: true
               type: object
         required: false
       responses:
@@ -38884,7 +41231,7 @@ paths:
                         state:
                           maxLength: 5000
                           type: string
-                      title: source_address
+                      title: billing_details_address
                       type: object
                     email:
                       type: string
@@ -39240,6 +41587,7 @@ paths:
                   - standard
                   maxLength: 5000
                   type: string
+                  x-stripeBypassValidation: true
                 source_type:
                   description: The source balance to draw this payout from. Balances
                     for different payment sources are kept separately. You can find
@@ -39249,6 +41597,7 @@ paths:
                   - card
                   maxLength: 5000
                   type: string
+                  x-stripeBypassValidation: true
                 statement_descriptor:
                   description: 'A string to be displayed on the recipient''s bank
                     or card statement. This may be at most 22 characters. Attempting
@@ -45783,7 +48132,7 @@ paths:
                     per invoice. To unset a previously-set value, pass an empty string.
                     This field has been deprecated and will be removed in a future
                     API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes)
-                    to `tax_rates`
+                    for `tax_rates`.
                 trial_end:
                   anyOf:
                   - enum:
@@ -46135,7 +48484,7 @@ paths:
                     per invoice. To unset a previously-set value, pass an empty string.
                     This field has been deprecated and will be removed in a future
                     API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes)
-                    to `tax_rates`
+                    for `tax_rates`.
                 trial_end:
                   anyOf:
                   - enum:
@@ -46577,11 +48926,6 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
-                operator_account:
-                  description: To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account)
-                    on your platform account by connected account, set this parameter
-                    to the connected account ID.
-                  type: string
               type: object
         required: false
       responses:
@@ -46632,15 +48976,6 @@ paths:
         required: false
         schema:
           type: integer
-        style: form
-      - description: To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account)
-          on your platform account by connected account, set this parameter to the
-          connected account ID.
-        in: query
-        name: operator_account
-        required: false
-        schema:
-          type: string
         style: form
       - description: A cursor for use in pagination. `starting_after` is an object
           ID that defines your place in the list. For instance, if you make a list
@@ -46758,11 +49093,6 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
-                operator_account:
-                  description: To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account)
-                    on your platform account by connected account, set this parameter
-                    to the connected account ID.
-                  type: string
               required:
               - address
               - display_name
@@ -46800,12 +49130,7 @@ paths:
             encoding: {}
             schema:
               additionalProperties: false
-              properties:
-                operator_account:
-                  description: To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account)
-                    on your platform account by connected account, set this parameter
-                    to the connected account ID.
-                  type: string
+              properties: {}
               type: object
         required: false
       responses:
@@ -46844,15 +49169,6 @@ paths:
           maxLength: 5000
           type: string
         style: simple
-      - description: To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account)
-          on your platform account by connected account, set this parameter to the
-          connected account ID.
-        in: query
-        name: operator_account
-        required: false
-        schema:
-          type: string
-        style: form
       requestBody:
         content:
           application/x-www-form-urlencoded:
@@ -46939,11 +49255,6 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
-                operator_account:
-                  description: To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account)
-                    on your platform account by connected account, set this parameter
-                    to the connected account ID.
-                  type: string
               type: object
         required: false
       responses:
@@ -47002,15 +49313,6 @@ paths:
         required: false
         schema:
           maxLength: 5000
-          type: string
-        style: form
-      - description: To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account)
-          on your platform account by connected account, set this parameter to the
-          connected account ID.
-        in: query
-        name: operator_account
-        required: false
-        schema:
           type: string
         style: form
       - description: A cursor for use in pagination. `starting_after` is an object
@@ -47113,11 +49415,6 @@ paths:
                     location.
                   maxLength: 5000
                   type: string
-                operator_account:
-                  description: To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account)
-                    on your platform account by connected account, set this parameter
-                    to the connected account ID.
-                  type: string
                 registration_code:
                   description: A code generated by the reader used for registering
                     to an account.
@@ -47159,12 +49456,7 @@ paths:
             encoding: {}
             schema:
               additionalProperties: false
-              properties:
-                operator_account:
-                  description: To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account)
-                    on your platform account by connected account, set this parameter
-                    to the connected account ID.
-                  type: string
+              properties: {}
               type: object
         required: false
       responses:
@@ -47195,15 +49487,6 @@ paths:
             type: string
           type: array
         style: deepObject
-      - description: To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account)
-          on your platform account by connected account, set this parameter to the
-          connected account ID.
-        in: query
-        name: operator_account
-        required: false
-        schema:
-          type: string
-        style: form
       - description: The identifier of the reader to be retrieved.
         in: path
         name: reader
@@ -47266,11 +49549,6 @@ paths:
                 label:
                   description: The new label of the reader.
                   maxLength: 5000
-                  type: string
-                operator_account:
-                  description: To [group objects](https://stripe.com/docs/terminal/payments/connect#grouping-objects-by-connected-account)
-                    on your platform account by connected account, set this parameter
-                    to the connected account ID.
                   type: string
               type: object
         required: false
@@ -48309,6 +50587,7 @@ paths:
                   - card
                   maxLength: 5000
                   type: string
+                  x-stripeBypassValidation: true
                 transfer_group:
                   description: A string that identifies this transaction as part of
                     a group. See the [Connect documentation](https://stripe.com/docs/connect/charges-transfers#grouping-transactions)
@@ -49113,6 +51392,7 @@ paths:
                     - transfer.reversed
                     - transfer.updated
                     type: string
+                    x-stripeBypassValidation: true
                   type: array
                 expand:
                   description: Specifies which fields in the response should be expanded.
@@ -49391,6 +51671,7 @@ paths:
                     - transfer.reversed
                     - transfer.updated
                     type: string
+                    x-stripeBypassValidation: true
                   type: array
                 expand:
                   description: Specifies which fields in the response should be expanded.
