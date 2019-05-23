@@ -1576,8 +1576,6 @@ definitions:
           - "$ref": "#/definitions/review"
       shipping:
         "$ref": "#/definitions/shipping"
-      source:
-        "$ref": "#/definitions/account"
       source_transfer:
         description: The transfer ID which created this charge. Only present if the
           charge came from another Stripe account. [See the Connect documentation](https://stripe.com/docs/connect/destination-charges)
@@ -1642,7 +1640,6 @@ definitions:
     - refunds
     - review
     - shipping
-    - source
     - source_transfer
     - transfer
     - transfer_data
@@ -2462,8 +2459,8 @@ definitions:
         type: string
       type:
         description: 'Transaction type: `adjustment`, `applied_to_invoice`, `credit_note`,
-          `initial`, `invoice_too_large`, `invoice_too_small`, `migration`, `receiver_source_mispayment`,
-          or `reversal`.'
+          `initial`, `invoice_too_large`, `invoice_too_small`, `migration`, `reversal`,
+          or `unspent_receiver_credit`.'
         enum:
         - adjustment
         - applied_to_invoice
@@ -2472,8 +2469,8 @@ definitions:
         - invoice_too_large
         - invoice_too_small
         - migration
-        - receiver_source_mispayment
         - reversal
+        - unspent_receiver_credit
         type: string
     required:
     - amount
@@ -4469,11 +4466,13 @@ definitions:
   invoices_resource_invoice_tax_id:
     properties:
       type:
-        description: The type of the tax ID, one of `eu_vat`, `nz_gst`, `au_abn`,
-          or `unknown`
+        description: The type of the tax ID, one of `au_abn`, `eu_vat`, `in_gst`,
+          `no_vat`, `nz_gst`, or `unknown`
         enum:
         - au_abn
         - eu_vat
+        - in_gst
+        - no_vat
         - nz_gst
         - unknown
         type: string
@@ -5875,6 +5874,10 @@ definitions:
         items:
           "$ref": "#/definitions/issuing_card_spending_limit"
         type: array
+      spending_limits_currency:
+        description: Currency for the amounts within spending_limits. Locked to the
+          currency of the card.
+        type: string
     title: IssuingCardAuthorizationControls
     type: object
     x-expandableFields:
@@ -6832,6 +6835,9 @@ definitions:
         items:
           "$ref": "#/definitions/issuing_cardholder_spending_limit"
         type: array
+      spending_limits_currency:
+        description: Currency for the amounts within spending_limits.
+        type: string
     title: IssuingCardholderAuthorizationControls
     type: object
     x-expandableFields:
@@ -7806,7 +7812,12 @@ definitions:
         - void_invoice
         type: string
       capture_method:
-        description: Capture method of this PaymentIntent, one of `automatic` or `manual`.
+        description: |-
+          One of `automatic` (default) or `manual`.
+
+          When the capture method is `automatic`, Stripe automatically captures funds when the customer authorizes the payment.
+
+          Change `capture_method` to manual if you wish to [separate authorization and capture](https://stripe.com/docs/payments/payment-intents/creating-payment-intents#separate-authorization-and-capture) for payment methods that support this.
         enum:
         - automatic
         - manual
@@ -7851,8 +7862,14 @@ definitions:
           to learn about how `client_secret` should be handled.
         type: string
       confirmation_method:
-        description: Confirmation method of this PaymentIntent, one of `manual` or
-          `automatic`.
+        description: |-
+          One of `automatic` (default) or `manual`.
+
+          When the confirmation method is `automatic`, a PaymentIntent can be confirmed using a publishable key. After `next_action`s are handled, no additional confirmation is required to complete the payment.
+
+          When the confirmation method is `manual`, all payment attempts must be made using a secret key. The PaymentIntent returns to the `requires_confirmation` state after handling `next_action`s, and requires your server to initiate each payment attempt with an explicit confirmation.
+
+          Learn more about the different [confirmation flows](https://stripe.com/docs/payments/payment-intents#one-time-payments).
         enum:
         - automatic
         - manual
@@ -7936,16 +7953,6 @@ definitions:
           - "$ref": "#/definitions/review"
       shipping:
         "$ref": "#/definitions/shipping"
-      source:
-        description: ID of the source used in this PaymentIntent.
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/bank_account"
-          - "$ref": "#/definitions/card"
-          - "$ref": "#/definitions/source"
-          - "$ref": "#/definitions/deleted_bank_account"
-          - "$ref": "#/definitions/deleted_card"
       statement_descriptor:
         description: Extra information about a PaymentIntent. This will appear on
           your customer's statement when this PaymentIntent succeeds in creating a
@@ -7995,7 +8002,6 @@ definitions:
     - payment_method
     - review
     - shipping
-    - source
     - transfer_data
     x-resourceId: payment_intent
   payment_intent_next_action:
@@ -9364,6 +9370,55 @@ definitions:
     x-expandableFields:
     - package_dimensions
     x-resourceId: product
+  radar.early_fraud_warning:
+    properties:
+      actionable:
+        description: An EFW is actionable if it has not received a dispute and has
+          not been fully refunded. You may wish to proactively refund a charge that
+          receives an EFW, in order to avoid receiving a dispute later.
+        type: boolean
+      charge:
+        description: ID of the charge this early fraud warning is for, optionally
+          expanded.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/charge"
+      created:
+        description: Time at which the object was created. Measured in seconds since
+          the Unix epoch.
+        type: integer
+      fraud_type:
+        description: The type of fraud labelled by the issuer. One of `card_never_received`,
+          `fraudulent_card_application`, `made_with_counterfeit_card`, `made_with_lost_card`,
+          `made_with_stolen_card`, `misc`, `unauthorized_use_of_card`.
+        type: string
+      id:
+        description: Unique identifier for the object.
+        type: string
+      livemode:
+        description: Has the value `true` if the object exists in live mode or the
+          value `false` if the object exists in test mode.
+        type: boolean
+      object:
+        description: String representing the object's type. Objects of the same type
+          share the same value.
+        enum:
+        - radar.early_fraud_warning
+        type: string
+    required:
+    - actionable
+    - charge
+    - created
+    - fraud_type
+    - id
+    - livemode
+    - object
+    title: RadarEarlyFraudWarning
+    type: object
+    x-expandableFields:
+    - charge
+    x-resourceId: radar.early_fraud_warning
   radar.value_list:
     properties:
       alias:
@@ -11588,10 +11643,13 @@ definitions:
         - tax_id
         type: string
       type:
-        description: Type of the tax ID, one of `eu_vat`, `nz_gst`, `au_abn`, or `unknown`
+        description: Type of the tax ID, one of `au_abn`, `eu_vat`, `in_gst`, `no_vat`,
+          `nz_gst`, or `unknown`
         enum:
         - au_abn
         - eu_vat
+        - in_gst
+        - no_vat
         - nz_gst
         - unknown
         type: string
@@ -11725,6 +11783,9 @@ definitions:
     x-resourceId: tax_rate
   terminal.connection_token:
     properties:
+      location:
+        description: The id of the location that this connection token is scoped to.
+        type: string
       object:
         description: String representing the object's type. Objects of the same type
           share the same value.
@@ -11871,11 +11932,18 @@ definitions:
     x-resourceId: three_d_secure
   three_d_secure_details:
     properties:
+      authenticated:
+        description: Whether or not authentication was performed. 3D Secure will succeed
+          without authentication when the card is not enrolled.
+        type: boolean
       succeeded:
+        description: Whether or not 3D Secure succeeded.
         type: boolean
       version:
+        description: The version of 3D Secure that was used for this payment.
         type: string
     required:
+    - authenticated
     - succeeded
     - version
     title: three_d_secure_details
@@ -12420,7 +12488,7 @@ info:
     details.
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
-  version: '2019-03-14'
+  version: '2019-05-16'
   x-stripeSpecFilename: spec2
 paths:
   "/v1/3d_secure":
@@ -14441,8 +14509,8 @@ paths:
   "/v1/account_links":
     post:
       description: "<p>Creates an AccountLink object that returns a Stripe URL that
-        the user can redirect their user to in order to take them through the Hosted
-        Verification flow.</p>"
+        the user can redirect their user to in order to take them through the hosted
+        onboarding flow.</p>"
       operationId: PostAccountLinks
       parameters:
       - description: Body parameters for the request.
@@ -19829,6 +19897,8 @@ paths:
                     enum:
                     - au_abn
                     - eu_vat
+                    - in_gst
+                    - no_vat
                     - nz_gst
                     type: string
                   value:
@@ -21861,10 +21931,13 @@ paths:
                 type: string
               type: array
             type:
-              description: Type of the tax ID, one of `eu_vat`, `nz_gst`, or `au_abn`
+              description: Type of the tax ID, one of `au_abn`, `eu_vat`, `in_gst`,
+                `no_vat`, or `nz_gst`
               enum:
               - au_abn
               - eu_vat
+              - in_gst
+              - no_vat
               - nz_gst
               type: string
             value:
@@ -25424,6 +25497,8 @@ paths:
                     title: spending_limits_param
                     type: object
                   type: array
+                spending_limits_currency:
+                  type: string
               title: authorization_controls_param_v2
               type: object
             billing:
@@ -26437,6 +26512,8 @@ paths:
                     title: spending_limits_param
                     type: object
                   type: array
+                spending_limits_currency:
+                  type: string
               title: authorization_controls_param_v2
               type: object
             billing:
@@ -29477,7 +29554,7 @@ paths:
             coupon:
               description: A coupon code that represents a discount to be applied
                 to this order. Must be one-time duration and in same currency as the
-                order.
+                order. An order can have multiple coupons.
               type: string
             currency:
               description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
@@ -29615,7 +29692,7 @@ paths:
             coupon:
               description: A coupon code that represents a discount to be applied
                 to this order. Must be one-time duration and in same currency as the
-                order.
+                order. An order can have multiple coupons.
               type: string
             expand:
               description: Specifies which fields in the response should be expanded.
@@ -29890,8 +29967,12 @@ paths:
                 more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).
               type: integer
             capture_method:
-              description: Capture method of this PaymentIntent, one of `automatic`
-                or `manual`.
+              description: |-
+                One of `automatic` (default) or `manual`.
+
+                When the capture method is `automatic`, Stripe automatically captures funds when the customer authorizes the payment.
+
+                Change `capture_method` to manual if you wish to [separate authorization and capture](https://stripe.com/docs/payments/payment-intents/creating-payment-intents#separate-authorization-and-capture) for payment methods that support this.
               enum:
               - automatic
               - manual
@@ -29908,9 +29989,9 @@ paths:
 
                 When the confirmation method is `automatic`, a PaymentIntent can be confirmed using a publishable key. After `next_action`s are handled, no additional confirmation is required to complete the payment.
 
-                When the confirmation method is `manual`, all payment attempts must be made using a secret key. The PaymentIntent will return to the `requires_confirmation` state after handling `next_action`s, and requires your server to initiate each payment attempt with an explicit confirmation.
-                Read the [expanded documentation](https://stripe.com/docs/payments/payment-intents/quickstart#manual-confirmation-flow)
-                to learn more about manual confirmation.
+                When the confirmation method is `manual`, all payment attempts must be made using a secret key. The PaymentIntent returns to the `requires_confirmation` state after handling `next_action`s, and requires your server to initiate each payment attempt with an explicit confirmation.
+
+                Learn more about the different [confirmation flows](https://stripe.com/docs/payments/payment-intents#one-time-payments).
               enum:
               - automatic
               - manual
@@ -29936,24 +30017,13 @@ paths:
                 This can be useful for storing additional information about the object
                 in a structured format.
               type: object
-            off_session:
-              description: Used in payment flows that collect payment details and
-                charge later when the customer is not available to complete additional
-                required steps for the payment. Setting this parameter indicates that
-                this payment attempt is happening while the customer is not in your
-                checkout flow. Use `recurring` for payments made on a recurring basis
-                (for example, subscriptions) and `one_off` for all other off-session
-                payments.
-              enum:
-              - one_off
-              - recurring
-              type: string
             on_behalf_of:
               description: The Stripe account ID for which these funds are intended.
                 For details, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).
               type: string
             payment_method:
-              description: ID of the payment method to attach to this PaymentIntent.
+              description: ID of the payment method (a PaymentMethod, Card, BankAccount,
+                or saved Source object) to attach to this PaymentIntent.
               type: string
             payment_method_types:
               description: The list of payment method types (e.g. card) that this
@@ -29968,10 +30038,9 @@ paths:
               type: string
             save_payment_method:
               description: |-
-                Set to `true` to [save the PaymentIntent's payment method](https://stripe.com/docs/payments/payment-methods/saving) (either `source` or `payment_method`) to the associated customer. Defaults to `false`.
-                If the payment method is already attached, this parameter does nothing.
-                This parameter errors for payment methods that are not permitted to be attached to customers.
-                The parameter applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.
+                If the PaymentIntent has a `payment_method` and a `customer` or if you're attaching a payment method to the PaymentIntent in this request, you can pass `save_payment_method=true` to save the payment method to the customer. Defaults to `false`.
+
+                If the payment method is already saved to a customer, this does nothing. If this type of payment method cannot be saved to a customer, the request will error.
               type: boolean
             shipping:
               description: Shipping information for this PaymentIntent.
@@ -30007,9 +30076,6 @@ paths:
               - name
               title: shipping
               type: object
-            source:
-              description: ID of the Source object to attach to this PaymentIntent.
-              type: string
             statement_descriptor:
               description: Extra information about a PaymentIntent. This will appear
                 on your customer's statement when this PaymentIntent succeeds in creating
@@ -30065,7 +30131,8 @@ paths:
         name: client_secret
         required: false
         type: string
-      - in: path
+      - description: ID of the PaymentIntent to retrieve.
+        in: path
         name: intent
         required: true
         type: string
@@ -30082,7 +30149,8 @@ paths:
       description: "<p>Updates a PaymentIntent object.</p>"
       operationId: PostPaymentIntentsIntent
       parameters:
-      - in: path
+      - description: ID of the PaymentIntent to retrieve.
+        in: path
         name: intent
         required: true
         type: string
@@ -30121,7 +30189,8 @@ paths:
                 in a structured format.
               type: object
             payment_method:
-              description: ID of the payment method to attach to this PaymentIntent.
+              description: ID of the payment method (a PaymentMethod, Card, BankAccount,
+                or saved Source object) to attach to this PaymentIntent.
               type: string
             payment_method_types:
               description: The list of payment method types (e.g. card) that this
@@ -30135,16 +30204,12 @@ paths:
               type: string
             save_payment_method:
               description: |-
-                Set to `true` to [save the PaymentIntent's payment method](https://stripe.com/docs/payments/payment-methods/saving) (either `source` or `payment_method`) to the associated customer. Defaults to `false`.
-                If the payment method is already attached, this parameter does nothing.
-                This parameter errors for payment methods that are not permitted to be attached to customers.
-                The parameter applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.
+                If the PaymentIntent has a `payment_method` and a `customer` or if you're attaching a payment method to the PaymentIntent in this request, you can pass `save_payment_method=true` to save the payment method to the customer. Defaults to `false`.
+
+                If the payment method is already saved to a customer, this does nothing. If this type of payment method cannot be saved to a customer, the request will error.
               type: boolean
             shipping:
               description: Shipping information for this PaymentIntent.
-            source:
-              description: ID of the Source object to attach to this PaymentIntent.
-              type: string
             statement_descriptor:
               description: Extra information about a PaymentIntent. This will appear
                 on your customer's statement when this PaymentIntent succeeds in creating
@@ -30174,7 +30239,8 @@ paths:
         <p>Once canceled, no additional charges will be made by the PaymentIntent and any operations on the PaymentIntent will fail with an error. For PaymentIntents with <code>status='requires_capture'</code>, the remaining <code>amount_capturable</code> will automatically be refunded.</p>
       operationId: PostPaymentIntentsIntentCancel
       parameters:
-      - in: path
+      - description: ID of the PaymentIntent to retrieve.
+        in: path
         name: intent
         required: true
         type: string
@@ -30218,7 +30284,8 @@ paths:
         <p>Read the <a href="/docs/payments/payment-intents/creating-payment-intents#separate-auth-capture">expanded documentation</a> to learn more about separate authorization and capture.</p>
       operationId: PostPaymentIntentsIntentCapture
       parameters:
-      - in: path
+      - description: ID of the PaymentIntent to retrieve.
+        in: path
         name: intent
         required: true
         type: string
@@ -30285,7 +30352,8 @@ paths:
         to learn more about manual confirmation.</p>
       operationId: PostPaymentIntentsIntentConfirm
       parameters:
-      - in: path
+      - description: ID of the PaymentIntent to retrieve.
+        in: path
         name: intent
         required: true
         type: string
@@ -30305,7 +30373,7 @@ paths:
               type: array
             off_session:
               description: Used in payment flows that collect payment details and
-                charge later when the customer is not available to complete additional
+                charge later, when the customer is not available to complete additional
                 required steps for the payment. Setting this parameter indicates that
                 this payment attempt is happening while the customer is not in your
                 checkout flow. Use `recurring` for payments made on a recurring basis
@@ -30316,7 +30384,8 @@ paths:
               - recurring
               type: string
             payment_method:
-              description: ID of the payment method to attach to this PaymentIntent.
+              description: ID of the payment method (a PaymentMethod, Card, BankAccount,
+                or saved Source object) to attach to this PaymentIntent.
               type: string
             payment_method_types:
               description: The list of payment method types (e.g. card) that this
@@ -30336,16 +30405,12 @@ paths:
               type: string
             save_payment_method:
               description: |-
-                Set to `true` to [save the PaymentIntent's payment method](https://stripe.com/docs/payments/payment-methods/saving) (either `source` or `payment_method`) to the associated customer. Defaults to `false`.
-                If the payment method is already attached, this parameter does nothing.
-                This parameter errors for payment methods that are not permitted to be attached to customers.
-                The parameter applies to the payment method passed in the same request or the current payment method attached to the PaymentIntent and must be specified again if a new payment method is added.
+                If the PaymentIntent has a `payment_method` and a `customer` or if you're attaching a payment method to the PaymentIntent in this request, you can pass `save_payment_method=true` to save the payment method to the customer. Defaults to `false`.
+
+                If the payment method is already saved to a customer, this does nothing. If this type of payment method cannot be saved to a customer, the request will error.
               type: boolean
             shipping:
               description: Shipping information for this PaymentIntent.
-            source:
-              description: ID of the Source object to attach to this PaymentIntent.
-              type: string
           type: object
       responses:
         '200':
@@ -31756,6 +31821,108 @@ paths:
           description: Successful response.
           schema:
             "$ref": "#/definitions/product"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/radar/early_fraud_warnings":
+    get:
+      description: "<p>Returns a list of early fraud warnings.</p>"
+      operationId: GetRadarEarlyFraudWarnings
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: Only return early fraud warnings for the charge specified by
+          this charge ID.
+        in: query
+        name: charge
+        required: false
+        type: string
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        type: string
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            properties:
+              data:
+                items:
+                  "$ref": "#/definitions/radar.early_fraud_warning"
+                type: array
+              has_more:
+                description: True if this list has another page of items after this
+                  one that can be fetched.
+                type: boolean
+              object:
+                description: String representing the object's type. Objects of the
+                  same type share the same value. Always has the value `list`.
+                enum:
+                - list
+                type: string
+              url:
+                description: The URL where this list can be accessed.
+                type: string
+            required:
+            - data
+            - has_more
+            - object
+            - url
+            title: RadarEarlyFraudWarningList
+            type: object
+            x-expandableFields:
+            - data
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/radar/early_fraud_warnings/{early_fraud_warning}":
+    get:
+      description: |-
+        <p>Retrieves the details of an early fraud warning that has previously been created. </p>
+
+        <p>Please refer to the <a href="#early_fraud_warning_object">early fraud warning</a> object reference for more details.</p>
+      operationId: GetRadarEarlyFraudWarningsEarlyFraudWarning
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: The identifier of the early fraud warning to be retrieved.
+        in: path
+        name: early_fraud_warning
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/radar.early_fraud_warning"
         default:
           description: Error response.
           schema:
@@ -35721,6 +35888,12 @@ paths:
               items:
                 type: string
               type: array
+            location:
+              description: The id of the location that this connection token is scoped
+                to. If specified the connection token will only be usable with readers
+                assigned to that location, otherwise the connection token will be
+                usable with all readers.
+              type: string
           type: object
       responses:
         '200':
@@ -37288,6 +37461,7 @@ paths:
               - '2019-02-11'
               - '2019-02-19'
               - '2019-03-14'
+              - '2019-05-16'
               type: string
             connect:
               description: Whether this endpoint should receive events from connected
@@ -37309,6 +37483,7 @@ paths:
                 - application_fee.refund.updated
                 - application_fee.refunded
                 - balance.available
+                - capability.updated
                 - charge.captured
                 - charge.dispute.closed
                 - charge.dispute.created
@@ -37401,6 +37576,8 @@ paths:
                 - product.created
                 - product.deleted
                 - product.updated
+                - radar.early_fraud_warning.created
+                - radar.early_fraud_warning.updated
                 - recipient.created
                 - recipient.deleted
                 - recipient.updated
@@ -37533,6 +37710,7 @@ paths:
                 - application_fee.refund.updated
                 - application_fee.refunded
                 - balance.available
+                - capability.updated
                 - charge.captured
                 - charge.dispute.closed
                 - charge.dispute.created
@@ -37625,6 +37803,8 @@ paths:
                 - product.created
                 - product.deleted
                 - product.updated
+                - radar.early_fraud_warning.created
+                - radar.early_fraud_warning.updated
                 - recipient.created
                 - recipient.deleted
                 - recipient.updated
