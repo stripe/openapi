@@ -2198,16 +2198,19 @@ definitions:
   customer:
     properties:
       account_balance:
-        description: Current balance, if any, being stored on the customer's account.
-          If negative, the customer has credit to apply to the next invoice. If positive,
-          the customer has an amount owed that will be added to the next invoice.
-          The balance does not refer to any unpaid invoices; it solely takes into
-          account amounts that have yet to be successfully applied to any invoice.
-          This balance is only taken into account as invoices are finalized. Note
-          that the balance does not include unpaid invoices.
+        description: This field has been renamed to `balance` and will be removed
+          in a future API version.
         type: integer
       address:
         "$ref": "#/definitions/address"
+      balance:
+        description: Current balance, if any, being stored on the customer. If negative,
+          the customer has credit to apply to their next invoice. If positive, the
+          customer has an amount owed that will be added to their next invoice. The
+          balance does not refer to any unpaid invoices; it solely takes into account
+          amounts that have yet to be successfully applied to any invoice. This balance
+          is only taken into account as invoices are finalized.
+        type: integer
       created:
         description: Time at which the object was created. Measured in seconds since
           the Unix epoch.
@@ -2459,8 +2462,7 @@ definitions:
         type: string
       type:
         description: 'Transaction type: `adjustment`, `applied_to_invoice`, `credit_note`,
-          `initial`, `invoice_too_large`, `invoice_too_small`, `migration`, `reversal`,
-          or `unspent_receiver_credit`.'
+          `initial`, `invoice_too_large`, `invoice_too_small`, `migration`, or `unspent_receiver_credit`.'
         enum:
         - adjustment
         - applied_to_invoice
@@ -2469,7 +2471,6 @@ definitions:
         - invoice_too_large
         - invoice_too_small
         - migration
-        - reversal
         - unspent_receiver_credit
         type: string
     required:
@@ -11216,6 +11217,8 @@ definitions:
     - livemode
     - metadata
     - object
+    - start
+    - start_date
     - status
     title: Subscription
     type: object
@@ -19080,8 +19083,11 @@ paths:
               title: subscription_data_params
               type: object
             success_url:
-              description: The URL the customer will be directed to after the payment
-                or subscription creation is successful.
+              description: |-
+                The URL to which Stripe should send customers when payment is complete.
+                If you’d like access to the Checkout Session for the successful
+                payment, read more about it in our guide on [fulfilling your payments
+                with webhooks](/docs/payments/checkout/fulfillment#webhooks).
               type: string
           required:
           - cancel_url
@@ -19799,13 +19805,17 @@ paths:
         schema:
           properties:
             account_balance:
-              description: An integer amount in %s that represents the account balance
-                for your customer. Account balances only affect invoices. A negative
-                amount represents a credit that decreases the amount due on an invoice;
-                a positive amount increases the amount due on an invoice.
+              description: This field has been renamed to `balance` and will be removed
+                in a future API version.
               type: integer
             address:
               description: The customer's address.
+            balance:
+              description: An integer amount in %s that represents the customer's
+                current balance, which affect the customer's future invoices. A negative
+                amount represents a credit that decreases the amount due on an invoice;
+                a positive amount increases the amount due on an invoice.
+              type: integer
             coupon:
               description: The code of the coupon to apply to this subscription. A
                 coupon applied to a subscription will only affect invoices created
@@ -19999,13 +20009,17 @@ paths:
         schema:
           properties:
             account_balance:
-              description: An integer amount in %s that represents the account balance
-                for your customer. Account balances only affect invoices. A negative
-                amount represents a credit that decreases the amount due on an invoice;
-                a positive amount increases the amount due on an invoice.
+              description: This field has been renamed to `balance` and will be removed
+                in a future API version.
               type: integer
             address:
               description: The customer's address.
+            balance:
+              description: An integer amount in %s that represents the customer's
+                current balance, which affect the customer's future invoices. A negative
+                amount represents a credit that decreases the amount due on an invoice;
+                a positive amount increases the amount due on an invoice.
+              type: integer
             bank_account:
               description: Either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
                 or a dictionary containing a user's bank account details.
@@ -20141,6 +20155,209 @@ paths:
           description: Successful response.
           schema:
             "$ref": "#/definitions/customer"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/customers/{customer}/balance_transactions":
+    get:
+      description: "<p>Retrieves the list of transactions applied to a customer’s
+        balance.</p>"
+      operationId: GetCustomersCustomerBalanceTransactions
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: The customer to retrieve transactions for.
+        in: path
+        name: customer
+        required: true
+        type: string
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        type: string
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            properties:
+              data:
+                items:
+                  "$ref": "#/definitions/customer_balance_transaction"
+                type: array
+              has_more:
+                description: True if this list has another page of items after this
+                  one that can be fetched.
+                type: boolean
+              object:
+                description: String representing the object's type. Objects of the
+                  same type share the same value. Always has the value `list`.
+                enum:
+                - list
+                type: string
+              url:
+                description: The URL where this list can be accessed.
+                type: string
+            required:
+            - data
+            - has_more
+            - object
+            - url
+            title: CustomerBalanceTransactionList
+            type: object
+            x-expandableFields:
+            - data
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      description: "<p>Creates an immutable transaction to apply to the customer’s
+        balance. This transaction updates the customer by adding the amount to the
+        customer’s current balance.</p>"
+      operationId: PostCustomersCustomerBalanceTransactions
+      parameters:
+      - description: The customer the transaction belongs to.
+        in: path
+        name: customer
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            amount:
+              description: The integer amount in **%s** to apply to the customer's
+                balance. Pass a negative amount to credit the customer's balance,
+                and pass in a positive amount to debit the customer's balance.
+              type: integer
+            currency:
+              description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+                If not set, the customer's currency will be updated to this value.
+              type: string
+            description:
+              description: An arbitrary string attached to the object. Often useful
+                for displaying to users.
+              type: string
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format.
+              type: object
+          required:
+          - amount
+          - currency
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/customer_balance_transaction"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/customers/{customer}/balance_transactions/{transaction}":
+    get:
+      description: "<p>Retrieves a specific transaction applied to a customer’s balance.</p>"
+      operationId: GetCustomersCustomerBalanceTransactionsTransaction
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: The customer the transaction belongs to.
+        in: path
+        name: customer
+        required: true
+        type: string
+      - description: The transaction to retrieve.
+        in: path
+        name: transaction
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/customer_balance_transaction"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      description: "<p>Most customer balance transaction fields are immutable, but
+        you may update its <code>description</code> and <code>metadata</code>.</p>"
+      operationId: PostCustomersCustomerBalanceTransactionsTransaction
+      parameters:
+      - description: The customer the transaction belongs to.
+        in: path
+        name: customer
+        required: true
+        type: string
+      - description: The transaction to update.
+        in: path
+        name: transaction
+        required: true
+        type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            description:
+              description: An arbitrary string attached to the object. Often useful
+                for displaying to users.
+              type: string
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+            metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format.
+              type: object
+          type: object
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/customer_balance_transaction"
         default:
           description: Error response.
           schema:
@@ -20749,208 +20966,6 @@ paths:
           description: Successful response.
           schema:
             "$ref": "#/definitions/bank_account"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-  "/v1/customers/{customer}/customer_balance_transactions":
-    get:
-      description: "<p>Retrieves the list of transactions applied to a customer’s
-        balance.</p>"
-      operationId: GetCustomersCustomerCustomerBalanceTransactions
-      parameters:
-      - description: Specifies which fields in the response should be expanded.
-        in: query
-        name: expand
-        required: false
-        type: array
-      - description: The customer to retrieve transactions for.
-        in: path
-        name: customer
-        required: true
-        type: string
-      - description: A cursor for use in pagination. `ending_before` is an object
-          ID that defines your place in the list. For instance, if you make a list
-          request and receive 100 objects, starting with `obj_bar`, your subsequent
-          call can include `ending_before=obj_bar` in order to fetch the previous
-          page of the list.
-        in: query
-        name: ending_before
-        required: false
-        type: string
-      - description: A limit on the number of objects to be returned. Limit can range
-          between 1 and 100, and the default is 10.
-        in: query
-        name: limit
-        required: false
-        type: integer
-      - description: A cursor for use in pagination. `starting_after` is an object
-          ID that defines your place in the list. For instance, if you make a list
-          request and receive 100 objects, ending with `obj_foo`, your subsequent
-          call can include `starting_after=obj_foo` in order to fetch the next page
-          of the list.
-        in: query
-        name: starting_after
-        required: false
-        type: string
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            properties:
-              data:
-                items:
-                  "$ref": "#/definitions/customer_balance_transaction"
-                type: array
-              has_more:
-                description: True if this list has another page of items after this
-                  one that can be fetched.
-                type: boolean
-              object:
-                description: String representing the object's type. Objects of the
-                  same type share the same value. Always has the value `list`.
-                enum:
-                - list
-                type: string
-              url:
-                description: The URL where this list can be accessed.
-                type: string
-            required:
-            - data
-            - has_more
-            - object
-            - url
-            type: object
-            x-expandableFields:
-            - data
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-    post:
-      description: "<p>Creates an immutable transaction to apply to the customer’s
-        balance. This transaction updates the customer by adding the amount to the
-        customer’s current balance.</p>"
-      operationId: PostCustomersCustomerCustomerBalanceTransactions
-      parameters:
-      - description: The customer the transaction belongs to.
-        in: path
-        name: customer
-        required: true
-        type: string
-      - description: Body parameters for the request.
-        in: body
-        name: payload
-        required: true
-        schema:
-          properties:
-            amount:
-              description: The integer amount in **%s** to apply to the customer's
-                balance. Pass a negative amount to credit the customer's balance,
-                and pass in a positive amount to debit the customer's balance.
-              type: integer
-            currency:
-              description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
-                in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
-                If not set, the customer's currency will be updated to this value.
-              type: string
-            description:
-              description: An arbitrary string attached to the object. Often useful
-                for displaying to users.
-              type: string
-            expand:
-              description: Specifies which fields in the response should be expanded.
-              items:
-                type: string
-              type: array
-            metadata:
-              description: Set of key-value pairs that you can attach to an object.
-                This can be useful for storing additional information about the object
-                in a structured format.
-              type: object
-          required:
-          - amount
-          - currency
-          type: object
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/customer_balance_transaction"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-  "/v1/customers/{customer}/customer_balance_transactions/{transaction}":
-    get:
-      description: "<p>Retrieves a specific transaction applied to a customer’s balance.</p>"
-      operationId: GetCustomersCustomerCustomerBalanceTransactionsTransaction
-      parameters:
-      - description: Specifies which fields in the response should be expanded.
-        in: query
-        name: expand
-        required: false
-        type: array
-      - description: The customer the transaction belongs to.
-        in: path
-        name: customer
-        required: true
-        type: string
-      - description: The transaction to retrieve.
-        in: path
-        name: transaction
-        required: true
-        type: string
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/customer_balance_transaction"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-    post:
-      description: "<p>Most customer balance transaction fields are immutable, but
-        you may update its <code>description</code> and <code>metadata</code>.</p>"
-      operationId: PostCustomersCustomerCustomerBalanceTransactionsTransaction
-      parameters:
-      - description: The customer the transaction belongs to.
-        in: path
-        name: customer
-        required: true
-        type: string
-      - description: The transaction to update.
-        in: path
-        name: transaction
-        required: true
-        type: string
-      - description: Body parameters for the request.
-        in: body
-        name: payload
-        required: false
-        schema:
-          properties:
-            description:
-              description: An arbitrary string attached to the object. Often useful
-                for displaying to users.
-              type: string
-            expand:
-              description: Specifies which fields in the response should be expanded.
-              items:
-                type: string
-              type: array
-            metadata:
-              description: Set of key-value pairs that you can attach to an object.
-                This can be useful for storing additional information about the object
-                in a structured format.
-              type: object
-          type: object
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/customer_balance_transaction"
         default:
           description: Error response.
           schema:
@@ -29012,6 +29027,12 @@ paths:
         name: expand
         required: false
         type: array
+      - description: Only return issuing settlements that were created during the
+          given date interval.
+        in: query
+        name: created
+        required: false
+        type: integer
       - description: A cursor for use in pagination. `ending_before` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, starting with `obj_bar`, your subsequent
@@ -30146,7 +30167,14 @@ paths:
           schema:
             "$ref": "#/definitions/error"
     post:
-      description: "<p>Updates a PaymentIntent object.</p>"
+      description: |-
+        <p>Updates properties on a PaymentIntent object without confirming.</p>
+
+        <p>Depending on which properties you update, you may need to confirm the
+        PaymentIntent again. For example, updating the <code>payment_method</code> will
+        always require you to confirm the PaymentIntent again. If you prefer to
+        update and confirm at the same time, we recommend updating properties via
+        the <a href="/docs/api/payment_intents/confirm">confirm API</a> instead.</p>
       operationId: PostPaymentIntentsIntent
       parameters:
       - description: ID of the PaymentIntent to retrieve.
@@ -30780,7 +30808,12 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/payment_methods/{payment_method}/attach":
     post:
-      description: "<p>Attaches a PaymentMethod object to a Customer.</p>"
+      description: |-
+        <p>Attaches a PaymentMethod object to a Customer.</p>
+
+        <p>To use this PaymentMethod as the default for invoice or subscription payments,
+        set <a href="/docs/api/customers/update#update_customer-invoice_settings-default_payment_method"><code>invoice_settings.default_payment_method</code></a>,
+        on the Customer to the PaymentMethod’s ID.</p>
       operationId: PostPaymentMethodsPaymentMethodAttach
       parameters:
       - in: path
@@ -35687,11 +35720,6 @@ paths:
         name: limit
         required: false
         type: integer
-      - description: Optional range for tax rate percentage filtering
-        in: query
-        name: percentage
-        required: false
-        type: integer
       - description: A cursor for use in pagination. `starting_after` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, ending with `obj_foo`, your subsequent
@@ -35999,11 +36027,8 @@ paths:
                 state:
                   type: string
               required:
-              - city
               - country
-              - line1
-              - postal_code
-              title: required_address
+              title: required_country_address
               type: object
             display_name:
               description: A name for the location.
@@ -36100,11 +36125,8 @@ paths:
                 state:
                   type: string
               required:
-              - city
               - country
-              - line1
-              - postal_code
-              title: required_address
+              title: required_country_address
               type: object
             display_name:
               description: A name for the location.
@@ -36149,7 +36171,7 @@ paths:
         name: limit
         required: false
         type: integer
-      - description: A location id to filter the response list to only readers at
+      - description: A location ID to filter the response list to only readers at
           the specific location
         in: query
         name: location
@@ -36987,7 +37009,6 @@ paths:
                 for details.
               type: string
           required:
-          - amount
           - currency
           - destination
           type: object
