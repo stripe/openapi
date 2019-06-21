@@ -3299,6 +3299,26 @@
               ]
             }
           },
+          "customer_balance_transaction": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/customer_balance_transaction"
+              }
+            ],
+            "description": "Customer balance transaction related to this credit note.",
+            "nullable": true,
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/customer_balance_transaction"
+                }
+              ]
+            }
+          },
           "id": {
             "description": "Unique identifier for the object.",
             "maxLength": 5000,
@@ -3425,6 +3445,7 @@
         "type": "object",
         "x-expandableFields": [
           "customer",
+          "customer_balance_transaction",
           "invoice",
           "refund"
         ],
@@ -5909,7 +5930,7 @@
             "type": "boolean"
           },
           "billing": {
-            "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this invoice using the default source attached to the customer. When sending an invoice, Stripe will email this invoice to the customer with payment instructions.",
+            "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
             "enum": [
               "charge_automatically",
               "send_invoice"
@@ -5951,6 +5972,15 @@
                 }
               ]
             }
+          },
+          "collection_method": {
+            "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this invoice using the default source attached to the customer. When sending an invoice, Stripe will email this invoice to the customer with payment instructions.",
+            "enum": [
+              "charge_automatically",
+              "send_invoice"
+            ],
+            "nullable": true,
+            "type": "string"
           },
           "created": {
             "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
@@ -6135,7 +6165,7 @@
             "nullable": true
           },
           "due_date": {
-            "description": "The date on which payment for this invoice is due. This value will be `null` for invoices where `billing=charge_automatically`.",
+            "description": "The date on which payment for this invoice is due. This value will be `null` for invoices where `collection_method=charge_automatically`.",
             "format": "unix-time",
             "nullable": true,
             "type": "integer"
@@ -6220,7 +6250,7 @@
             "type": "object"
           },
           "next_payment_attempt": {
-            "description": "The time at which payment will next be attempted. This value will be `null` for invoices where `billing=send_invoice`.",
+            "description": "The time at which payment will next be attempted. This value will be `null` for invoices where `collection_method=send_invoice`.",
             "format": "unix-time",
             "nullable": true,
             "type": "integer"
@@ -15867,9 +15897,6 @@
       },
       "source_type_wechat": {
         "properties": {
-          "native_url": {
-            "type": "string"
-          },
           "prepay_id": {
             "type": "string"
           },
@@ -15920,11 +15947,12 @@
             "type": "number"
           },
           "billing": {
-            "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this subscription at the end of the cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions.",
+            "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
             "enum": [
               "charge_automatically",
               "send_invoice"
             ],
+            "nullable": true,
             "type": "string"
           },
           "billing_cycle_anchor": {
@@ -15950,6 +15978,15 @@
             "format": "unix-time",
             "nullable": true,
             "type": "integer"
+          },
+          "collection_method": {
+            "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this subscription at the end of the cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions.",
+            "enum": [
+              "charge_automatically",
+              "send_invoice"
+            ],
+            "nullable": true,
+            "type": "string"
           },
           "created": {
             "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
@@ -15992,7 +16029,7 @@
             }
           },
           "days_until_due": {
-            "description": "Number of days a customer has to pay invoices generated by this subscription. This value will be `null` for subscriptions where `billing=charge_automatically`.",
+            "description": "Number of days a customer has to pay invoices generated by this subscription. This value will be `null` for subscriptions where `collection_method=charge_automatically`.",
             "nullable": true,
             "type": "integer"
           },
@@ -16190,7 +16227,7 @@
             "type": "integer"
           },
           "status": {
-            "description": "Possible values are `incomplete`, `incomplete_expired`, `trialing`, `active`, `past_due`, `canceled`, or `unpaid`. \n\nFor `billing=charge_automatically` a subscription moves into `incomplete` if the initial payment attempt fails. A subscription in this state can only have metadata and default_source updated. Once the first invoice is paid, the subscription moves into an `active` state. If the first invoice is not paid within 23 hours, the subscription transitions to `incomplete_expired`. This is a terminal state, the open invoice will be voided and no further invoices will be generated. \n\nA subscription that is currently in a trial period is `trialing` and moves to `active` when the trial period is over. \n\nIf subscription `billing=charge_automatically` it becomes `past_due` when payment to renew it fails and `canceled` or `unpaid` (depending on your subscriptions settings) when Stripe has exhausted all payment retry attempts. \n\nIf subscription `billing=send_invoice` it becomes `past_due` when its invoice is not paid by the due date, and `canceled` or `unpaid` if it is still not paid by an additional deadline after that. Note that when a subscription has a status of `unpaid`, no subsequent invoices will be attempted (invoices will be created, but then immediately automatically closed). After receiving updated payment information from a customer, you may choose to reopen and pay their closed invoices.",
+            "description": "Possible values are `incomplete`, `incomplete_expired`, `trialing`, `active`, `past_due`, `canceled`, or `unpaid`. \n\nFor `collection_method=charge_automatically` a subscription moves into `incomplete` if the initial payment attempt fails. A subscription in this state can only have metadata and default_source updated. Once the first invoice is paid, the subscription moves into an `active` state. If the first invoice is not paid within 23 hours, the subscription transitions to `incomplete_expired`. This is a terminal state, the open invoice will be voided and no further invoices will be generated. \n\nA subscription that is currently in a trial period is `trialing` and moves to `active` when the trial period is over. \n\nIf subscription `collection_method=charge_automatically` it becomes `past_due` when payment to renew it fails and `canceled` or `unpaid` (depending on your subscriptions settings) when Stripe has exhausted all payment retry attempts. \n\nIf subscription `collection_method=send_invoice` it becomes `past_due` when its invoice is not paid by the due date, and `canceled` or `unpaid` if it is still not paid by an additional deadline after that. Note that when a subscription has a status of `unpaid`, no subsequent invoices will be attempted (invoices will be created, but then immediately automatically closed). After receiving updated payment information from a customer, you may choose to reopen and pay their closed invoices.",
             "enum": [
               "active",
               "canceled",
@@ -16221,7 +16258,6 @@
           }
         },
         "required": [
-          "billing",
           "billing_cycle_anchor",
           "cancel_at_period_end",
           "created",
@@ -16361,7 +16397,7 @@
       "subscription_schedule": {
         "properties": {
           "billing": {
-            "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay the underlying subscription at the end of each billing cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions.",
+            "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
             "enum": [
               "charge_automatically",
               "send_invoice"
@@ -16383,6 +16419,15 @@
             "format": "unix-time",
             "nullable": true,
             "type": "integer"
+          },
+          "collection_method": {
+            "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay the underlying subscription at the end of each billing cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions.",
+            "enum": [
+              "charge_automatically",
+              "send_invoice"
+            ],
+            "nullable": true,
+            "type": "string"
           },
           "completed_at": {
             "description": "Time at which the subscription schedule was completed. Measured in seconds since the Unix epoch.",
@@ -18857,24 +18902,34 @@
                         "type": "object"
                       },
                       "dob": {
-                        "properties": {
-                          "day": {
-                            "type": "integer"
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "day": {
+                                "type": "integer"
+                              },
+                              "month": {
+                                "type": "integer"
+                              },
+                              "year": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "day",
+                              "month",
+                              "year"
+                            ],
+                            "title": "date_of_birth_specs",
+                            "type": "object"
                           },
-                          "month": {
-                            "type": "integer"
-                          },
-                          "year": {
-                            "type": "integer"
+                          {
+                            "enum": [
+                              ""
+                            ],
+                            "type": "string"
                           }
-                        },
-                        "required": [
-                          "day",
-                          "month",
-                          "year"
-                        ],
-                        "title": "date_of_birth_specs",
-                        "type": "object"
+                        ]
                       },
                       "email": {
                         "type": "string"
@@ -19641,7 +19696,7 @@
     },
     "/v1/account/capabilities/{capability}": {
       "get": {
-        "description": "<p>Retrieves an existing Account Capability.</p>",
+        "description": "<p>Retrieves information about the specified Account Capability.</p>",
         "operationId": "GetAccountCapabilitiesCapability",
         "parameters": [
           {
@@ -20730,25 +20785,35 @@
                     "type": "object"
                   },
                   "dob": {
-                    "description": "The person's date of birth.",
-                    "properties": {
-                      "day": {
-                        "type": "integer"
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "day": {
+                            "type": "integer"
+                          },
+                          "month": {
+                            "type": "integer"
+                          },
+                          "year": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "day",
+                          "month",
+                          "year"
+                        ],
+                        "title": "date_of_birth_specs",
+                        "type": "object"
                       },
-                      "month": {
-                        "type": "integer"
-                      },
-                      "year": {
-                        "type": "integer"
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
                       }
-                    },
-                    "required": [
-                      "day",
-                      "month",
-                      "year"
                     ],
-                    "title": "date_of_birth_specs",
-                    "type": "object"
+                    "description": "The person's date of birth."
                   },
                   "email": {
                     "description": "The person's email address.",
@@ -21199,25 +21264,35 @@
                     "type": "object"
                   },
                   "dob": {
-                    "description": "The person's date of birth.",
-                    "properties": {
-                      "day": {
-                        "type": "integer"
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "day": {
+                            "type": "integer"
+                          },
+                          "month": {
+                            "type": "integer"
+                          },
+                          "year": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "day",
+                          "month",
+                          "year"
+                        ],
+                        "title": "date_of_birth_specs",
+                        "type": "object"
                       },
-                      "month": {
-                        "type": "integer"
-                      },
-                      "year": {
-                        "type": "integer"
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
                       }
-                    },
-                    "required": [
-                      "day",
-                      "month",
-                      "year"
                     ],
-                    "title": "date_of_birth_specs",
-                    "type": "object"
+                    "description": "The person's date of birth."
                   },
                   "email": {
                     "description": "The person's email address.",
@@ -21678,25 +21753,35 @@
                     "type": "object"
                   },
                   "dob": {
-                    "description": "The person's date of birth.",
-                    "properties": {
-                      "day": {
-                        "type": "integer"
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "day": {
+                            "type": "integer"
+                          },
+                          "month": {
+                            "type": "integer"
+                          },
+                          "year": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "day",
+                          "month",
+                          "year"
+                        ],
+                        "title": "date_of_birth_specs",
+                        "type": "object"
                       },
-                      "month": {
-                        "type": "integer"
-                      },
-                      "year": {
-                        "type": "integer"
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
                       }
-                    },
-                    "required": [
-                      "day",
-                      "month",
-                      "year"
                     ],
-                    "title": "date_of_birth_specs",
-                    "type": "object"
+                    "description": "The person's date of birth."
                   },
                   "email": {
                     "description": "The person's email address.",
@@ -22147,25 +22232,35 @@
                     "type": "object"
                   },
                   "dob": {
-                    "description": "The person's date of birth.",
-                    "properties": {
-                      "day": {
-                        "type": "integer"
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "day": {
+                            "type": "integer"
+                          },
+                          "month": {
+                            "type": "integer"
+                          },
+                          "year": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "day",
+                          "month",
+                          "year"
+                        ],
+                        "title": "date_of_birth_specs",
+                        "type": "object"
                       },
-                      "month": {
-                        "type": "integer"
-                      },
-                      "year": {
-                        "type": "integer"
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
                       }
-                    },
-                    "required": [
-                      "day",
-                      "month",
-                      "year"
                     ],
-                    "title": "date_of_birth_specs",
-                    "type": "object"
+                    "description": "The person's date of birth."
                   },
                   "email": {
                     "description": "The person's email address.",
@@ -22983,24 +23078,34 @@
                         "type": "object"
                       },
                       "dob": {
-                        "properties": {
-                          "day": {
-                            "type": "integer"
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "day": {
+                                "type": "integer"
+                              },
+                              "month": {
+                                "type": "integer"
+                              },
+                              "year": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "day",
+                              "month",
+                              "year"
+                            ],
+                            "title": "date_of_birth_specs",
+                            "type": "object"
                           },
-                          "month": {
-                            "type": "integer"
-                          },
-                          "year": {
-                            "type": "integer"
+                          {
+                            "enum": [
+                              ""
+                            ],
+                            "type": "string"
                           }
-                        },
-                        "required": [
-                          "day",
-                          "month",
-                          "year"
-                        ],
-                        "title": "date_of_birth_specs",
-                        "type": "object"
+                        ]
                       },
                       "email": {
                         "type": "string"
@@ -23830,24 +23935,34 @@
                         "type": "object"
                       },
                       "dob": {
-                        "properties": {
-                          "day": {
-                            "type": "integer"
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "day": {
+                                "type": "integer"
+                              },
+                              "month": {
+                                "type": "integer"
+                              },
+                              "year": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "day",
+                              "month",
+                              "year"
+                            ],
+                            "title": "date_of_birth_specs",
+                            "type": "object"
                           },
-                          "month": {
-                            "type": "integer"
-                          },
-                          "year": {
-                            "type": "integer"
+                          {
+                            "enum": [
+                              ""
+                            ],
+                            "type": "string"
                           }
-                        },
-                        "required": [
-                          "day",
-                          "month",
-                          "year"
-                        ],
-                        "title": "date_of_birth_specs",
-                        "type": "object"
+                        ]
                       },
                       "email": {
                         "type": "string"
@@ -24666,7 +24781,7 @@
     },
     "/v1/accounts/{account}/capabilities/{capability}": {
       "get": {
-        "description": "<p>Retrieves an existing Account Capability.</p>",
+        "description": "<p>Retrieves information about the specified Account Capability.</p>",
         "operationId": "GetAccountsAccountCapabilitiesCapability",
         "parameters": [
           {
@@ -25855,25 +25970,35 @@
                     "type": "object"
                   },
                   "dob": {
-                    "description": "The person's date of birth.",
-                    "properties": {
-                      "day": {
-                        "type": "integer"
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "day": {
+                            "type": "integer"
+                          },
+                          "month": {
+                            "type": "integer"
+                          },
+                          "year": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "day",
+                          "month",
+                          "year"
+                        ],
+                        "title": "date_of_birth_specs",
+                        "type": "object"
                       },
-                      "month": {
-                        "type": "integer"
-                      },
-                      "year": {
-                        "type": "integer"
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
                       }
-                    },
-                    "required": [
-                      "day",
-                      "month",
-                      "year"
                     ],
-                    "title": "date_of_birth_specs",
-                    "type": "object"
+                    "description": "The person's date of birth."
                   },
                   "email": {
                     "description": "The person's email address.",
@@ -26350,25 +26475,35 @@
                     "type": "object"
                   },
                   "dob": {
-                    "description": "The person's date of birth.",
-                    "properties": {
-                      "day": {
-                        "type": "integer"
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "day": {
+                            "type": "integer"
+                          },
+                          "month": {
+                            "type": "integer"
+                          },
+                          "year": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "day",
+                          "month",
+                          "year"
+                        ],
+                        "title": "date_of_birth_specs",
+                        "type": "object"
                       },
-                      "month": {
-                        "type": "integer"
-                      },
-                      "year": {
-                        "type": "integer"
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
                       }
-                    },
-                    "required": [
-                      "day",
-                      "month",
-                      "year"
                     ],
-                    "title": "date_of_birth_specs",
-                    "type": "object"
+                    "description": "The person's date of birth."
                   },
                   "email": {
                     "description": "The person's email address.",
@@ -26847,25 +26982,35 @@
                     "type": "object"
                   },
                   "dob": {
-                    "description": "The person's date of birth.",
-                    "properties": {
-                      "day": {
-                        "type": "integer"
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "day": {
+                            "type": "integer"
+                          },
+                          "month": {
+                            "type": "integer"
+                          },
+                          "year": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "day",
+                          "month",
+                          "year"
+                        ],
+                        "title": "date_of_birth_specs",
+                        "type": "object"
                       },
-                      "month": {
-                        "type": "integer"
-                      },
-                      "year": {
-                        "type": "integer"
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
                       }
-                    },
-                    "required": [
-                      "day",
-                      "month",
-                      "year"
                     ],
-                    "title": "date_of_birth_specs",
-                    "type": "object"
+                    "description": "The person's date of birth."
                   },
                   "email": {
                     "description": "The person's email address.",
@@ -27342,25 +27487,35 @@
                     "type": "object"
                   },
                   "dob": {
-                    "description": "The person's date of birth.",
-                    "properties": {
-                      "day": {
-                        "type": "integer"
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "day": {
+                            "type": "integer"
+                          },
+                          "month": {
+                            "type": "integer"
+                          },
+                          "year": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "day",
+                          "month",
+                          "year"
+                        ],
+                        "title": "date_of_birth_specs",
+                        "type": "object"
                       },
-                      "month": {
-                        "type": "integer"
-                      },
-                      "year": {
-                        "type": "integer"
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
                       }
-                    },
-                    "required": [
-                      "day",
-                      "month",
-                      "year"
                     ],
-                    "title": "date_of_birth_specs",
-                    "type": "object"
+                    "description": "The person's date of birth."
                   },
                   "email": {
                     "description": "The person's email address.",
@@ -36969,7 +37124,7 @@
                     "type": "number"
                   },
                   "billing": {
-                    "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this subscription at the end of the cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions. Defaults to `charge_automatically`.",
+                    "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
                     "enum": [
                       "charge_automatically",
                       "send_invoice"
@@ -37009,6 +37164,15 @@
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
                     "type": "boolean"
+                  },
+                  "collection_method": {
+                    "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this subscription at the end of the cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions. Defaults to `charge_automatically`.",
+                    "enum": [
+                      "charge_automatically",
+                      "send_invoice"
+                    ],
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "coupon": {
                     "description": "The code of the coupon to apply to this subscription. A coupon applied to a subscription will only affect invoices created for that particular subscription.",
@@ -37419,7 +37583,7 @@
                     "type": "number"
                   },
                   "billing": {
-                    "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this subscription at the end of the cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions. Defaults to `charge_automatically`.",
+                    "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
                     "enum": [
                       "charge_automatically",
                       "send_invoice"
@@ -37463,6 +37627,15 @@
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
                     "type": "boolean"
+                  },
+                  "collection_method": {
+                    "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this subscription at the end of the cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions. Defaults to `charge_automatically`.",
+                    "enum": [
+                      "charge_automatically",
+                      "send_invoice"
+                    ],
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "coupon": {
                     "description": "The code of the coupon to apply to this subscription. A coupon applied to a subscription will only affect invoices created for that particular subscription.",
@@ -40707,9 +40880,24 @@
         "operationId": "GetInvoices",
         "parameters": [
           {
-            "description": "The billing mode of the invoice to retrieve. Either `charge_automatically` or `send_invoice`.",
+            "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
             "in": "query",
             "name": "billing",
+            "required": false,
+            "schema": {
+              "enum": [
+                "charge_automatically",
+                "send_invoice"
+              ],
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "description": "The billing mode of the invoice to retrieve. Either `charge_automatically` or `send_invoice`.",
+            "in": "query",
+            "name": "collection_method",
             "required": false,
             "schema": {
               "enum": [
@@ -40963,6 +41151,15 @@
                     "type": "boolean"
                   },
                   "billing": {
+                    "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
+                    "enum": [
+                      "charge_automatically",
+                      "send_invoice"
+                    ],
+                    "maxLength": 5000,
+                    "type": "string"
+                  },
+                  "collection_method": {
                     "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this invoice using the default source attached to the customer. When sending an invoice, Stripe will email this invoice to the customer with payment instructions. Defaults to `charge_automatically`.",
                     "enum": [
                       "charge_automatically",
@@ -41008,7 +41205,7 @@
                     "type": "string"
                   },
                   "days_until_due": {
-                    "description": "The number of days from when the invoice is created until it is due. Valid only for invoices where `billing=send_invoice`.",
+                    "description": "The number of days from when the invoice is created until it is due. Valid only for invoices where `collection_method=send_invoice`.",
                     "type": "integer"
                   },
                   "default_payment_method": {
@@ -41034,7 +41231,7 @@
                     "type": "string"
                   },
                   "due_date": {
-                    "description": "The date on which payment for this invoice is due. Valid only for invoices where `billing=send_invoice`.",
+                    "description": "The date on which payment for this invoice is due. Valid only for invoices where `collection_method=send_invoice`.",
                     "format": "unix-time",
                     "type": "integer"
                   },
@@ -51817,6 +52014,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "off_session": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "payment_method_types": {
                   "explode": true,
                   "style": "deepObject"
@@ -51842,13 +52043,20 @@
                     "type": "array"
                   },
                   "off_session": {
-                    "description": "Used in payment flows that collect payment details and charge later, when the customer is not available to complete additional required steps for the payment. Setting this parameter indicates that this payment attempt is happening while the customer is not in your checkout flow. Use `recurring` for payments made on a recurring basis (for example, subscriptions) and `one_off` for all other off-session payments.",
-                    "enum": [
-                      "one_off",
-                      "recurring"
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "enum": [
+                          "one_off",
+                          "recurring"
+                        ],
+                        "maxLength": 5000,
+                        "type": "string"
+                      }
                     ],
-                    "maxLength": 5000,
-                    "type": "string"
+                    "description": "Used in payment flows that collect payment details and charge later, when the customer is not available to complete additional required steps for the payment. Setting this parameter indicates that this payment attempt is happening while the customer is not in your checkout flow. Use `recurring` for payments made on a recurring basis (for example, subscriptions) and `one_off` for all other off-session payments."
                   },
                   "payment_method": {
                     "description": "ID of the payment method (a PaymentMethod, Card, BankAccount, or saved Source object) to attach to this PaymentIntent.",
@@ -60685,7 +60893,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "billing": {
-                    "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay the underlying subscription at the end of each billing cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions. Defaults to `charge_automatically` on creation.",
+                    "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
                     "enum": [
                       "charge_automatically",
                       "send_invoice"
@@ -60714,6 +60922,14 @@
                       }
                     ],
                     "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period. Pass an empty string to remove previously-defined thresholds."
+                  },
+                  "collection_method": {
+                    "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay the underlying subscription at the end of each billing cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions. Defaults to `charge_automatically` on creation.",
+                    "enum": [
+                      "charge_automatically",
+                      "send_invoice"
+                    ],
+                    "type": "string"
                   },
                   "customer": {
                     "description": "The identifier of the customer to create the subscription schedule for.",
@@ -61058,7 +61274,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "billing": {
-                    "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay the underlying subscription at the end of each billing cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions. Defaults to `charge_automatically` on creation.",
+                    "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
                     "enum": [
                       "charge_automatically",
                       "send_invoice"
@@ -61087,6 +61303,14 @@
                       }
                     ],
                     "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period. Pass an empty string to remove previously-defined thresholds."
+                  },
+                  "collection_method": {
+                    "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay the underlying subscription at the end of each billing cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions. Defaults to `charge_automatically` on creation.",
+                    "enum": [
+                      "charge_automatically",
+                      "send_invoice"
+                    ],
+                    "type": "string"
                   },
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -61699,9 +61923,24 @@
         "operationId": "GetSubscriptions",
         "parameters": [
           {
-            "description": "The billing mode of the subscriptions to retrieve. Either `charge_automatically` or `send_invoice`.",
+            "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
             "in": "query",
             "name": "billing",
+            "required": false,
+            "schema": {
+              "enum": [
+                "charge_automatically",
+                "send_invoice"
+              ],
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "description": "The collection method of the subscriptions to retrieve. Either `charge_automatically` or `send_invoice`.",
+            "in": "query",
+            "name": "collection_method",
             "required": false,
             "schema": {
               "enum": [
@@ -62017,7 +62256,7 @@
                     "type": "number"
                   },
                   "billing": {
-                    "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this subscription at the end of the cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions. Defaults to `charge_automatically`.",
+                    "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
                     "enum": [
                       "charge_automatically",
                       "send_invoice"
@@ -62057,6 +62296,15 @@
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
                     "type": "boolean"
+                  },
+                  "collection_method": {
+                    "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this subscription at the end of the cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions. Defaults to `charge_automatically`.",
+                    "enum": [
+                      "charge_automatically",
+                      "send_invoice"
+                    ],
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "coupon": {
                     "description": "The code of the coupon to apply to this subscription. A coupon applied to a subscription will only affect invoices created for that particular subscription.",
@@ -62442,7 +62690,7 @@
                     "type": "number"
                   },
                   "billing": {
-                    "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this subscription at the end of the cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions. Defaults to `charge_automatically`.",
+                    "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
                     "enum": [
                       "charge_automatically",
                       "send_invoice"
@@ -62486,6 +62734,15 @@
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
                     "type": "boolean"
+                  },
+                  "collection_method": {
+                    "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this subscription at the end of the cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions. Defaults to `charge_automatically`.",
+                    "enum": [
+                      "charge_automatically",
+                      "send_invoice"
+                    ],
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "coupon": {
                     "description": "The code of the coupon to apply to this subscription. A coupon applied to a subscription will only affect invoices created for that particular subscription.",
@@ -64409,24 +64666,34 @@
                             "type": "object"
                           },
                           "dob": {
-                            "properties": {
-                              "day": {
-                                "type": "integer"
+                            "anyOf": [
+                              {
+                                "properties": {
+                                  "day": {
+                                    "type": "integer"
+                                  },
+                                  "month": {
+                                    "type": "integer"
+                                  },
+                                  "year": {
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "day",
+                                  "month",
+                                  "year"
+                                ],
+                                "title": "date_of_birth_specs",
+                                "type": "object"
                               },
-                              "month": {
-                                "type": "integer"
-                              },
-                              "year": {
-                                "type": "integer"
+                              {
+                                "enum": [
+                                  ""
+                                ],
+                                "type": "string"
                               }
-                            },
-                            "required": [
-                              "day",
-                              "month",
-                              "year"
-                            ],
-                            "title": "date_of_birth_specs",
-                            "type": "object"
+                            ]
                           },
                           "email": {
                             "type": "string"
