@@ -11895,6 +11895,144 @@ components:
       - error
       - file
       x-resourceId: scheduled_query_run
+    setup_intent:
+      properties:
+        application:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/application"
+          description: ID of the Connect application that created the SetupIntent.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/application"
+        client_secret:
+          description: The client secret of this SetupIntent. Used for client-side
+            retrieval using a publishable key.
+          maxLength: 5000
+          nullable: true
+          type: string
+        created:
+          description: Time at which the object was created. Measured in seconds since
+            the Unix epoch.
+          format: unix-time
+          type: integer
+        customer:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/customer"
+          - "$ref": "#/components/schemas/deleted_customer"
+          description: ID of the Customer this SetupIntent belongs to, if one exists.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/customer"
+            - "$ref": "#/components/schemas/deleted_customer"
+        description:
+          description: An arbitrary string attached to the object. Often useful for
+            displaying to users.
+          maxLength: 5000
+          nullable: true
+          type: string
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        last_setup_error:
+          anyOf:
+          - "$ref": "#/components/schemas/api_errors"
+          description: The error encountered in the previous SetupIntent confirmation.
+          nullable: true
+        livemode:
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+          type: boolean
+        metadata:
+          additionalProperties:
+            maxLength: 500
+            type: string
+          description: Set of key-value pairs that you can attach to an object. This
+            can be useful for storing additional information about the object in a
+            structured format.
+          type: object
+        next_action:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_intent_next_action"
+          description: If present, this property tells you what actions you need to
+            take in order for your customer to set up this payment method.
+          nullable: true
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - setup_intent
+          type: string
+        on_behalf_of:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/account"
+          description: The account (if any) for which the setup is intended.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/account"
+        payment_method:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/payment_method"
+          description: ID of the payment method used with this SetupIntent.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/payment_method"
+        payment_method_types:
+          description: The list of payment method types (e.g. card) that this SetupIntent
+            is allowed to set up.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        status:
+          description: Status of this SetupIntent, one of `requires_payment_method`,
+            `requires_confirmation`, `requires_action`, `processing`, `canceled`,
+            or `succeeded`.
+          enum:
+          - canceled
+          - processing
+          - requires_action
+          - requires_confirmation
+          - requires_payment_method
+          - succeeded
+          type: string
+        usage:
+          description: |-
+            Indicates how the payment method is intended to be used in the future.
+
+            Use `on_session` if you intend to only reuse the payment method when the customer is in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow.
+          maxLength: 5000
+          type: string
+      required:
+      - created
+      - id
+      - livemode
+      - object
+      - payment_method_types
+      - status
+      - usage
+      title: SetupIntent
+      type: object
+      x-expandableFields:
+      - application
+      - customer
+      - last_setup_error
+      - next_action
+      - on_behalf_of
+      - payment_method
+      x-resourceId: setup_intent
     shipping:
       properties:
         address:
@@ -13506,6 +13644,40 @@ components:
             oneOf:
             - "$ref": "#/components/schemas/customer"
             - "$ref": "#/components/schemas/deleted_customer"
+        default_payment_method:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/payment_method"
+          description: ID of the default payment method for the subscription schedule.
+            It must belong to the customer associated with the subscription schedule.
+            If not set, invoices will use the default payment method in the customer's
+            invoice settings.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/payment_method"
+        default_source:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/alipay_account"
+          - "$ref": "#/components/schemas/bank_account"
+          - "$ref": "#/components/schemas/bitcoin_receiver"
+          - "$ref": "#/components/schemas/card"
+          - "$ref": "#/components/schemas/source"
+          description: ID of the default payment source for the subscription schedule.
+            It must belong to the customer associated with the subscription schedule
+            and be in a chargeable state. If not set, defaults to the customer's default
+            source.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/alipay_account"
+            - "$ref": "#/components/schemas/bank_account"
+            - "$ref": "#/components/schemas/bitcoin_receiver"
+            - "$ref": "#/components/schemas/card"
+            - "$ref": "#/components/schemas/source"
         id:
           description: Unique identifier for the object.
           maxLength: 5000
@@ -13605,6 +13777,8 @@ components:
       - billing_thresholds
       - current_phase
       - customer
+      - default_payment_method
+      - default_source
       - invoice_settings
       - phases
       - renewal_interval
@@ -28918,7 +29092,7 @@ paths:
                   type: string
                 days_until_due:
                   description: Number of days a customer has to pay invoices generated
-                    by this subscription. Valid only for subscriptions where `billing`
+                    by this subscription. Valid only for subscriptions where `collection_method`
                     is set to `send_invoice`.
                   type: integer
                 default_payment_method:
@@ -29287,7 +29461,7 @@ paths:
                   type: string
                 days_until_due:
                   description: Number of days a customer has to pay invoices generated
-                    by this subscription. Valid only for subscriptions where `billing`
+                    by this subscription. Valid only for subscriptions where `collection_method`
                     is set to `send_invoice`.
                   type: integer
                 default_payment_method:
@@ -31675,7 +31849,7 @@ paths:
           maxLength: 5000
           type: string
         style: form
-      - description: The billing mode of the invoice to retrieve. Either `charge_automatically`
+      - description: The collection method of the invoice to retrieve. Either `charge_automatically`
           or `send_invoice`.
         in: query
         name: collection_method
@@ -33522,8 +33696,8 @@ paths:
           maxLength: 5000
           type: string
         style: form
-      - description: Only return authorizations with the given status. One of pending,
-          closed, or reversed.
+      - description: Only return authorizations with the given status. One of `pending`,
+          `closed`, or `reversed`.
         in: query
         name: status
         required: false
@@ -45290,6 +45464,477 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
+  "/v1/setup_intents":
+    get:
+      description: "<p>Returns a list of SetupIntents.</p>"
+      operationId: GetSetupIntents
+      parameters:
+      - description: A filter on the list, based on the object `created` field. The
+          value can be a string with an integer Unix timestamp, or it can be a dictionary
+          with a number of different query options.
+        explode: true
+        in: query
+        name: created
+        required: false
+        schema:
+          anyOf:
+          - properties:
+              gt:
+                type: integer
+              gte:
+                type: integer
+              lt:
+                type: integer
+              lte:
+                type: integer
+            title: range_query_specs
+            type: object
+          - type: integer
+        style: deepObject
+      - description: Only return SetupIntents for the customer specified by this customer
+          ID.
+        in: query
+        name: customer
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    items:
+                      "$ref": "#/components/schemas/setup_intent"
+                    type: array
+                  has_more:
+                    description: True if this list has another page of items after
+                      this one that can be fetched.
+                    type: boolean
+                  object:
+                    description: String representing the object's type. Objects of
+                      the same type share the same value. Always has the value `list`.
+                    enum:
+                    - list
+                    type: string
+                  url:
+                    description: The URL where this list can be accessed.
+                    maxLength: 5000
+                    pattern: "^/v1/setup_intents"
+                    type: string
+                required:
+                - data
+                - has_more
+                - object
+                - url
+                title: PaymentFlowsSetupIntentList
+                type: object
+                x-expandableFields:
+                - data
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+    post:
+      description: |-
+        <p>Creates a SetupIntent object.</p>
+
+        <p>After the SetupIntent is created, attach a payment method and <a href="/docs/api/setup_intents/confirm">confirm</a>
+        to collect any required permissions to charge the payment method later.</p>
+      operationId: PostSetupIntents
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+              metadata:
+                explode: true
+                style: deepObject
+              payment_method_types:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                customer:
+                  description: ID of the customer this SetupIntent is for if one exists.
+                  maxLength: 5000
+                  type: string
+                description:
+                  description: An arbitrary string attached to the object. Often useful
+                    for displaying to users.
+                  maxLength: 1000
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                metadata:
+                  additionalProperties:
+                    type: string
+                  description: Set of key-value pairs that you can attach to an object.
+                    This can be useful for storing additional information about the
+                    object in a structured format.
+                  type: object
+                on_behalf_of:
+                  description: The Stripe account ID for which this SetupIntent is
+                    created.
+                  type: string
+                payment_method:
+                  description: ID of the payment method (a PaymentMethod, Card, BankAccount,
+                    or saved Source object) to attach to this SetupIntent.
+                  maxLength: 5000
+                  type: string
+                payment_method_types:
+                  description: The list of payment method types (e.g. card) that this
+                    SetupIntent is allowed to use. If this is not provided, defaults
+                    to ["card"].
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/setup_intent"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/setup_intents/{intent}":
+    get:
+      description: |-
+        <p>Retrieves the details of a SetupIntent that has previously been created. </p>
+
+        <p>Client-side retrieval using a publishable key is allowed when the <code>client_secret</code> is provided in the query string. </p>
+
+        <p>When retrieved with a publishable key, only a subset of properties will be returned. Please refer to the <a href="#setup_intent_object">SetupIntent</a> object reference for more details.</p>
+      operationId: GetSetupIntentsIntent
+      parameters:
+      - description: The client secret of the SetupIntent. Required if a publishable
+          key is used to retrieve the SetupIntent.
+        in: query
+        name: client_secret
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - description: ID of the SetupIntent to retrieve.
+        in: path
+        name: intent
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/setup_intent"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+    post:
+      description: "<p>Updates a SetupIntent object.</p>"
+      operationId: PostSetupIntentsIntent
+      parameters:
+      - description: ID of the SetupIntent to retrieve.
+        in: path
+        name: intent
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+              metadata:
+                explode: true
+                style: deepObject
+              payment_method_types:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                customer:
+                  description: ID of the customer this SetupIntent is for if one exists.
+                  maxLength: 5000
+                  type: string
+                description:
+                  description: An arbitrary string attached to the object. Often useful
+                    for displaying to users.
+                  maxLength: 1000
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                metadata:
+                  additionalProperties:
+                    type: string
+                  description: Set of key-value pairs that you can attach to an object.
+                    This can be useful for storing additional information about the
+                    object in a structured format.
+                  type: object
+                payment_method:
+                  description: ID of the payment method (a PaymentMethod, Card, BankAccount,
+                    or saved Source object) to attach to this SetupIntent.
+                  maxLength: 5000
+                  type: string
+                payment_method_types:
+                  description: The list of payment method types (e.g. card) that this
+                    SetupIntent is allowed to set up. If this is not provided, defaults
+                    to ["card"].
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/setup_intent"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/setup_intents/{intent}/cancel":
+    post:
+      description: |-
+        <p>A SetupIntent object can be canceled when it is in one of these statuses: <code>requires_payment_method</code>, <code>requires_capture</code>, <code>requires_confirmation</code>, <code>requires_action</code>. </p>
+
+        <p>Once canceled, setup is abandoned and any operations on the SetupIntent will fail with an error.</p>
+      operationId: PostSetupIntentsIntentCancel
+      parameters:
+      - description: ID of the SetupIntent to retrieve.
+        in: path
+        name: intent
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                cancellation_reason:
+                  description: Reason for canceling this SetupIntent. Possible values
+                    are `duplicate`, `fraudulent`, `requested_by_customer`, or `abandoned`
+                  enum:
+                  - abandoned
+                  - duplicate
+                  - fraudulent
+                  - requested_by_customer
+                  maxLength: 5000
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/setup_intent"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/setup_intents/{intent}/confirm":
+    post:
+      description: |-
+        <p>Confirm that your customer intends to set up the current or
+        provided payment method. For example, you would confirm a SetupIntent
+        when a customer hits the “Save” button on a payment method management
+        page on your website.</p>
+
+        <p>If the selected payment method does not require any additional
+        steps from the customer, the SetupIntent will transition to the
+        <code>succeeded</code> status.</p>
+
+        <p>Otherwise, it will transition to the <code>requires_action</code> status and
+        suggest additional actions via <code>next_action</code>. If setup fails,
+        the SetupIntent will transition to the
+        <code>requires_payment_method</code> status.</p>
+      operationId: PostSetupIntentsIntentConfirm
+      parameters:
+      - description: ID of the SetupIntent to retrieve.
+        in: path
+        name: intent
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                client_secret:
+                  description: The client secret of the SetupIntent.
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                payment_method:
+                  description: ID of the payment method (a PaymentMethod, Card, BankAccount,
+                    or saved Source object) to attach to this SetupIntent.
+                  maxLength: 5000
+                  type: string
+                return_url:
+                  description: |-
+                    The URL to redirect your customer back to after they authenticate on the payment method's app or site.
+                    If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.
+                    This parameter is only used for cards and other redirect-based payment methods.
+                  type: string
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/setup_intent"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
   "/v1/sigma/scheduled_query_runs":
     get:
       description: "<p>Returns a list of scheduled query runs.</p>"
@@ -47559,6 +48204,20 @@ paths:
                     schedule for.
                   maxLength: 5000
                   type: string
+                default_payment_method:
+                  description: ID of the default payment method for the subscription
+                    schedule. It must belong to the customer associated with the subscription
+                    schedule. If not set, invoices will use the default payment method
+                    in the customer's invoice settings.
+                  maxLength: 5000
+                  type: string
+                default_source:
+                  description: ID of the default payment source for the subscription
+                    schedule. It must belong to the customer associated with the subscription
+                    schedule and be in a chargeable state. If not set, defaults to
+                    the customer's default source.
+                  maxLength: 5000
+                  type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -47830,6 +48489,20 @@ paths:
                   enum:
                   - charge_automatically
                   - send_invoice
+                  type: string
+                default_payment_method:
+                  description: ID of the default payment method for the subscription
+                    schedule. It must belong to the customer associated with the subscription
+                    schedule. If not set, invoices will use the default payment method
+                    in the customer's invoice settings.
+                  maxLength: 5000
+                  type: string
+                default_source:
+                  description: ID of the default payment source for the subscription
+                    schedule. It must belong to the customer associated with the subscription
+                    schedule and be in a chargeable state. If not set, defaults to
+                    the customer's default source.
+                  maxLength: 5000
                   type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
@@ -48580,7 +49253,7 @@ paths:
                   type: string
                 days_until_due:
                   description: Number of days a customer has to pay invoices generated
-                    by this subscription. Valid only for subscriptions where `billing`
+                    by this subscription. Valid only for subscriptions where `collection_method`
                     is set to `send_invoice`.
                   type: integer
                 default_payment_method:
@@ -48925,7 +49598,7 @@ paths:
                   type: string
                 days_until_due:
                   description: Number of days a customer has to pay invoices generated
-                    by this subscription. Valid only for subscriptions where `billing`
+                    by this subscription. Valid only for subscriptions where `collection_method`
                     is set to `send_invoice`.
                   type: integer
                 default_payment_method:
