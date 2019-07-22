@@ -548,6 +548,8 @@ definitions:
         "$ref": "#/definitions/payment_intent"
       payment_method:
         "$ref": "#/definitions/payment_method"
+      setup_intent:
+        "$ref": "#/definitions/setup_intent"
       source:
         "$ref": "#/definitions/bank_account"
       type:
@@ -570,6 +572,7 @@ definitions:
     x-expandableFields:
     - payment_intent
     - payment_method
+    - setup_intent
     - source
   apple_pay_domain:
     properties:
@@ -1733,8 +1736,9 @@ definitions:
   checkout.session:
     properties:
       billing_address_collection:
-        description: The value (`auto` or `required`) for whether Checkout collected
-          the customer's billing address.
+        description: |-
+          The value (`auto` or `required`) for whether Checkout collected the
+          customer's billing address.
         type: string
       cancel_url:
         description: The URL the customer will be directed to if they decide to cancel
@@ -1747,9 +1751,10 @@ definitions:
           session with your internal systems.
         type: string
       customer:
-        description: The ID of the customer for this session. A new customer will
-          be created unless an existing customer was provided in when the session
-          was created.
+        description: |-
+          The ID of the customer for this session. A new customer will be created
+          unless an existing customer was provided in when the session was
+          created.
         type: string
         x-expansionResources:
           oneOf:
@@ -1768,7 +1773,8 @@ definitions:
           "$ref": "#/definitions/checkout_session_display_item"
         type: array
       id:
-        description: Unique identifier for the object. Used to pass to `redirectToCheckout`
+        description: |-
+          Unique identifier for the object. Used to pass to `redirectToCheckout`
           in Stripe.js.
         type: string
       livemode:
@@ -1776,8 +1782,9 @@ definitions:
           value `false` if the object exists in test mode.
         type: boolean
       locale:
-        description: The IETF language tag of the locale Checkout is displayed in.
-          If blank or `auto`, the browser's locale is used.
+        description: |-
+          The IETF language tag of the locale Checkout is displayed in. If blank
+          or `auto`, the browser's locale is used.
         enum:
         - auto
         - da
@@ -1809,17 +1816,20 @@ definitions:
           oneOf:
           - "$ref": "#/definitions/payment_intent"
       payment_method_types:
-        description: A list of the types of payment methods (e.g. card) this Checkout
+        description: |-
+          A list of the types of payment methods (e.g. card) this Checkout
           Session is allowed to accept.
         items:
           type: string
         type: array
       submit_type:
-        description: Describes the type of transaction being performed by Checkout
-          in order to customize relevant text on the page, such as the submit button.
-          `submit_type` can only be specified on Checkout Sessions using line items
-          or a SKU, but not Checkout Sessions for subscriptions. Supported values
-          are `auto`, `book`, `donate`, or `pay`.
+        description: |-
+          Describes the type of transaction being performed by Checkout in order
+          to customize relevant text on the page, such as the submit button.
+          `submit_type` can only be specified on Checkout Sessions using line
+          items or a SKU, but not Checkout Sessions for subscriptions. Supported
+          values are
+          `auto`, `book`, `donate`, or `pay`.
         enum:
         - auto
         - book
@@ -1834,12 +1844,12 @@ definitions:
           oneOf:
           - "$ref": "#/definitions/subscription"
       success_url:
-        description: The URL the customer will be directed to after the payment or
+        description: |-
+          The URL the customer will be directed to after the payment or
           subscription creation is successful.
         type: string
     required:
     - cancel_url
-    - display_items
     - id
     - livemode
     - object
@@ -2195,6 +2205,9 @@ definitions:
         - post_payment
         - pre_payment
         type: string
+      voided_at:
+        description: The time that the credit note was voided.
+        type: integer
     required:
     - amount
     - created
@@ -4470,6 +4483,11 @@ definitions:
         items:
           "$ref": "#/definitions/tax_rate"
         type: array
+      unified_proration:
+        description: For prorations this indicates whether Stripe automatically grouped
+          multiple related debit and credit line items into a single combined line
+          item.
+        type: boolean
       unit_amount:
         description: Unit Amount (in the `currency` specified) of the invoice item.
         type: integer
@@ -4486,7 +4504,6 @@ definitions:
     - period
     - proration
     - quantity
-    - unit_amount
     title: InvoiceItem
     type: object
     x-expandableFields:
@@ -5280,8 +5297,8 @@ definitions:
         description: The currency of the [held amount](https://stripe.com/docs/api#issuing_authorization_object-held_amount)
         type: string
       reason:
-        description: One of `authorization_controls`, `card_active`, `card_inactive`,
-          `insufficient_funds`, `account_compliance_disabled`, `account_inactive`,
+        description: One of `authentication_failed`, `authorization_controls`, `card_active`,
+          `card_inactive`, `insufficient_funds`, `account_compliance_disabled`, `account_inactive`,
           `suspected_fraud`, `webhook_approved`, `webhook_declined`, or `webhook_timeout`.
         type: string
     required:
@@ -7471,6 +7488,9 @@ definitions:
         - subscription
         type: string
       unified_proration:
+        description: For prorations this indicates whether Stripe automatically grouped
+          multiple related debit and credit line items into a single combined line
+          item.
         type: boolean
     required:
     - amount
@@ -7898,10 +7918,13 @@ definitions:
         x-expandableFields:
         - data
       client_secret:
-        description: The client secret of this PaymentIntent. Used for client-side
-          retrieval using a publishable key. Please refer to our [automatic confirmation
-          quickstart guide](https://stripe.com/docs/payments/payment-intents/quickstart#automatic-confirmation-flow)
-          to learn about how `client_secret` should be handled.
+        description: "The client secret of this PaymentIntent. Used for client-side
+          retrieval using a publishable key. \n\nThe client secret can be used to
+          complete a payment from your frontend. It should not be stored, logged,
+          embedded in URLs, or exposed to anyone other than the customer. Make sure
+          that you have TLS enabled on any page that includes the client secret.\n\nPlease
+          refer to our [automatic confirmation quickstart guide](https://stripe.com/docs/payments/payment-intents/quickstart#automatic-confirmation-flow)
+          to learn about how `client_secret` should be handled."
         type: string
       confirmation_method:
         description: |-
@@ -7925,7 +7948,10 @@ definitions:
           in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
         type: string
       customer:
-        description: ID of the Customer this PaymentIntent is for if one exists.
+        description: |-
+          ID of the Customer this PaymentIntent belongs to, if one exists.
+
+          If present, payment methods used with this PaymentIntent can only be attached to this Customer, and payment methods attached to other Customers cannot be used with this PaymentIntent.
         type: string
         x-expansionResources:
           oneOf:
@@ -7977,6 +8003,8 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/payment_method"
+      payment_method_options:
+        "$ref": "#/definitions/payment_intent_payment_method_options"
       payment_method_types:
         description: The list of payment method types (e.g. card) that this PaymentIntent
           is allowed to use.
@@ -7993,6 +8021,16 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/review"
+      setup_future_usage:
+        description: |-
+          Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+          If present, the payment method used with this PaymentIntent can be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer, even after the transaction completes.
+
+          Use `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. See [Saving card details after a payment](https://stripe.com/docs/payments/cards/saving-cards#saving-card-after-payment) to learn more.
+
+          Stripe uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules. For example, if your customer is impacted by [SCA](https://stripe.com/docs/strong-customer-authentication), using `off_session` will ensure that they are authenticated while processing this PaymentIntent. You will then be able to collect [off-session payments](https://stripe.com/docs/payments/cards/charging-saved-cards#off-session-payments-with-saved-cards) for this customer.
+        type: string
       shipping:
         "$ref": "#/definitions/shipping"
       statement_descriptor:
@@ -8003,7 +8041,7 @@ definitions:
       status:
         description: Status of this PaymentIntent, one of `requires_payment_method`,
           `requires_confirmation`, `requires_action`, `processing`, `requires_capture`,
-          `canceled`, or `succeeded`. Read more about each PaymentIntent [status](https://stripe.com/docs/payments/payment-intents/status).
+          `canceled`, or `succeeded`. Read more about each PaymentIntent [status](https://stripe.com/docs/payments/intents#intent-statuses).
         enum:
         - canceled
         - processing
@@ -8042,6 +8080,7 @@ definitions:
     - next_action
     - on_behalf_of
     - payment_method
+    - payment_method_options
     - review
     - shipping
     - transfer_data
@@ -8077,6 +8116,34 @@ definitions:
           the payment.
         type: string
     title: PaymentIntentNextActionRedirectToUrl
+    type: object
+    x-expandableFields: []
+  payment_intent_payment_method_options:
+    properties:
+      card:
+        "$ref": "#/definitions/payment_intent_payment_method_options_card"
+    title: PaymentIntentPaymentMethodOptions
+    type: object
+    x-expandableFields:
+    - card
+  payment_intent_payment_method_options_card:
+    properties:
+      request_three_d_secure:
+        description: 'We strongly recommend that you rely on our SCA Engine to automatically
+          prompt your customers for authentication based on risk level and [other
+          requirements](https://stripe.com/docs/strong-customer-authentication). However,
+          if you wish to request 3D Secure based on logic from your own fraud engine,
+          provide this option. Permitted values include: `automatic` or `any`. If
+          not provided, defaults to `automatic`. Read our guide on [manually requesting
+          3D Secure](https://stripe.com/docs/payments/3d-secure#manual-three-ds) for
+          more information on how this configuration interacts with Radar and our
+          SCA Engine.'
+        enum:
+        - any
+        - automatic
+        - challenge_only
+        type: string
+    title: payment_intent_payment_method_options_card
     type: object
     x-expandableFields: []
   payment_method:
@@ -8347,6 +8414,8 @@ definitions:
         "$ref": "#/definitions/payment_method_details_giropay"
       ideal:
         "$ref": "#/definitions/payment_method_details_ideal"
+      klarna:
+        "$ref": "#/definitions/payment_method_details_klarna"
       multibanco:
         "$ref": "#/definitions/payment_method_details_multibanco"
       p24:
@@ -8359,7 +8428,7 @@ definitions:
         "$ref": "#/definitions/payment_method_details_stripe_account"
       type:
         description: |-
-          The type of transaction-specific details of the payment method used in the payment, one of `ach_credit_transfer`, `ach_debit`, `alipay`, `bancontact`, `card`, `card_present`, `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `sepa_debit`, `sofort`, `stripe_account`, or `wechat`.
+          The type of transaction-specific details of the payment method used in the payment, one of `ach_credit_transfer`, `ach_debit`, `alipay`, `bancontact`, `card`, `card_present`, `eps`, `giropay`, `ideal`, `klarna`, `multibanco`, `p24`, `sepa_debit`, `sofort`, `stripe_account`, or `wechat`.
           An additional hash is included on `payment_method_details` with a name matching this value.
           It contains information specific to the payment method.
         type: string
@@ -8379,6 +8448,7 @@ definitions:
     - eps
     - giropay
     - ideal
+    - klarna
     - multibanco
     - p24
     - sepa_debit
@@ -8783,6 +8853,11 @@ definitions:
           (if supported) at the time of authorization or settlement. They cannot be set or mutated.
         type: string
     title: payment_method_details_ideal
+    type: object
+    x-expandableFields: []
+  payment_method_details_klarna:
+    properties: {}
+    title: payment_method_details_klarna
     type: object
     x-expandableFields: []
   payment_method_details_multibanco:
@@ -10163,16 +10238,29 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/application"
+      cancellation_reason:
+        description: Reason for cancellation of this SetupIntent, one of `abandoned`,
+          `requested_by_customer`, or `duplicate`.
+        enum:
+        - abandoned
+        - duplicate
+        - requested_by_customer
+        type: string
       client_secret:
-        description: The client secret of this SetupIntent. Used for client-side retrieval
-          using a publishable key.
+        description: |-
+          The client secret of this SetupIntent. Used for client-side retrieval using a publishable key.
+
+          The client secret can be used to complete payment setup from your frontend. It should not be stored, logged, embedded in URLs, or exposed to anyone other than the customer. Make sure that you have TLS enabled on any page that includes the client secret.
         type: string
       created:
         description: Time at which the object was created. Measured in seconds since
           the Unix epoch.
         type: integer
       customer:
-        description: ID of the Customer this SetupIntent belongs to, if one exists.
+        description: |-
+          ID of the Customer this SetupIntent belongs to, if one exists.
+
+          If present, payment methods used with this SetupIntent can only be attached to this Customer, and payment methods attached to other Customers cannot be used with this SetupIntent.
         type: string
         x-expansionResources:
           oneOf:
@@ -10197,7 +10285,7 @@ definitions:
           format.
         type: object
       next_action:
-        "$ref": "#/definitions/payment_intent_next_action"
+        "$ref": "#/definitions/setup_intent_next_action"
       object:
         description: String representing the object's type. Objects of the same type
           share the same value.
@@ -10216,6 +10304,8 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/payment_method"
+      payment_method_options:
+        "$ref": "#/definitions/setup_intent_payment_method_options"
       payment_method_types:
         description: The list of payment method types (e.g. card) that this SetupIntent
           is allowed to set up.
@@ -10223,9 +10313,9 @@ definitions:
           type: string
         type: array
       status:
-        description: Status of this SetupIntent, one of `requires_payment_method`,
-          `requires_confirmation`, `requires_action`, `processing`, `canceled`, or
-          `succeeded`.
+        description: "[Status](https://stripe.com/docs/payments/intents#intent-statuses)
+          of this SetupIntent, one of `requires_payment_method`, `requires_confirmation`,
+          `requires_action`, `processing`, `canceled`, or `succeeded`."
         enum:
         - canceled
         - processing
@@ -10238,7 +10328,7 @@ definitions:
         description: |-
           Indicates how the payment method is intended to be used in the future.
 
-          Use `on_session` if you intend to only reuse the payment method when the customer is in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow.
+          Use `on_session` if you intend to only reuse the payment method when the customer is in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. If not provided, this value defaults to `off_session`.
         type: string
     required:
     - created
@@ -10257,7 +10347,68 @@ definitions:
     - next_action
     - on_behalf_of
     - payment_method
+    - payment_method_options
     x-resourceId: setup_intent
+  setup_intent_next_action:
+    properties:
+      redirect_to_url:
+        "$ref": "#/definitions/setup_intent_next_action_redirect_to_url"
+      type:
+        description: Type of the next action to perform, one of `redirect_to_url`
+          or `use_stripe_sdk`.
+        type: string
+      use_stripe_sdk:
+        description: When confirming a SetupIntent with Stripe.js, Stripe.js depends
+          on the contents of this dictionary to invoke authentication flows. The shape
+          of the contents is subject to change and is only intended to be used by
+          Stripe.js.
+        type: object
+    required:
+    - type
+    title: SetupIntentNextAction
+    type: object
+    x-expandableFields:
+    - redirect_to_url
+  setup_intent_next_action_redirect_to_url:
+    properties:
+      return_url:
+        description: If the customer does not exit their browser while authenticating,
+          they will be redirected to this specified URL after completion.
+        type: string
+      url:
+        description: The URL you must redirect your customer to in order to authenticate.
+        type: string
+    title: SetupIntentNextActionRedirectToUrl
+    type: object
+    x-expandableFields: []
+  setup_intent_payment_method_options:
+    properties:
+      card:
+        "$ref": "#/definitions/setup_intent_payment_method_options_card"
+    title: SetupIntentPaymentMethodOptions
+    type: object
+    x-expandableFields:
+    - card
+  setup_intent_payment_method_options_card:
+    properties:
+      request_three_d_secure:
+        description: 'We strongly recommend that you rely on our SCA Engine to automatically
+          prompt your customers for authentication based on risk level and [other
+          requirements](https://stripe.com/docs/strong-customer-authentication). However,
+          if you wish to request 3D Secure based on logic from your own fraud engine,
+          provide this option. Permitted values include: `automatic` or `any`. If
+          not provided, defaults to `automatic`. Read our guide on [manually requesting
+          3D Secure](https://stripe.com/docs/payments/3d-secure#manual-three-ds) for
+          more information on how this configuration interacts with Radar and our
+          SCA Engine.'
+        enum:
+        - any
+        - automatic
+        - challenge_only
+        type: string
+    title: setup_intent_payment_method_options_card
+    type: object
+    x-expandableFields: []
   shipping:
     properties:
       address:
@@ -10277,8 +10428,6 @@ definitions:
           delivery service. If multiple tracking numbers were generated for this purchase,
           please separate them with commas.
         type: string
-    required:
-    - address
     title: Shipping
     type: object
     x-expandableFields:
@@ -10454,6 +10603,8 @@ definitions:
         type: string
       ideal:
         "$ref": "#/definitions/source_type_ideal"
+      klarna:
+        "$ref": "#/definitions/source_type_klarna"
       livemode:
         description: Has the value `true` if the object exists in live mode or the
           value `false` if the object exists in test mode.
@@ -10483,6 +10634,8 @@ definitions:
         "$ref": "#/definitions/source_type_sepa_debit"
       sofort:
         "$ref": "#/definitions/source_type_sofort"
+      source_order:
+        "$ref": "#/definitions/source_order"
       statement_descriptor:
         description: Extra information about a source. This will appear on your customer's
           statement every time you charge the source.
@@ -10497,10 +10650,10 @@ definitions:
       type:
         description: The `type` of the source. The `type` is a payment method, one
           of `ach_credit_transfer`, `ach_debit`, `alipay`, `bancontact`, `card`, `card_present`,
-          `eps`, `giropay`, `ideal`, `multibanco`, `p24`, `sepa_debit`, `sofort`,
-          `three_d_secure`, or `wechat`. An additional hash is included on the source
-          with a name matching this value. It contains additional information specific
-          to the [payment method](https://stripe.com/docs/sources) used.
+          `eps`, `giropay`, `ideal`, `multibanco`, `klarna`, `p24`, `sepa_debit`,
+          `sofort`, `three_d_secure`, or `wechat`. An additional hash is included
+          on the source with a name matching this value. It contains additional information
+          specific to the [payment method](https://stripe.com/docs/sources) used.
         enum:
         - ach_credit_transfer
         - ach_debit
@@ -10511,6 +10664,7 @@ definitions:
         - eps
         - giropay
         - ideal
+        - klarna
         - multibanco
         - p24
         - sepa_debit
@@ -10542,6 +10696,7 @@ definitions:
     - owner
     - receiver
     - redirect
+    - source_order
     x-resourceId: source
   source_code_verification_flow:
     properties:
@@ -10642,6 +10797,56 @@ definitions:
         description: Mandate reference associated with the debit.
         type: string
     title: SourceMandateNotificationSepaDebitData
+    type: object
+    x-expandableFields: []
+  source_order:
+    properties:
+      amount:
+        description: A positive integer in the smallest currency unit (that is, 100
+          cents for $1.00, or 1 for ¥1, Japanese Yen being a zero-decimal currency)
+          representing the total amount for the order.
+        type: integer
+      currency:
+        description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+          in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+        type: string
+      email:
+        description: The email address of the customer placing the order.
+        type: string
+      items:
+        description: List of items constituting the order.
+        items:
+          "$ref": "#/definitions/source_order_item"
+        type: array
+      shipping:
+        "$ref": "#/definitions/shipping"
+    required:
+    - amount
+    - currency
+    title: SourceOrder
+    type: object
+    x-expandableFields:
+    - items
+    - shipping
+  source_order_item:
+    properties:
+      amount:
+        description: The amount (price) for this order item.
+        type: integer
+      currency:
+        description: This currency of this order item. Required when `amount` is present.
+        type: string
+      description:
+        description: Human-readable description for this order item.
+        type: string
+      quantity:
+        description: The quantity of this order item. When type is `sku`, this is
+          the number of instances of the SKU to be ordered.
+        type: integer
+      type:
+        description: The type of this order item. Must be `sku`, `tax`, or `shipping`.
+        type: string
+    title: SourceOrderItem
     type: object
     x-expandableFields: []
   source_owner:
@@ -10800,6 +11005,7 @@ definitions:
         - eps
         - giropay
         - ideal
+        - klarna
         - multibanco
         - p24
         - sepa_debit
@@ -11074,6 +11280,59 @@ definitions:
       statement_descriptor:
         type: string
     type: object
+  source_type_klarna:
+    properties:
+      background_image_url:
+        type: string
+      client_token:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      locale:
+        type: string
+      logo_url:
+        type: string
+      page_title:
+        type: string
+      pay_later_asset_urls_descriptive:
+        type: string
+      pay_later_asset_urls_standard:
+        type: string
+      pay_later_name:
+        type: string
+      pay_later_redirect_url:
+        type: string
+      pay_now_asset_urls_descriptive:
+        type: string
+      pay_now_asset_urls_standard:
+        type: string
+      pay_now_name:
+        type: string
+      pay_now_redirect_url:
+        type: string
+      pay_over_time_asset_urls_descriptive:
+        type: string
+      pay_over_time_asset_urls_standard:
+        type: string
+      pay_over_time_name:
+        type: string
+      pay_over_time_redirect_url:
+        type: string
+      payment_method_categories:
+        type: string
+      purchase_country:
+        type: string
+      purchase_type:
+        type: string
+      redirect_url:
+        type: string
+      shipping_first_name:
+        type: string
+      shipping_last_name:
+        type: string
+    type: object
   source_type_multibanco:
     properties:
       entity:
@@ -11346,6 +11605,15 @@ definitions:
         enum:
         - subscription
         type: string
+      pending_setup_intent:
+        description: You can use this [SetupIntent](https://stripe.com/docs/api/setup_intents)
+          to collect user authentication when creating a subscription without immediate
+          payment or updating a subscription's payment method, allowing you to optimize
+          for off-session payments. Learn more in the [SCA Migration Guide](https://stripe.com/docs/billing/migration/strong-customer-authentication#scenario-2).
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/setup_intent"
       plan:
         "$ref": "#/definitions/plan"
       quantity:
@@ -11428,6 +11696,7 @@ definitions:
     - discount
     - items
     - latest_invoice
+    - pending_setup_intent
     - plan
     x-resourceId: subscription
   subscription_billing_thresholds:
@@ -12457,6 +12726,14 @@ definitions:
     x-resourceId: transfer
   transfer_data:
     properties:
+      amount:
+        description: A positive integer representing how much to charge in the [smallest
+          currency unit](https://stripe.com/docs/currencies#zero-decimal) (e.g., 100
+          cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency). The
+          minimum amount is $0.50 US or [equivalent in charge currency](https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts).
+          The amount value supports up to eight digits (e.g., a value of 99999999
+          for a USD charge of $999,999.99).
+        type: integer
       destination:
         description: |-
           The account (if any) the payment will be attributed to for tax
@@ -19021,13 +19298,12 @@ paths:
               type: string
             customer:
               description: |-
-                ID of an existing customer paying for this session, if one exists.
-                May only be used with line_items. Usage with subscription_data is not
-                yet available. If blank, Checkout will create a new customer object
-                based on information provided during the session. The email stored on
-                the customer will be used to prefill the email field on the Checkout
-                page. If the customer changes their email on the Checkout page, the
-                Customer object will be updated with the new email.
+                ID of an existing customer, if one exists. If blank, Checkout will
+                create a new customer object based on information provided during the
+                session. The email stored on the customer will be used to prefill the
+                email field on the Checkout page. If the customer changes their email
+                on the Checkout page, the Customer object will be updated with the new
+                email.
               type: string
             customer_email:
               description: |-
@@ -19045,7 +19321,8 @@ paths:
             line_items:
               description: |-
                 A list of items the customer is purchasing. Use this parameter for
-                one-time payments. To create subscriptions, use `subscription_data.items`.
+                one-time payments or adding invoice line items to a subscription (used
+                in conjunction with `subscription_data`.
               items:
                 properties:
                   amount:
@@ -19110,6 +19387,11 @@ paths:
                   type: string
                 receipt_email:
                   type: string
+                setup_future_usage:
+                  enum:
+                  - off_session
+                  - on_session
+                  type: string
                 shipping:
                   properties:
                     address:
@@ -19156,9 +19438,9 @@ paths:
               title: payment_intent_data_params
               type: object
             payment_method_types:
-              description: A list of the types of payment methods (e.g. card) this
-                Checkout Session is allowed to accept. The only supported value today
-                is `card`.
+              description: |-
+                A list of the types of payment methods (e.g. card) this Checkout
+                Session is allowed to accept. The only supported value today is `card`.
               items:
                 enum:
                 - card
@@ -19595,6 +19877,12 @@ paths:
         name: expand
         required: false
         type: array
+      - description: Only return credit notes for the customer specified by this customer
+          ID.
+        in: query
+        name: customer
+        required: false
+        type: string
       - description: A cursor for use in pagination. `ending_before` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, starting with `obj_bar`, your subsequent
@@ -19604,7 +19892,8 @@ paths:
         name: ending_before
         required: false
         type: string
-      - description: ID of the invoice.
+      - description: Only return credit notes for the invoice specified by this invoice
+          ID.
         in: query
         name: invoice
         required: false
@@ -21644,6 +21933,26 @@ paths:
                 object. It can be useful for storing additional information about
                 the subscription in a structured format.
               type: object
+            off_session:
+              description: Indicates if a customer is on or off-session while an invoice
+                payment is attempted.
+              type: boolean
+            payment_behavior:
+              description: |-
+                Use `allow_incomplete` to create subscriptions with `status=incomplete` if its first invoice cannot be paid.
+                Creating subscriptions with this status allows you to manage scenarios where additional user actions are needed to pay
+                a subscription's invoice. For example, SCA regulation may require 3DS authentication to complete payment. See the
+                [SCA Migration Guide](https://stripe.com/docs/billing/migration/strong-customer-authentication) for Billing to learn more. This is the
+                default behavior.
+
+                Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's first invoice
+                cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further
+                user action is needed, this parameter does not create a subscription and returns an error instead. This was the default
+                behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
+              enum:
+              - allow_incomplete
+              - error_if_incomplete
+              type: string
             prorate:
               description: Boolean (defaults to `true`) telling us whether to [credit
                 for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
@@ -21888,6 +22197,26 @@ paths:
                 object. This can be useful for storing additional information about
                 the subscription in a structured format.
               type: object
+            off_session:
+              description: Indicates if a customer is on or off-session while an invoice
+                payment is attempted.
+              type: boolean
+            payment_behavior:
+              description: |-
+                Use `allow_incomplete` to create subscriptions with `status=incomplete` if its first invoice cannot be paid.
+                Creating subscriptions with this status allows you to manage scenarios where additional user actions are needed to pay
+                a subscription's invoice. For example, SCA regulation may require 3DS authentication to complete payment. See the
+                [SCA Migration Guide](https://stripe.com/docs/billing/migration/strong-customer-authentication) for Billing to learn more. This is the
+                default behavior.
+
+                Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's first invoice
+                cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further
+                user action is needed, this parameter does not create a subscription and returns an error instead. This was the default
+                behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
+              enum:
+              - allow_incomplete
+              - error_if_incomplete
+              type: string
             prorate:
               description: Boolean (defaults to `true`) telling us whether to [credit
                 for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
@@ -23700,6 +24029,11 @@ paths:
         name: subscription_proration_date
         required: false
         type: integer
+      - description: Date a subscription is intended to start (can be future or past)
+        in: query
+        name: subscription_start_date
+        required: false
+        type: integer
       - description: If provided, the invoice returned will preview updating or creating
           a subscription with that tax percent. If set, one of `subscription_items`
           or `subscription` is required. This field has been deprecated and will be
@@ -23851,6 +24185,11 @@ paths:
         name: subscription_proration_date
         required: false
         type: integer
+      - description: Date a subscription is intended to start (can be future or past)
+        in: query
+        name: subscription_start_date
+        required: false
+        type: integer
       - description: If provided, the invoice returned will preview updating or creating
           a subscription with that tax percent. If set, one of `subscription_items`
           or `subscription` is required. This field has been deprecated and will be
@@ -23957,7 +24296,7 @@ paths:
     post:
       description: |-
         <p>Draft invoices are fully editable. Once an invoice is <a href="/docs/billing/invoices/workflow#finalized">finalized</a>,
-        monetary values, as well as <code>billing</code>, become uneditable.</p>
+        monetary values, as well as <code>collection_method</code>, become uneditable.</p>
 
         <p>If you would like to stop the Stripe Billing engine from automatically finalizing, reattempting payments on,
         sending reminders for, or <a href="/docs/billing/invoices/reconciliation">automatically reconciling</a> invoices, pass
@@ -23984,6 +24323,13 @@ paths:
               description: Controls whether Stripe will perform [automatic collection](https://stripe.com/docs/billing/invoices/workflow/#auto_advance)
                 of the invoice.
               type: boolean
+            collection_method:
+              description: Either `charge_automatically` or `send_invoice`. This field
+                can be updated only on `draft` invoices.
+              enum:
+              - charge_automatically
+              - send_invoice
+              type: string
             custom_fields:
               description: A list of up to 4 custom fields to be displayed on the
                 invoice. If a value for `custom_fields` is specified, the list specified
@@ -24001,8 +24347,8 @@ paths:
                 type: object
             days_until_due:
               description: The number of days from which the invoice is created until
-                it is due. Only valid for invoices where `billing=send_invoice`. This
-                field can only be updated on `draft` invoices.
+                it is due. Only valid for invoices where `collection_method=send_invoice`.
+                This field can only be updated on `draft` invoices.
               type: integer
             default_payment_method:
               description: ID of the default payment method for the invoice. It must
@@ -24026,8 +24372,8 @@ paths:
               type: string
             due_date:
               description: The date on which payment for this invoice is due. Only
-                valid for invoices where `billing=send_invoice`. This field can only
-                be updated on `draft` invoices.
+                valid for invoices where `collection_method=send_invoice`. This field
+                can only be updated on `draft` invoices.
               type: integer
             expand:
               description: Specifies which fields in the response should be expanded.
@@ -24246,6 +24592,10 @@ paths:
                 this case is with ACH Credit Transfers and wires: if the amount wired
                 is less than the amount due by a small amount, you might want to forgive
                 the difference."
+              type: boolean
+            off_session:
+              description: Indicates if a customer is on or off-session while an invoice
+                payment is attempted.
               type: boolean
             paid_out_of_band:
               description: Boolean representing whether an invoice is paid outside
@@ -30178,7 +30528,10 @@ paths:
                 in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
               type: string
             customer:
-              description: ID of the customer this PaymentIntent is for if one exists.
+              description: |-
+                ID of the Customer this PaymentIntent belongs to, if one exists.
+
+                If present, payment methods used with this PaymentIntent can only be attached to this Customer, and payment methods attached to other Customers cannot be used with this PaymentIntent.
               type: string
             description:
               description: An arbitrary string attached to the object. Often useful
@@ -30202,6 +30555,20 @@ paths:
               description: ID of the payment method (a PaymentMethod, Card, BankAccount,
                 or saved Source object) to attach to this PaymentIntent.
               type: string
+            payment_method_options:
+              description: Payment-method-specific configuration for this PaymentIntent.
+              properties:
+                card:
+                  properties:
+                    request_three_d_secure:
+                      enum:
+                      - any
+                      - automatic
+                      type: string
+                  title: payment_intent_param
+                  type: object
+              title: payment_method_options_param
+              type: object
             payment_method_types:
               description: The list of payment method types (e.g. card) that this
                 PaymentIntent is allowed to use. If this is not provided, defaults
@@ -30219,6 +30586,19 @@ paths:
 
                 If the payment method is already saved to a customer, this does nothing. If this type of payment method cannot be saved to a customer, the request will error.
               type: boolean
+            setup_future_usage:
+              description: |-
+                Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                If present, the payment method used with this PaymentIntent can be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer, even after the transaction completes.
+
+                Use `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. See [Saving card details after a payment](https://stripe.com/docs/payments/cards/saving-cards#saving-card-after-payment) to learn more.
+
+                Stripe uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules. For example, if your customer is impacted by [SCA](https://stripe.com/docs/strong-customer-authentication), using `off_session` will ensure that they are authenticated while processing this PaymentIntent. You will then be able to collect [off-session payments](https://stripe.com/docs/payments/cards/charging-saved-cards#off-session-payments-with-saved-cards) for this customer.
+              enum:
+              - off_session
+              - on_session
+              type: string
             shipping:
               description: Shipping information for this PaymentIntent.
               properties:
@@ -30263,6 +30643,8 @@ paths:
                 The parameters used to automatically create a Transfer when the payment succeeds.
                 For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).
               properties:
+                amount:
+                  type: integer
                 destination:
                   type: string
               required:
@@ -30356,7 +30738,10 @@ paths:
                 in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
               type: string
             customer:
-              description: ID of the customer this PaymentIntent is for if one exists.
+              description: |-
+                ID of the Customer this PaymentIntent belongs to, if one exists.
+
+                If present, payment methods used with this PaymentIntent can only be attached to this Customer, and payment methods attached to other Customers cannot be used with this PaymentIntent.
               type: string
             description:
               description: An arbitrary string attached to the object. Often useful
@@ -30392,6 +30777,22 @@ paths:
 
                 If the payment method is already saved to a customer, this does nothing. If this type of payment method cannot be saved to a customer, the request will error.
               type: boolean
+            setup_future_usage:
+              description: |-
+                Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                If present, the payment method used with this PaymentIntent can be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer, even after the transaction completes.
+
+                Use `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow.
+
+                Stripe uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules. For example, if your customer is impacted by [SCA](https://stripe.com/docs/strong-customer-authentication), using `off_session` will ensure that they are authenticated while processing this PaymentIntent. You will then be able to collect [off-session payments](https://stripe.com/docs/payments/cards/charging-saved-cards#off-session-payments-with-saved-cards) for this customer.
+
+                If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+              enum:
+              - ''
+              - off_session
+              - on_session
+              type: string
             shipping:
               description: Shipping information for this PaymentIntent.
             statement_descriptor:
@@ -30399,6 +30800,15 @@ paths:
                 on your customer's statement when this PaymentIntent succeeds in creating
                 a charge.
               type: string
+            transfer_data:
+              description: The parameters used to automatically create a Transfer
+                when the payment succeeds. For more information, see the PaymentIntents
+                [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).
+              properties:
+                amount:
+                  type: integer
+              title: transfer_data_update_params
+              type: object
             transfer_group:
               description: A string that identifies the resulting payment as part
                 of a group. `transfer_group` may only be provided if it has not been
@@ -30496,6 +30906,20 @@ paths:
               items:
                 type: string
               type: array
+            statement_descriptor:
+              description: Extra information about a PaymentIntent. This will appear
+                on your customer's statement when this PaymentIntent succeeds in creating
+                a charge.
+              type: string
+            transfer_data:
+              description: |-
+                The parameters used to automatically create a Transfer when the payment
+                is captured. For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).
+              properties:
+                amount:
+                  type: integer
+              title: transfer_data_update_params
+              type: object
           type: object
       responses:
         '200':
@@ -30556,17 +30980,28 @@ paths:
                 type: string
               type: array
             off_session:
-              description: Used in payment flows that collect payment details and
-                charge later, when the customer is not available to complete additional
-                required steps for the payment. Setting this parameter indicates that
-                this payment attempt is happening while the customer is not in your
-                checkout flow. Use `recurring` for payments made on a recurring basis
-                (for example, subscriptions) and `one_off` for all other off-session
-                payments.
+              description: Set to `true` to indicate that the customer is not in your
+                checkout flow during this payment attempt, and therefore is unable
+                to authenticate. This parameter is intended for scenarios where you
+                collect card details and [charge them later](https://stripe.com/docs/payments/cards/charging-saved-cards).
             payment_method:
               description: ID of the payment method (a PaymentMethod, Card, BankAccount,
                 or saved Source object) to attach to this PaymentIntent.
               type: string
+            payment_method_options:
+              description: Payment-method-specific configuration for this PaymentIntent.
+              properties:
+                card:
+                  properties:
+                    request_three_d_secure:
+                      enum:
+                      - any
+                      - automatic
+                      type: string
+                  title: payment_intent_param
+                  type: object
+              title: payment_method_options_param
+              type: object
             payment_method_types:
               description: The list of payment method types (e.g. card) that this
                 PaymentIntent is allowed to use.
@@ -30589,6 +31024,22 @@ paths:
 
                 If the payment method is already saved to a customer, this does nothing. If this type of payment method cannot be saved to a customer, the request will error.
               type: boolean
+            setup_future_usage:
+              description: |-
+                Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                If present, the payment method used with this PaymentIntent can be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer, even after the transaction completes.
+
+                Use `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow.
+
+                Stripe uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules. For example, if your customer is impacted by [SCA](https://stripe.com/docs/strong-customer-authentication), using `off_session` will ensure that they are authenticated while processing this PaymentIntent. You will then be able to collect [off-session payments](https://stripe.com/docs/payments/cards/charging-saved-cards#off-session-payments-with-saved-cards) for this customer.
+
+                If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+              enum:
+              - ''
+              - off_session
+              - on_session
+              type: string
             shipping:
               description: Shipping information for this PaymentIntent.
           type: object
@@ -30847,7 +31298,7 @@ paths:
               description: The type of the PaymentMethod. An additional hash is included
                 on the PaymentMethod with a name matching this value. It contains
                 additional information specific to the PaymentMethod type. Required
-                unless `payment_method` is specified (see the [Shared PaymentMethods](https://stripe.com/docs/payments/payment-methods/connect#shared-paymentmethods)
+                unless `payment_method` is specified (see the [Shared PaymentMethods](https://stripe.com/docs/payments/payment-methods/connect#shared-payment-methods)
                 guide)
               enum:
               - card
@@ -31471,8 +31922,14 @@ paths:
                   type: string
                 metadata:
                   type: object
+                name:
+                  type: string
+                statement_descriptor:
+                  type: string
                 unit_label:
                   type: string
+              required:
+              - name
               title: inline_product_params
               type: object
             tiers:
@@ -33404,6 +33861,12 @@ paths:
         name: limit
         required: false
         type: integer
+      - description: Only return SetupIntents associated with the specified payment
+          method.
+        in: query
+        name: payment_method
+        required: false
+        type: string
       - description: A cursor for use in pagination. `starting_after` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, ending with `obj_foo`, your subsequent
@@ -33462,8 +33925,17 @@ paths:
         required: false
         schema:
           properties:
+            confirm:
+              description: Set to `true` to attempt to confirm this SetupIntent immediately.
+                This parameter defaults to `false`. If the payment method attached
+                is a card, a return_url may be provided in case additional authentication
+                is required.
+              type: boolean
             customer:
-              description: ID of the customer this SetupIntent is for if one exists.
+              description: |-
+                ID of the Customer this SetupIntent belongs to, if one exists.
+
+                If present, payment methods used with this SetupIntent can only be attached to this Customer, and payment methods attached to other Customers cannot be used with this SetupIntent.
               type: string
             description:
               description: An arbitrary string attached to the object. Often useful
@@ -33486,6 +33958,20 @@ paths:
               description: ID of the payment method (a PaymentMethod, Card, BankAccount,
                 or saved Source object) to attach to this SetupIntent.
               type: string
+            payment_method_options:
+              description: Payment-method-specific configuration for this SetupIntent.
+              properties:
+                card:
+                  properties:
+                    request_three_d_secure:
+                      enum:
+                      - any
+                      - automatic
+                      type: string
+                  title: setup_intent_param
+                  type: object
+              title: payment_method_options_param
+              type: object
             payment_method_types:
               description: The list of payment method types (e.g. card) that this
                 SetupIntent is allowed to use. If this is not provided, defaults to
@@ -33493,6 +33979,14 @@ paths:
               items:
                 type: string
               type: array
+            return_url:
+              type: string
+            usage:
+              description: |-
+                Indicates how the payment method is intended to be used in the future.
+
+                Use `on_session` if you intend to only reuse the payment method when the customer is in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. If not provided, this value defaults to `off_session`.
+              type: string
           type: object
       responses:
         '200':
@@ -33554,7 +34048,10 @@ paths:
         schema:
           properties:
             customer:
-              description: ID of the customer this SetupIntent is for if one exists.
+              description: |-
+                ID of the Customer this SetupIntent belongs to, if one exists.
+
+                If present, payment methods used with this SetupIntent can only be attached to this Customer, and payment methods attached to other Customers cannot be used with this SetupIntent.
               type: string
             description:
               description: An arbitrary string attached to the object. Often useful
@@ -33612,11 +34109,10 @@ paths:
           properties:
             cancellation_reason:
               description: Reason for canceling this SetupIntent. Possible values
-                are `duplicate`, `fraudulent`, `requested_by_customer`, or `abandoned`
+                are `abandoned`, `requested_by_customer`, or `duplicate`
               enum:
               - abandoned
               - duplicate
-              - fraudulent
               - requested_by_customer
               type: string
             expand:
@@ -33675,6 +34171,20 @@ paths:
               description: ID of the payment method (a PaymentMethod, Card, BankAccount,
                 or saved Source object) to attach to this SetupIntent.
               type: string
+            payment_method_options:
+              description: Payment-method-specific configuration for this SetupIntent.
+              properties:
+                card:
+                  properties:
+                    request_three_d_secure:
+                      enum:
+                      - any
+                      - automatic
+                      type: string
+                  title: setup_intent_param
+                  type: object
+              title: payment_method_options_param
+              type: object
             return_url:
               description: |-
                 The URL to redirect your customer back to after they authenticate on the payment method's app or site.
@@ -34288,6 +34798,68 @@ paths:
               - return_url
               title: redirect_params
               type: object
+            source_order:
+              description: Information about the items and shipping associated with
+                the source. Required for transactional credit (for example Klarna)
+                sources before you can charge it.
+              properties:
+                items:
+                  items:
+                    properties:
+                      amount:
+                        type: integer
+                      currency:
+                        type: string
+                      description:
+                        type: string
+                      parent:
+                        type: string
+                      quantity:
+                        type: integer
+                      type:
+                        enum:
+                        - discount
+                        - shipping
+                        - sku
+                        - tax
+                        type: string
+                    title: order_item_specs
+                    type: object
+                  type: array
+                shipping:
+                  properties:
+                    address:
+                      properties:
+                        city:
+                          type: string
+                        country:
+                          type: string
+                        line1:
+                          type: string
+                        line2:
+                          type: string
+                        postal_code:
+                          type: string
+                        state:
+                          type: string
+                      required:
+                      - line1
+                      title: address
+                      type: object
+                    carrier:
+                      type: string
+                    name:
+                      type: string
+                    phone:
+                      type: string
+                    tracking_number:
+                      type: string
+                  required:
+                  - address
+                  title: order_shipping
+                  type: object
+              title: shallow_order_specs
+              type: object
             statement_descriptor:
               description: An arbitrary string to be displayed on your customer's
                 statement. As an example, if your website is `RunClub` and the item
@@ -34478,6 +35050,68 @@ paths:
                 phone:
                   type: string
               title: owner
+              type: object
+            source_order:
+              description: Information about the items and shipping associated with
+                the source. Required for transactional credit (for example Klarna)
+                sources before you can charge it.
+              properties:
+                items:
+                  items:
+                    properties:
+                      amount:
+                        type: integer
+                      currency:
+                        type: string
+                      description:
+                        type: string
+                      parent:
+                        type: string
+                      quantity:
+                        type: integer
+                      type:
+                        enum:
+                        - discount
+                        - shipping
+                        - sku
+                        - tax
+                        type: string
+                    title: order_item_specs
+                    type: object
+                  type: array
+                shipping:
+                  properties:
+                    address:
+                      properties:
+                        city:
+                          type: string
+                        country:
+                          type: string
+                        line1:
+                          type: string
+                        line2:
+                          type: string
+                        postal_code:
+                          type: string
+                        state:
+                          type: string
+                      required:
+                      - line1
+                      title: address
+                      type: object
+                    carrier:
+                      type: string
+                    name:
+                      type: string
+                    phone:
+                      type: string
+                    tracking_number:
+                      type: string
+                  required:
+                  - address
+                  title: order_shipping
+                  type: object
+              title: order_params
               type: object
           type: object
       responses:
@@ -34889,6 +35523,13 @@ paths:
                 This can be useful for storing additional information about the object
                 in a structured format.
               type: object
+            off_session:
+              type: boolean
+            payment_behavior:
+              enum:
+              - allow_incomplete
+              - error_if_incomplete
+              type: string
             plan:
               description: The identifier of the new plan for this subscription item.
               type: string
@@ -35915,6 +36556,26 @@ paths:
                 object. It can be useful for storing additional information about
                 the subscription in a structured format.
               type: object
+            off_session:
+              description: Indicates if a customer is on or off-session while an invoice
+                payment is attempted.
+              type: boolean
+            payment_behavior:
+              description: |-
+                Use `allow_incomplete` to create subscriptions with `status=incomplete` if its first invoice cannot be paid.
+                Creating subscriptions with this status allows you to manage scenarios where additional user actions are needed to pay
+                a subscription's invoice. For example, SCA regulation may require 3DS authentication to complete payment. See the
+                [SCA Migration Guide](https://stripe.com/docs/billing/migration/strong-customer-authentication) for Billing to learn more. This is the
+                default behavior.
+
+                Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's first invoice
+                cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further
+                user action is needed, this parameter does not create a subscription and returns an error instead. This was the default
+                behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
+              enum:
+              - allow_incomplete
+              - error_if_incomplete
+              type: string
             prorate:
               description: Boolean (defaults to `true`) telling us whether to [credit
                 for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
@@ -36144,6 +36805,26 @@ paths:
                 object. This can be useful for storing additional information about
                 the subscription in a structured format.
               type: object
+            off_session:
+              description: Indicates if a customer is on or off-session while an invoice
+                payment is attempted.
+              type: boolean
+            payment_behavior:
+              description: |-
+                Use `allow_incomplete` to create subscriptions with `status=incomplete` if its first invoice cannot be paid.
+                Creating subscriptions with this status allows you to manage scenarios where additional user actions are needed to pay
+                a subscription's invoice. For example, SCA regulation may require 3DS authentication to complete payment. See the
+                [SCA Migration Guide](https://stripe.com/docs/billing/migration/strong-customer-authentication) for Billing to learn more. This is the
+                default behavior.
+
+                Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's first invoice
+                cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further
+                user action is needed, this parameter does not create a subscription and returns an error instead. This was the default
+                behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
+              enum:
+              - allow_incomplete
+              - error_if_incomplete
+              type: string
             prorate:
               description: Boolean (defaults to `true`) telling us whether to [credit
                 for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
@@ -38129,6 +38810,9 @@ paths:
                 - reporting.report_type.updated
                 - review.closed
                 - review.opened
+                - setup_intent.created
+                - setup_intent.setup_failed
+                - setup_intent.succeeded
                 - sigma.scheduled_query_run.created
                 - sku.created
                 - sku.deleted
@@ -38356,6 +39040,9 @@ paths:
                 - reporting.report_type.updated
                 - review.closed
                 - review.opened
+                - setup_intent.created
+                - setup_intent.setup_failed
+                - setup_intent.succeeded
                 - sigma.scheduled_query_run.created
                 - sku.created
                 - sku.deleted
