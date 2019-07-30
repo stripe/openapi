@@ -2119,7 +2119,7 @@ definitions:
     properties:
       amount:
         description: The integer amount in **%s** representing the total amount of
-          the credit note.
+          the credit note, including tax.
         type: integer
       created:
         description: Time at which the object was created. Measured in seconds since
@@ -4240,7 +4240,7 @@ definitions:
         type: integer
       subtotal:
         description: Total of all subscriptions, invoice items, and prorations on
-          the invoice before any discount is applied.
+          the invoice before any discount or tax is applied.
         type: integer
       tax:
         description: The amount of tax on this invoice. This is the sum of all the
@@ -4255,12 +4255,12 @@ definitions:
       threshold_reason:
         "$ref": "#/definitions/invoice_threshold_reason"
       total:
-        description: Total after discount.
+        description: Total after discounts and taxes.
         type: integer
       total_tax_amounts:
         description: The aggregate amounts calculated per tax rate for all line items.
         items:
-          "$ref": "#/definitions/tax_amount"
+          "$ref": "#/definitions/invoice_tax_amount"
         type: array
       webhooks_delivered_at:
         description: The time at which webhooks for this invoice were successfully
@@ -4386,6 +4386,28 @@ definitions:
     title: InvoiceSettingSubscriptionScheduleSetting
     type: object
     x-expandableFields: []
+  invoice_tax_amount:
+    properties:
+      amount:
+        description: The amount, in %s, of the tax.
+        type: integer
+      inclusive:
+        description: Whether this tax amount is inclusive or exclusive.
+        type: boolean
+      tax_rate:
+        description: The tax rate that was applied to get this tax amount.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/tax_rate"
+    required:
+    - amount
+    - inclusive
+    - tax_rate
+    title: InvoiceTaxAmount
+    type: object
+    x-expandableFields:
+    - tax_rate
   invoice_threshold_reason:
     properties:
       amount_gte:
@@ -7473,7 +7495,7 @@ definitions:
       tax_amounts:
         description: The amount of tax calculated per tax rate for this line item
         items:
-          "$ref": "#/definitions/tax_amount"
+          "$ref": "#/definitions/invoice_tax_amount"
         type: array
       tax_rates:
         description: The tax rates which apply to the line item.
@@ -10969,6 +10991,8 @@ definitions:
         description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
           in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
         type: string
+      gbp_credit_transfer:
+        "$ref": "#/definitions/source_transaction_gbp_credit_transfer_data"
       id:
         description: Unique identifier for the object.
         type: string
@@ -11013,8 +11037,6 @@ definitions:
         - three_d_secure
         - wechat
         type: string
-      uk_credit_transfer:
-        "$ref": "#/definitions/source_transaction_uk_credit_transfer_data"
     required:
     - amount
     - created
@@ -11030,9 +11052,9 @@ definitions:
     x-expandableFields:
     - ach_credit_transfer
     - chf_credit_transfer
+    - gbp_credit_transfer
     - paper_check
     - sepa_credit_transfer
-    - uk_credit_transfer
     x-resourceId: source_transaction
   source_transaction_ach_credit_transfer_data:
     properties:
@@ -11071,6 +11093,23 @@ definitions:
     title: SourceTransactionChfCreditTransferData
     type: object
     x-expandableFields: []
+  source_transaction_gbp_credit_transfer_data:
+    properties:
+      fingerprint:
+        description: Bank account fingerprint associated with the transfer.
+        type: string
+      last4:
+        description: Last 4 digits of account number associated with the transfer.
+        type: string
+      sender_name:
+        description: Sender name associated with the transfer.
+        type: string
+      sort_code:
+        description: Sort code associated with the transfer.
+        type: string
+    title: SourceTransactionGBPCreditTransferData
+    type: object
+    x-expandableFields: []
   source_transaction_paper_check_data:
     properties:
       available_at:
@@ -11094,23 +11133,6 @@ definitions:
         description: Sender's name.
         type: string
     title: SourceTransactionSepaCreditTransferData
-    type: object
-    x-expandableFields: []
-  source_transaction_uk_credit_transfer_data:
-    properties:
-      fingerprint:
-        description: Bank account fingerprint associated with the transfer.
-        type: string
-      last4:
-        description: Last 4 digits of account number associated with the transfer.
-        type: string
-      sender_name:
-        description: Sender name associated with the transfer.
-        type: string
-      sort_code:
-        description: Sort code associated with the transfer.
-        type: string
-    title: SourceTransactionUKCreditTransferData
     type: object
     x-expandableFields: []
   source_type_ach_credit_transfer:
@@ -12092,28 +12114,6 @@ definitions:
     - phases
     - renewal_interval
     x-resourceId: subscription_schedule_revision
-  tax_amount:
-    properties:
-      amount:
-        description: The amount, in %s, of the tax.
-        type: integer
-      inclusive:
-        description: Whether this tax amount is inclusive or exclusive.
-        type: boolean
-      tax_rate:
-        description: The tax rate that was applied to get this tax amount.
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/tax_rate"
-    required:
-    - amount
-    - inclusive
-    - tax_rate
-    title: TaxAmount
-    type: object
-    x-expandableFields:
-    - tax_rate
   tax_id:
     properties:
       country:
@@ -17987,10 +17987,10 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/balance/history":
     get:
-      description: "<p>Returns a list of transactions that have contributed to the
-        Stripe account balance (e.g., charges, transfers, and so forth). The transactions
-        are returned in sorted order, with the most recent transactions appearing
-        first.</p>"
+      description: |-
+        <p>Returns a list of transactions that have contributed to the Stripe account balance (e.g., charges, transfers, and so forth). The transactions are returned in sorted order, with the most recent transactions appearing first.</p>
+
+        <p>Note that this endpoint was previously called “Balance history” and used the path <code>/v1/balance/history</code>.</p>
       operationId: GetBalanceHistory
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -18089,8 +18089,141 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/balance/history/{id}":
     get:
-      description: "<p>Retrieves the balance transaction with the given ID.</p>"
+      description: |-
+        <p>Retrieves the balance transaction with the given ID.</p>
+
+        <p>Note that this endpoint previously used the path <code>/v1/balance/history/:id</code>.</p>
       operationId: GetBalanceHistoryId
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - description: The ID of the desired balance transaction, as found on any API
+          object that affects the balance (e.g., a charge or transfer).
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            "$ref": "#/definitions/balance_transaction"
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/balance_transactions":
+    get:
+      description: |-
+        <p>Returns a list of transactions that have contributed to the Stripe account balance (e.g., charges, transfers, and so forth). The transactions are returned in sorted order, with the most recent transactions appearing first.</p>
+
+        <p>Note that this endpoint was previously called “Balance history” and used the path <code>/v1/balance/history</code>.</p>
+      operationId: GetBalanceTransactions
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        in: query
+        name: expand
+        required: false
+        type: array
+      - in: query
+        name: available_on
+        required: false
+        type: integer
+      - in: query
+        name: created
+        required: false
+        type: integer
+      - in: query
+        name: currency
+        required: false
+        type: string
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        type: string
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        type: integer
+      - description: For automatic Stripe payouts only, only returns transactions
+          that were paid out on the specified payout ID.
+        in: query
+        name: payout
+        required: false
+        type: string
+      - description: Only returns the original transaction.
+        in: query
+        name: source
+        required: false
+        type: string
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        type: string
+      - description: 'Only returns transactions of the given type. One of: `charge`,
+          `refund`, `adjustment`, `application_fee`, `application_fee_refund`, `transfer`,
+          `payment`, `payout`, `payout_failure`, `stripe_fee`, or `network_cost`.'
+        in: query
+        name: type
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Successful response.
+          schema:
+            properties:
+              data:
+                items:
+                  "$ref": "#/definitions/balance_transaction"
+                type: array
+              has_more:
+                description: True if this list has another page of items after this
+                  one that can be fetched.
+                type: boolean
+              object:
+                description: String representing the object's type. Objects of the
+                  same type share the same value. Always has the value `list`.
+                enum:
+                - list
+                type: string
+              url:
+                description: The URL where this list can be accessed.
+                type: string
+            required:
+            - data
+            - has_more
+            - object
+            - url
+            title: BalanceTransactionsList
+            type: object
+            x-expandableFields:
+            - data
+        default:
+          description: Error response.
+          schema:
+            "$ref": "#/definitions/error"
+  "/v1/balance_transactions/{id}":
+    get:
+      description: |-
+        <p>Retrieves the balance transaction with the given ID.</p>
+
+        <p>Note that this endpoint previously used the path <code>/v1/balance/history/:id</code>.</p>
+      operationId: GetBalanceTransactionsId
       parameters:
       - description: Specifies which fields in the response should be expanded.
         in: query
@@ -19322,7 +19455,7 @@ paths:
               description: |-
                 A list of items the customer is purchasing. Use this parameter for
                 one-time payments or adding invoice line items to a subscription (used
-                in conjunction with `subscription_data`.
+                in conjunction with `subscription_data`).
               items:
                 properties:
                   amount:
@@ -24692,6 +24825,7 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuer_fraud_records":
     get:
+      deprecated: true
       description: "<p>Returns a list of issuer fraud records.</p>"
       operationId: GetIssuerFraudRecords
       parameters:
@@ -24767,6 +24901,7 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/issuer_fraud_records/{issuer_fraud_record}":
     get:
+      deprecated: true
       description: |-
         <p>Retrieves the details of an issuer fraud record that has previously been created. </p>
 
@@ -30505,10 +30640,11 @@ paths:
               - manual
               type: string
             confirm:
-              description: Set to `true` to attempt to confirm this PaymentIntent
-                immediately. This parameter defaults to `false`. If the payment method
-                attached is a card, a return_url may be provided in case additional
-                authentication is required.
+              description: Set to `true` to attempt to [confirm](https://stripe.com/docs/api/payment_intents/confirm)
+                this PaymentIntent immediately. This parameter defaults to `false`.
+                When creating and confirming a PaymentIntent at the same time, parameters
+                available in the [confirm](https://stripe.com/docs/api/payment_intents/confirm)
+                API may also be provided.
               type: boolean
             confirmation_method:
               description: |-
@@ -30547,6 +30683,12 @@ paths:
                 This can be useful for storing additional information about the object
                 in a structured format.
               type: object
+            off_session:
+              description: Set to `true` to indicate that the customer is not in your
+                checkout flow during this payment attempt, and therefore is unable
+                to authenticate. This parameter is intended for scenarios where you
+                collect card details and [charge them later](https://stripe.com/docs/payments/cards/charging-saved-cards).
+                This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm).
             on_behalf_of:
               description: The Stripe account ID for which these funds are intended.
                 For details, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).
@@ -30579,6 +30721,13 @@ paths:
             receipt_email:
               description: Email address that the receipt for the resulting payment
                 will be sent to.
+              type: string
+            return_url:
+              description: The URL to redirect your customer back to after they authenticate
+                or cancel their payment on the payment method's app or site. If you'd
+                prefer to redirect to a mobile application, you can alternatively
+                supply an application URI scheme. This parameter can only be used
+                with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm).
               type: string
             save_payment_method:
               description: |-
@@ -33980,6 +34129,11 @@ paths:
                 type: string
               type: array
             return_url:
+              description: The URL to redirect your customer back to after they authenticate
+                or cancel their payment on the payment method's app or site. If you'd
+                prefer to redirect to a mobile application, you can alternatively
+                supply an application URI scheme. This parameter can only be used
+                with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm).
               type: string
             usage:
               description: |-

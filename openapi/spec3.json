@@ -3277,7 +3277,7 @@
       "credit_note": {
         "properties": {
           "amount": {
-            "description": "The integer amount in **%s** representing the total amount of the credit note.",
+            "description": "The integer amount in **%s** representing the total amount of the credit note, including tax.",
             "type": "integer"
           },
           "created": {
@@ -6383,7 +6383,7 @@
             "type": "integer"
           },
           "subtotal": {
-            "description": "Total of all subscriptions, invoice items, and prorations on the invoice before any discount is applied.",
+            "description": "Total of all subscriptions, invoice items, and prorations on the invoice before any discount or tax is applied.",
             "type": "integer"
           },
           "tax": {
@@ -6400,13 +6400,13 @@
             "$ref": "#/components/schemas/invoice_threshold_reason"
           },
           "total": {
-            "description": "Total after discount.",
+            "description": "Total after discounts and taxes.",
             "type": "integer"
           },
           "total_tax_amounts": {
             "description": "The aggregate amounts calculated per tax rate for all line items.",
             "items": {
-              "$ref": "#/components/schemas/tax_amount"
+              "$ref": "#/components/schemas/invoice_tax_amount"
             },
             "nullable": true,
             "type": "array"
@@ -6587,6 +6587,47 @@
         "type": "object",
         "x-expandableFields": [
 
+        ]
+      },
+      "invoice_tax_amount": {
+        "properties": {
+          "amount": {
+            "description": "The amount, in %s, of the tax.",
+            "type": "integer"
+          },
+          "inclusive": {
+            "description": "Whether this tax amount is inclusive or exclusive.",
+            "type": "boolean"
+          },
+          "tax_rate": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/tax_rate"
+              }
+            ],
+            "description": "The tax rate that was applied to get this tax amount.",
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/tax_rate"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "amount",
+          "inclusive",
+          "tax_rate"
+        ],
+        "title": "InvoiceTaxAmount",
+        "type": "object",
+        "x-expandableFields": [
+          "tax_rate"
         ]
       },
       "invoice_threshold_reason": {
@@ -10402,7 +10443,7 @@
           "tax_amounts": {
             "description": "The amount of tax calculated per tax rate for this line item",
             "items": {
-              "$ref": "#/components/schemas/tax_amount"
+              "$ref": "#/components/schemas/invoice_tax_amount"
             },
             "nullable": true,
             "type": "array"
@@ -15707,6 +15748,9 @@
             "maxLength": 3,
             "type": "string"
           },
+          "gbp_credit_transfer": {
+            "$ref": "#/components/schemas/source_transaction_gbp_credit_transfer_data"
+          },
           "id": {
             "description": "Unique identifier for the object.",
             "maxLength": 5000,
@@ -15760,9 +15804,6 @@
               "wechat"
             ],
             "type": "string"
-          },
-          "uk_credit_transfer": {
-            "$ref": "#/components/schemas/source_transaction_uk_credit_transfer_data"
           }
         },
         "required": [
@@ -15781,9 +15822,9 @@
         "x-expandableFields": [
           "ach_credit_transfer",
           "chf_credit_transfer",
+          "gbp_credit_transfer",
           "paper_check",
-          "sepa_credit_transfer",
-          "uk_credit_transfer"
+          "sepa_credit_transfer"
         ],
         "x-resourceId": "source_transaction"
       },
@@ -15850,6 +15891,35 @@
 
         ]
       },
+      "source_transaction_gbp_credit_transfer_data": {
+        "properties": {
+          "fingerprint": {
+            "description": "Bank account fingerprint associated with the transfer.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "last4": {
+            "description": "Last 4 digits of account number associated with the transfer.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "sender_name": {
+            "description": "Sender name associated with the transfer.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "sort_code": {
+            "description": "Sort code associated with the transfer.",
+            "maxLength": 5000,
+            "type": "string"
+          }
+        },
+        "title": "SourceTransactionGBPCreditTransferData",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
       "source_transaction_paper_check_data": {
         "properties": {
           "available_at": {
@@ -15888,35 +15958,6 @@
           }
         },
         "title": "SourceTransactionSepaCreditTransferData",
-        "type": "object",
-        "x-expandableFields": [
-
-        ]
-      },
-      "source_transaction_uk_credit_transfer_data": {
-        "properties": {
-          "fingerprint": {
-            "description": "Bank account fingerprint associated with the transfer.",
-            "maxLength": 5000,
-            "type": "string"
-          },
-          "last4": {
-            "description": "Last 4 digits of account number associated with the transfer.",
-            "maxLength": 5000,
-            "type": "string"
-          },
-          "sender_name": {
-            "description": "Sender name associated with the transfer.",
-            "maxLength": 5000,
-            "type": "string"
-          },
-          "sort_code": {
-            "description": "Sort code associated with the transfer.",
-            "maxLength": 5000,
-            "type": "string"
-          }
-        },
-        "title": "SourceTransactionUKCreditTransferData",
         "type": "object",
         "x-expandableFields": [
 
@@ -17583,47 +17624,6 @@
           "renewal_interval"
         ],
         "x-resourceId": "subscription_schedule_revision"
-      },
-      "tax_amount": {
-        "properties": {
-          "amount": {
-            "description": "The amount, in %s, of the tax.",
-            "type": "integer"
-          },
-          "inclusive": {
-            "description": "Whether this tax amount is inclusive or exclusive.",
-            "type": "boolean"
-          },
-          "tax_rate": {
-            "anyOf": [
-              {
-                "maxLength": 5000,
-                "type": "string"
-              },
-              {
-                "$ref": "#/components/schemas/tax_rate"
-              }
-            ],
-            "description": "The tax rate that was applied to get this tax amount.",
-            "x-expansionResources": {
-              "oneOf": [
-                {
-                  "$ref": "#/components/schemas/tax_rate"
-                }
-              ]
-            }
-          }
-        },
-        "required": [
-          "amount",
-          "inclusive",
-          "tax_rate"
-        ],
-        "title": "TaxAmount",
-        "type": "object",
-        "x-expandableFields": [
-          "tax_rate"
-        ]
       },
       "tax_id": {
         "properties": {
@@ -29541,7 +29541,7 @@
     },
     "/v1/balance/history": {
       "get": {
-        "description": "<p>Returns a list of transactions that have contributed to the Stripe account balance (e.g., charges, transfers, and so forth). The transactions are returned in sorted order, with the most recent transactions appearing first.</p>",
+        "description": "<p>Returns a list of transactions that have contributed to the Stripe account balance (e.g., charges, transfers, and so forth). The transactions are returned in sorted order, with the most recent transactions appearing first.</p>\n\n<p>Note that this endpoint was previously called “Balance history” and used the path <code>/v1/balance/history</code>.</p>",
         "operationId": "GetBalanceHistory",
         "parameters": [
           {
@@ -29774,8 +29774,312 @@
     },
     "/v1/balance/history/{id}": {
       "get": {
-        "description": "<p>Retrieves the balance transaction with the given ID.</p>",
+        "description": "<p>Retrieves the balance transaction with the given ID.</p>\n\n<p>Note that this endpoint previously used the path <code>/v1/balance/history/:id</code>.</p>",
         "operationId": "GetBalanceHistoryId",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "explode": true,
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "schema": {
+              "items": {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "The ID of the desired balance transaction, as found on any API object that affects the balance (e.g., a charge or transfer).",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {
+              },
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/balance_transaction"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        }
+      }
+    },
+    "/v1/balance_transactions": {
+      "get": {
+        "description": "<p>Returns a list of transactions that have contributed to the Stripe account balance (e.g., charges, transfers, and so forth). The transactions are returned in sorted order, with the most recent transactions appearing first.</p>\n\n<p>Note that this endpoint was previously called “Balance history” and used the path <code>/v1/balance/history</code>.</p>",
+        "operationId": "GetBalanceTransactions",
+        "parameters": [
+          {
+            "explode": true,
+            "in": "query",
+            "name": "available_on",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "properties": {
+                    "gt": {
+                      "type": "integer"
+                    },
+                    "gte": {
+                      "type": "integer"
+                    },
+                    "lt": {
+                      "type": "integer"
+                    },
+                    "lte": {
+                      "type": "integer"
+                    }
+                  },
+                  "title": "range_query_specs",
+                  "type": "object"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "style": "deepObject"
+          },
+          {
+            "explode": true,
+            "in": "query",
+            "name": "created",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "properties": {
+                    "gt": {
+                      "type": "integer"
+                    },
+                    "gte": {
+                      "type": "integer"
+                    },
+                    "lt": {
+                      "type": "integer"
+                    },
+                    "lte": {
+                      "type": "integer"
+                    }
+                  },
+                  "title": "range_query_specs",
+                  "type": "object"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "style": "deepObject"
+          },
+          {
+            "in": "query",
+            "name": "currency",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "description": "A cursor for use in pagination. `ending_before` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, starting with `obj_bar`, your subsequent call can include `ending_before=obj_bar` in order to fetch the previous page of the list.",
+            "in": "query",
+            "name": "ending_before",
+            "required": false,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "explode": true,
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "schema": {
+              "items": {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "style": "form"
+          },
+          {
+            "description": "For automatic Stripe payouts only, only returns transactions that were paid out on the specified payout ID.",
+            "in": "query",
+            "name": "payout",
+            "required": false,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "description": "Only returns the original transaction.",
+            "in": "query",
+            "name": "source",
+            "required": false,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "description": "A cursor for use in pagination. `starting_after` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with `obj_foo`, your subsequent call can include `starting_after=obj_foo` in order to fetch the next page of the list.",
+            "in": "query",
+            "name": "starting_after",
+            "required": false,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "description": "Only returns transactions of the given type. One of: `charge`, `refund`, `adjustment`, `application_fee`, `application_fee_refund`, `transfer`, `payment`, `payout`, `payout_failure`, `stripe_fee`, or `network_cost`.",
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {
+              },
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/balance_transaction"
+                      },
+                      "type": "array"
+                    },
+                    "has_more": {
+                      "description": "True if this list has another page of items after this one that can be fetched.",
+                      "type": "boolean"
+                    },
+                    "object": {
+                      "description": "String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
+                      "enum": [
+                        "list"
+                      ],
+                      "type": "string"
+                    },
+                    "url": {
+                      "description": "The URL where this list can be accessed.",
+                      "maxLength": 5000,
+                      "pattern": "^/v1/balance/history",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "has_more",
+                    "object",
+                    "url"
+                  ],
+                  "title": "BalanceTransactionsList",
+                  "type": "object",
+                  "x-expandableFields": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        }
+      }
+    },
+    "/v1/balance_transactions/{id}": {
+      "get": {
+        "description": "<p>Retrieves the balance transaction with the given ID.</p>\n\n<p>Note that this endpoint previously used the path <code>/v1/balance/history/:id</code>.</p>",
+        "operationId": "GetBalanceTransactionsId",
         "parameters": [
           {
             "description": "Specifies which fields in the response should be expanded.",
@@ -32104,7 +32408,7 @@
                     "type": "array"
                   },
                   "line_items": {
-                    "description": "A list of items the customer is purchasing. Use this parameter for\none-time payments or adding invoice line items to a subscription (used\nin conjunction with `subscription_data`.",
+                    "description": "A list of items the customer is purchasing. Use this parameter for\none-time payments or adding invoice line items to a subscription (used\nin conjunction with `subscription_data`).",
                     "items": {
                       "properties": {
                         "amount": {
@@ -43755,6 +44059,7 @@
     },
     "/v1/issuer_fraud_records": {
       "get": {
+        "deprecated": true,
         "description": "<p>Returns a list of issuer fraud records.</p>",
         "operationId": "GetIssuerFraudRecords",
         "parameters": [
@@ -43892,6 +44197,7 @@
     },
     "/v1/issuer_fraud_records/{issuer_fraud_record}": {
       "get": {
+        "deprecated": true,
         "description": "<p>Retrieves the details of an issuer fraud record that has previously been created. </p>\n\n<p>Please refer to the <a href=\"#issuer_fraud_record_object\">issuer fraud record</a> object reference for more details.</p>",
         "operationId": "GetIssuerFraudRecordsIssuerFraudRecord",
         "parameters": [
@@ -52111,6 +52417,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "off_session": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "payment_method_options": {
                   "explode": true,
                   "style": "deepObject"
@@ -52149,7 +52459,7 @@
                     "type": "string"
                   },
                   "confirm": {
-                    "description": "Set to `true` to attempt to confirm this PaymentIntent immediately. This parameter defaults to `false`. If the payment method attached is a card, a return_url may be provided in case additional authentication is required.",
+                    "description": "Set to `true` to attempt to [confirm](https://stripe.com/docs/api/payment_intents/confirm) this PaymentIntent immediately. This parameter defaults to `false`. When creating and confirming a PaymentIntent at the same time, parameters available in the [confirm](https://stripe.com/docs/api/payment_intents/confirm) API may also be provided.",
                     "type": "boolean"
                   },
                   "confirmation_method": {
@@ -52189,6 +52499,22 @@
                     },
                     "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
                     "type": "object"
+                  },
+                  "off_session": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "enum": [
+                          "one_off",
+                          "recurring"
+                        ],
+                        "maxLength": 5000,
+                        "type": "string"
+                      }
+                    ],
+                    "description": "Set to `true` to indicate that the customer is not in your checkout flow during this payment attempt, and therefore is unable to authenticate. This parameter is intended for scenarios where you collect card details and [charge them later](https://stripe.com/docs/payments/cards/charging-saved-cards). This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm)."
                   },
                   "on_behalf_of": {
                     "description": "The Stripe account ID for which these funds are intended. For details, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).",
@@ -52232,6 +52558,10 @@
                   "receipt_email": {
                     "description": "Email address that the receipt for the resulting payment will be sent to.",
                     "maxLength": 5000,
+                    "type": "string"
+                  },
+                  "return_url": {
+                    "description": "The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site. If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme. This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm).",
                     "type": "string"
                   },
                   "save_payment_method": {
@@ -53280,7 +53610,8 @@
                   "successful",
                   "uncaptured"
                 ],
-                "type": "string"
+                "type": "string",
+                "x-stripeBypassValidation": true
               },
               "type": "array"
             },
@@ -53670,7 +54001,6 @@
                       "card",
                       "card_present"
                     ],
-                    "maxLength": 5000,
                     "type": "string",
                     "x-stripeBypassValidation": true
                   }
@@ -59096,6 +59426,7 @@
                     "type": "array"
                   },
                   "return_url": {
+                    "description": "The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site. If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme. This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm).",
                     "type": "string"
                   },
                   "usage": {

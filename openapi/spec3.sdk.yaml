@@ -1431,17 +1431,17 @@ components:
         method_on: class
         method_type: list
         operation: get
-        path: "/v1/balance/history"
+        path: "/v1/balance_transactions"
       - method_name: list
         method_on: service
         method_type: list
         operation: get
-        path: "/v1/balance/history"
+        path: "/v1/balance_transactions"
       - method_name: retrieve
         method_on: class
         method_type: retrieve
         operation: get
-        path: "/v1/balance/history/{id}"
+        path: "/v1/balance_transactions/{id}"
         path_resource_variables:
         - method_parameter: id
           name: id
@@ -1449,7 +1449,7 @@ components:
         method_on: service
         method_type: retrieve
         operation: get
-        path: "/v1/balance/history/{id}"
+        path: "/v1/balance_transactions/{id}"
         path_resource_variables:
         - method_parameter: id
           name: id
@@ -3576,7 +3576,7 @@ components:
       properties:
         amount:
           description: The integer amount in **%s** representing the total amount
-            of the credit note.
+            of the credit note, including tax.
           type: integer
         created:
           description: Time at which the object was created. Measured in seconds since
@@ -6096,7 +6096,7 @@ components:
           type: integer
         subtotal:
           description: Total of all subscriptions, invoice items, and prorations on
-            the invoice before any discount is applied.
+            the invoice before any discount or tax is applied.
           type: integer
         tax:
           description: The amount of tax on this invoice. This is the sum of all the
@@ -6113,13 +6113,13 @@ components:
         threshold_reason:
           "$ref": "#/components/schemas/invoice_threshold_reason"
         total:
-          description: Total after discount.
+          description: Total after discounts and taxes.
           type: integer
         total_tax_amounts:
           description: The aggregate amounts calculated per tax rate for all line
             items.
           items:
-            "$ref": "#/components/schemas/tax_amount"
+            "$ref": "#/components/schemas/invoice_tax_amount"
           nullable: true
           type: array
         transfer_data:
@@ -6326,11 +6326,11 @@ components:
         inner_classes:
         - invoice_item_threshold_reason
         - invoice_setting_custom_field
+        - invoice_tax_amount
         - invoice_threshold_reason
         - invoice_transfer_data
         - invoices_resource_invoice_tax_id
         - invoices_status_transitions
-        - tax_amount
     invoice_item_threshold_reason:
       properties:
         line_item_ids:
@@ -6435,6 +6435,34 @@ components:
       x-stripeResource:
         class_name: InvoiceSettings
         in_class: subscription_schedule
+    invoice_tax_amount:
+      properties:
+        amount:
+          description: The amount, in %s, of the tax.
+          type: integer
+        inclusive:
+          description: Whether this tax amount is inclusive or exclusive.
+          type: boolean
+        tax_rate:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/tax_rate"
+          description: The tax rate that was applied to get this tax amount.
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/tax_rate"
+      required:
+      - amount
+      - inclusive
+      - tax_rate
+      title: InvoiceTaxAmount
+      type: object
+      x-expandableFields:
+      - tax_rate
+      x-stripeResource:
+        class_name: TaxAmount
+        in_class: invoice
     invoice_threshold_reason:
       properties:
         amount_gte:
@@ -10223,7 +10251,7 @@ components:
         tax_amounts:
           description: The amount of tax calculated per tax rate for this line item
           items:
-            "$ref": "#/components/schemas/tax_amount"
+            "$ref": "#/components/schemas/invoice_tax_amount"
           nullable: true
           type: array
         tax_rates:
@@ -12143,6 +12171,11 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        moto:
+          description: True if this payment was marked as MOTO and out of scope for
+            SCA.
+          nullable: true
+          type: boolean
         three_d_secure:
           anyOf:
           - "$ref": "#/components/schemas/three_d_secure_details"
@@ -16449,6 +16482,8 @@ components:
             in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
           maxLength: 3
           type: string
+        gbp_credit_transfer:
+          "$ref": "#/components/schemas/source_transaction_gbp_credit_transfer_data"
         id:
           description: Unique identifier for the object.
           maxLength: 5000
@@ -16496,8 +16531,6 @@ components:
           - three_d_secure
           - wechat
           type: string
-        uk_credit_transfer:
-          "$ref": "#/components/schemas/source_transaction_uk_credit_transfer_data"
       required:
       - amount
       - created
@@ -16513,9 +16546,9 @@ components:
       x-expandableFields:
       - ach_credit_transfer
       - chf_credit_transfer
+      - gbp_credit_transfer
       - paper_check
       - sepa_credit_transfer
-      - uk_credit_transfer
       x-resourceId: source_transaction
       x-stripeResource:
         class_name: SourceTransaction
@@ -16524,9 +16557,9 @@ components:
         inner_classes:
         - source_transaction_ach_credit_transfer_data
         - source_transaction_chf_credit_transfer_data
+        - source_transaction_gbp_credit_transfer_data
         - source_transaction_paper_check_data
         - source_transaction_sepa_credit_transfer_data
-        - source_transaction_uk_credit_transfer_data
     source_transaction_ach_credit_transfer_data:
       properties:
         customer_data:
@@ -16579,6 +16612,30 @@ components:
       x-stripeResource:
         class_name: ChfCreditTransferData
         in_class: source_transaction
+    source_transaction_gbp_credit_transfer_data:
+      properties:
+        fingerprint:
+          description: Bank account fingerprint associated with the transfer.
+          maxLength: 5000
+          type: string
+        last4:
+          description: Last 4 digits of account number associated with the transfer.
+          maxLength: 5000
+          type: string
+        sender_name:
+          description: Sender name associated with the transfer.
+          maxLength: 5000
+          type: string
+        sort_code:
+          description: Sort code associated with the transfer.
+          maxLength: 5000
+          type: string
+      title: SourceTransactionGBPCreditTransferData
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: GBPCreditTransferData
+        in_class: source_transaction
     source_transaction_paper_check_data:
       properties:
         available_at:
@@ -16614,30 +16671,6 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: SepaCreditTransferData
-        in_class: source_transaction
-    source_transaction_uk_credit_transfer_data:
-      properties:
-        fingerprint:
-          description: Bank account fingerprint associated with the transfer.
-          maxLength: 5000
-          type: string
-        last4:
-          description: Last 4 digits of account number associated with the transfer.
-          maxLength: 5000
-          type: string
-        sender_name:
-          description: Sender name associated with the transfer.
-          maxLength: 5000
-          type: string
-        sort_code:
-          description: Sort code associated with the transfer.
-          maxLength: 5000
-          type: string
-      title: SourceTransactionUKCreditTransferData
-      type: object
-      x-expandableFields: []
-      x-stripeResource:
-        class_name: UKCreditTransferData
         in_class: source_transaction
     source_type_ach_credit_transfer:
       properties:
@@ -18359,34 +18392,6 @@ components:
         class_name: SubscriptionScheduleRevision
         has_collection_class: true
         in_package: ''
-    tax_amount:
-      properties:
-        amount:
-          description: The amount, in %s, of the tax.
-          type: integer
-        inclusive:
-          description: Whether this tax amount is inclusive or exclusive.
-          type: boolean
-        tax_rate:
-          anyOf:
-          - maxLength: 5000
-            type: string
-          - "$ref": "#/components/schemas/tax_rate"
-          description: The tax rate that was applied to get this tax amount.
-          x-expansionResources:
-            oneOf:
-            - "$ref": "#/components/schemas/tax_rate"
-      required:
-      - amount
-      - inclusive
-      - tax_rate
-      title: TaxAmount
-      type: object
-      x-expandableFields:
-      - tax_rate
-      x-stripeResource:
-        class_name: TaxAmount
-        in_class: invoice
     tax_id:
       properties:
         country:
@@ -24403,13 +24408,13 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
-  "/v1/balance/history":
+  "/v1/balance_transactions":
     get:
-      description: "<p>Returns a list of transactions that have contributed to the
-        Stripe account balance (e.g., charges, transfers, and so forth). The transactions
-        are returned in sorted order, with the most recent transactions appearing
-        first.</p>"
-      operationId: GetBalanceHistory
+      description: |-
+        <p>Returns a list of transactions that have contributed to the Stripe account balance (e.g., charges, transfers, and so forth). The transactions are returned in sorted order, with the most recent transactions appearing first.</p>
+
+        <p>Note that this endpoint was previously called “Balance history” and used the path <code>/v1/balance/history</code>.</p>
+      operationId: GetBalanceTransactions
       parameters:
       - explode: true
         in: query
@@ -24583,10 +24588,13 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
-  "/v1/balance/history/{id}":
+  "/v1/balance_transactions/{id}":
     get:
-      description: "<p>Retrieves the balance transaction with the given ID.</p>"
-      operationId: GetBalanceHistoryId
+      description: |-
+        <p>Retrieves the balance transaction with the given ID.</p>
+
+        <p>Note that this endpoint previously used the path <code>/v1/balance/history/:id</code>.</p>
+      operationId: GetBalanceTransactionsId
       parameters:
       - description: Specifies which fields in the response should be expanded.
         explode: true
@@ -25839,7 +25847,7 @@ paths:
                   description: |-
                     A list of items the customer is purchasing. Use this parameter for
                     one-time payments or adding invoice line items to a subscription (used
-                    in conjunction with `subscription_data`.
+                    in conjunction with `subscription_data`).
                   items:
                     properties:
                       amount:
@@ -32382,6 +32390,7 @@ paths:
           description: Error response.
   "/v1/issuer_fraud_records":
     get:
+      deprecated: true
       description: "<p>Returns a list of issuer fraud records.</p>"
       operationId: GetIssuerFraudRecords
       parameters:
@@ -32488,6 +32497,7 @@ paths:
           description: Error response.
   "/v1/issuer_fraud_records/{issuer_fraud_record}":
     get:
+      deprecated: true
       description: |-
         <p>Retrieves the details of an issuer fraud record that has previously been created. </p>
 
@@ -39235,10 +39245,11 @@ paths:
                   maxLength: 5000
                   type: string
                 confirm:
-                  description: Set to `true` to attempt to confirm this PaymentIntent
-                    immediately. This parameter defaults to `false`. If the payment
-                    method attached is a card, a return_url may be provided in case
-                    additional authentication is required.
+                  description: Set to `true` to attempt to [confirm](https://stripe.com/docs/api/payment_intents/confirm)
+                    this PaymentIntent immediately. This parameter defaults to `false`.
+                    When creating and confirming a PaymentIntent at the same time,
+                    parameters available in the [confirm](https://stripe.com/docs/api/payment_intents/confirm)
+                    API may also be provided.
                   type: boolean
                 confirmation_method:
                   description: |-
@@ -39291,9 +39302,11 @@ paths:
                     - recurring
                     maxLength: 5000
                     type: string
-                  description: |-
-                    Set to `true` to indicate that the customer is not in your checkout flow during this payment attempt, and therefore is unable to authenticate.
-                    This parameter is intended for scenarios where you collect card details and [charge them later](https://stripe.com/docs/payments/cards/charging-saved-cards).
+                  description: Set to `true` to indicate that the customer is not
+                    in your checkout flow during this payment attempt, and therefore
+                    is unable to authenticate. This parameter is intended for scenarios
+                    where you collect card details and [charge them later](https://stripe.com/docs/payments/cards/charging-saved-cards).
+                    This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm).
                 on_behalf_of:
                   description: The Stripe account ID for which these funds are intended.
                     For details, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).
@@ -39352,10 +39365,11 @@ paths:
                   maxLength: 5000
                   type: string
                 return_url:
-                  description: |-
-                    The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site.
-                    If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.
-                    This param can only be used if `confirm=true`.
+                  description: The URL to redirect your customer back to after they
+                    authenticate or cancel their payment on the payment method's app
+                    or site. If you'd prefer to redirect to a mobile application,
+                    you can alternatively supply an application URI scheme. This parameter
+                    can only be used with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm).
                   type: string
                 save_payment_method:
                   description: |-
@@ -40403,7 +40417,6 @@ paths:
                   enum:
                   - card
                   - card_present
-                  maxLength: 5000
                   type: string
                   x-stripeBypassValidation: true
               type: object
@@ -44614,6 +44627,11 @@ paths:
                   x-stripeParam:
                     containee_entity_name: payment_method_type
                 return_url:
+                  description: The URL to redirect your customer back to after they
+                    authenticate or cancel their payment on the payment method's app
+                    or site. If you'd prefer to redirect to a mobile application,
+                    you can alternatively supply an application URI scheme. This parameter
+                    can only be used with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm).
                   type: string
                 usage:
                   anyOf:
