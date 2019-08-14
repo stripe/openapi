@@ -186,9 +186,9 @@ definitions:
         - inactive
         - pending
         type: string
-      platform_payments:
-        description: The status of the platform payments capability of the account,
-          or whether your platform can process charges on behalf of the account.
+      transfers:
+        description: The status of the transfers capability of the account, or whether
+          your platform can transfer funds to the account.
         enum:
         - active
         - inactive
@@ -1299,6 +1299,9 @@ definitions:
           `["standard"]` or `["standard", "instant"]`. Only values from this set should
           be passed as the `method` when creating a transfer.
         items:
+          enum:
+          - instant
+          - standard
           type: string
         type: array
       brand:
@@ -4813,6 +4816,8 @@ definitions:
         enum:
         - issuing.card
         type: string
+      pin:
+        "$ref": "#/definitions/issuing_card_pin"
       replacement_for:
         description: The card this card replaces, if any.
         type: string
@@ -4864,6 +4869,7 @@ definitions:
     x-expandableFields:
     - authorization_controls
     - cardholder
+    - pin
     - replacement_for
     - shipping
     x-resourceId: issuing.card
@@ -5971,6 +5977,16 @@ definitions:
     type: object
     x-expandableFields:
     - spending_limits
+  issuing_card_pin:
+    properties:
+      status:
+        description: The status of the pin. One of `blocked` or `active`.
+        type: string
+    required:
+    - status
+    title: IssuingCardPin
+    type: object
+    x-expandableFields: []
   issuing_card_shipping:
     properties:
       address:
@@ -9238,6 +9254,10 @@ definitions:
           Currently only required for accounts in the EU. Directors are typically
           members of the governing board of the company, or responsible for ensuring
           the company meets its regulatory obligations.
+        type: boolean
+      executive:
+        description: Whether the person has significant responsibility to control,
+          manage, or direct the organization.
         type: boolean
       owner:
         description: Whether the person is an owner of the account’s legal entity.
@@ -12950,7 +12970,7 @@ info:
     details.
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
-  version: '2019-05-16'
+  version: '2019-08-14'
   x-stripeSpecFilename: spec2
 paths:
   "/v1/3d_secure":
@@ -13331,7 +13351,7 @@ paths:
                 - card_issuing
                 - card_payments
                 - legacy_payments
-                - platform_payments
+                - transfers
                 type: string
               type: array
             settings:
@@ -14244,10 +14264,8 @@ paths:
       description: "<p>Deletes an existing person’s relationship to the account’s
         legal entity. Any person with a relationship for an account can be deleted
         through the API, except if the person is the <code>account_opener</code>.
-        If your integration is using the deprecated <code>controller</code> or <code>executive</code>
-        parameter, you cannot delete the only verified <code>controller</code> (or
-        <code>executive</code>), or the only <code>controller</code> (or <code>executive</code>)
-        on file.</p>"
+        If your integration is using the <code>executive</code> parameter, you cannot
+        delete the only verified <code>executive</code> on file.</p>"
       operationId: DeleteAccountPeoplePerson
       parameters:
       - description: The ID of the person to be deleted.
@@ -14701,10 +14719,8 @@ paths:
       description: "<p>Deletes an existing person’s relationship to the account’s
         legal entity. Any person with a relationship for an account can be deleted
         through the API, except if the person is the <code>account_opener</code>.
-        If your integration is using the deprecated <code>controller</code> or <code>executive</code>
-        parameter, you cannot delete the only verified <code>controller</code> (or
-        <code>executive</code>), or the only <code>controller</code> (or <code>executive</code>)
-        on file.</p>"
+        If your integration is using the <code>executive</code> parameter, you cannot
+        delete the only verified <code>executive</code> on file.</p>"
       operationId: DeleteAccountPersonsPerson
       parameters:
       - description: The ID of the person to be deleted.
@@ -15309,7 +15325,7 @@ paths:
                 - card_issuing
                 - card_payments
                 - legacy_payments
-                - platform_payments
+                - transfers
                 type: string
               type: array
             settings:
@@ -15729,7 +15745,7 @@ paths:
                 - card_issuing
                 - card_payments
                 - legacy_payments
-                - platform_payments
+                - transfers
                 type: string
               type: array
             settings:
@@ -16696,10 +16712,8 @@ paths:
       description: "<p>Deletes an existing person’s relationship to the account’s
         legal entity. Any person with a relationship for an account can be deleted
         through the API, except if the person is the <code>account_opener</code>.
-        If your integration is using the deprecated <code>controller</code> or <code>executive</code>
-        parameter, you cannot delete the only verified <code>controller</code> (or
-        <code>executive</code>), or the only <code>controller</code> (or <code>executive</code>)
-        on file.</p>"
+        If your integration is using the <code>executive</code> parameter, you cannot
+        delete the only verified <code>executive</code> on file.</p>"
       operationId: DeleteAccountsAccountPeoplePerson
       parameters:
       - in: path
@@ -17169,10 +17183,8 @@ paths:
       description: "<p>Deletes an existing person’s relationship to the account’s
         legal entity. Any person with a relationship for an account can be deleted
         through the API, except if the person is the <code>account_opener</code>.
-        If your integration is using the deprecated <code>controller</code> or <code>executive</code>
-        parameter, you cannot delete the only verified <code>controller</code> (or
-        <code>executive</code>), or the only <code>controller</code> (or <code>executive</code>)
-        on file.</p>"
+        If your integration is using the <code>executive</code> parameter, you cannot
+        delete the only verified <code>executive</code> on file.</p>"
       operationId: DeleteAccountsAccountPersonsPerson
       parameters:
       - in: path
@@ -20370,11 +20382,6 @@ paths:
               items:
                 type: string
               type: array
-            setup_behavior:
-              enum:
-              - automatic
-              - disabled
-              type: string
             shipping:
               description: The customer's shipping information. Appears on invoices
                 emailed to this customer.
@@ -20600,11 +20607,6 @@ paths:
               items:
                 type: string
               type: array
-            setup_behavior:
-              enum:
-              - automatic
-              - disabled
-              type: string
             shipping:
               description: The customer's shipping information. Appears on invoices
                 emailed to this customer.
@@ -20662,8 +20664,8 @@ paths:
             "$ref": "#/definitions/error"
   "/v1/customers/{customer}/balance_transactions":
     get:
-      description: <p>Retrieves the list of transactions that updated the customer’s
-        <a href="/docs/api/customers/object#customer_object-balance"><code>balance</code></a>.</p>
+      description: <p>Returns a list of transactions that updated the customer’s <a
+        href="/docs/api/customers/object#customer_object-balance"><code>balance</code></a>.</p>
       operationId: GetCustomersCustomerBalanceTransactions
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -34990,6 +34992,9 @@ paths:
         required: false
         schema:
           properties:
+            amount:
+              description: Amount associated with the source.
+              type: integer
             expand:
               description: Specifies which fields in the response should be expanded.
               items:
@@ -38625,6 +38630,7 @@ paths:
               - '2019-02-19'
               - '2019-03-14'
               - '2019-05-16'
+              - '2019-08-14'
               type: string
             connect:
               description: Whether this endpoint should receive events from connected

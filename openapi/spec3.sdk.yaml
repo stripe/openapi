@@ -382,14 +382,13 @@ components:
           - inactive
           - pending
           type: string
-        platform_payments:
-          description: The status of the platform payments capability of the account,
-            or whether your platform can process charges on behalf of the account.
+        transfers:
+          description: The status of the transfers capability of the account, or whether
+            your platform can transfer funds to the account.
           enum:
           - active
           - inactive
           - pending
-          nullable: true
           type: string
       title: AccountCapabilities
       type: object
@@ -2156,7 +2155,9 @@ components:
             `["standard"]` or `["standard", "instant"]`. Only values from this set
             should be passed as the `method` when creating a transfer.
           items:
-            maxLength: 5000
+            enum:
+            - instant
+            - standard
             type: string
           nullable: true
           type: array
@@ -7154,6 +7155,11 @@ components:
           enum:
           - issuing.card
           type: string
+        pin:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_card_pin"
+          description: Metadata about the PIN on the card.
+          nullable: true
         replacement_for:
           anyOf:
           - maxLength: 5000
@@ -7214,6 +7220,7 @@ components:
       x-expandableFields:
       - authorization_controls
       - cardholder
+      - pin
       - replacement_for
       - shipping
       x-resourceId: issuing.card
@@ -7292,6 +7299,7 @@ components:
         in_package: Issuing
         inner_classes:
         - issuing_card_authorization_controls
+        - issuing_card_pin
         - issuing_card_shipping
         - issuing_card_spending_limit
     issuing.card_details:
@@ -8521,6 +8529,20 @@ components:
       - spending_limits
       x-stripeResource:
         class_name: AuthorizationControls
+        in_class: issuing.card
+    issuing_card_pin:
+      properties:
+        status:
+          description: The status of the pin. One of `blocked` or `active`.
+          maxLength: 5000
+          type: string
+      required:
+      - status
+      title: IssuingCardPin
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Pin
         in_class: issuing.card
     issuing_card_shipping:
       properties:
@@ -11862,6 +11884,8 @@ components:
           "$ref": "#/components/schemas/payment_method_details_acss_debit"
         alipay:
           "$ref": "#/components/schemas/payment_method_details_alipay"
+        au_becs_debit:
+          "$ref": "#/components/schemas/payment_method_details_au_becs_debit"
         bancontact:
           "$ref": "#/components/schemas/payment_method_details_bancontact"
         bitcoin:
@@ -11908,6 +11932,7 @@ components:
       - ach_debit
       - acss_debit
       - alipay
+      - au_becs_debit
       - bancontact
       - bitcoin
       - card
@@ -11931,6 +11956,7 @@ components:
         - payment_method_details_ach_debit
         - payment_method_details_acss_debit
         - payment_method_details_alipay
+        - payment_method_details_au_becs_debit
         - payment_method_details_bancontact
         - payment_method_details_bitcoin
         - payment_method_details_card
@@ -12055,6 +12081,30 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: Alipay
+        in_class: payment_method_details
+    payment_method_details_au_becs_debit:
+      properties:
+        bsb_number:
+          description: Bank-State-Branch number of the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        fingerprint:
+          description: Uniquely identifies this particular bank account. You can use
+            this attribute to check whether two bank accounts are the same.
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          description: Last four digits of the bank account number.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_au_becs_debit
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: AuBecsDebit
         in_class: payment_method_details
     payment_method_details_bancontact:
       properties:
@@ -13361,6 +13411,11 @@ components:
             Currently only required for accounts in the EU. Directors are typically
             members of the governing board of the company, or responsible for ensuring
             the company meets its regulatory obligations.
+          nullable: true
+          type: boolean
+        executive:
+          description: Whether the person has significant responsibility to control,
+            manage, or direct the organization.
           nullable: true
           type: boolean
         owner:
@@ -15868,6 +15923,8 @@ components:
             `single_use` sources.
           nullable: true
           type: integer
+        au_becs_debit:
+          "$ref": "#/components/schemas/source_type_au_becs_debit"
         bancontact:
           "$ref": "#/components/schemas/source_type_bancontact"
         card:
@@ -15983,6 +16040,7 @@ components:
           - ach_debit
           - acss_debit
           - alipay
+          - au_becs_debit
           - bancontact
           - card
           - card_present
@@ -16136,6 +16194,7 @@ components:
         - source_type_ach_debit
         - source_type_acss_debit
         - source_type_alipay
+        - source_type_au_becs_debit
         - source_type_bancontact
         - source_type_card
         - source_type_card_present
@@ -16800,6 +16859,21 @@ components:
       type: object
       x-stripeResource:
         class_name: Alipay
+        in_class: source
+    source_type_au_becs_debit:
+      properties:
+        bsb_number:
+          nullable: true
+          type: string
+        fingerprint:
+          nullable: true
+          type: string
+        last4:
+          nullable: true
+          type: string
+      type: object
+      x-stripeResource:
+        class_name: AuBecsDebit
         in_class: source
     source_type_bancontact:
       properties:
@@ -20031,7 +20105,7 @@ info:
     details.
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
-  version: '2019-05-16'
+  version: '2019-08-14'
   x-stripeSpecFilename: spec3.sdk
 openapi: 3.0.0
 paths:
@@ -20873,7 +20947,7 @@ paths:
                     - card_issuing
                     - card_payments
                     - legacy_payments
-                    - platform_payments
+                    - transfers
                     maxLength: 5000
                     type: string
                     x-stripeBypassValidation: true
@@ -21674,7 +21748,7 @@ paths:
                     - card_issuing
                     - card_payments
                     - legacy_payments
-                    - platform_payments
+                    - transfers
                     maxLength: 5000
                     type: string
                     x-stripeBypassValidation: true
@@ -22918,10 +22992,8 @@ paths:
       description: "<p>Deletes an existing person’s relationship to the account’s
         legal entity. Any person with a relationship for an account can be deleted
         through the API, except if the person is the <code>account_opener</code>.
-        If your integration is using the deprecated <code>controller</code> or <code>executive</code>
-        parameter, you cannot delete the only verified <code>controller</code> (or
-        <code>executive</code>), or the only <code>controller</code> (or <code>executive</code>)
-        on file.</p>"
+        If your integration is using the <code>executive</code> parameter, you cannot
+        delete the only verified <code>executive</code> on file.</p>"
       operationId: DeleteAccountsAccountPersonsPerson
       parameters:
       - in: path
@@ -27257,11 +27329,6 @@ paths:
                   type: array
                   x-stripeParam:
                     containee_entity_name: preferred_locale
-                setup_behavior:
-                  enum:
-                  - automatic
-                  - disabled
-                  type: string
                 shipping:
                   anyOf:
                   - properties:
@@ -27650,11 +27717,6 @@ paths:
                   type: array
                   x-stripeParam:
                     containee_entity_name: preferred_locale
-                setup_behavior:
-                  enum:
-                  - automatic
-                  - disabled
-                  type: string
                 shipping:
                   anyOf:
                   - properties:
@@ -27768,8 +27830,8 @@ paths:
           description: Error response.
   "/v1/customers/{customer}/balance_transactions":
     get:
-      description: <p>Retrieves the list of transactions that updated the customer’s
-        <a href="/docs/api/customers/object#customer_object-balance"><code>balance</code></a>.</p>
+      description: <p>Returns a list of transactions that updated the customer’s <a
+        href="/docs/api/customers/object#customer_object-balance"><code>balance</code></a>.</p>
       operationId: GetCustomersCustomerBalanceTransactions
       parameters:
       - description: The customer to retrieve transactions for.
@@ -45620,6 +45682,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              mandate:
+                explode: true
+                style: deepObject
               metadata:
                 explode: true
                 style: deepObject
@@ -45672,6 +45737,132 @@ paths:
                   - redirect
                   maxLength: 5000
                   type: string
+                mandate:
+                  description: Information about a mandate possibility attached to
+                    a source object (generally for bank debits) as well as its acceptance
+                    status.
+                  properties:
+                    acceptance:
+                      description: The parameters required to notify Stripe of a mandate
+                        acceptance or refusal by the customer.
+                      properties:
+                        date:
+                          description: The unix timestamp the mandate was accepted
+                            or refused at by the customer.
+                          format: unix-time
+                          type: integer
+                        ip:
+                          description: The IP address from which the mandate was accepted
+                            or refused by the customer.
+                          type: string
+                        offline:
+                          description: The parameters required to store a mandate
+                            accepted offline. Should only be set if `mandate[type]`
+                            is `offline`
+                          properties:
+                            contact_email:
+                              description: An email to contact you with if a copy
+                                of the mandate is requested, required if `type` is
+                                `offline`.
+                              type: string
+                          required:
+                          - contact_email
+                          title: mandate_offline_acceptance_params
+                          type: object
+                        online:
+                          description: The parameters required to store a mandate
+                            accepted online. Should only be set if `mandate[type]`
+                            is `online`
+                          properties:
+                            date:
+                              description: The unix timestamp the mandate was accepted
+                                or refused at by the customer.
+                              format: unix-time
+                              type: integer
+                            ip:
+                              description: The IP address from which the mandate was
+                                accepted or refused by the customer.
+                              type: string
+                            user_agent:
+                              description: The user agent of the browser from which
+                                the mandate was accepted or refused by the customer.
+                              maxLength: 5000
+                              type: string
+                          required:
+                          - date
+                          - ip
+                          - user_agent
+                          title: mandate_online_acceptance_params
+                          type: object
+                        status:
+                          description: The status of the mandate acceptance. Either
+                            `accepted` (the mandate was accepted) or `refused` (the
+                            mandate was refused).
+                          enum:
+                          - accepted
+                          - pending
+                          - refused
+                          - revoked
+                          maxLength: 5000
+                          type: string
+                        type:
+                          description: The type of acceptance information included
+                            with the mandate. Either `online` or `offline`
+                          enum:
+                          - offline
+                          - online
+                          maxLength: 5000
+                          type: string
+                        user_agent:
+                          description: The user agent of the browser from which the
+                            mandate was accepted or refused by the customer.
+                          maxLength: 5000
+                          type: string
+                      required:
+                      - status
+                      title: mandate_acceptance_params
+                      type: object
+                    amount:
+                      anyOf:
+                      - type: integer
+                      - enum:
+                        - ''
+                        type: string
+                      description: The amount specified by the mandate. (Leave null
+                        for a mandate covering all amounts)
+                    currency:
+                      description: The currency specified by the mandate. (Must match
+                        `currency` of the source)
+                      type: string
+                    interval:
+                      description: The interval of debits permitted by the mandate.
+                        Either `one_time` (just permitting a single debit), `scheduled`
+                        (with debits on an agreed schedule or for clearly-defined
+                        events), or `variable`(for debits with any frequency)
+                      enum:
+                      - one_time
+                      - scheduled
+                      - variable
+                      maxLength: 5000
+                      type: string
+                    notification_method:
+                      description: The method Stripe should use to notify the customer
+                        of upcoming debit instructions and/or mandate confirmation
+                        as required by the underlying debit network. Either `email`
+                        (an email is sent directly to the customer), `manual` (a `source.mandate_notification`
+                        event is sent to your webhooks endpoint and you should handle
+                        the notification) or `none` (the underlying debit network
+                        does not require any notification).
+                      enum:
+                      - deprecated_none
+                      - email
+                      - manual
+                      - none
+                      - stripe_email
+                      maxLength: 5000
+                      type: string
+                  title: mandate_params
+                  type: object
                 metadata:
                   additionalProperties:
                     type: string
@@ -45969,6 +46160,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              mandate:
+                explode: true
+                style: deepObject
               metadata:
                 explode: true
                 style: deepObject
@@ -45981,12 +46175,141 @@ paths:
             schema:
               additionalProperties: false
               properties:
+                amount:
+                  description: Amount associated with the source.
+                  type: integer
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
                     maxLength: 5000
                     type: string
                   type: array
+                mandate:
+                  description: Information about a mandate possibility attached to
+                    a source object (generally for bank debits) as well as its acceptance
+                    status.
+                  properties:
+                    acceptance:
+                      description: The parameters required to notify Stripe of a mandate
+                        acceptance or refusal by the customer.
+                      properties:
+                        date:
+                          description: The unix timestamp the mandate was accepted
+                            or refused at by the customer.
+                          format: unix-time
+                          type: integer
+                        ip:
+                          description: The IP address from which the mandate was accepted
+                            or refused by the customer.
+                          type: string
+                        offline:
+                          description: The parameters required to store a mandate
+                            accepted offline. Should only be set if `mandate[type]`
+                            is `offline`
+                          properties:
+                            contact_email:
+                              description: An email to contact you with if a copy
+                                of the mandate is requested, required if `type` is
+                                `offline`.
+                              type: string
+                          required:
+                          - contact_email
+                          title: mandate_offline_acceptance_params
+                          type: object
+                        online:
+                          description: The parameters required to store a mandate
+                            accepted online. Should only be set if `mandate[type]`
+                            is `online`
+                          properties:
+                            date:
+                              description: The unix timestamp the mandate was accepted
+                                or refused at by the customer.
+                              format: unix-time
+                              type: integer
+                            ip:
+                              description: The IP address from which the mandate was
+                                accepted or refused by the customer.
+                              type: string
+                            user_agent:
+                              description: The user agent of the browser from which
+                                the mandate was accepted or refused by the customer.
+                              maxLength: 5000
+                              type: string
+                          required:
+                          - date
+                          - ip
+                          - user_agent
+                          title: mandate_online_acceptance_params
+                          type: object
+                        status:
+                          description: The status of the mandate acceptance. Either
+                            `accepted` (the mandate was accepted) or `refused` (the
+                            mandate was refused).
+                          enum:
+                          - accepted
+                          - pending
+                          - refused
+                          - revoked
+                          maxLength: 5000
+                          type: string
+                        type:
+                          description: The type of acceptance information included
+                            with the mandate. Either `online` or `offline`
+                          enum:
+                          - offline
+                          - online
+                          maxLength: 5000
+                          type: string
+                        user_agent:
+                          description: The user agent of the browser from which the
+                            mandate was accepted or refused by the customer.
+                          maxLength: 5000
+                          type: string
+                      required:
+                      - status
+                      title: mandate_acceptance_params
+                      type: object
+                    amount:
+                      anyOf:
+                      - type: integer
+                      - enum:
+                        - ''
+                        type: string
+                      description: The amount specified by the mandate. (Leave null
+                        for a mandate covering all amounts)
+                    currency:
+                      description: The currency specified by the mandate. (Must match
+                        `currency` of the source)
+                      type: string
+                    interval:
+                      description: The interval of debits permitted by the mandate.
+                        Either `one_time` (just permitting a single debit), `scheduled`
+                        (with debits on an agreed schedule or for clearly-defined
+                        events), or `variable`(for debits with any frequency)
+                      enum:
+                      - one_time
+                      - scheduled
+                      - variable
+                      maxLength: 5000
+                      type: string
+                    notification_method:
+                      description: The method Stripe should use to notify the customer
+                        of upcoming debit instructions and/or mandate confirmation
+                        as required by the underlying debit network. Either `email`
+                        (an email is sent directly to the customer), `manual` (a `source.mandate_notification`
+                        event is sent to your webhooks endpoint and you should handle
+                        the notification) or `none` (the underlying debit network
+                        does not require any notification).
+                      enum:
+                      - deprecated_none
+                      - email
+                      - manual
+                      - none
+                      - stripe_email
+                      maxLength: 5000
+                      type: string
+                  title: mandate_params
+                  type: object
                 metadata:
                   additionalProperties:
                     type: string
@@ -51466,6 +51789,7 @@ paths:
                   - '2019-02-19'
                   - '2019-03-14'
                   - '2019-05-16'
+                  - '2019-08-14'
                   maxLength: 5000
                   type: string
                   x-stripeBypassValidation: true
