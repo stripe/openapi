@@ -6818,6 +6818,12 @@
             "description": "Unit Amount (in the `currency` specified) of the invoice item.",
             "nullable": true,
             "type": "integer"
+          },
+          "unit_amount_decimal": {
+            "description": "Same as `unit_amount`, but contains a decimal value with at most 12 decimal places.",
+            "format": "decimal",
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
@@ -10175,7 +10181,7 @@
             "type": "string"
           },
           "name_kana": {
-            "description": "The Kana variation of the company's legal name Japan only).",
+            "description": "The Kana variation of the company's legal name (Japan only).",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
@@ -13279,6 +13285,12 @@
             "nullable": true,
             "type": "integer"
           },
+          "amount_decimal": {
+            "description": "Same as `amount`, but contains a decimal value with at most 12 decimal places.",
+            "format": "decimal",
+            "nullable": true,
+            "type": "string"
+          },
           "billing_scheme": {
             "description": "Describes how to compute the price per period. Either `per_unit` or `tiered`. `per_unit` indicates that the fixed amount (specified in `amount`) will be charged per unit in `quantity` (for plans with `usage_type=licensed`), or per unit of total usage (for plans with `usage_type=metered`). `tiered` indicates that the unit pricing will be computed using a tiering strategy as defined using the `tiers` and `tiers_mode` attributes.",
             "enum": [
@@ -13436,10 +13448,22 @@
             "nullable": true,
             "type": "integer"
           },
+          "flat_amount_decimal": {
+            "description": "Same as `flat_amount`, but contains a decimal value with at most 12 decimal places.",
+            "format": "decimal",
+            "nullable": true,
+            "type": "string"
+          },
           "unit_amount": {
             "description": "Per unit price for units relevant to the tier.",
             "nullable": true,
             "type": "integer"
+          },
+          "unit_amount_decimal": {
+            "description": "Same as `unit_amount`, but contains a decimal value with at most 12 decimal places.",
+            "format": "decimal",
+            "nullable": true,
+            "type": "string"
           },
           "up_to": {
             "description": "Up to and including to this quantity will be contained in the tier.",
@@ -16675,6 +16699,12 @@
             "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period",
             "nullable": true
           },
+          "cancel_at": {
+            "description": "A date in the future at which the subscription will automatically get canceled",
+            "format": "unix-time",
+            "nullable": true,
+            "type": "integer"
+          },
           "cancel_at_period_end": {
             "description": "If the subscription has been canceled with the `at_period_end` flag set to `true`, `cancel_at_period_end` on the subscription will be true. You can use this attribute to determine whether a subscription that has a status of active is scheduled to be canceled at the end of the current period.",
             "type": "boolean"
@@ -16942,6 +16972,26 @@
             "nullable": true,
             "type": "integer"
           },
+          "schedule": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/subscription_schedule"
+              }
+            ],
+            "description": "The schedule attached to the subscription",
+            "nullable": true,
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/subscription_schedule"
+                }
+              ]
+            }
+          },
           "start": {
             "description": "Date of the last substantial change to this subscription. For example, a change to the items array, or a change of status, will reset this timestamp.",
             "format": "unix-time",
@@ -17011,7 +17061,8 @@
           "items",
           "latest_invoice",
           "pending_setup_intent",
-          "plan"
+          "plan",
+          "schedule"
         ],
         "x-resourceId": "subscription"
       },
@@ -17221,50 +17272,6 @@
               ]
             }
           },
-          "default_source": {
-            "anyOf": [
-              {
-                "maxLength": 5000,
-                "type": "string"
-              },
-              {
-                "$ref": "#/components/schemas/alipay_account"
-              },
-              {
-                "$ref": "#/components/schemas/bank_account"
-              },
-              {
-                "$ref": "#/components/schemas/bitcoin_receiver"
-              },
-              {
-                "$ref": "#/components/schemas/card"
-              },
-              {
-                "$ref": "#/components/schemas/source"
-              }
-            ],
-            "description": "ID of the default payment source for the subscription schedule. It must belong to the customer associated with the subscription schedule and be in a chargeable state. If not set, defaults to the customer's default source.",
-            "nullable": true,
-            "x-expansionResources": {
-              "oneOf": [
-                {
-                  "$ref": "#/components/schemas/alipay_account"
-                },
-                {
-                  "$ref": "#/components/schemas/bank_account"
-                },
-                {
-                  "$ref": "#/components/schemas/bitcoin_receiver"
-                },
-                {
-                  "$ref": "#/components/schemas/card"
-                },
-                {
-                  "$ref": "#/components/schemas/source"
-                }
-              ]
-            }
-          },
           "id": {
             "description": "Unique identifier for the object.",
             "maxLength": 5000,
@@ -17385,7 +17392,6 @@
           "current_phase",
           "customer",
           "default_payment_method",
-          "default_source",
           "invoice_settings",
           "phases",
           "renewal_interval",
@@ -17482,6 +17488,24 @@
             "nullable": true,
             "type": "number"
           },
+          "billing_thresholds": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/subscription_billing_thresholds"
+              }
+            ],
+            "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period",
+            "nullable": true
+          },
+          "collection_method": {
+            "description": "Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay the underlying subscription at the end of each billing cycle using the default source attached to the customer. When sending an invoice, Stripe will email your customer an invoice with payment instructions.",
+            "enum": [
+              "charge_automatically",
+              "send_invoice"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
           "coupon": {
             "anyOf": [
               {
@@ -17502,6 +17526,26 @@
               ]
             }
           },
+          "default_payment_method": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/payment_method"
+              }
+            ],
+            "description": "ID of the default payment method for the subscription schedule. It must belong to the customer associated with the subscription schedule. If not set, invoices will use the default payment method in the customer's invoice settings.",
+            "nullable": true,
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/payment_method"
+                }
+              ]
+            }
+          },
           "default_tax_rates": {
             "items": {
               "$ref": "#/components/schemas/tax_rate"
@@ -17513,6 +17557,15 @@
             "description": "The end of this phase of the subscription schedule.",
             "format": "unix-time",
             "type": "integer"
+          },
+          "invoice_settings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/invoice_setting_subscription_schedule_setting"
+              }
+            ],
+            "description": "The subscription schedule's default invoice settings.",
+            "nullable": true
           },
           "plans": {
             "description": "Plans to subscribe during this phase of the subscription schedule.",
@@ -17546,8 +17599,11 @@
         "title": "SubscriptionSchedulePhaseConfiguration",
         "type": "object",
         "x-expandableFields": [
+          "billing_thresholds",
           "coupon",
+          "default_payment_method",
           "default_tax_rates",
+          "invoice_settings",
           "plans"
         ]
       },
@@ -21199,6 +21255,9 @@
                 "director": {
                   "type": "boolean"
                 },
+                "executive": {
+                  "type": "boolean"
+                },
                 "owner": {
                   "type": "boolean"
                 }
@@ -21551,6 +21610,9 @@
                         "type": "boolean"
                       },
                       "director": {
+                        "type": "boolean"
+                      },
+                      "executive": {
                         "type": "boolean"
                       },
                       "owner": {
@@ -22032,6 +22094,9 @@
                       "director": {
                         "type": "boolean"
                       },
+                      "executive": {
+                        "type": "boolean"
+                      },
                       "owner": {
                         "type": "boolean"
                       },
@@ -22165,6 +22230,9 @@
                   "type": "boolean"
                 },
                 "director": {
+                  "type": "boolean"
+                },
+                "executive": {
                   "type": "boolean"
                 },
                 "owner": {
@@ -22519,6 +22587,9 @@
                         "type": "boolean"
                       },
                       "director": {
+                        "type": "boolean"
+                      },
+                      "executive": {
                         "type": "boolean"
                       },
                       "owner": {
@@ -22998,6 +23069,9 @@
                         "type": "boolean"
                       },
                       "director": {
+                        "type": "boolean"
+                      },
+                      "executive": {
                         "type": "boolean"
                       },
                       "owner": {
@@ -26376,6 +26450,9 @@
                 "director": {
                   "type": "boolean"
                 },
+                "executive": {
+                  "type": "boolean"
+                },
                 "owner": {
                   "type": "boolean"
                 }
@@ -26736,6 +26813,9 @@
                         "type": "boolean"
                       },
                       "director": {
+                        "type": "boolean"
+                      },
+                      "executive": {
                         "type": "boolean"
                       },
                       "owner": {
@@ -27243,6 +27323,9 @@
                       "director": {
                         "type": "boolean"
                       },
+                      "executive": {
+                        "type": "boolean"
+                      },
                       "owner": {
                         "type": "boolean"
                       },
@@ -27386,6 +27469,9 @@
                   "type": "boolean"
                 },
                 "director": {
+                  "type": "boolean"
+                },
+                "executive": {
                   "type": "boolean"
                 },
                 "owner": {
@@ -27748,6 +27834,9 @@
                         "type": "boolean"
                       },
                       "director": {
+                        "type": "boolean"
+                      },
+                      "executive": {
                         "type": "boolean"
                       },
                       "owner": {
@@ -28253,6 +28342,9 @@
                         "type": "boolean"
                       },
                       "director": {
+                        "type": "boolean"
+                      },
+                      "executive": {
                         "type": "boolean"
                       },
                       "owner": {
@@ -38114,6 +38206,11 @@
                     "description": "A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the application owner's Stripe account. The request must be made with an OAuth key in order to set an application fee percentage. For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).",
                     "type": "number"
                   },
+                  "backdate_start_date": {
+                    "description": "For new subscriptions, a past timestamp to backdate the subscription's start date to. If set, the first invoice will contain a proration for the timespan between the start date and the current time. Can be combined with trials and the billing cycle anchor.",
+                    "format": "unix-time",
+                    "type": "integer"
+                  },
                   "billing": {
                     "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
                     "enum": [
@@ -38151,6 +38248,11 @@
                       }
                     ],
                     "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period. Pass an empty string to remove previously-defined thresholds."
+                  },
+                  "cancel_at": {
+                    "description": "A timestamp at which the subscription should cancel. If set to a date before the current period ends this will cause a proration if `prorate=true`.",
+                    "format": "unix-time",
+                    "type": "integer"
                   },
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
@@ -38553,6 +38655,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "cancel_at": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "default_tax_rates": {
                   "explode": true,
                   "style": "deepObject"
@@ -38626,6 +38732,21 @@
                       }
                     ],
                     "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period. Pass an empty string to remove previously-defined thresholds."
+                  },
+                  "cancel_at": {
+                    "anyOf": [
+                      {
+                        "format": "unix-time",
+                        "type": "integer"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "A timestamp at which the subscription should cancel. If set to a date before the current period ends this will cause a proration if `prorate=true`."
                   },
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
@@ -41586,6 +41707,11 @@
                   "unit_amount": {
                     "description": "The integer unit amount in **%s** of the charge to be applied to the upcoming invoice. This unit_amount will be multiplied by the quantity to get the full amount. If you want to apply a credit to the customer's account, pass a negative unit_amount.",
                     "type": "integer"
+                  },
+                  "unit_amount_decimal": {
+                    "description": "Same as `unit_amount`, but accepts a decimal value with at most 12 decimal places. Only one of `unit_amount` and `unit_amount_decimal` can be set.",
+                    "format": "decimal",
+                    "type": "string"
                   }
                 },
                 "required": [
@@ -41857,6 +41983,11 @@
                   "unit_amount": {
                     "description": "The integer unit amount in **%s** of the charge to be applied to the upcoming invoice. This unit_amount will be multiplied by the quantity to get the full amount. If you want to apply a credit to the customer's account, pass a negative unit_amount.",
                     "type": "integer"
+                  },
+                  "unit_amount_decimal": {
+                    "description": "Same as `unit_amount`, but accepts a decimal value with at most 12 decimal places. Only one of `unit_amount` and `unit_amount_decimal` can be set.",
+                    "format": "decimal",
+                    "type": "string"
                   }
                 },
                 "type": "object"
@@ -42449,6 +42580,10 @@
                   },
                   "unit_amount": {
                     "type": "integer"
+                  },
+                  "unit_amount_decimal": {
+                    "format": "decimal",
+                    "type": "string"
                   }
                 },
                 "title": "invoice_item_preview_params",
@@ -42457,6 +42592,17 @@
               "type": "array"
             },
             "style": "deepObject"
+          },
+          {
+            "description": "The identifier of the unstarted schedule whose upcoming invoice you'd like to retrieve. Cannot be used with subscription or subscription fields.",
+            "in": "query",
+            "name": "schedule",
+            "required": false,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "form"
           },
           {
             "description": "The identifier of the subscription for which you'd like to retrieve the upcoming invoice. If not provided, but a `subscription_items` is provided, you will preview creating a subscription with those items. If neither `subscription` nor `subscription_items` is provided, you will retrieve the next upcoming invoice from among the customer's subscriptions.",
@@ -42488,6 +42634,28 @@
                 {
                   "format": "unix-time",
                   "type": "integer"
+                }
+              ]
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "Boolean indicating when the subscription should be scheduled to cancel. Will prorate if within the current period if `prorate=true`",
+            "explode": true,
+            "in": "query",
+            "name": "subscription_cancel_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "unix-time",
+                  "type": "integer"
+                },
+                {
+                  "enum": [
+                    ""
+                  ],
+                  "type": "string"
                 }
               ]
             },
@@ -42856,6 +43024,10 @@
                   },
                   "unit_amount": {
                     "type": "integer"
+                  },
+                  "unit_amount_decimal": {
+                    "format": "decimal",
+                    "type": "string"
                   }
                 },
                 "title": "invoice_item_preview_params",
@@ -42872,6 +43044,17 @@
             "required": false,
             "schema": {
               "type": "integer"
+            },
+            "style": "form"
+          },
+          {
+            "description": "The identifier of the unstarted schedule whose upcoming invoice you'd like to retrieve. Cannot be used with subscription or subscription fields.",
+            "in": "query",
+            "name": "schedule",
+            "required": false,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
             },
             "style": "form"
           },
@@ -42916,6 +43099,28 @@
                 {
                   "format": "unix-time",
                   "type": "integer"
+                }
+              ]
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "Boolean indicating when the subscription should be scheduled to cancel. Will prorate if within the current period if `prorate=true`",
+            "explode": true,
+            "in": "query",
+            "name": "subscription_cancel_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "unix-time",
+                  "type": "integer"
+                },
+                {
+                  "enum": [
+                    ""
+                  ],
+                  "type": "string"
                 }
               ]
             },
@@ -54908,6 +55113,11 @@
                     "description": "A positive integer in %s (or 0 for a free plan) representing how much to charge on a recurring basis.",
                     "type": "integer"
                   },
+                  "amount_decimal": {
+                    "description": "Same as `amount`, but accepts a decimal value with at most 12 decimal places. Only one of `amount` and `amount_decimal` can be set.",
+                    "format": "decimal",
+                    "type": "string"
+                  },
                   "billing_scheme": {
                     "description": "Describes how to compute the price per period. Either `per_unit` or `tiered`. `per_unit` indicates that the fixed amount (specified in `amount`) will be charged per unit in `quantity` (for plans with `usage_type=licensed`), or per unit of total usage (for plans with `usage_type=metered`). `tiered` indicates that the unit pricing will be computed using a tiering strategy as defined using the `tiers` and `tiers_mode` attributes.",
                     "enum": [
@@ -55012,8 +55222,16 @@
                         "flat_amount": {
                           "type": "integer"
                         },
+                        "flat_amount_decimal": {
+                          "format": "decimal",
+                          "type": "string"
+                        },
                         "unit_amount": {
                           "type": "integer"
+                        },
+                        "unit_amount_decimal": {
+                          "format": "decimal",
+                          "type": "string"
                         },
                         "up_to": {
                           "anyOf": [
@@ -60572,11 +60790,6 @@
                                 "type": "string"
                               }
                             },
-                            "required": [
-                              "date",
-                              "ip",
-                              "user_agent"
-                            ],
                             "title": "mandate_online_acceptance_params",
                             "type": "object"
                           },
@@ -61067,11 +61280,6 @@
                                 "type": "string"
                               }
                             },
-                            "required": [
-                              "date",
-                              "ip",
-                              "user_agent"
-                            ],
                             "title": "mandate_online_acceptance_params",
                             "type": "object"
                           },
@@ -62913,7 +63121,40 @@
                         "application_fee_percent": {
                           "type": "number"
                         },
+                        "billing_thresholds": {
+                          "anyOf": [
+                            {
+                              "properties": {
+                                "amount_gte": {
+                                  "type": "integer"
+                                },
+                                "reset_billing_cycle_anchor": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "title": "billing_thresholds_param",
+                              "type": "object"
+                            },
+                            {
+                              "enum": [
+                                ""
+                              ],
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "collection_method": {
+                          "enum": [
+                            "charge_automatically",
+                            "send_invoice"
+                          ],
+                          "type": "string"
+                        },
                         "coupon": {
+                          "maxLength": 5000,
+                          "type": "string"
+                        },
+                        "default_payment_method": {
                           "maxLength": 5000,
                           "type": "string"
                         },
@@ -62937,6 +63178,15 @@
                         "end_date": {
                           "format": "unix-time",
                           "type": "integer"
+                        },
+                        "invoice_settings": {
+                          "properties": {
+                            "days_until_due": {
+                              "type": "integer"
+                            }
+                          },
+                          "title": "invoice_settings_params",
+                          "type": "object"
                         },
                         "iterations": {
                           "type": "integer"
@@ -63294,7 +63544,40 @@
                         "application_fee_percent": {
                           "type": "number"
                         },
+                        "billing_thresholds": {
+                          "anyOf": [
+                            {
+                              "properties": {
+                                "amount_gte": {
+                                  "type": "integer"
+                                },
+                                "reset_billing_cycle_anchor": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "title": "billing_thresholds_param",
+                              "type": "object"
+                            },
+                            {
+                              "enum": [
+                                ""
+                              ],
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "collection_method": {
+                          "enum": [
+                            "charge_automatically",
+                            "send_invoice"
+                          ],
+                          "type": "string"
+                        },
                         "coupon": {
+                          "maxLength": 5000,
+                          "type": "string"
+                        },
+                        "default_payment_method": {
                           "maxLength": 5000,
                           "type": "string"
                         },
@@ -63328,6 +63611,15 @@
                               "type": "string"
                             }
                           ]
+                        },
+                        "invoice_settings": {
+                          "properties": {
+                            "days_until_due": {
+                              "type": "integer"
+                            }
+                          },
+                          "title": "invoice_settings_params",
+                          "type": "object"
                         },
                         "iterations": {
                           "type": "integer"
@@ -63986,6 +64278,11 @@
                     "description": "A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the application owner's Stripe account. The request must be made with an OAuth key in order to set an application fee percentage. For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).",
                     "type": "number"
                   },
+                  "backdate_start_date": {
+                    "description": "For new subscriptions, a past timestamp to backdate the subscription's start date to. If set, the first invoice will contain a proration for the timespan between the start date and the current time. Can be combined with trials and the billing cycle anchor.",
+                    "format": "unix-time",
+                    "type": "integer"
+                  },
                   "billing": {
                     "description": "This field has been renamed to `collection_method` and will be removed in a future API version.",
                     "enum": [
@@ -64023,6 +64320,11 @@
                       }
                     ],
                     "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period. Pass an empty string to remove previously-defined thresholds."
+                  },
+                  "cancel_at": {
+                    "description": "A timestamp at which the subscription should cancel. If set to a date before the current period ends this will cause a proration if `prorate=true`.",
+                    "format": "unix-time",
+                    "type": "integer"
                   },
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
@@ -64400,6 +64702,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "cancel_at": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "default_tax_rates": {
                   "explode": true,
                   "style": "deepObject"
@@ -64473,6 +64779,21 @@
                       }
                     ],
                     "description": "Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period. Pass an empty string to remove previously-defined thresholds."
+                  },
+                  "cancel_at": {
+                    "anyOf": [
+                      {
+                        "format": "unix-time",
+                        "type": "integer"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "A timestamp at which the subscription should cancel. If set to a date before the current period ends this will cause a proration if `prorate=true`."
                   },
                   "cancel_at_period_end": {
                     "description": "Boolean indicating whether this subscription should cancel at the end of the current period.",
@@ -68503,6 +68824,13 @@
                         "source.refund_attributes_required",
                         "source.transaction.created",
                         "source.transaction.updated",
+                        "subscription_schedule.aborted",
+                        "subscription_schedule.canceled",
+                        "subscription_schedule.completed",
+                        "subscription_schedule.created",
+                        "subscription_schedule.expiring",
+                        "subscription_schedule.released",
+                        "subscription_schedule.updated",
                         "tax_rate.created",
                         "tax_rate.updated",
                         "topup.canceled",
@@ -68860,6 +69188,13 @@
                         "source.refund_attributes_required",
                         "source.transaction.created",
                         "source.transaction.updated",
+                        "subscription_schedule.aborted",
+                        "subscription_schedule.canceled",
+                        "subscription_schedule.completed",
+                        "subscription_schedule.created",
+                        "subscription_schedule.expiring",
+                        "subscription_schedule.released",
+                        "subscription_schedule.updated",
                         "tax_rate.created",
                         "tax_rate.updated",
                         "topup.canceled",

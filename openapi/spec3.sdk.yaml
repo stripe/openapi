@@ -3063,6 +3063,14 @@ components:
           - zh
           nullable: true
           type: string
+        mode:
+          description: The mode of the Checkout Session
+          enum:
+          - payment
+          - setup
+          - subscription
+          nullable: true
+          type: string
         object:
           description: String representing the object's type. Objects of the same
             type share the same value.
@@ -3088,6 +3096,16 @@ components:
             maxLength: 5000
             type: string
           type: array
+        setup_intent:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/setup_intent"
+          description: The ID of the SetupIntent if mode was set to `setup`.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/setup_intent"
         submit_type:
           description: |-
             Describes the type of transaction being performed by Checkout in order
@@ -3133,6 +3151,7 @@ components:
       - customer
       - display_items
       - payment_intent
+      - setup_intent
       - subscription
       x-resourceId: checkout.session
       x-stripeOperations:
@@ -6635,6 +6654,12 @@ components:
           description: Unit Amount (in the `currency` specified) of the invoice item.
           nullable: true
           type: integer
+        unit_amount_decimal:
+          description: Same as `unit_amount`, but contains a decimal value with at
+            most 12 decimal places.
+          format: decimal
+          nullable: true
+          type: string
       required:
       - id
       - object
@@ -9964,7 +9989,7 @@ components:
           nullable: true
           type: string
         name_kana:
-          description: The Kana variation of the company's legal name Japan only).
+          description: The Kana variation of the company's legal name (Japan only).
           maxLength: 5000
           nullable: true
           type: string
@@ -13495,6 +13520,12 @@ components:
           description: The amount in %s to be charged on the interval specified.
           nullable: true
           type: integer
+        amount_decimal:
+          description: Same as `amount`, but contains a decimal value with at most
+            12 decimal places.
+          format: decimal
+          nullable: true
+          type: string
         billing_scheme:
           description: Describes how to compute the price per period. Either `per_unit`
             or `tiered`. `per_unit` indicates that the fixed amount (specified in
@@ -13703,10 +13734,22 @@ components:
           description: Price for the entire tier.
           nullable: true
           type: integer
+        flat_amount_decimal:
+          description: Same as `flat_amount`, but contains a decimal value with at
+            most 12 decimal places.
+          format: decimal
+          nullable: true
+          type: string
         unit_amount:
           description: Per unit price for units relevant to the tier.
           nullable: true
           type: integer
+        unit_amount_decimal:
+          description: Same as `unit_amount`, but contains a decimal value with at
+            most 12 decimal places.
+          format: decimal
+          nullable: true
+          type: string
         up_to:
           description: Up to and including to this quantity will be contained in the
             tier.
@@ -17566,6 +17609,16 @@ components:
             $10) monthly. Only set if the subscription contains a single plan.
           nullable: true
           type: integer
+        schedule:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/subscription_schedule"
+          description: The schedule attached to the subscription
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/subscription_schedule"
         start:
           description: Date of the last substantial change to this subscription. For
             example, a change to the items array, or a change of status, will reset
@@ -17656,6 +17709,7 @@ components:
       - latest_invoice
       - pending_setup_intent
       - plan
+      - schedule
       - transfer_data
       x-resourceId: subscription
       x-stripeOperations:
@@ -18283,6 +18337,23 @@ components:
             during this phase of the schedule.
           nullable: true
           type: number
+        billing_thresholds:
+          anyOf:
+          - "$ref": "#/components/schemas/subscription_billing_thresholds"
+          description: Define thresholds at which an invoice will be sent, and the
+            subscription advanced to a new billing period
+          nullable: true
+        collection_method:
+          description: Either `charge_automatically`, or `send_invoice`. When charging
+            automatically, Stripe will attempt to pay the underlying subscription
+            at the end of each billing cycle using the default source attached to
+            the customer. When sending an invoice, Stripe will email your customer
+            an invoice with payment instructions.
+          enum:
+          - charge_automatically
+          - send_invoice
+          nullable: true
+          type: string
         coupon:
           anyOf:
           - maxLength: 5000
@@ -18294,6 +18365,19 @@ components:
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/coupon"
+        default_payment_method:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/payment_method"
+          description: ID of the default payment method for the subscription schedule.
+            It must belong to the customer associated with the subscription schedule.
+            If not set, invoices will use the default payment method in the customer's
+            invoice settings.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/payment_method"
         default_tax_rates:
           items:
             "$ref": "#/components/schemas/tax_rate"
@@ -18303,6 +18387,11 @@ components:
           description: The end of this phase of the subscription schedule.
           format: unix-time
           type: integer
+        invoice_settings:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_setting_subscription_schedule_setting"
+          description: The subscription schedule's default invoice settings.
+          nullable: true
         plans:
           description: Plans to subscribe during this phase of the subscription schedule.
           items:
@@ -18330,8 +18419,11 @@ components:
       title: SubscriptionSchedulePhaseConfiguration
       type: object
       x-expandableFields:
+      - billing_thresholds
       - coupon
+      - default_payment_method
       - default_tax_rates
+      - invoice_settings
       - plans
       x-stripeResource:
         class_name: Phase
@@ -22614,6 +22706,10 @@ paths:
               description: A filter on the list of people returned based on whether
                 these people are directors of the account's company.
               type: boolean
+            executive:
+              description: A filter on the list of people returned based on whether
+                these people are executives of the account's company.
+              type: boolean
             owner:
               description: A filter on the list of people returned based on whether
                 these people are owners of the account's company.
@@ -22929,6 +23025,10 @@ paths:
                         EU. Directors are typically members of the governing board
                         of the company, or responsible for ensuring the company meets
                         its regulatory obligations.
+                      type: boolean
+                    executive:
+                      description: Whether the person has significant responsibility
+                        to control, manage, or direct the organization.
                       type: boolean
                     owner:
                       description: Whether the person is an owner of the account’s
@@ -23341,6 +23441,10 @@ paths:
                         EU. Directors are typically members of the governing board
                         of the company, or responsible for ensuring the company meets
                         its regulatory obligations.
+                      type: boolean
+                    executive:
+                      description: Whether the person has significant responsibility
+                        to control, manage, or direct the organization.
                       type: boolean
                     owner:
                       description: Whether the person is an owner of the account’s
@@ -25753,6 +25857,9 @@ paths:
               payment_method_types:
                 explode: true
                 style: deepObject
+              setup_intent_data:
+                explode: true
+                style: deepObject
               subscription_data:
                 explode: true
                 style: deepObject
@@ -25869,6 +25976,13 @@ paths:
                   - pt
                   - sv
                   - zh
+                  type: string
+                mode:
+                  description: The mode of the Checkout Session
+                  enum:
+                  - payment
+                  - setup
+                  - subscription
                   type: string
                 payment_intent_data:
                   description: A subset of parameters to be passed to PaymentIntent
@@ -26015,6 +26129,30 @@ paths:
                   type: array
                   x-stripeParam:
                     containee_entity_name: payment_method_type
+                setup_intent_data:
+                  description: A subset of parameters to be passed to SetupIntent
+                    creation.
+                  properties:
+                    description:
+                      description: An arbitrary string attached to the object. Often
+                        useful for displaying to users.
+                      maxLength: 1000
+                      type: string
+                    metadata:
+                      additionalProperties:
+                        type: string
+                      description: Set of key-value pairs that you can attach to an
+                        object. This can be useful for storing additional information
+                        about the object in a structured format.
+                      type: object
+                    on_behalf_of:
+                      description: |-
+                        The Stripe account ID for which these funds are intended. For details,
+                        see the PaymentIntents [use case for connected
+                        accounts](/docs/payments/payment-intents/use-cases#connected-accounts).
+                      type: string
+                  title: setup_intent_data_param
+                  type: object
                 submit_type:
                   description: Describes the type of transaction being performed by
                     Checkout in order to customize relevant text on the page, such
@@ -30732,6 +30870,12 @@ paths:
                     by the quantity to get the full amount. If you want to apply a
                     credit to the customer's account, pass a negative unit_amount.
                   type: integer
+                unit_amount_decimal:
+                  description: Same as `unit_amount`, but accepts a decimal value
+                    with at most 12 decimal places. Only one of `unit_amount` and
+                    `unit_amount_decimal` can be set.
+                  format: decimal
+                  type: string
               required:
               - currency
               - customer
@@ -30933,6 +31077,12 @@ paths:
                     by the quantity to get the full amount. If you want to apply a
                     credit to the customer's account, pass a negative unit_amount.
                   type: integer
+                unit_amount_decimal:
+                  description: Same as `unit_amount`, but accepts a decimal value
+                    with at most 12 decimal places. Only one of `unit_amount` and
+                    `unit_amount_decimal` can be set.
+                  format: decimal
+                  type: string
               type: object
         required: false
       responses:
@@ -31463,12 +31613,28 @@ paths:
                   by the quantity to get the full amount. If you want to apply a credit
                   to the customer's account, pass a negative unit_amount.
                 type: integer
+              unit_amount_decimal:
+                description: Same as `unit_amount`, but accepts a decimal string with
+                  at most 12 decimal places. Only one of `unit_amount` and `unit_amount_decimal`
+                  can be set.
+                format: decimal
+                type: string
             title: invoice_item_preview_params
             type: object
           type: array
           x-stripeParam:
             containee_entity_name: invoice_item
         style: deepObject
+      - description: The identifier of the unstarted schedule whose upcoming invoice
+          you'd like to retrieve. Cannot be used with subscription or subscription
+          fields.
+        in: query
+        name: schedule
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
       - description: The identifier of the subscription for which you'd like to retrieve
           the upcoming invoice. If not provided, but a `subscription_items` is provided,
           you will preview creating a subscription with those items. If neither `subscription`
@@ -31499,6 +31665,20 @@ paths:
             type: string
           - format: unix-time
             type: integer
+        style: deepObject
+      - description: Boolean indicating when the subscription should be scheduled
+          to cancel. Will prorate if within the current period if `prorate=true`
+        explode: true
+        in: query
+        name: subscription_cancel_at
+        required: false
+        schema:
+          anyOf:
+          - format: unix-time
+            type: integer
+          - enum:
+            - ''
+            type: string
         style: deepObject
       - description: Boolean indicating whether this subscription should cancel at
           the end of the current period.
@@ -41304,6 +41484,12 @@ paths:
                   description: A positive integer in %s (or 0 for a free plan) representing
                     how much to charge on a recurring basis.
                   type: integer
+                amount_decimal:
+                  description: Same as `amount`, but accepts a decimal value with
+                    at most 12 decimal places. Only one of `amount` and `amount_decimal`
+                    can be set.
+                  format: decimal
+                  type: string
                 billing_scheme:
                   description: Describes how to compute the price per period. Either
                     `per_unit` or `tiered`. `per_unit` indicates that the fixed amount
@@ -41425,10 +41611,23 @@ paths:
                         description: The flat billing amount for an entire tier, regardless
                           of the number of units in the tier.
                         type: integer
+                      flat_amount_decimal:
+                        description: Same as `flat_amount`, but accepts a decimal
+                          value representing an integer in the minor units of the
+                          currency. Only one of `flat_amount` and `flat_amount_decimal`
+                          can be set.
+                        format: decimal
+                        type: string
                       unit_amount:
                         description: The per unit billing amount for each individual
                           unit for which this tier applies.
                         type: integer
+                      unit_amount_decimal:
+                        description: Same as `unit_amount`, but accepts a decimal
+                          value with at most 12 decimal places. Only one of `unit_amount`
+                          and `unit_amount_decimal` can be set.
+                        format: decimal
+                        type: string
                       up_to:
                         anyOf:
                         - enum:
@@ -45788,10 +45987,6 @@ paths:
                                 the mandate was accepted or refused by the customer.
                               maxLength: 5000
                               type: string
-                          required:
-                          - date
-                          - ip
-                          - user_agent
                           title: mandate_online_acceptance_params
                           type: object
                         status:
@@ -46235,10 +46430,6 @@ paths:
                                 the mandate was accepted or refused by the customer.
                               maxLength: 5000
                               type: string
-                          required:
-                          - date
-                          - ip
-                          - user_agent
                           title: mandate_online_acceptance_params
                           type: object
                         status:
@@ -47574,9 +47765,50 @@ paths:
                           fee percentage. For more information, see the application
                           fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                         type: number
+                      billing_thresholds:
+                        anyOf:
+                        - properties:
+                            amount_gte:
+                              description: Monetary threshold that triggers the subscription
+                                to advance to a new billing period
+                              type: integer
+                            reset_billing_cycle_anchor:
+                              description: Indicates if the `billing_cycle_anchor`
+                                should be reset when a threshold is reached. If true,
+                                `billing_cycle_anchor` will be updated to the date/time
+                                the threshold was last reached; otherwise, the value
+                                will remain unchanged.
+                              type: boolean
+                          title: billing_thresholds_param
+                          type: object
+                        - enum:
+                          - ''
+                          type: string
+                        description: Define thresholds at which an invoice will be
+                          sent, and the subscription advanced to a new billing period.
+                          Pass an empty string to remove previously-defined thresholds.
+                      collection_method:
+                        description: Either `charge_automatically`, or `send_invoice`.
+                          When charging automatically, Stripe will attempt to pay
+                          the underlying subscription at the end of each billing cycle
+                          using the default source attached to the customer. When
+                          sending an invoice, Stripe will email your customer an invoice
+                          with payment instructions. Defaults to `charge_automatically`
+                          on creation.
+                        enum:
+                        - charge_automatically
+                        - send_invoice
+                        type: string
                       coupon:
                         description: The identifier of the coupon to apply to this
                           phase of the subscription schedule.
+                        maxLength: 5000
+                        type: string
+                      default_payment_method:
+                        description: ID of the default payment method for the subscription
+                          schedule. It must belong to the customer associated with
+                          the subscription schedule. If not set, invoices will use
+                          the default payment method in the customer's invoice settings.
                         maxLength: 5000
                         type: string
                       default_tax_rates:
@@ -47598,6 +47830,14 @@ paths:
                           schedule ends. If set, `iterations` must not be set.
                         format: unix-time
                         type: integer
+                      invoice_settings:
+                        description: All invoices will be billed using the specified
+                          settings.
+                        properties:
+                          days_until_due:
+                            type: integer
+                        title: invoice_settings_params
+                        type: object
                       iterations:
                         description: Integer representing the multiplier applied to
                           the plan interval. For example, `iterations=2` applied to
@@ -47921,9 +48161,50 @@ paths:
                           fee percentage. For more information, see the application
                           fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                         type: number
+                      billing_thresholds:
+                        anyOf:
+                        - properties:
+                            amount_gte:
+                              description: Monetary threshold that triggers the subscription
+                                to advance to a new billing period
+                              type: integer
+                            reset_billing_cycle_anchor:
+                              description: Indicates if the `billing_cycle_anchor`
+                                should be reset when a threshold is reached. If true,
+                                `billing_cycle_anchor` will be updated to the date/time
+                                the threshold was last reached; otherwise, the value
+                                will remain unchanged.
+                              type: boolean
+                          title: billing_thresholds_param
+                          type: object
+                        - enum:
+                          - ''
+                          type: string
+                        description: Define thresholds at which an invoice will be
+                          sent, and the subscription advanced to a new billing period.
+                          Pass an empty string to remove previously-defined thresholds.
+                      collection_method:
+                        description: Either `charge_automatically`, or `send_invoice`.
+                          When charging automatically, Stripe will attempt to pay
+                          the underlying subscription at the end of each billing cycle
+                          using the default source attached to the customer. When
+                          sending an invoice, Stripe will email your customer an invoice
+                          with payment instructions. Defaults to `charge_automatically`
+                          on creation.
+                        enum:
+                        - charge_automatically
+                        - send_invoice
+                        type: string
                       coupon:
                         description: The identifier of the coupon to apply to this
                           phase of the subscription schedule.
+                        maxLength: 5000
+                        type: string
+                      default_payment_method:
+                        description: ID of the default payment method for the subscription
+                          schedule. It must belong to the customer associated with
+                          the subscription schedule. If not set, invoices will use
+                          the default payment method in the customer's invoice settings.
                         maxLength: 5000
                         type: string
                       default_tax_rates:
@@ -47949,6 +48230,14 @@ paths:
                           type: string
                         description: The date at which this phase of the subscription
                           schedule ends. If set, `iterations` must not be set.
+                      invoice_settings:
+                        description: All invoices will be billed using the specified
+                          settings.
+                        properties:
+                          days_until_due:
+                            type: integer
+                        title: invoice_settings_params
+                        type: object
                       iterations:
                         description: Integer representing the multiplier applied to
                           the plan interval. For example, `iterations=2` applied to
@@ -51930,6 +52219,13 @@ paths:
                     - source.refund_attributes_required
                     - source.transaction.created
                     - source.transaction.updated
+                    - subscription_schedule.aborted
+                    - subscription_schedule.canceled
+                    - subscription_schedule.completed
+                    - subscription_schedule.created
+                    - subscription_schedule.expiring
+                    - subscription_schedule.released
+                    - subscription_schedule.updated
                     - tax_rate.created
                     - tax_rate.updated
                     - topup.canceled
@@ -52217,6 +52513,13 @@ paths:
                     - source.refund_attributes_required
                     - source.transaction.created
                     - source.transaction.updated
+                    - subscription_schedule.aborted
+                    - subscription_schedule.canceled
+                    - subscription_schedule.completed
+                    - subscription_schedule.created
+                    - subscription_schedule.expiring
+                    - subscription_schedule.released
+                    - subscription_schedule.updated
                     - tax_rate.created
                     - tax_rate.updated
                     - topup.canceled

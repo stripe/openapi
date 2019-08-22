@@ -4524,6 +4524,10 @@ definitions:
       unit_amount:
         description: Unit Amount (in the `currency` specified) of the invoice item.
         type: integer
+      unit_amount_decimal:
+        description: Same as `unit_amount`, but contains a decimal value with at most
+          12 decimal places.
+        type: string
     required:
     - amount
     - currency
@@ -7327,7 +7331,7 @@ definitions:
         description: The company's legal name.
         type: string
       name_kana:
-        description: The Kana variation of the company's legal name Japan only).
+        description: The Kana variation of the company's legal name (Japan only).
         type: string
       name_kanji:
         description: The Kanji variation of the company's legal name (Japan only).
@@ -9321,6 +9325,10 @@ definitions:
       amount:
         description: The amount in %s to be charged on the interval specified.
         type: integer
+      amount_decimal:
+        description: Same as `amount`, but contains a decimal value with at most 12
+          decimal places.
+        type: string
       billing_scheme:
         description: Describes how to compute the price per period. Either `per_unit`
           or `tiered`. `per_unit` indicates that the fixed amount (specified in `amount`)
@@ -9435,9 +9443,17 @@ definitions:
       flat_amount:
         description: Price for the entire tier.
         type: integer
+      flat_amount_decimal:
+        description: Same as `flat_amount`, but contains a decimal value with at most
+          12 decimal places.
+        type: string
       unit_amount:
         description: Per unit price for units relevant to the tier.
         type: integer
+      unit_amount_decimal:
+        description: Same as `unit_amount`, but contains a decimal value with at most
+          12 decimal places.
+        type: string
       up_to:
         description: Up to and including to this quantity will be contained in the
           tier.
@@ -11535,6 +11551,10 @@ definitions:
         type: integer
       billing_thresholds:
         "$ref": "#/definitions/subscription_billing_thresholds"
+      cancel_at:
+        description: A date in the future at which the subscription will automatically
+          get canceled
+        type: integer
       cancel_at_period_end:
         description: If the subscription has been canceled with the `at_period_end`
           flag set to `true`, `cancel_at_period_end` on the subscription will be true.
@@ -11683,6 +11703,12 @@ definitions:
           you could pass 5 as the quantity to have the customer charged $50 (5 x $10)
           monthly. Only set if the subscription contains a single plan.
         type: integer
+      schedule:
+        description: The schedule attached to the subscription
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/subscription_schedule"
       start:
         description: Date of the last substantial change to this subscription. For
           example, a change to the items array, or a change of status, will reset
@@ -11759,6 +11785,7 @@ definitions:
     - latest_invoice
     - pending_setup_intent
     - plan
+    - schedule
     x-resourceId: subscription
   subscription_billing_thresholds:
     properties:
@@ -11886,19 +11913,6 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/payment_method"
-      default_source:
-        description: ID of the default payment source for the subscription schedule.
-          It must belong to the customer associated with the subscription schedule
-          and be in a chargeable state. If not set, defaults to the customer's default
-          source.
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/alipay_account"
-          - "$ref": "#/definitions/bank_account"
-          - "$ref": "#/definitions/bitcoin_receiver"
-          - "$ref": "#/definitions/card"
-          - "$ref": "#/definitions/source"
       id:
         description: Unique identifier for the object.
         type: string
@@ -11974,7 +11988,6 @@ definitions:
     - current_phase
     - customer
     - default_payment_method
-    - default_source
     - invoice_settings
     - phases
     - renewal_interval
@@ -12028,6 +12041,18 @@ definitions:
           that will be transferred to the application owner's Stripe account during
           this phase of the schedule.
         type: number
+      billing_thresholds:
+        "$ref": "#/definitions/subscription_billing_thresholds"
+      collection_method:
+        description: Either `charge_automatically`, or `send_invoice`. When charging
+          automatically, Stripe will attempt to pay the underlying subscription at
+          the end of each billing cycle using the default source attached to the customer.
+          When sending an invoice, Stripe will email your customer an invoice with
+          payment instructions.
+        enum:
+        - charge_automatically
+        - send_invoice
+        type: string
       coupon:
         description: ID of the coupon to use during this phase of the subscription
           schedule.
@@ -12035,6 +12060,15 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/coupon"
+      default_payment_method:
+        description: ID of the default payment method for the subscription schedule.
+          It must belong to the customer associated with the subscription schedule.
+          If not set, invoices will use the default payment method in the customer's
+          invoice settings.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/payment_method"
       default_tax_rates:
         items:
           "$ref": "#/definitions/tax_rate"
@@ -12042,6 +12076,8 @@ definitions:
       end_date:
         description: The end of this phase of the subscription schedule.
         type: integer
+      invoice_settings:
+        "$ref": "#/definitions/invoice_setting_subscription_schedule_setting"
       plans:
         description: Plans to subscribe during this phase of the subscription schedule.
         items:
@@ -12064,8 +12100,11 @@ definitions:
     title: SubscriptionSchedulePhaseConfiguration
     type: object
     x-expandableFields:
+    - billing_thresholds
     - coupon
+    - default_payment_method
     - default_tax_rates
+    - invoice_settings
     - plans
   subscription_schedule_renewal_interval:
     properties:
@@ -14226,6 +14265,8 @@ paths:
                   type: boolean
                 director:
                   type: boolean
+                executive:
+                  type: boolean
                 owner:
                   type: boolean
                 percent_ownership: {}
@@ -14440,6 +14481,8 @@ paths:
                 account_opener:
                   type: boolean
                 director:
+                  type: boolean
+                executive:
                   type: boolean
                 owner:
                   type: boolean
@@ -14681,6 +14724,8 @@ paths:
                   type: boolean
                 director:
                   type: boolean
+                executive:
+                  type: boolean
                 owner:
                   type: boolean
                 percent_ownership: {}
@@ -14895,6 +14940,8 @@ paths:
                 account_opener:
                   type: boolean
                 director:
+                  type: boolean
+                executive:
                   type: boolean
                 owner:
                   type: boolean
@@ -16674,6 +16721,8 @@ paths:
                   type: boolean
                 director:
                   type: boolean
+                executive:
+                  type: boolean
                 owner:
                   type: boolean
                 percent_ownership: {}
@@ -16898,6 +16947,8 @@ paths:
                 account_opener:
                   type: boolean
                 director:
+                  type: boolean
+                executive:
                   type: boolean
                 owner:
                   type: boolean
@@ -17145,6 +17196,8 @@ paths:
                   type: boolean
                 director:
                   type: boolean
+                executive:
+                  type: boolean
                 owner:
                   type: boolean
                 percent_ownership: {}
@@ -17369,6 +17422,8 @@ paths:
                 account_opener:
                   type: boolean
                 director:
+                  type: boolean
+                executive:
                   type: boolean
                 owner:
                   type: boolean
@@ -21939,6 +21994,12 @@ paths:
                 to set an application fee percentage. For more information, see the
                 application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
               type: number
+            backdate_start_date:
+              description: For new subscriptions, a past timestamp to backdate the
+                subscription's start date to. If set, the first invoice will contain
+                a proration for the timespan between the start date and the current
+                time. Can be combined with trials and the billing cycle anchor.
+              type: integer
             billing:
               description: This field has been renamed to `collection_method` and
                 will be removed in a future API version.
@@ -21957,6 +22018,11 @@ paths:
               description: Define thresholds at which an invoice will be sent, and
                 the subscription advanced to a new billing period. Pass an empty string
                 to remove previously-defined thresholds.
+            cancel_at:
+              description: A timestamp at which the subscription should cancel. If
+                set to a date before the current period ends this will cause a proration
+                if `prorate=true`.
+              type: integer
             cancel_at_period_end:
               description: Boolean indicating whether this subscription should cancel
                 at the end of the current period.
@@ -22217,6 +22283,10 @@ paths:
               description: Define thresholds at which an invoice will be sent, and
                 the subscription advanced to a new billing period. Pass an empty string
                 to remove previously-defined thresholds.
+            cancel_at:
+              description: A timestamp at which the subscription should cancel. If
+                set to a date before the current period ends this will cause a proration
+                if `prorate=true`.
             cancel_at_period_end:
               description: Boolean indicating whether this subscription should cancel
                 at the end of the current period.
@@ -23659,6 +23729,11 @@ paths:
                 quantity to get the full amount. If you want to apply a credit to
                 the customer's account, pass a negative unit_amount.
               type: integer
+            unit_amount_decimal:
+              description: Same as `unit_amount`, but accepts a decimal value with
+                at most 12 decimal places. Only one of `unit_amount` and `unit_amount_decimal`
+                can be set.
+              type: string
           required:
           - currency
           - customer
@@ -23784,6 +23859,11 @@ paths:
                 quantity to get the full amount. If you want to apply a credit to
                 the customer's account, pass a negative unit_amount.
               type: integer
+            unit_amount_decimal:
+              description: Same as `unit_amount`, but accepts a decimal value with
+                at most 12 decimal places. Only one of `unit_amount` and `unit_amount_decimal`
+                can be set.
+              type: string
           type: object
       responses:
         '200':
@@ -24065,6 +24145,13 @@ paths:
         name: invoice_items
         required: false
         type: array
+      - description: The identifier of the unstarted schedule whose upcoming invoice
+          you'd like to retrieve. Cannot be used with subscription or subscription
+          fields.
+        in: query
+        name: schedule
+        required: false
+        type: string
       - description: The identifier of the subscription for which you'd like to retrieve
           the upcoming invoice. If not provided, but a `subscription_items` is provided,
           you will preview creating a subscription with those items. If neither `subscription`
@@ -24081,6 +24168,12 @@ paths:
           For existing subscriptions, the value can only be set to `now` or `unchanged`.
         in: query
         name: subscription_billing_cycle_anchor
+        required: false
+        type: string
+      - description: Boolean indicating when the subscription should be scheduled
+          to cancel. Will prorate if within the current period if `prorate=true`
+        in: query
+        name: subscription_cancel_at
         required: false
         type: string
       - description: Boolean indicating whether this subscription should cancel at
@@ -24212,6 +24305,13 @@ paths:
         name: limit
         required: false
         type: integer
+      - description: The identifier of the unstarted schedule whose upcoming invoice
+          you'd like to retrieve. Cannot be used with subscription or subscription
+          fields.
+        in: query
+        name: schedule
+        required: false
+        type: string
       - description: A cursor for use in pagination. `starting_after` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, ending with `obj_foo`, your subsequent
@@ -24237,6 +24337,12 @@ paths:
           For existing subscriptions, the value can only be set to `now` or `unchanged`.
         in: query
         name: subscription_billing_cycle_anchor
+        required: false
+        type: string
+      - description: Boolean indicating when the subscription should be scheduled
+          to cancel. Will prorate if within the current period if `prorate=true`
+        in: query
+        name: subscription_cancel_at
         required: false
         type: string
       - description: Boolean indicating whether this subscription should cancel at
@@ -31903,6 +32009,11 @@ paths:
               description: A positive integer in %s (or 0 for a free plan) representing
                 how much to charge on a recurring basis.
               type: integer
+            amount_decimal:
+              description: Same as `amount`, but accepts a decimal value with at most
+                12 decimal places. Only one of `amount` and `amount_decimal` can be
+                set.
+              type: string
             billing_scheme:
               description: Describes how to compute the price per period. Either `per_unit`
                 or `tiered`. `per_unit` indicates that the fixed amount (specified
@@ -31983,8 +32094,12 @@ paths:
                 properties:
                   flat_amount:
                     type: integer
+                  flat_amount_decimal:
+                    type: string
                   unit_amount:
                     type: integer
+                  unit_amount_decimal:
+                    type: string
                   up_to: {}
                 required:
                 - up_to
@@ -34745,10 +34860,6 @@ paths:
                           type: string
                         user_agent:
                           type: string
-                      required:
-                      - date
-                      - ip
-                      - user_agent
                       title: mandate_online_acceptance_params
                       type: object
                     status:
@@ -35026,10 +35137,6 @@ paths:
                           type: string
                         user_agent:
                           type: string
-                      required:
-                      - date
-                      - ip
-                      - user_agent
                       title: mandate_online_acceptance_params
                       type: object
                     status:
@@ -35932,13 +36039,27 @@ paths:
                 properties:
                   application_fee_percent:
                     type: number
+                  billing_thresholds: {}
+                  collection_method:
+                    enum:
+                    - charge_automatically
+                    - send_invoice
+                    type: string
                   coupon:
+                    type: string
+                  default_payment_method:
                     type: string
                   default_tax_rates:
                     items:
                       type: string
                   end_date:
                     type: integer
+                  invoice_settings:
+                    properties:
+                      days_until_due:
+                        type: integer
+                    title: invoice_settings_params
+                    type: object
                   iterations:
                     type: integer
                   plans:
@@ -36113,12 +36234,26 @@ paths:
                 properties:
                   application_fee_percent:
                     type: number
+                  billing_thresholds: {}
+                  collection_method:
+                    enum:
+                    - charge_automatically
+                    - send_invoice
+                    type: string
                   coupon:
+                    type: string
+                  default_payment_method:
                     type: string
                   default_tax_rates:
                     items:
                       type: string
                   end_date: {}
+                  invoice_settings:
+                    properties:
+                      days_until_due:
+                        type: integer
+                    title: invoice_settings_params
+                    type: object
                   iterations:
                     type: integer
                   plans:
@@ -36408,6 +36543,12 @@ paths:
                 to set an application fee percentage. For more information, see the
                 application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
               type: number
+            backdate_start_date:
+              description: For new subscriptions, a past timestamp to backdate the
+                subscription's start date to. If set, the first invoice will contain
+                a proration for the timespan between the start date and the current
+                time. Can be combined with trials and the billing cycle anchor.
+              type: integer
             billing:
               description: This field has been renamed to `collection_method` and
                 will be removed in a future API version.
@@ -36426,6 +36567,11 @@ paths:
               description: Define thresholds at which an invoice will be sent, and
                 the subscription advanced to a new billing period. Pass an empty string
                 to remove previously-defined thresholds.
+            cancel_at:
+              description: A timestamp at which the subscription should cancel. If
+                set to a date before the current period ends this will cause a proration
+                if `prorate=true`.
+              type: integer
             cancel_at_period_end:
               description: Boolean indicating whether this subscription should cancel
                 at the end of the current period.
@@ -36674,6 +36820,10 @@ paths:
               description: Define thresholds at which an invoice will be sent, and
                 the subscription advanced to a new billing period. Pass an empty string
                 to remove previously-defined thresholds.
+            cancel_at:
+              description: A timestamp at which the subscription should cancel. If
+                set to a date before the current period ends this will cause a proration
+                if `prorate=true`.
             cancel_at_period_end:
               description: Boolean indicating whether this subscription should cancel
                 at the end of the current period.
@@ -38769,6 +38919,13 @@ paths:
                 - source.refund_attributes_required
                 - source.transaction.created
                 - source.transaction.updated
+                - subscription_schedule.aborted
+                - subscription_schedule.canceled
+                - subscription_schedule.completed
+                - subscription_schedule.created
+                - subscription_schedule.expiring
+                - subscription_schedule.released
+                - subscription_schedule.updated
                 - tax_rate.created
                 - tax_rate.updated
                 - topup.canceled
@@ -38999,6 +39156,13 @@ paths:
                 - source.refund_attributes_required
                 - source.transaction.created
                 - source.transaction.updated
+                - subscription_schedule.aborted
+                - subscription_schedule.canceled
+                - subscription_schedule.completed
+                - subscription_schedule.created
+                - subscription_schedule.expiring
+                - subscription_schedule.released
+                - subscription_schedule.updated
                 - tax_rate.created
                 - tax_rate.updated
                 - topup.canceled
