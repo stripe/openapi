@@ -10057,6 +10057,11 @@ components:
         vat_id_provided:
           description: Whether the company's business VAT number was provided.
           type: boolean
+        verification:
+          anyOf:
+          - "$ref": "#/components/schemas/legal_entity_company_verification"
+          description: Information on the verification state of the company.
+          nullable: true
       required:
       - directors_provided
       - owners_provided
@@ -10066,9 +10071,73 @@ components:
       - address
       - address_kana
       - address_kanji
+      - verification
       x-stripeResource:
         class_name: Company
         in_class: account
+        inner_classes:
+        - legal_entity_company_verification
+    legal_entity_company_verification:
+      properties:
+        document:
+          "$ref": "#/components/schemas/legal_entity_company_verification_document"
+      required:
+      - document
+      title: LegalEntityCompanyVerification
+      type: object
+      x-expandableFields:
+      - document
+      x-stripeResource:
+        class_name: Verification
+        in_class: legal_entity_company
+        inner_classes:
+        - legal_entity_company_verification_document
+    legal_entity_company_verification_document:
+      properties:
+        back:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/file"
+          description: The back of a document returned by a [file upload](#create_file)
+            with a `purpose` value of `additional_verification`.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/file"
+        details:
+          description: A user-displayable string describing the verification state
+            of this document.
+          maxLength: 5000
+          nullable: true
+          type: string
+        details_code:
+          description: One of `document_corrupt`, `document_failed_copy`, `document_not_readable`,
+            `document_not_uploaded`, `document_failed_other`, `document_fraudulent`,
+            `document_invalid`, `document_manipulated`, `document_too_large`, or `document_failed_test_mode`.
+            A machine-readable code specifying the verification state for this document.
+          maxLength: 5000
+          nullable: true
+          type: string
+        front:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/file"
+          description: The front of a document returned by a [file upload](#create_file)
+            with a `purpose` value of `additional_verification`.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/file"
+      title: LegalEntityCompanyVerificationDocument
+      type: object
+      x-expandableFields:
+      - back
+      - front
+      x-stripeResource:
+        class_name: VerificationDocument
+        in_class: legal_entity_company_verification
     legal_entity_dob:
       properties:
         day:
@@ -10134,6 +10203,12 @@ components:
         in_class: person
     legal_entity_person_verification:
       properties:
+        additional_document:
+          anyOf:
+          - "$ref": "#/components/schemas/legal_entity_person_verification_document"
+          description: A document showing address, either a passport, local ID card,
+            or utility bill from a well-known utility company.
+          nullable: true
         details:
           description: A user-displayable string describing the verification state
             for the person. For example, this may say "Provided identity information
@@ -10159,6 +10234,7 @@ components:
       title: LegalEntityPersonVerification
       type: object
       x-expandableFields:
+      - additional_document
       - document
       x-stripeResource:
         class_name: Verification
@@ -20821,6 +20897,26 @@ paths:
                       description: The VAT number of the company.
                       maxLength: 5000
                       type: string
+                    verification:
+                      description: Information on the verification state of the company.
+                      properties:
+                        document:
+                          description: A document verifying the business.
+                          properties:
+                            back:
+                              description: The back of a document returned by a [file
+                                upload](#create_file) with a `purpose` value of `additional_verification`.
+                              maxLength: 500
+                              type: string
+                            front:
+                              description: The front of a document returned by a [file
+                                upload](#create_file) with a `purpose` value of `additional_verification`.
+                              maxLength: 500
+                              type: string
+                          title: verification_document_specs
+                          type: object
+                      title: verification_specs
+                      type: object
                   title: company_specs
                   type: object
                 country:
@@ -21053,6 +21149,23 @@ paths:
                     verification:
                       description: The individual's verification document information.
                       properties:
+                        additional_document:
+                          description: A document showing address, either a passport,
+                            local ID card, or utility bill from a well-known utility
+                            company.
+                          properties:
+                            back:
+                              description: The back of an ID returned by a [file upload](#create_file)
+                                with a `purpose` value of `identity_document`.
+                              maxLength: 500
+                              type: string
+                            front:
+                              description: The front of an ID returned by a [file
+                                upload](#create_file) with a `purpose` value of `identity_document`.
+                              maxLength: 500
+                              type: string
+                          title: person_verification_document_specs
+                          type: object
                         document:
                           description: An identifying document, either a passport
                             or local ID card.
@@ -21630,6 +21743,26 @@ paths:
                       description: The VAT number of the company.
                       maxLength: 5000
                       type: string
+                    verification:
+                      description: Information on the verification state of the company.
+                      properties:
+                        document:
+                          description: A document verifying the business.
+                          properties:
+                            back:
+                              description: The back of a document returned by a [file
+                                upload](#create_file) with a `purpose` value of `additional_verification`.
+                              maxLength: 500
+                              type: string
+                            front:
+                              description: The front of a document returned by a [file
+                                upload](#create_file) with a `purpose` value of `additional_verification`.
+                              maxLength: 500
+                              type: string
+                          title: verification_document_specs
+                          type: object
+                      title: verification_specs
+                      type: object
                   title: company_specs
                   type: object
                 default_currency:
@@ -21854,6 +21987,23 @@ paths:
                     verification:
                       description: The individual's verification document information.
                       properties:
+                        additional_document:
+                          description: A document showing address, either a passport,
+                            local ID card, or utility bill from a well-known utility
+                            company.
+                          properties:
+                            back:
+                              description: The back of an ID returned by a [file upload](#create_file)
+                                with a `purpose` value of `identity_document`.
+                              maxLength: 500
+                              type: string
+                            front:
+                              description: The front of an ID returned by a [file
+                                upload](#create_file) with a `purpose` value of `identity_document`.
+                              maxLength: 500
+                              type: string
+                          title: person_verification_document_specs
+                          type: object
                         document:
                           description: An identifying document, either a passport
                             or local ID card.
@@ -23106,6 +23256,22 @@ paths:
                 verification:
                   description: The person's verification status.
                   properties:
+                    additional_document:
+                      description: A document showing address, either a passport,
+                        local ID card, or utility bill from a well-known utility company.
+                      properties:
+                        back:
+                          description: The back of an ID returned by a [file upload](#create_file)
+                            with a `purpose` value of `identity_document`.
+                          maxLength: 500
+                          type: string
+                        front:
+                          description: The front of an ID returned by a [file upload](#create_file)
+                            with a `purpose` value of `identity_document`.
+                          maxLength: 500
+                          type: string
+                      title: person_verification_document_specs
+                      type: object
                     document:
                       description: An identifying document, either a passport or local
                         ID card.
@@ -23522,6 +23688,22 @@ paths:
                 verification:
                   description: The person's verification status.
                   properties:
+                    additional_document:
+                      description: A document showing address, either a passport,
+                        local ID card, or utility bill from a well-known utility company.
+                      properties:
+                        back:
+                          description: The back of an ID returned by a [file upload](#create_file)
+                            with a `purpose` value of `identity_document`.
+                          maxLength: 500
+                          type: string
+                        front:
+                          description: The front of an ID returned by a [file upload](#create_file)
+                            with a `purpose` value of `identity_document`.
+                          maxLength: 500
+                          type: string
+                      title: person_verification_document_specs
+                      type: object
                     document:
                       description: An identifying document, either a passport or local
                         ID card.
