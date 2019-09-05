@@ -228,10 +228,18 @@ definitions:
         items:
           type: string
         type: array
+      pending_verification:
+        description: Additional fields that may be required depending on the results
+          of verification or review for provided requirements. If any of these fields
+          become required, they appear in `currently_due` or `past_due`.
+        items:
+          type: string
+        type: array
     required:
     - currently_due
     - eventually_due
     - past_due
+    - pending_verification
     title: AccountCapabilityRequirements
     type: object
     x-expandableFields: []
@@ -378,6 +386,13 @@ definitions:
       past_due:
         description: The fields that weren't collected by the `current_deadline`.
           These fields need to be collected to re-enable the account.
+        items:
+          type: string
+        type: array
+      pending_verification:
+        description: Additional fields that may be required depending on the results
+          of verification or review for provided requirements. If any of these fields
+          become required, they appear in `currently_due` or `past_due`.
         items:
           type: string
         type: array
@@ -1220,7 +1235,7 @@ definitions:
           oneOf:
           - "$ref": "#/definitions/account"
       id:
-        description: Unique identifier for the object.
+        description: The identifier for the capability.
         type: string
       object:
         description: String representing the object's type. Objects of the same type
@@ -1813,6 +1828,14 @@ definitions:
         - sv
         - zh
         type: string
+      mode:
+        description: The mode of the Checkout Session, one of `payment`, `setup`,
+          or `subscription`.
+        enum:
+        - payment
+        - setup
+        - subscription
+        type: string
       object:
         description: String representing the object's type. Objects of the same type
           share the same value.
@@ -1820,8 +1843,7 @@ definitions:
         - checkout.session
         type: string
       payment_intent:
-        description: The ID of the PaymentIntent created if SKUs or line items were
-          provided.
+        description: The ID of the PaymentIntent for `payment` mode.
         type: string
         x-expansionResources:
           oneOf:
@@ -1833,6 +1855,12 @@ definitions:
         items:
           type: string
         type: array
+      setup_intent:
+        description: The ID of the SetupIntent if mode was set to `setup`.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/setup_intent"
       submit_type:
         description: |-
           Describes the type of transaction being performed by Checkout in order
@@ -1872,6 +1900,7 @@ definitions:
     - customer
     - display_items
     - payment_intent
+    - setup_intent
     - subscription
     x-resourceId: checkout.session
   checkout_session_custom_display_item_description:
@@ -4455,6 +4484,8 @@ definitions:
           - "$ref": "#/definitions/customer"
           - "$ref": "#/definitions/deleted_customer"
       date:
+        description: Time at which the object was created. Measured in seconds since
+          the Unix epoch.
         type: integer
       description:
         description: An arbitrary string attached to the object. Often useful for
@@ -4509,6 +4540,8 @@ definitions:
           oneOf:
           - "$ref": "#/definitions/subscription"
       subscription_item:
+        description: The subscription item that this invoice item has been created
+          for, if any.
         type: string
       tax_rates:
         description: The tax rates which apply to the invoice item. When set, the
@@ -4983,6 +5016,9 @@ definitions:
         type: string
       type:
         description: One of `individual` or `business_entity`.
+        enum:
+        - business_entity
+        - individual
         type: string
     required:
     - billing
@@ -5306,6 +5342,9 @@ definitions:
       state:
         description: State where the seller is located
         type: string
+      url:
+        description: The url an online purchase was made from
+        type: string
     required:
     - category
     - network_id
@@ -5360,12 +5399,16 @@ definitions:
       address_zip_check:
         description: One of `match`, `mismatch`, or `not_provided`.
         type: string
+      authentication:
+        description: One of `success`, `failure`, `exempt`, or `none`.
+        type: string
       cvc_check:
         description: One of `match`, `mismatch`, or `not_provided`.
         type: string
     required:
     - address_line1_check
     - address_zip_check
+    - authentication
     - cvc_check
     title: IssuingAuthorizationVerificationData
     type: object
@@ -8082,7 +8125,7 @@ definitions:
 
           If present, the payment method used with this PaymentIntent can be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer, even after the transaction completes.
 
-          Use `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. See [Saving card details after a payment](https://stripe.com/docs/payments/cards/saving-cards#saving-card-after-payment) to learn more.
+          Use `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. See [Saving card details after a payment](https://stripe.com/docs/payments/cards/saving-cards-after-payment) to learn more.
 
           Stripe uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules. For example, if your customer is impacted by [SCA](https://stripe.com/docs/strong-customer-authentication), using `off_session` will ensure that they are authenticated while processing this PaymentIntent. You will then be able to collect [off-session payments](https://stripe.com/docs/payments/cards/charging-saved-cards#off-session-payments-with-saved-cards) for this customer.
         type: string
@@ -9280,7 +9323,7 @@ definitions:
       currently_due:
         description: Fields that need to be collected to keep the person's account
           enabled. If not collected by the account's `current_deadline`, these fields
-          are moved to `past_due` and the account is disabled.
+          appear in `past_due` as well, and the account is disabled.
         items:
           type: string
         type: array
@@ -9297,10 +9340,18 @@ definitions:
         items:
           type: string
         type: array
+      pending_verification:
+        description: Additional fields that may be required depending on the results
+          of verification or review for provided requirements. If any of these fields
+          become required, they appear in `currently_due` or `past_due`.
+        items:
+          type: string
+        type: array
     required:
     - currently_due
     - eventually_due
     - past_due
+    - pending_verification
     title: PersonRequirements
     type: object
     x-expandableFields: []
@@ -11913,6 +11964,13 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/payment_method"
+      end_behavior:
+        description: Behavior of the subscription schedule and underlying subscription
+          when it ends.
+        enum:
+        - cancel
+        - release
+        type: string
       id:
         description: Unique identifier for the object.
         type: string
@@ -11950,6 +12008,7 @@ definitions:
         description: Behavior of the subscription schedule and underlying subscription
           when it ends.
         enum:
+        - cancel
         - none
         - release
         - renew
@@ -11979,7 +12038,6 @@ definitions:
     - livemode
     - object
     - phases
-    - renewal_behavior
     - status
     title: SubscriptionSchedule
     type: object
@@ -19518,6 +19576,14 @@ paths:
               - sv
               - zh
               type: string
+            mode:
+              description: The mode of the Checkout Session, one of `payment`, `setup`,
+                or `subscription`.
+              enum:
+              - payment
+              - setup
+              - subscription
+              type: string
             payment_intent_data:
               description: A subset of parameters to be passed to PaymentIntent creation.
               properties:
@@ -19595,6 +19661,17 @@ paths:
                 - card
                 type: string
               type: array
+            setup_intent_data:
+              description: A subset of parameters to be passed to SetupIntent creation.
+              properties:
+                description:
+                  type: string
+                metadata:
+                  type: object
+                on_behalf_of:
+                  type: string
+              title: setup_intent_data_param
+              type: object
             submit_type:
               description: Describes the type of transaction being performed by Checkout
                 in order to customize relevant text on the page, such as the submit
@@ -19636,7 +19713,8 @@ paths:
               type: object
             success_url:
               description: |-
-                The URL to which Stripe should send customers when payment is complete.
+                The URL to which Stripe should send customers when payment or setup
+                is complete.
                 If you’d like access to the Checkout Session for the successful
                 payment, read more about it in our guide on [fulfilling your payments
                 with webhooks](/docs/payments/checkout/fulfillment#webhooks).
@@ -23655,8 +23733,8 @@ paths:
           properties:
             amount:
               description: The integer amount in **%s** of the charge to be applied
-                to the upcoming invoice. If you want to apply a credit to the customer's
-                account, pass a negative amount.
+                to the upcoming invoice. Passing in a negative `amount` will reduce
+                the `amount_due` on the invoice.
               type: integer
             currency:
               description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
@@ -23725,9 +23803,9 @@ paths:
               type: array
             unit_amount:
               description: The integer unit amount in **%s** of the charge to be applied
-                to the upcoming invoice. This unit_amount will be multiplied by the
-                quantity to get the full amount. If you want to apply a credit to
-                the customer's account, pass a negative unit_amount.
+                to the upcoming invoice. This `unit_amount` will be multiplied by
+                the quantity to get the full amount. Passing in a negative `unit_amount`
+                will reduce the `amount_due` on the invoice.
               type: integer
             unit_amount_decimal:
               description: Same as `unit_amount`, but accepts a decimal value with
@@ -24170,7 +24248,7 @@ paths:
         name: subscription_billing_cycle_anchor
         required: false
         type: string
-      - description: Boolean indicating when the subscription should be scheduled
+      - description: Timestamp indicating when the subscription should be scheduled
           to cancel. Will prorate if within the current period if `prorate=true`
         in: query
         name: subscription_cancel_at
@@ -24182,7 +24260,8 @@ paths:
         name: subscription_cancel_at_period_end
         required: false
         type: boolean
-      - in: query
+      - description: This simulates the subscription being canceled or expired immediately.
+        in: query
         name: subscription_cancel_now
         required: false
         type: boolean
@@ -24339,7 +24418,7 @@ paths:
         name: subscription_billing_cycle_anchor
         required: false
         type: string
-      - description: Boolean indicating when the subscription should be scheduled
+      - description: Timestamp indicating when the subscription should be scheduled
           to cancel. Will prorate if within the current period if `prorate=true`
         in: query
         name: subscription_cancel_at
@@ -24351,7 +24430,8 @@ paths:
         name: subscription_cancel_at_period_end
         required: false
         type: boolean
-      - in: query
+      - description: This simulates the subscription being canceled or expired immediately.
+        in: query
         name: subscription_cancel_now
         required: false
         type: boolean
@@ -30821,7 +30901,7 @@ paths:
 
                 If present, the payment method used with this PaymentIntent can be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer, even after the transaction completes.
 
-                Use `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. See [Saving card details after a payment](https://stripe.com/docs/payments/cards/saving-cards#saving-card-after-payment) to learn more.
+                Use `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. See [Saving card details after a payment](https://stripe.com/docs/payments/cards/saving-cards-after-payment) to learn more.
 
                 Stripe uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules. For example, if your customer is impacted by [SCA](https://stripe.com/docs/strong-customer-authentication), using `off_session` will ensure that they are authenticated while processing this PaymentIntent. You will then be able to collect [off-session payments](https://stripe.com/docs/payments/cards/charging-saved-cards#off-session-payments-with-saved-cards) for this customer.
               enum:
@@ -34142,13 +34222,11 @@ paths:
                 or cancel their payment on the payment method's app or site. If you'd
                 prefer to redirect to a mobile application, you can alternatively
                 supply an application URI scheme. This parameter can only be used
-                with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm).
+                with [`confirm=true`](https://stripe.com/docs/api/setup_intents/create#create_setup_intent-confirm).
               type: string
             usage:
-              description: |-
-                Indicates how the payment method is intended to be used in the future.
-
-                Use `on_session` if you intend to only reuse the payment method when the customer is in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. If not provided, this value defaults to `off_session`.
+              description: Indicates how the payment method is intended to be used
+                in the future. If not provided, this value defaults to `off_session`.
               type: string
           type: object
       responses:
@@ -36006,6 +36084,13 @@ paths:
                 and be in a chargeable state. If not set, defaults to the customer's
                 default source.
               type: string
+            end_behavior:
+              enum:
+              - cancel
+              - none
+              - release
+              - renew
+              type: string
             expand:
               description: Specifies which fields in the response should be expanded.
               items:
@@ -36091,13 +36176,15 @@ paths:
               type: array
             renewal_behavior:
               description: Configures how the subscription schedule behaves when it
-                ends. Possible values are `none`, `renew`, or `release`. `renew` will
-                create a new subscription schedule revision by adding a new phase
-                using the most recent phase's `plans` applied to a duration set by
-                `renewal_interval`. `none` will stop the subscription schedule and
-                cancel the underlying subscription. `release` will stop the subscription
-                schedule, but keep the underlying subscription running.
+                ends. Possible values are `none`, `cancel`, `renew`, or `release`.
+                `renew` will create a new subscription schedule revision by adding
+                a new phase using the most recent phase's `plans` applied to a duration
+                set by `renewal_interval`. `none` will stop the subscription schedule
+                and cancel the underlying subscription. `cancel` is semantically the
+                same as `none`. `release` will stop the subscription schedule, but
+                keep the underlying subscription running.
               enum:
+              - cancel
               - none
               - release
               - renew
@@ -36207,6 +36294,13 @@ paths:
                 and be in a chargeable state. If not set, defaults to the customer's
                 default source.
               type: string
+            end_behavior:
+              enum:
+              - cancel
+              - none
+              - release
+              - renew
+              type: string
             expand:
               description: Specifies which fields in the response should be expanded.
               items:
@@ -36289,13 +36383,15 @@ paths:
               type: boolean
             renewal_behavior:
               description: Configures how the subscription schedule behaves when it
-                ends. Possible values are `none`, `renew`, or `release`. `renew` will
-                create a new subscription schedule revision by adding a new phase
-                using the most recent phase's `plans` applied to a duration set by
-                `renewal_interval`. `none` will stop the subscription schedule and
-                cancel the underlying subscription. `release` will stop the subscription
-                schedule, but keep the underlying subscription running.
+                ends. Possible values are `none`, `cancel`, `renew`, or `release`.
+                `renew` will create a new subscription schedule revision by adding
+                a new phase using the most recent phase's `plans` applied to a duration
+                set by `renewal_interval`. `none` will stop the subscription schedule
+                and cancel the underlying subscription. `cancel` is semantically the
+                same as `none`. `release` will stop the subscription schedule, but
+                keep the underlying subscription running.
               enum:
+              - cancel
               - none
               - release
               - renew
