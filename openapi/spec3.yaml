@@ -223,6 +223,14 @@ components:
       - support_address
     account_capabilities:
       properties:
+        card_issuing:
+          description: The status of the card issuing capability of the account, or
+            whether you can use Issuing to distribute funds on cards
+          enum:
+          - active
+          - inactive
+          - pending
+          type: string
         card_payments:
           description: The status of the card payments capability of the account,
             or whether the account can directly process credit and debit card charges.
@@ -1063,6 +1071,7 @@ components:
           - "$ref": "#/components/schemas/platform_tax_fee"
           - "$ref": "#/components/schemas/refund"
           - "$ref": "#/components/schemas/reserve_transaction"
+          - "$ref": "#/components/schemas/tax_deducted_at_source"
           - "$ref": "#/components/schemas/topup"
           - "$ref": "#/components/schemas/transfer"
           - "$ref": "#/components/schemas/transfer_reversal"
@@ -1081,6 +1090,7 @@ components:
             - "$ref": "#/components/schemas/platform_tax_fee"
             - "$ref": "#/components/schemas/refund"
             - "$ref": "#/components/schemas/reserve_transaction"
+            - "$ref": "#/components/schemas/tax_deducted_at_source"
             - "$ref": "#/components/schemas/topup"
             - "$ref": "#/components/schemas/transfer"
             - "$ref": "#/components/schemas/transfer_reversal"
@@ -6006,9 +6016,13 @@ components:
           maxLength: 5000
           type: string
         status:
-          description: Current status of dispute. One of `unsubmitted`, `under_review`,
-            `won`, or `lost`.
-          maxLength: 5000
+          description: Current status of dispute. One of `lost`, `under_review`, `unsubmitted`,
+            or `won`.
+          enum:
+          - lost
+          - under_review
+          - unsubmitted
+          - won
           type: string
       required:
       - amount
@@ -10922,11 +10936,6 @@ components:
       x-resourceId: person
     person_relationship:
       properties:
-        account_opener:
-          description: Whether the person opened the account. This person provides
-            information about themselves, and general information about the account.
-          nullable: true
-          type: boolean
         director:
           description: Whether the person is a director of the account's legal entity.
             Currently only required for accounts in the EU. Directors are typically
@@ -10947,6 +10956,15 @@ components:
           description: The percent owned by the person of the account's legal entity.
           nullable: true
           type: number
+        representative:
+          description: Whether the person is authorized as the primary representative
+            of the account. This is the person nominated by the business to provide
+            information about themselves, and general information about the account.
+            There can only be one representative at any given time. At the time the
+            account is created, this person should be set to the person responsible
+            for opening the account.
+          nullable: true
+          type: boolean
         title:
           description: The person's title (e.g., CEO, Support Engineer).
           maxLength: 5000
@@ -14506,6 +14524,41 @@ components:
       title: SubscriptionScheduleRenewalInterval
       type: object
       x-expandableFields: []
+    tax_deducted_at_source:
+      properties:
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - tax_deducted_at_source
+          type: string
+        period_end:
+          description: The end of the invoicing period. This TDS applies to Stripe
+            fees collected during this invoicing period.
+          format: unix-time
+          type: integer
+        period_start:
+          description: The start of the invoicing period. This TDS applies to Stripe
+            fees collected during this invoicing period.
+          format: unix-time
+          type: integer
+        tax_deduction_account_number:
+          description: The TAN that was supplied to Stripe when TDS was assessed
+          maxLength: 5000
+          type: string
+      required:
+      - id
+      - object
+      - period_end
+      - period_start
+      - tax_deduction_account_number
+      title: TaxDeductedAtSource
+      type: object
+      x-expandableFields: []
     tax_id:
       properties:
         country:
@@ -15550,7 +15603,7 @@ info:
     details.
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
-  version: '2019-09-09'
+  version: '2019-10-08'
   x-stripeSpecFilename: spec3
 openapi: 3.0.0
 paths:
@@ -17252,13 +17305,13 @@ paths:
         required: false
         schema:
           properties:
-            account_opener:
-              type: boolean
             director:
               type: boolean
             executive:
               type: boolean
             owner:
+              type: boolean
+            representative:
               type: boolean
           title: all_people_relationship_specs
           type: object
@@ -17530,8 +17583,6 @@ paths:
                   description: The relationship that this person has with the account's
                     legal entity.
                   properties:
-                    account_opener:
-                      type: boolean
                     director:
                       type: boolean
                     executive:
@@ -17544,6 +17595,8 @@ paths:
                       - enum:
                         - ''
                         type: string
+                    representative:
+                      type: boolean
                     title:
                       maxLength: 5000
                       type: string
@@ -17892,8 +17945,6 @@ paths:
                   description: The relationship that this person has with the account's
                     legal entity.
                   properties:
-                    account_opener:
-                      type: boolean
                     director:
                       type: boolean
                     executive:
@@ -17906,6 +17957,8 @@ paths:
                       - enum:
                         - ''
                         type: string
+                    representative:
+                      type: boolean
                     title:
                       maxLength: 5000
                       type: string
@@ -18000,13 +18053,13 @@ paths:
         required: false
         schema:
           properties:
-            account_opener:
-              type: boolean
             director:
               type: boolean
             executive:
               type: boolean
             owner:
+              type: boolean
+            representative:
               type: boolean
           title: all_people_relationship_specs
           type: object
@@ -18278,8 +18331,6 @@ paths:
                   description: The relationship that this person has with the account's
                     legal entity.
                   properties:
-                    account_opener:
-                      type: boolean
                     director:
                       type: boolean
                     executive:
@@ -18292,6 +18343,8 @@ paths:
                       - enum:
                         - ''
                         type: string
+                    representative:
+                      type: boolean
                     title:
                       maxLength: 5000
                       type: string
@@ -18640,8 +18693,6 @@ paths:
                   description: The relationship that this person has with the account's
                     legal entity.
                   properties:
-                    account_opener:
-                      type: boolean
                     director:
                       type: boolean
                     executive:
@@ -18654,6 +18705,8 @@ paths:
                       - enum:
                         - ''
                         type: string
+                    representative:
+                      type: boolean
                     title:
                       maxLength: 5000
                       type: string
@@ -21175,13 +21228,13 @@ paths:
         required: false
         schema:
           properties:
-            account_opener:
-              type: boolean
             director:
               type: boolean
             executive:
               type: boolean
             owner:
+              type: boolean
+            representative:
               type: boolean
           title: all_people_relationship_specs
           type: object
@@ -21458,8 +21511,6 @@ paths:
                   description: The relationship that this person has with the account's
                     legal entity.
                   properties:
-                    account_opener:
-                      type: boolean
                     director:
                       type: boolean
                     executive:
@@ -21472,6 +21523,8 @@ paths:
                       - enum:
                         - ''
                         type: string
+                    representative:
+                      type: boolean
                     title:
                       maxLength: 5000
                       type: string
@@ -21838,8 +21891,6 @@ paths:
                   description: The relationship that this person has with the account's
                     legal entity.
                   properties:
-                    account_opener:
-                      type: boolean
                     director:
                       type: boolean
                     executive:
@@ -21852,6 +21903,8 @@ paths:
                       - enum:
                         - ''
                         type: string
+                    representative:
+                      type: boolean
                     title:
                       maxLength: 5000
                       type: string
@@ -21953,13 +22006,13 @@ paths:
         required: false
         schema:
           properties:
-            account_opener:
-              type: boolean
             director:
               type: boolean
             executive:
               type: boolean
             owner:
+              type: boolean
+            representative:
               type: boolean
           title: all_people_relationship_specs
           type: object
@@ -22236,8 +22289,6 @@ paths:
                   description: The relationship that this person has with the account's
                     legal entity.
                   properties:
-                    account_opener:
-                      type: boolean
                     director:
                       type: boolean
                     executive:
@@ -22250,6 +22301,8 @@ paths:
                       - enum:
                         - ''
                         type: string
+                    representative:
+                      type: boolean
                     title:
                       maxLength: 5000
                       type: string
@@ -22616,8 +22669,6 @@ paths:
                   description: The relationship that this person has with the account's
                     legal entity.
                   properties:
-                    account_opener:
-                      type: boolean
                     director:
                       type: boolean
                     executive:
@@ -22630,6 +22681,8 @@ paths:
                       - enum:
                         - ''
                         type: string
+                    representative:
+                      type: boolean
                     title:
                       maxLength: 5000
                       type: string
@@ -28165,8 +28218,7 @@ paths:
 
         <p>If the card’s owner has no default card, then the new card will become the default.
         However, if the owner already has a default, then it will not change.
-        To change the default, you should either <a href="/docs/api#update_customer">update the customer</a> to have a new <code>default_source</code>,
-        or <a href="/docs/api#update_recipient">update the recipient</a> to have a new <code>default_card</code>.</p>
+        To change the default, you should <a href="/docs/api#update_customer">update the customer</a> to have a new <code>default_source</code>.</p>
       operationId: PostCustomersCustomerBankAccounts
       parameters:
       - in: path
@@ -28743,8 +28795,7 @@ paths:
 
         <p>If the card’s owner has no default card, then the new card will become the default.
         However, if the owner already has a default, then it will not change.
-        To change the default, you should either <a href="/docs/api#update_customer">update the customer</a> to have a new <code>default_source</code>,
-        or <a href="/docs/api#update_recipient">update the recipient</a> to have a new <code>default_card</code>.</p>
+        To change the default, you should <a href="/docs/api#update_customer">update the customer</a> to have a new <code>default_source</code>.</p>
       operationId: PostCustomersCustomerCards
       parameters:
       - in: path
@@ -29351,8 +29402,7 @@ paths:
 
         <p>If the card’s owner has no default card, then the new card will become the default.
         However, if the owner already has a default, then it will not change.
-        To change the default, you should either <a href="/docs/api#update_customer">update the customer</a> to have a new <code>default_source</code>,
-        or <a href="/docs/api#update_recipient">update the recipient</a> to have a new <code>default_card</code>.</p>
+        To change the default, you should <a href="/docs/api#update_customer">update the customer</a> to have a new <code>default_source</code>.</p>
       operationId: PostCustomersCustomerSources
       parameters:
       - in: path
@@ -29965,9 +30015,9 @@ paths:
                   description: A non-negative decimal between 0 and 100, with at most
                     two decimal places. This represents the percentage of the subscription
                     invoice subtotal that will be transferred to the application owner's
-                    Stripe account. The request must be made with an OAuth key in
-                    order to set an application fee percentage. For more information,
-                    see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
+                    Stripe account. The request must be made by a platform account
+                    on a connected account in order to set an application fee percentage.
+                    For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                   type: number
                 backdate_start_date:
                   description: For new subscriptions, a past timestamp to backdate
@@ -30370,9 +30420,9 @@ paths:
                   description: A non-negative decimal between 0 and 100, with at most
                     two decimal places. This represents the percentage of the subscription
                     invoice subtotal that will be transferred to the application owner's
-                    Stripe account. The request must be made with an OAuth key in
-                    order to set an application fee percentage. For more information,
-                    see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
+                    Stripe account. The request must be made by a platform account
+                    on a connected account in order to set an application fee percentage.
+                    For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                   type: number
                 billing:
                   description: This field has been renamed to `collection_method`
@@ -42731,8 +42781,8 @@ paths:
                   description: The type of the PaymentMethod. An additional hash is
                     included on the PaymentMethod with a name matching this value.
                     It contains additional information specific to the PaymentMethod
-                    type. Required unless `payment_method` is specified (see the [Shared
-                    PaymentMethods](https://stripe.com/docs/payments/payment-methods/connect#shared-payment-methods)
+                    type. Required unless `payment_method` is specified (see the [Cloning
+                    PaymentMethods](https://stripe.com/docs/payments/payment-methods/connect#cloning-payment-methods)
                     guide)
                   enum:
                   - card
@@ -43217,9 +43267,10 @@ paths:
                   type: string
                   x-stripeBypassValidation: true
                 source_type:
-                  description: The source balance to draw this payout from. Balances
-                    for different payment sources are kept separately. You can find
-                    the amounts with the balances API. One of `bank_account` or `card`.
+                  description: The balance type of your Stripe balance to draw this
+                    payout from. Balances for different payment sources are kept separately.
+                    You can find the amounts with the balances API. One of `bank_account`
+                    or `card`.
                   enum:
                   - bank_account
                   - card
@@ -48084,8 +48135,8 @@ paths:
                   type: string
                 type:
                   description: The `type` of the source to create. Required unless
-                    `customer` and `original_source` are specified (see the [Shared
-                    card Sources](https://stripe.com/docs/sources/connect#shared-card-sources)
+                    `customer` and `original_source` are specified (see the [Cloning
+                    card Sources](https://stripe.com/docs/sources/connect#cloning-card-sources)
                     guide)
                   maxLength: 5000
                   type: string
@@ -50444,9 +50495,9 @@ paths:
                   description: A non-negative decimal between 0 and 100, with at most
                     two decimal places. This represents the percentage of the subscription
                     invoice subtotal that will be transferred to the application owner's
-                    Stripe account. The request must be made with an OAuth key in
-                    order to set an application fee percentage. For more information,
-                    see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
+                    Stripe account. The request must be made by a platform account
+                    on a connected account in order to set an application fee percentage.
+                    For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                   type: number
                 backdate_start_date:
                   description: For new subscriptions, a past timestamp to backdate
@@ -50829,9 +50880,9 @@ paths:
                   description: A non-negative decimal between 0 and 100, with at most
                     two decimal places. This represents the percentage of the subscription
                     invoice subtotal that will be transferred to the application owner's
-                    Stripe account. The request must be made with an OAuth key in
-                    order to set an application fee percentage. For more information,
-                    see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
+                    Stripe account. The request must be made by a platform account
+                    on a connected account in order to set an application fee percentage.
+                    For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                   type: number
                 billing:
                   description: This field has been renamed to `collection_method`
@@ -52499,7 +52550,7 @@ paths:
                     which to create a token. For use only with [Stripe Connect](https://stripe.com/docs/connect).
                     Also, this can be used only with an [OAuth access token](https://stripe.com/docs/connect/standard-accounts)
                     or [Stripe-Account header](https://stripe.com/docs/connect/authentication).
-                    For more details, see [Shared Customers](https://stripe.com/docs/connect/shared-customers).
+                    For more details, see [Cloning Saved Payment Methods](https://stripe.com/docs/connect/cloning-saved-payment-methods).
                   maxLength: 5000
                   type: string
                 expand:
@@ -53995,6 +54046,7 @@ paths:
                   - '2019-05-16'
                   - '2019-08-14'
                   - '2019-09-09'
+                  - '2019-10-08'
                   maxLength: 5000
                   type: string
                   x-stripeBypassValidation: true
