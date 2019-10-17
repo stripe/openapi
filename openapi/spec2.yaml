@@ -2556,8 +2556,8 @@ definitions:
         type: string
       type:
         description: 'Transaction type: `adjustment`, `applied_to_invoice`, `credit_note`,
-          `initial`, `invoice_too_large`, `invoice_too_small`, or `unspent_receiver_credit`.
-          See the [Customer Balance page](https://stripe.com/docs/billing/customer/balance#types)
+          `initial`, `invoice_too_large`, `invoice_too_small`, `unapplied_from_invoice`,
+          or `unspent_receiver_credit`. See the [Customer Balance page](https://stripe.com/docs/billing/customer/balance#types)
           to learn more about transaction types.'
         enum:
         - adjustment
@@ -2567,6 +2567,7 @@ definitions:
         - invoice_too_large
         - invoice_too_small
         - migration
+        - unapplied_from_invoice
         - unspent_receiver_credit
         type: string
     required:
@@ -4604,15 +4605,17 @@ definitions:
   invoices_resource_invoice_tax_id:
     properties:
       type:
-        description: The type of the tax ID, one of `au_abn`, `eu_vat`, `in_gst`,
-          `no_vat`, `nz_gst`, or `unknown`
+        description: The type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
+          `in_gst`, `no_vat`, `nz_gst`, `unknown`, or `za_vat`
         enum:
         - au_abn
+        - ch_vat
         - eu_vat
         - in_gst
         - no_vat
         - nz_gst
         - unknown
+        - za_vat
         type: string
       value:
         description: The value of the tax ID.
@@ -4890,8 +4893,7 @@ definitions:
       shipping:
         "$ref": "#/definitions/issuing_card_shipping"
       status:
-        description: One of `active`, `inactive`, `canceled`, `lost`, `stolen`, or
-          `pending`.
+        description: One of `active`, `inactive`, `canceled`, `lost`, or `stolen`.
         enum:
         - active
         - canceled
@@ -5023,8 +5025,10 @@ definitions:
       phone_number:
         description: The cardholder's phone number.
         type: string
+      requirements:
+        "$ref": "#/definitions/issuing_cardholder_requirements"
       status:
-        description: One of `active`, `inactive`, `blocked`, or `pending`.
+        description: One of `active`, `inactive`, or `blocked`.
         enum:
         - active
         - blocked
@@ -5046,6 +5050,7 @@ definitions:
     - metadata
     - name
     - object
+    - requirements
     - status
     - type
     title: IssuingCardholder
@@ -5053,6 +5058,7 @@ definitions:
     x-expandableFields:
     - authorization_controls
     - billing
+    - requirements
     x-resourceId: issuing.cardholder
   issuing.dispute:
     properties:
@@ -5160,6 +5166,11 @@ definitions:
       net_total:
         description: The total net amount required to settle with the network.
         type: integer
+      network:
+        description: The card network for this settlement report. One of ["visa"]
+        enum:
+        - visa
+        type: string
       network_fees:
         description: The total amount of fees owed to the network.
         type: integer
@@ -5191,6 +5202,7 @@ definitions:
     - livemode
     - metadata
     - net_total
+    - network
     - network_fees
     - network_settlement_identifier
     - object
@@ -7019,6 +7031,32 @@ definitions:
     type: object
     x-expandableFields:
     - spending_limits
+  issuing_cardholder_requirements:
+    properties:
+      disabled_reason:
+        description: If the cardholder is disabled, this string describes why. Can
+          be one of `listed`, `rejected.listed`, or `under_review`.
+        enum:
+        - listed
+        - rejected.listed
+        - under_review
+        type: string
+      past_due:
+        description: If not empty, this field contains the list of fields that need
+          to be collected in order to verify and re-enabled the cardholder.
+        items:
+          enum:
+          - individual.dob.day
+          - individual.dob.month
+          - individual.dob.year
+          - individual.first_name
+          - individual.last_name
+          - individual.verification.document
+          type: string
+        type: array
+    title: IssuingCardholderRequirements
+    type: object
+    x-expandableFields: []
   issuing_cardholder_spending_limit:
     properties:
       amount:
@@ -12309,15 +12347,17 @@ definitions:
         - tax_id
         type: string
       type:
-        description: Type of the tax ID, one of `au_abn`, `eu_vat`, `in_gst`, `no_vat`,
-          `nz_gst`, or `unknown`
+        description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`, `in_gst`,
+          `no_vat`, `nz_gst`, `unknown`, or `za_vat`
         enum:
         - au_abn
+        - ch_vat
         - eu_vat
         - in_gst
         - no_vat
         - nz_gst
         - unknown
+        - za_vat
         type: string
       value:
         description: Value of the tax ID.
@@ -15185,8 +15225,8 @@ paths:
   "/v1/account_links":
     post:
       description: "<p>Creates an AccountLink object that returns a Stripe URL that
-        the user can redirect their user to in order to take them through the hosted
-        onboarding flow.</p>"
+        the user can redirect their user to in order to take them through the Connect
+        Onboarding flow.</p>"
       operationId: PostAccountLinks
       parameters:
       - description: Body parameters for the request.
@@ -19933,6 +19973,8 @@ paths:
                   type: object
                 trial_end:
                   type: integer
+                trial_from_plan:
+                  type: boolean
                 trial_period_days:
                   type: integer
               required:
@@ -20770,10 +20812,12 @@ paths:
                   type:
                     enum:
                     - au_abn
+                    - ch_vat
                     - eu_vat
                     - in_gst
                     - no_vat
                     - nz_gst
+                    - za_vat
                     type: string
                   value:
                     type: string
@@ -22416,6 +22460,7 @@ paths:
               enum:
               - allow_incomplete
               - error_if_incomplete
+              - pending_if_incomplete
               type: string
             prorate:
               description: Boolean (defaults to `true`) telling us whether to [credit
@@ -22684,6 +22729,7 @@ paths:
               enum:
               - allow_incomplete
               - error_if_incomplete
+              - pending_if_incomplete
               type: string
             prorate:
               description: Boolean (defaults to `true`) telling us whether to [credit
@@ -22878,14 +22924,16 @@ paths:
                 type: string
               type: array
             type:
-              description: Type of the tax ID, one of `au_abn`, `eu_vat`, `in_gst`,
-                `no_vat`, or `nz_gst`
+              description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
+                `in_gst`, `no_vat`, `nz_gst`, or `za_vat`
               enum:
               - au_abn
+              - ch_vat
               - eu_vat
               - in_gst
               - no_vat
               - nz_gst
+              - za_vat
               type: string
             value:
               description: Value of the tax ID.
@@ -35829,6 +35877,12 @@ paths:
                 This can be useful for storing additional information about the object
                 in a structured format.
               type: object
+            payment_behavior:
+              enum:
+              - allow_incomplete
+              - error_if_incomplete
+              - pending_if_incomplete
+              type: string
             plan:
               description: The identifier of the plan to add to the subscription.
               type: string
@@ -35966,6 +36020,7 @@ paths:
               enum:
               - allow_incomplete
               - error_if_incomplete
+              - pending_if_incomplete
               type: string
             plan:
               description: The identifier of the new plan for this subscription item.
@@ -36936,6 +36991,7 @@ paths:
               enum:
               - allow_incomplete
               - error_if_incomplete
+              - pending_if_incomplete
               type: string
             prorate:
               description: Boolean (defaults to `true`) telling us whether to [credit
@@ -37189,6 +37245,7 @@ paths:
               enum:
               - allow_incomplete
               - error_if_incomplete
+              - pending_if_incomplete
               type: string
             prorate:
               description: Boolean (defaults to `true`) telling us whether to [credit

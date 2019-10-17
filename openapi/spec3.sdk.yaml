@@ -4293,8 +4293,8 @@ components:
           type: string
         type:
           description: 'Transaction type: `adjustment`, `applied_to_invoice`, `credit_note`,
-            `initial`, `invoice_too_large`, `invoice_too_small`, or `unspent_receiver_credit`.
-            See the [Customer Balance page](https://stripe.com/docs/billing/customer/balance#types)
+            `initial`, `invoice_too_large`, `invoice_too_small`, `unapplied_from_invoice`,
+            or `unspent_receiver_credit`. See the [Customer Balance page](https://stripe.com/docs/billing/customer/balance#types)
             to learn more about transaction types.'
           enum:
           - adjustment
@@ -4304,6 +4304,7 @@ components:
           - invoice_too_large
           - invoice_too_small
           - migration
+          - unapplied_from_invoice
           - unspent_receiver_credit
           type: string
       required:
@@ -6788,15 +6789,17 @@ components:
     invoices_resource_invoice_tax_id:
       properties:
         type:
-          description: The type of the tax ID, one of `au_abn`, `eu_vat`, `in_gst`,
-            `no_vat`, `nz_gst`, or `unknown`
+          description: The type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
+            `in_gst`, `no_vat`, `nz_gst`, `unknown`, or `za_vat`
           enum:
           - au_abn
+          - ch_vat
           - eu_vat
           - in_gst
           - no_vat
           - nz_gst
           - unknown
+          - za_vat
           type: string
         value:
           description: The value of the tax ID.
@@ -7250,8 +7253,7 @@ components:
           description: Where and how the card will be shipped.
           nullable: true
         status:
-          description: One of `active`, `inactive`, `canceled`, `lost`, `stolen`,
-            or `pending`.
+          description: One of `active`, `inactive`, `canceled`, `lost`, or `stolen`.
           enum:
           - active
           - canceled
@@ -7458,8 +7460,10 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        requirements:
+          "$ref": "#/components/schemas/issuing_cardholder_requirements"
         status:
-          description: One of `active`, `inactive`, `blocked`, or `pending`.
+          description: One of `active`, `inactive`, or `blocked`.
           enum:
           - active
           - blocked
@@ -7481,6 +7485,7 @@ components:
       - metadata
       - name
       - object
+      - requirements
       - status
       - type
       title: IssuingCardholder
@@ -7488,6 +7493,7 @@ components:
       x-expandableFields:
       - authorization_controls
       - billing
+      - requirements
       x-resourceId: issuing.cardholder
       x-stripeOperations:
       - method_name: list
@@ -7549,6 +7555,7 @@ components:
         inner_classes:
         - issuing_cardholder_address
         - issuing_cardholder_authorization_controls
+        - issuing_cardholder_requirements
         - issuing_cardholder_spending_limit
     issuing.dispute:
       properties:
@@ -9624,6 +9631,37 @@ components:
       - spending_limits
       x-stripeResource:
         class_name: AuthorizationControls
+        in_class: issuing.cardholder
+    issuing_cardholder_requirements:
+      properties:
+        disabled_reason:
+          description: If the cardholder is disabled, this string describes why. Can
+            be one of `listed`, `rejected.listed`, or `under_review`.
+          enum:
+          - listed
+          - rejected.listed
+          - under_review
+          nullable: true
+          type: string
+        past_due:
+          description: If not empty, this field contains the list of fields that need
+            to be collected in order to verify and re-enabled the cardholder.
+          items:
+            enum:
+            - individual.dob.day
+            - individual.dob.month
+            - individual.dob.year
+            - individual.first_name
+            - individual.last_name
+            - individual.verification.document
+            type: string
+          nullable: true
+          type: array
+      title: IssuingCardholderRequirements
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Requirements
         in_class: issuing.cardholder
     issuing_cardholder_spending_limit:
       properties:
@@ -12260,6 +12298,10 @@ components:
           description: Last four digits of the bank account number.
           maxLength: 5000
           nullable: true
+          type: string
+        mandate:
+          description: ID of the mandate used to make this payment.
+          maxLength: 5000
           type: string
       title: payment_method_details_au_becs_debit
       type: object
@@ -18723,15 +18765,17 @@ components:
           - tax_id
           type: string
         type:
-          description: Type of the tax ID, one of `au_abn`, `eu_vat`, `in_gst`, `no_vat`,
-            `nz_gst`, or `unknown`
+          description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`, `in_gst`,
+            `no_vat`, `nz_gst`, `unknown`, or `za_vat`
           enum:
           - au_abn
+          - ch_vat
           - eu_vat
           - in_gst
           - no_vat
           - nz_gst
           - unknown
+          - za_vat
           type: string
         value:
           description: Value of the tax ID.
@@ -20577,8 +20621,8 @@ paths:
   "/v1/account_links":
     post:
       description: "<p>Creates an AccountLink object that returns a Stripe URL that
-        the user can redirect their user to in order to take them through the hosted
-        onboarding flow.</p>"
+        the user can redirect their user to in order to take them through the Connect
+        Onboarding flow.</p>"
       operationId: PostAccountLinks
       requestBody:
         content:
@@ -21454,7 +21498,10 @@ paths:
                               x-stripeBypassValidation: true
                             monthly_anchor:
                               description: The day of the month when available funds
-                                are paid out. Required and applicable only if `interval`
+                                are paid out, specified as a number between 1--31.
+                                Payouts nominally scheduled between the 29th and 31st
+                                of the month are instead sent on the last day of a
+                                shorter month. Required and applicable only if `interval`
                                 is `monthly`.
                               type: integer
                             weekly_anchor:
@@ -22309,7 +22356,10 @@ paths:
                               x-stripeBypassValidation: true
                             monthly_anchor:
                               description: The day of the month when available funds
-                                are paid out. Required and applicable only if `interval`
+                                are paid out, specified as a number between 1--31.
+                                Payouts nominally scheduled between the 29th and 31st
+                                of the month are instead sent on the last day of a
+                                shorter month. Required and applicable only if `interval`
                                 is `monthly`.
                               type: integer
                             weekly_anchor:
@@ -26618,6 +26668,12 @@ paths:
                         48 hours in the future.
                       format: unix-time
                       type: integer
+                    trial_from_plan:
+                      description: |-
+                        Indicates if a plan’s `trial_period_days` should be applied to the
+                        subscription. Setting `trial_end` on `subscription_data` is preferred.
+                        Defaults to `false`.
+                      type: boolean
                     trial_period_days:
                       description: |-
                         Integer representing the number of trial period days before the
@@ -27936,14 +27992,16 @@ paths:
                   items:
                     properties:
                       type:
-                        description: Type of the tax ID, one of `au_abn`, `eu_vat`,
-                          `in_gst`, `no_vat`, or `nz_gst`
+                        description: Type of the tax ID, one of `au_abn`, `ch_vat`,
+                          `eu_vat`, `in_gst`, `no_vat`, `nz_gst`, or `za_vat`
                         enum:
                         - au_abn
+                        - ch_vat
                         - eu_vat
                         - in_gst
                         - no_vat
                         - nz_gst
+                        - za_vat
                         maxLength: 5000
                         type: string
                       value:
@@ -29326,14 +29384,16 @@ paths:
                     type: string
                   type: array
                 type:
-                  description: Type of the tax ID, one of `au_abn`, `eu_vat`, `in_gst`,
-                    `no_vat`, or `nz_gst`
+                  description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
+                    `in_gst`, `no_vat`, `nz_gst`, or `za_vat`
                   enum:
                   - au_abn
+                  - ch_vat
                   - eu_vat
                   - in_gst
                   - no_vat
                   - nz_gst
+                  - za_vat
                   maxLength: 5000
                   type: string
                 value:
@@ -46390,8 +46450,8 @@ paths:
                         acceptance or refusal by the customer.
                       properties:
                         date:
-                          description: The unix timestamp the mandate was accepted
-                            or refused at by the customer.
+                          description: The Unix timestamp (in seconds) when the mandate
+                            was accepted or refused by the customer.
                           format: unix-time
                           type: integer
                         ip:
@@ -46418,8 +46478,8 @@ paths:
                             is `online`
                           properties:
                             date:
-                              description: The unix timestamp the mandate was accepted
-                                or refused at by the customer.
+                              description: The Unix timestamp (in seconds) when the
+                                mandate was accepted or refused by the customer.
                               format: unix-time
                               type: integer
                             ip:
@@ -46833,8 +46893,8 @@ paths:
                         acceptance or refusal by the customer.
                       properties:
                         date:
-                          description: The unix timestamp the mandate was accepted
-                            or refused at by the customer.
+                          description: The Unix timestamp (in seconds) when the mandate
+                            was accepted or refused by the customer.
                           format: unix-time
                           type: integer
                         ip:
@@ -46861,8 +46921,8 @@ paths:
                             is `online`
                           properties:
                             date:
-                              description: The unix timestamp the mandate was accepted
-                                or refused at by the customer.
+                              description: The Unix timestamp (in seconds) when the
+                                mandate was accepted or refused by the customer.
                               format: unix-time
                               type: integer
                             ip:
@@ -47418,6 +47478,12 @@ paths:
                     This can be useful for storing additional information about the
                     object in a structured format.
                   type: object
+                payment_behavior:
+                  enum:
+                  - allow_incomplete
+                  - error_if_incomplete
+                  - pending_if_incomplete
+                  type: string
                 plan:
                   description: The identifier of the plan to add to the subscription.
                   maxLength: 5000
@@ -47635,6 +47701,7 @@ paths:
                   enum:
                   - allow_incomplete
                   - error_if_incomplete
+                  - pending_if_incomplete
                   type: string
                 plan:
                   description: The identifier of the new plan for this subscription
@@ -49453,6 +49520,7 @@ paths:
                   enum:
                   - allow_incomplete
                   - error_if_incomplete
+                  - pending_if_incomplete
                   type: string
                 prorate:
                   description: Boolean (defaults to `true`) telling us whether to
@@ -49883,6 +49951,7 @@ paths:
                   enum:
                   - allow_incomplete
                   - error_if_incomplete
+                  - pending_if_incomplete
                   type: string
                 prorate:
                   description: Boolean (defaults to `true`) telling us whether to
