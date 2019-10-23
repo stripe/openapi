@@ -6912,12 +6912,13 @@
       "invoices_resource_invoice_tax_id": {
         "properties": {
           "type": {
-            "description": "The type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`, `in_gst`, `no_vat`, `nz_gst`, `unknown`, or `za_vat`",
+            "description": "The type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`, `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `unknown`, or `za_vat`",
             "enum": [
               "au_abn",
               "ch_vat",
               "eu_vat",
               "in_gst",
+              "mx_rfc",
               "no_vat",
               "nz_gst",
               "unknown",
@@ -11711,6 +11712,15 @@
       },
       "payment_intent_payment_method_options_card": {
         "properties": {
+          "installments": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/payment_method_options_card_installments"
+              }
+            ],
+            "description": "Installment details for this payment (Mexico only).\n\nFor more information, see the [installments integration guide](https://stripe.com/docs/payments/installments).",
+            "nullable": true
+          },
           "request_three_d_secure": {
             "description": "We strongly recommend that you rely on our SCA Engine to automatically prompt your customers for authentication based on risk level and [other requirements](https://stripe.com/docs/strong-customer-authentication). However, if you wish to request 3D Secure based on logic from your own fraud engine, provide this option. Permitted values include: `automatic` or `any`. If not provided, defaults to `automatic`. Read our guide on [manually requesting 3D Secure](https://stripe.com/docs/payments/3d-secure#manual-three-ds) for more information on how this configuration interacts with Radar and our SCA Engine.",
             "enum": [
@@ -11725,7 +11735,7 @@
         "title": "payment_intent_payment_method_options_card",
         "type": "object",
         "x-expandableFields": [
-
+          "installments"
         ]
       },
       "payment_method": {
@@ -12400,6 +12410,15 @@
             "nullable": true,
             "type": "string"
           },
+          "installments": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/payment_method_details_card_installments"
+              }
+            ],
+            "description": "Installment details for this payment (Mexico only).\n\nFor more information, see the [installments integration guide](https://stripe.com/docs/payments/installments).",
+            "nullable": true
+          },
           "last4": {
             "description": "The last four digits of the card.",
             "maxLength": 5000,
@@ -12429,6 +12448,7 @@
         "type": "object",
         "x-expandableFields": [
           "checks",
+          "installments",
           "three_d_secure",
           "wallet"
         ]
@@ -12455,6 +12475,56 @@
           }
         },
         "title": "payment_method_details_card_checks",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
+      "payment_method_details_card_installments": {
+        "properties": {
+          "plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/payment_method_details_card_installments_plan"
+              }
+            ],
+            "description": "Installment plan selected for the payment.",
+            "nullable": true
+          }
+        },
+        "title": "payment_method_details_card_installments",
+        "type": "object",
+        "x-expandableFields": [
+          "plan"
+        ]
+      },
+      "payment_method_details_card_installments_plan": {
+        "properties": {
+          "count": {
+            "description": "For `fixed_count` installment plans, this is the number of installment payments your customer will make to their credit card.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "interval": {
+            "description": "For `fixed_count` installment plans, this is the interval between installment payments your customer will make to their credit card.",
+            "enum": [
+              "month"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "description": "Type of installment plan, one of `fixed_count`.",
+            "enum": [
+              "fixed_count"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "title": "payment_method_details_card_installments_plan",
         "type": "object",
         "x-expandableFields": [
 
@@ -13026,6 +13096,40 @@
         "type": "object",
         "x-expandableFields": [
 
+        ]
+      },
+      "payment_method_options_card_installments": {
+        "properties": {
+          "available_plans": {
+            "description": "Installment plans that may be selected for this PaymentIntent.",
+            "items": {
+              "$ref": "#/components/schemas/payment_method_details_card_installments_plan"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "enabled": {
+            "description": "Whether Installments are enabled for this PaymentIntent.",
+            "type": "boolean"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/payment_method_details_card_installments_plan"
+              }
+            ],
+            "description": "Installment plan selected for this PaymentIntent.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "title": "payment_method_options_card_installments",
+        "type": "object",
+        "x-expandableFields": [
+          "available_plans",
+          "plan"
         ]
       },
       "payment_source": {
@@ -17166,12 +17270,27 @@
             "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
             "type": "object"
           },
+          "next_pending_invoice_item_invoice": {
+            "description": "Specifies the approximate timestamp on which any pending invoice items will be billed according to the schedule provided at `pending_invoice_item_interval`.",
+            "format": "unix-time",
+            "nullable": true,
+            "type": "integer"
+          },
           "object": {
             "description": "String representing the object's type. Objects of the same type share the same value.",
             "enum": [
               "subscription"
             ],
             "type": "string"
+          },
+          "pending_invoice_item_interval": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/subscription_pending_invoice_item_interval"
+              }
+            ],
+            "description": "Specifies an interval for how often to bill for any pending invoice items. It is analogous to calling [Create an invoice](https://stripe.com/docs/api#create_invoice) for the given subscription at the specified interval.",
+            "nullable": true
           },
           "pending_setup_intent": {
             "anyOf": [
@@ -17289,6 +17408,7 @@
           "discount",
           "items",
           "latest_invoice",
+          "pending_invoice_item_interval",
           "pending_setup_intent",
           "plan",
           "schedule"
@@ -17396,6 +17516,33 @@
           }
         },
         "title": "SubscriptionItemBillingThresholds",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
+      "subscription_pending_invoice_item_interval": {
+        "properties": {
+          "interval": {
+            "description": "Specifies invoicing frequency. Either `day`, `week`, `month` or `year`.",
+            "enum": [
+              "day",
+              "month",
+              "week",
+              "year"
+            ],
+            "type": "string"
+          },
+          "interval_count": {
+            "description": "The number of intervals between invoices. For example, `interval=month` and `interval_count=3` bills every 3 months. Maximum of one year interval allowed (1 year, 12 months, or 52 weeks).",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "interval",
+          "interval_count"
+        ],
+        "title": "SubscriptionPendingInvoiceItemInterval",
         "type": "object",
         "x-expandableFields": [
 
@@ -17910,12 +18057,13 @@
             "type": "string"
           },
           "type": {
-            "description": "Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`, `in_gst`, `no_vat`, `nz_gst`, `unknown`, or `za_vat`",
+            "description": "Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`, `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `za_vat`, or `unknown`",
             "enum": [
               "au_abn",
               "ch_vat",
               "eu_vat",
               "in_gst",
+              "mx_rfc",
               "no_vat",
               "nz_gst",
               "unknown",
@@ -19096,7 +19244,7 @@
             "type": "integer"
           },
           "enabled_events": {
-            "description": "The list of events to enable for this endpoint. You may specify `['*']` to enable all events.",
+            "description": "The list of events to enable for this endpoint. `['*']` indicates that all events are enabled, except those that require explicit selection.",
             "items": {
               "maxLength": 5000,
               "type": "string"
@@ -19993,6 +20141,7 @@
                     "description": "The set of capabilities you want to unlock for this account (US only). Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
                     "items": {
                       "enum": [
+                        "beneficiary_transfers",
                         "card_issuing",
                         "card_payments",
                         "legacy_payments",
@@ -24277,6 +24426,7 @@
                     "description": "The set of capabilities you want to unlock for this account (US only). Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
                     "items": {
                       "enum": [
+                        "beneficiary_transfers",
                         "card_issuing",
                         "card_payments",
                         "legacy_payments",
@@ -25167,6 +25317,7 @@
                     "description": "The set of capabilities you want to unlock for this account (US only). Each capability will be inactive until you have provided its specific requirements and Stripe has verified them. An account may have some of its requested capabilities be active and some be inactive.",
                     "items": {
                       "enum": [
+                        "beneficiary_transfers",
                         "card_issuing",
                         "card_payments",
                         "legacy_payments",
@@ -34893,6 +35044,7 @@
                             "ch_vat",
                             "eu_vat",
                             "in_gst",
+                            "mx_rfc",
                             "no_vat",
                             "nz_gst",
                             "za_vat"
@@ -38663,6 +38815,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "pending_invoice_item_interval": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "tax_percent": {
                   "explode": true,
                   "style": "deepObject"
@@ -38860,6 +39016,39 @@
                       "pending_if_incomplete"
                     ],
                     "type": "string"
+                  },
+                  "pending_invoice_item_interval": {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "interval": {
+                            "enum": [
+                              "day",
+                              "month",
+                              "week",
+                              "year"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "interval_count": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "interval"
+                        ],
+                        "title": "pending_invoice_item_interval_params",
+                        "type": "object"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "Specifies an interval for how often to bill for any pending invoice items. It is analogous to calling [Create an invoice](https://stripe.com/docs/api#create_invoice) for the given subscription at the specified interval."
                   },
                   "prorate": {
                     "description": "Boolean (defaults to `true`) telling us whether to [credit for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g. when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. If `false`, the anchor period will be free (similar to a trial) and no proration adjustments will be created.",
@@ -39140,6 +39329,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "pending_invoice_item_interval": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "tax_percent": {
                   "explode": true,
                   "style": "deepObject"
@@ -39353,6 +39546,39 @@
                       "pending_if_incomplete"
                     ],
                     "type": "string"
+                  },
+                  "pending_invoice_item_interval": {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "interval": {
+                            "enum": [
+                              "day",
+                              "month",
+                              "week",
+                              "year"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "interval_count": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "interval"
+                        ],
+                        "title": "pending_invoice_item_interval_params",
+                        "type": "object"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "Specifies an interval for how often to bill for any pending invoice items. It is analogous to calling [Create an invoice](https://stripe.com/docs/api#create_invoice) for the given subscription at the specified interval."
                   },
                   "prorate": {
                     "description": "Boolean (defaults to `true`) telling us whether to [credit for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g. when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. If `false`, the anchor period will be free (similar to a trial) and no proration adjustments will be created.",
@@ -39744,12 +39970,13 @@
                     "type": "array"
                   },
                   "type": {
-                    "description": "Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`, `in_gst`, `no_vat`, `nz_gst`, or `za_vat`",
+                    "description": "Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`, `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, or `za_vat`",
                     "enum": [
                       "au_abn",
                       "ch_vat",
                       "eu_vat",
                       "in_gst",
+                      "mx_rfc",
                       "no_vat",
                       "nz_gst",
                       "za_vat"
@@ -53151,6 +53378,51 @@
                     "properties": {
                       "card": {
                         "properties": {
+                          "installments": {
+                            "properties": {
+                              "enabled": {
+                                "type": "boolean"
+                              },
+                              "plan": {
+                                "anyOf": [
+                                  {
+                                    "properties": {
+                                      "count": {
+                                        "type": "integer"
+                                      },
+                                      "interval": {
+                                        "enum": [
+                                          "month"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "fixed_count"
+                                        ],
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "count",
+                                      "interval",
+                                      "type"
+                                    ],
+                                    "title": "installment_plan",
+                                    "type": "object"
+                                  },
+                                  {
+                                    "enum": [
+                                      ""
+                                    ],
+                                    "type": "string"
+                                  }
+                                ]
+                              }
+                            },
+                            "title": "installments_param",
+                            "type": "object"
+                          },
                           "request_three_d_secure": {
                             "enum": [
                               "any",
@@ -53934,6 +54206,51 @@
                     "properties": {
                       "card": {
                         "properties": {
+                          "installments": {
+                            "properties": {
+                              "enabled": {
+                                "type": "boolean"
+                              },
+                              "plan": {
+                                "anyOf": [
+                                  {
+                                    "properties": {
+                                      "count": {
+                                        "type": "integer"
+                                      },
+                                      "interval": {
+                                        "enum": [
+                                          "month"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "fixed_count"
+                                        ],
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "count",
+                                      "interval",
+                                      "type"
+                                    ],
+                                    "title": "installment_plan",
+                                    "type": "object"
+                                  },
+                                  {
+                                    "enum": [
+                                      ""
+                                    ],
+                                    "type": "string"
+                                  }
+                                ]
+                              }
+                            },
+                            "title": "installments_param",
+                            "type": "object"
+                          },
                           "request_three_d_secure": {
                             "enum": [
                               "any",
@@ -64626,6 +64943,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "pending_invoice_item_interval": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "tax_percent": {
                   "explode": true,
                   "style": "deepObject"
@@ -64828,6 +65149,39 @@
                       "pending_if_incomplete"
                     ],
                     "type": "string"
+                  },
+                  "pending_invoice_item_interval": {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "interval": {
+                            "enum": [
+                              "day",
+                              "month",
+                              "week",
+                              "year"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "interval_count": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "interval"
+                        ],
+                        "title": "pending_invoice_item_interval_params",
+                        "type": "object"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "Specifies an interval for how often to bill for any pending invoice items. It is analogous to calling [Create an invoice](https://stripe.com/docs/api#create_invoice) for the given subscription at the specified interval."
                   },
                   "prorate": {
                     "description": "Boolean (defaults to `true`) telling us whether to [credit for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g. when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. If `false`, the anchor period will be free (similar to a trial) and no proration adjustments will be created.",
@@ -65078,6 +65432,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "pending_invoice_item_interval": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "tax_percent": {
                   "explode": true,
                   "style": "deepObject"
@@ -65291,6 +65649,39 @@
                       "pending_if_incomplete"
                     ],
                     "type": "string"
+                  },
+                  "pending_invoice_item_interval": {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "interval": {
+                            "enum": [
+                              "day",
+                              "month",
+                              "week",
+                              "year"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "interval_count": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "interval"
+                        ],
+                        "title": "pending_invoice_item_interval_params",
+                        "type": "object"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "Specifies an interval for how often to bill for any pending invoice items. It is analogous to calling [Create an invoice](https://stripe.com/docs/api#create_invoice) for the given subscription at the specified interval."
                   },
                   "prorate": {
                     "description": "Boolean (defaults to `true`) telling us whether to [credit for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g. when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. If `false`, the anchor period will be free (similar to a trial) and no proration adjustments will be created.",
@@ -69361,7 +69752,7 @@
                     "type": "boolean"
                   },
                   "enabled_events": {
-                    "description": "The list of events to enable for this endpoint. You may specify `['*']` to enable all events.",
+                    "description": "The list of events to enable for this endpoint. You may specify `['*']` to enable all events, except those that require explicit selection.",
                     "items": {
                       "enum": [
                         "*",
@@ -69727,7 +70118,7 @@
                     "type": "boolean"
                   },
                   "enabled_events": {
-                    "description": "The list of events to enable for this endpoint. You may specify `['*']` to enable all events.",
+                    "description": "The list of events to enable for this endpoint. You may specify `['*']` to enable all events, except those that require explicit selection.",
                     "items": {
                       "enum": [
                         "*",

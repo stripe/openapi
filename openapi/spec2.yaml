@@ -4595,12 +4595,13 @@ definitions:
     properties:
       type:
         description: The type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
-          `in_gst`, `no_vat`, `nz_gst`, `unknown`, or `za_vat`
+          `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `unknown`, or `za_vat`
         enum:
         - au_abn
         - ch_vat
         - eu_vat
         - in_gst
+        - mx_rfc
         - no_vat
         - nz_gst
         - unknown
@@ -8333,6 +8334,8 @@ definitions:
     - card
   payment_intent_payment_method_options_card:
     properties:
+      installments:
+        "$ref": "#/definitions/payment_method_options_card_installments"
       request_three_d_secure:
         description: 'We strongly recommend that you rely on our SCA Engine to automatically
           prompt your customers for authentication based on risk level and [other
@@ -8350,7 +8353,8 @@ definitions:
         type: string
     title: payment_intent_payment_method_options_card
     type: object
-    x-expandableFields: []
+    x-expandableFields:
+    - installments
   payment_method:
     properties:
       billing_details:
@@ -8771,6 +8775,8 @@ definitions:
       funding:
         description: Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.
         type: string
+      installments:
+        "$ref": "#/definitions/payment_method_details_card_installments"
       last4:
         description: The last four digits of the card.
         type: string
@@ -8782,6 +8788,7 @@ definitions:
     type: object
     x-expandableFields:
     - checks
+    - installments
     - three_d_secure
     - wallet
   payment_method_details_card_checks:
@@ -8799,6 +8806,36 @@ definitions:
           'unavailable' or 'unchecked'.
         type: string
     title: payment_method_details_card_checks
+    type: object
+    x-expandableFields: []
+  payment_method_details_card_installments:
+    properties:
+      plan:
+        "$ref": "#/definitions/payment_method_details_card_installments_plan"
+    title: payment_method_details_card_installments
+    type: object
+    x-expandableFields:
+    - plan
+  payment_method_details_card_installments_plan:
+    properties:
+      count:
+        description: For `fixed_count` installment plans, this is the number of installment
+          payments your customer will make to their credit card.
+        type: integer
+      interval:
+        description: For `fixed_count` installment plans, this is the interval between
+          installment payments your customer will make to their credit card.
+        enum:
+        - month
+        type: string
+      type:
+        description: Type of installment plan, one of `fixed_count`.
+        enum:
+        - fixed_count
+        type: string
+    required:
+    - type
+    title: payment_method_details_card_installments_plan
     type: object
     x-expandableFields: []
   payment_method_details_card_present:
@@ -9150,6 +9187,25 @@ definitions:
     title: payment_method_details_wechat
     type: object
     x-expandableFields: []
+  payment_method_options_card_installments:
+    properties:
+      available_plans:
+        description: Installment plans that may be selected for this PaymentIntent.
+        items:
+          "$ref": "#/definitions/payment_method_details_card_installments_plan"
+        type: array
+      enabled:
+        description: Whether Installments are enabled for this PaymentIntent.
+        type: boolean
+      plan:
+        "$ref": "#/definitions/payment_method_details_card_installments_plan"
+    required:
+    - enabled
+    title: payment_method_options_card_installments
+    type: object
+    x-expandableFields:
+    - available_plans
+    - plan
   payment_source:
     properties:
       id:
@@ -11836,12 +11892,18 @@ definitions:
           can be useful for storing additional information about the object in a structured
           format.
         type: object
+      next_pending_invoice_item_invoice:
+        description: Specifies the approximate timestamp on which any pending invoice
+          items will be billed according to the schedule provided at `pending_invoice_item_interval`.
+        type: integer
       object:
         description: String representing the object's type. Objects of the same type
           share the same value.
         enum:
         - subscription
         type: string
+      pending_invoice_item_interval:
+        "$ref": "#/definitions/subscription_pending_invoice_item_interval"
       pending_setup_intent:
         description: You can use this [SetupIntent](https://stripe.com/docs/api/setup_intents)
           to collect user authentication when creating a subscription without immediate
@@ -11933,6 +11995,7 @@ definitions:
     - discount
     - items
     - latest_invoice
+    - pending_invoice_item_interval
     - pending_setup_intent
     - plan
     - schedule
@@ -12010,6 +12073,28 @@ definitions:
         description: Usage threshold that triggers the subscription to create an invoice
         type: integer
     title: SubscriptionItemBillingThresholds
+    type: object
+    x-expandableFields: []
+  subscription_pending_invoice_item_interval:
+    properties:
+      interval:
+        description: Specifies invoicing frequency. Either `day`, `week`, `month`
+          or `year`.
+        enum:
+        - day
+        - month
+        - week
+        - year
+        type: string
+      interval_count:
+        description: The number of intervals between invoices. For example, `interval=month`
+          and `interval_count=3` bills every 3 months. Maximum of one year interval
+          allowed (1 year, 12 months, or 52 weeks).
+        type: integer
+    required:
+    - interval
+    - interval_count
+    title: SubscriptionPendingInvoiceItemInterval
     type: object
     x-expandableFields: []
   subscription_schedule:
@@ -12308,12 +12393,13 @@ definitions:
         type: string
       type:
         description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`, `in_gst`,
-          `no_vat`, `nz_gst`, `unknown`, or `za_vat`
+          `mx_rfc`, `no_vat`, `nz_gst`, `za_vat`, or `unknown`
         enum:
         - au_abn
         - ch_vat
         - eu_vat
         - in_gst
+        - mx_rfc
         - no_vat
         - nz_gst
         - unknown
@@ -13112,8 +13198,8 @@ definitions:
           the Unix epoch.
         type: integer
       enabled_events:
-        description: The list of events to enable for this endpoint. You may specify
-          `['*']` to enable all events.
+        description: The list of events to enable for this endpoint. `['*']` indicates
+          that all events are enabled, except those that require explicit selection.
         items:
           type: string
         type: array
@@ -13560,6 +13646,7 @@ paths:
                 inactive.
               items:
                 enum:
+                - beneficiary_transfers
                 - card_issuing
                 - card_payments
                 - legacy_payments
@@ -15595,6 +15682,7 @@ paths:
                 inactive.
               items:
                 enum:
+                - beneficiary_transfers
                 - card_issuing
                 - card_payments
                 - legacy_payments
@@ -16035,6 +16123,7 @@ paths:
                 inactive.
               items:
                 enum:
+                - beneficiary_transfers
                 - card_issuing
                 - card_payments
                 - legacy_payments
@@ -20771,6 +20860,7 @@ paths:
                     - ch_vat
                     - eu_vat
                     - in_gst
+                    - mx_rfc
                     - no_vat
                     - nz_gst
                     - za_vat
@@ -22407,6 +22497,10 @@ paths:
               - error_if_incomplete
               - pending_if_incomplete
               type: string
+            pending_invoice_item_interval:
+              description: Specifies an interval for how often to bill for any pending
+                invoice items. It is analogous to calling [Create an invoice](https://stripe.com/docs/api#create_invoice)
+                for the given subscription at the specified interval.
             prorate:
               description: Boolean (defaults to `true`) telling us whether to [credit
                 for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
@@ -22669,6 +22763,10 @@ paths:
               - error_if_incomplete
               - pending_if_incomplete
               type: string
+            pending_invoice_item_interval:
+              description: Specifies an interval for how often to bill for any pending
+                invoice items. It is analogous to calling [Create an invoice](https://stripe.com/docs/api#create_invoice)
+                for the given subscription at the specified interval.
             prorate:
               description: Boolean (defaults to `true`) telling us whether to [credit
                 for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
@@ -22863,12 +22961,13 @@ paths:
               type: array
             type:
               description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
-                `in_gst`, `no_vat`, `nz_gst`, or `za_vat`
+                `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, or `za_vat`
               enum:
               - au_abn
               - ch_vat
               - eu_vat
               - in_gst
+              - mx_rfc
               - no_vat
               - nz_gst
               - za_vat
@@ -31036,6 +31135,13 @@ paths:
               properties:
                 card:
                   properties:
+                    installments:
+                      properties:
+                        enabled:
+                          type: boolean
+                        plan: {}
+                      title: installments_param
+                      type: object
                     request_three_d_secure:
                       enum:
                       - any
@@ -31494,6 +31600,13 @@ paths:
               properties:
                 card:
                   properties:
+                    installments:
+                      properties:
+                        enabled:
+                          type: boolean
+                        plan: {}
+                      title: installments_param
+                      type: object
                     request_three_d_secure:
                       enum:
                       - any
@@ -36859,6 +36972,10 @@ paths:
               - error_if_incomplete
               - pending_if_incomplete
               type: string
+            pending_invoice_item_interval:
+              description: Specifies an interval for how often to bill for any pending
+                invoice items. It is analogous to calling [Create an invoice](https://stripe.com/docs/api#create_invoice)
+                for the given subscription at the specified interval.
             prorate:
               description: Boolean (defaults to `true`) telling us whether to [credit
                 for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
@@ -37106,6 +37223,10 @@ paths:
               - error_if_incomplete
               - pending_if_incomplete
               type: string
+            pending_invoice_item_interval:
+              description: Specifies an interval for how often to bill for any pending
+                invoice items. It is analogous to calling [Create an invoice](https://stripe.com/docs/api#create_invoice)
+                for the given subscription at the specified interval.
             prorate:
               description: Boolean (defaults to `true`) telling us whether to [credit
                 for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
@@ -39122,7 +39243,8 @@ paths:
               type: boolean
             enabled_events:
               description: The list of events to enable for this endpoint. You may
-                specify `['*']` to enable all events.
+                specify `['*']` to enable all events, except those that require explicit
+                selection.
               items:
                 enum:
                 - "*"
@@ -39361,7 +39483,8 @@ paths:
               type: boolean
             enabled_events:
               description: The list of events to enable for this endpoint. You may
-                specify `['*']` to enable all events.
+                specify `['*']` to enable all events, except those that require explicit
+                selection.
               items:
                 enum:
                 - "*"

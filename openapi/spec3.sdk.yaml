@@ -6777,12 +6777,13 @@ components:
       properties:
         type:
           description: The type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
-            `in_gst`, `no_vat`, `nz_gst`, `unknown`, or `za_vat`
+            `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `unknown`, or `za_vat`
           enum:
           - au_abn
           - ch_vat
           - eu_vat
           - in_gst
+          - mx_rfc
           - no_vat
           - nz_gst
           - unknown
@@ -11588,6 +11589,14 @@ components:
         - payment_intent_payment_method_options_card
     payment_intent_payment_method_options_card:
       properties:
+        installments:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_options_card_installments"
+          description: |-
+            Installment details for this payment (Mexico only).
+
+            For more information, see the [installments integration guide](https://stripe.com/docs/payments/installments).
+          nullable: true
         request_three_d_secure:
           description: 'We strongly recommend that you rely on our SCA Engine to automatically
             prompt your customers for authentication based on risk level and [other
@@ -11606,10 +11615,13 @@ components:
           type: string
       title: payment_intent_payment_method_options_card
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - installments
       x-stripeResource:
         class_name: Card
         in_class: payment_intent_payment_method_options
+        inner_classes:
+        - payment_method_options_card_installments
     payment_method:
       properties:
         billing_details:
@@ -12424,6 +12436,14 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        installments:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_details_card_installments"
+          description: |-
+            Installment details for this payment (Mexico only).
+
+            For more information, see the [installments integration guide](https://stripe.com/docs/payments/installments).
+          nullable: true
         issuer:
           description: Issuer bank name of the card. (Only for internal use only and
             not typically available in standard API requests.)
@@ -12455,6 +12475,7 @@ components:
       type: object
       x-expandableFields:
       - checks
+      - installments
       - three_d_secure
       - wallet
       x-stripeResource:
@@ -12462,6 +12483,7 @@ components:
         in_class: payment_method_details
         inner_classes:
         - payment_method_details_card_checks
+        - payment_method_details_card_installments
         - payment_method_details_card_wallet
         - three_d_secure_details
     payment_method_details_card_checks:
@@ -12490,6 +12512,49 @@ components:
       x-stripeResource:
         class_name: Checks
         in_class: payment_method_details_card
+    payment_method_details_card_installments:
+      properties:
+        plan:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_details_card_installments_plan"
+          description: Installment plan selected for the payment.
+          nullable: true
+      title: payment_method_details_card_installments
+      type: object
+      x-expandableFields:
+      - plan
+      x-stripeResource:
+        class_name: Installments
+        in_class: payment_method_details_card
+        inner_classes:
+        - payment_method_details_card_installments_plan
+    payment_method_details_card_installments_plan:
+      properties:
+        count:
+          description: For `fixed_count` installment plans, this is the number of
+            installment payments your customer will make to their credit card.
+          nullable: true
+          type: integer
+        interval:
+          description: For `fixed_count` installment plans, this is the interval between
+            installment payments your customer will make to their credit card.
+          enum:
+          - month
+          nullable: true
+          type: string
+        type:
+          description: Type of installment plan, one of `fixed_count`.
+          enum:
+          - fixed_count
+          type: string
+      required:
+      - type
+      title: payment_method_details_card_installments_plan
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Plan
+        in_class: payment_method_details_card_installments
     payment_method_details_card_present:
       properties:
         brand:
@@ -13047,6 +13112,32 @@ components:
       x-stripeResource:
         class_name: Wechat
         in_class: payment_method_details
+    payment_method_options_card_installments:
+      properties:
+        available_plans:
+          description: Installment plans that may be selected for this PaymentIntent.
+          items:
+            "$ref": "#/components/schemas/payment_method_details_card_installments_plan"
+          nullable: true
+          type: array
+        enabled:
+          description: Whether Installments are enabled for this PaymentIntent.
+          type: boolean
+        plan:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_details_card_installments_plan"
+          description: Installment plan selected for this PaymentIntent.
+          nullable: true
+      required:
+      - enabled
+      title: payment_method_options_card_installments
+      type: object
+      x-expandableFields:
+      - available_plans
+      - plan
+      x-stripeResource:
+        class_name: Installments
+        in_class: payment_intent_payment_method_options_card
     payment_source:
       anyOf:
       - "$ref": "#/components/schemas/account"
@@ -17775,12 +17866,25 @@ components:
             can be useful for storing additional information about the object in a
             structured format.
           type: object
+        next_pending_invoice_item_invoice:
+          description: Specifies the approximate timestamp on which any pending invoice
+            items will be billed according to the schedule provided at `pending_invoice_item_interval`.
+          format: unix-time
+          nullable: true
+          type: integer
         object:
           description: String representing the object's type. Objects of the same
             type share the same value.
           enum:
           - subscription
           type: string
+        pending_invoice_item_interval:
+          anyOf:
+          - "$ref": "#/components/schemas/subscription_pending_invoice_item_interval"
+          description: Specifies an interval for how often to bill for any pending
+            invoice items. It is analogous to calling [Create an invoice](https://stripe.com/docs/api#create_invoice)
+            for the given subscription at the specified interval.
+          nullable: true
         pending_setup_intent:
           anyOf:
           - maxLength: 5000
@@ -17898,6 +18002,7 @@ components:
       - discount
       - items
       - latest_invoice
+      - pending_invoice_item_interval
       - pending_setup_intent
       - plan
       - schedule
@@ -17994,6 +18099,7 @@ components:
         in_package: ''
         inner_classes:
         - subscription_billing_thresholds
+        - subscription_pending_invoice_item_interval
     subscription_billing_thresholds:
       properties:
         amount_gte:
@@ -18182,6 +18288,31 @@ components:
       x-stripeResource:
         class_name: BillingThresholds
         in_class: subscription_item
+    subscription_pending_invoice_item_interval:
+      properties:
+        interval:
+          description: Specifies invoicing frequency. Either `day`, `week`, `month`
+            or `year`.
+          enum:
+          - day
+          - month
+          - week
+          - year
+          type: string
+        interval_count:
+          description: The number of intervals between invoices. For example, `interval=month`
+            and `interval_count=3` bills every 3 months. Maximum of one year interval
+            allowed (1 year, 12 months, or 52 weeks).
+          type: integer
+      required:
+      - interval
+      - interval_count
+      title: SubscriptionPendingInvoiceItemInterval
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: PendingInvoiceItemInterval
+        in_class: subscription
     subscription_schedule:
       properties:
         billing_thresholds:
@@ -18719,12 +18850,13 @@ components:
           type: string
         type:
           description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`, `in_gst`,
-            `no_vat`, `nz_gst`, `unknown`, or `za_vat`
+            `mx_rfc`, `no_vat`, `nz_gst`, `za_vat`, or `unknown`
           enum:
           - au_abn
           - ch_vat
           - eu_vat
           - in_gst
+          - mx_rfc
           - no_vat
           - nz_gst
           - unknown
@@ -20290,8 +20422,8 @@ components:
           - true
           type: boolean
         enabled_events:
-          description: The list of events to enable for this endpoint. You may specify
-            `['*']` to enable all events.
+          description: The list of events to enable for this endpoint. `['*']` indicates
+            that all events are enabled, except those that require explicit selection.
           items:
             maxLength: 5000
             type: string
@@ -21317,6 +21449,7 @@ paths:
                     active and some be inactive.
                   items:
                     enum:
+                    - beneficiary_transfers
                     - card_issuing
                     - card_payments
                     - legacy_payments
@@ -22175,6 +22308,7 @@ paths:
                     active and some be inactive.
                   items:
                     enum:
+                    - beneficiary_transfers
                     - card_issuing
                     - card_payments
                     - legacy_payments
@@ -27942,12 +28076,13 @@ paths:
                     properties:
                       type:
                         description: Type of the tax ID, one of `au_abn`, `ch_vat`,
-                          `eu_vat`, `in_gst`, `no_vat`, `nz_gst`, or `za_vat`
+                          `eu_vat`, `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, or `za_vat`
                         enum:
                         - au_abn
                         - ch_vat
                         - eu_vat
                         - in_gst
+                        - mx_rfc
                         - no_vat
                         - nz_gst
                         - za_vat
@@ -29330,12 +29465,13 @@ paths:
                   type: array
                 type:
                   description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
-                    `in_gst`, `no_vat`, `nz_gst`, or `za_vat`
+                    `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, or `za_vat`
                   enum:
                   - au_abn
                   - ch_vat
                   - eu_vat
                   - in_gst
+                  - mx_rfc
                   - no_vat
                   - nz_gst
                   - za_vat
@@ -39917,6 +40053,53 @@ paths:
                       description: Configuration for any card payments attempted on
                         this PaymentIntent.
                       properties:
+                        installments:
+                          description: |-
+                            Installment configuration for payments attempted on this PaymentIntent (Mexico Only).
+
+                            For more information, see the [installments integration guide](https://stripe.com/docs/payments/installments).
+                          properties:
+                            enabled:
+                              description: |-
+                                Setting to true enables installments for this PaymentIntent.
+                                This will cause the response to contain a list of available installment plans.
+                                Setting to false will prevent any selected plan from applying to a charge.
+                              type: boolean
+                            plan:
+                              anyOf:
+                              - properties:
+                                  count:
+                                    description: For `fixed_count` installment plans,
+                                      this is the number of installment payments your
+                                      customer will make to their credit card.
+                                    type: integer
+                                  interval:
+                                    description: For `fixed_count` installment plans,
+                                      this is the interval between installment payments
+                                      your customer will make to their credit card.
+                                    enum:
+                                    - month
+                                    type: string
+                                  type:
+                                    description: Type of installment plan, one of
+                                      `fixed_count`.
+                                    enum:
+                                    - fixed_count
+                                    type: string
+                                required:
+                                - count
+                                - interval
+                                - type
+                                title: installment_plan
+                                type: object
+                              - enum:
+                                - ''
+                                type: string
+                              description: |-
+                                The selected installment plan to use for this payment attempt.
+                                This parameter can only be provided during confirmation.
+                          title: installments_param
+                          type: object
                         moto:
                           description: |-
                             When specified, this parameter indicates that a transaction will be marked
@@ -40645,6 +40828,53 @@ paths:
                       description: Configuration for any card payments attempted on
                         this PaymentIntent.
                       properties:
+                        installments:
+                          description: |-
+                            Installment configuration for payments attempted on this PaymentIntent (Mexico Only).
+
+                            For more information, see the [installments integration guide](https://stripe.com/docs/payments/installments).
+                          properties:
+                            enabled:
+                              description: |-
+                                Setting to true enables installments for this PaymentIntent.
+                                This will cause the response to contain a list of available installment plans.
+                                Setting to false will prevent any selected plan from applying to a charge.
+                              type: boolean
+                            plan:
+                              anyOf:
+                              - properties:
+                                  count:
+                                    description: For `fixed_count` installment plans,
+                                      this is the number of installment payments your
+                                      customer will make to their credit card.
+                                    type: integer
+                                  interval:
+                                    description: For `fixed_count` installment plans,
+                                      this is the interval between installment payments
+                                      your customer will make to their credit card.
+                                    enum:
+                                    - month
+                                    type: string
+                                  type:
+                                    description: Type of installment plan, one of
+                                      `fixed_count`.
+                                    enum:
+                                    - fixed_count
+                                    type: string
+                                required:
+                                - count
+                                - interval
+                                - type
+                                title: installment_plan
+                                type: object
+                              - enum:
+                                - ''
+                                type: string
+                              description: |-
+                                The selected installment plan to use for this payment attempt.
+                                This parameter can only be provided during confirmation.
+                          title: installments_param
+                          type: object
                         moto:
                           description: |-
                             When specified, this parameter indicates that a transaction will be marked
@@ -49112,6 +49342,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              pending_invoice_item_interval:
+                explode: true
+                style: deepObject
               tax_percent:
                 explode: true
                 style: deepObject
@@ -49323,6 +49556,35 @@ paths:
                   - error_if_incomplete
                   - pending_if_incomplete
                   type: string
+                pending_invoice_item_interval:
+                  anyOf:
+                  - properties:
+                      interval:
+                        description: Specifies invoicing frequency. Either `day`,
+                          `week`, `month` or `year`.
+                        enum:
+                        - day
+                        - month
+                        - week
+                        - year
+                        maxLength: 5000
+                        type: string
+                      interval_count:
+                        description: The number of intervals between invoices. For
+                          example, `interval=month` and `interval_count=3` bills every
+                          3 months. Maximum of one year interval allowed (1 year,
+                          12 months, or 52 weeks).
+                        type: integer
+                    required:
+                    - interval
+                    title: pending_invoice_item_interval_params
+                    type: object
+                  - enum:
+                    - ''
+                    type: string
+                  description: Specifies an interval for how often to bill for any
+                    pending invoice items. It is analogous to calling [Create an invoice](https://stripe.com/docs/api#create_invoice)
+                    for the given subscription at the specified interval.
                 prorate:
                   description: Boolean (defaults to `true`) telling us whether to
                     [credit for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
@@ -49529,6 +49791,9 @@ paths:
                 explode: true
                 style: deepObject
               metadata:
+                explode: true
+                style: deepObject
+              pending_invoice_item_interval:
                 explode: true
                 style: deepObject
               tax_percent:
@@ -49746,6 +50011,35 @@ paths:
                   - error_if_incomplete
                   - pending_if_incomplete
                   type: string
+                pending_invoice_item_interval:
+                  anyOf:
+                  - properties:
+                      interval:
+                        description: Specifies invoicing frequency. Either `day`,
+                          `week`, `month` or `year`.
+                        enum:
+                        - day
+                        - month
+                        - week
+                        - year
+                        maxLength: 5000
+                        type: string
+                      interval_count:
+                        description: The number of intervals between invoices. For
+                          example, `interval=month` and `interval_count=3` bills every
+                          3 months. Maximum of one year interval allowed (1 year,
+                          12 months, or 52 weeks).
+                        type: integer
+                    required:
+                    - interval
+                    title: pending_invoice_item_interval_params
+                    type: object
+                  - enum:
+                    - ''
+                    type: string
+                  description: Specifies an interval for how often to bill for any
+                    pending invoice items. It is analogous to calling [Create an invoice](https://stripe.com/docs/api#create_invoice)
+                    for the given subscription at the specified interval.
                 prorate:
                   description: Boolean (defaults to `true`) telling us whether to
                     [credit for unused time](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
@@ -52730,7 +53024,8 @@ paths:
                   type: boolean
                 enabled_events:
                   description: The list of events to enable for this endpoint. You
-                    may specify `['*']` to enable all events.
+                    may specify `['*']` to enable all events, except those that require
+                    explicit selection.
                   items:
                     enum:
                     - "*"
@@ -53026,7 +53321,8 @@ paths:
                   type: boolean
                 enabled_events:
                   description: The list of events to enable for this endpoint. You
-                    may specify `['*']` to enable all events.
+                    may specify `['*']` to enable all events, except those that require
+                    explicit selection.
                   items:
                     enum:
                     - "*"
