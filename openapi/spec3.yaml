@@ -14376,6 +14376,8 @@ components:
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/payment_method"
+        default_settings:
+          "$ref": "#/components/schemas/subscription_schedules_resource_default_settings"
         default_source:
           anyOf:
           - maxLength: 5000
@@ -14472,6 +14474,7 @@ components:
       required:
       - created
       - customer
+      - default_settings
       - end_behavior
       - id
       - livemode
@@ -14485,6 +14488,7 @@ components:
       - current_phase
       - customer
       - default_payment_method
+      - default_settings
       - default_source
       - invoice_settings
       - phases
@@ -14639,6 +14643,48 @@ components:
       - default_tax_rates
       - invoice_settings
       - plans
+    subscription_schedules_resource_default_settings:
+      properties:
+        billing_thresholds:
+          anyOf:
+          - "$ref": "#/components/schemas/subscription_billing_thresholds"
+          description: Define thresholds at which an invoice will be sent, and the
+            subscription advanced to a new billing period
+          nullable: true
+        collection_method:
+          description: Either `charge_automatically`, or `send_invoice`. When charging
+            automatically, Stripe will attempt to pay the underlying subscription
+            at the end of each billing cycle using the default source attached to
+            the customer. When sending an invoice, Stripe will email your customer
+            an invoice with payment instructions.
+          enum:
+          - charge_automatically
+          - send_invoice
+          nullable: true
+          type: string
+        default_payment_method:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/payment_method"
+          description: ID of the default payment method for the subscription schedule.
+            If not set, invoices will use the default payment method in the customer's
+            invoice settings.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/payment_method"
+        invoice_settings:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_setting_subscription_schedule_setting"
+          description: The subscription schedule's default invoice settings.
+          nullable: true
+      title: SubscriptionSchedulesResourceDefaultSettings
+      type: object
+      x-expandableFields:
+      - billing_thresholds
+      - default_payment_method
+      - invoice_settings
     tax_deducted_at_source:
       properties:
         id:
@@ -31177,6 +31223,15 @@ paths:
       description: "<p>Returns a list of your disputes.</p>"
       operationId: GetDisputes
       parameters:
+      - description: Only return disputes that are associated by the Charge specified
+          by this Charge ID.
+        in: query
+        name: charge
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
       - explode: true
         in: query
         name: created
@@ -49745,6 +49800,9 @@ paths:
               billing_thresholds:
                 explode: true
                 style: deepObject
+              default_settings:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -49801,6 +49859,38 @@ paths:
                     in the customer's invoice settings.
                   maxLength: 5000
                   type: string
+                default_settings:
+                  description: Object representing the subscription schedule's default
+                    settings.
+                  properties:
+                    billing_thresholds:
+                      anyOf:
+                      - properties:
+                          amount_gte:
+                            type: integer
+                          reset_billing_cycle_anchor:
+                            type: boolean
+                        title: billing_thresholds_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                    collection_method:
+                      enum:
+                      - charge_automatically
+                      - send_invoice
+                      type: string
+                    default_payment_method:
+                      maxLength: 5000
+                      type: string
+                    invoice_settings:
+                      properties:
+                        days_until_due:
+                          type: integer
+                      title: subscription_schedules_param
+                      type: object
+                  title: default_settings_params
+                  type: object
                 default_source:
                   description: ID of the default payment source for the subscription
                     schedule. It must belong to the customer associated with the subscription
@@ -50035,6 +50125,9 @@ paths:
               billing_thresholds:
                 explode: true
                 style: deepObject
+              default_settings:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -50083,6 +50176,38 @@ paths:
                     in the customer's invoice settings.
                   maxLength: 5000
                   type: string
+                default_settings:
+                  description: Object representing the subscription schedule's default
+                    settings.
+                  properties:
+                    billing_thresholds:
+                      anyOf:
+                      - properties:
+                          amount_gte:
+                            type: integer
+                          reset_billing_cycle_anchor:
+                            type: boolean
+                        title: billing_thresholds_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                    collection_method:
+                      enum:
+                      - charge_automatically
+                      - send_invoice
+                      type: string
+                    default_payment_method:
+                      maxLength: 5000
+                      type: string
+                    invoice_settings:
+                      properties:
+                        days_until_due:
+                          type: integer
+                      title: subscription_schedules_param
+                      type: object
+                  title: default_settings_params
+                  type: object
                 default_source:
                   description: ID of the default payment source for the subscription
                     schedule. It must belong to the customer associated with the subscription
