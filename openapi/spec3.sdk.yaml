@@ -6492,7 +6492,7 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: InvoiceSettings
-        in_class: subscription_schedule
+        in_class: subscription_schedules_resource_default_settings
     invoice_tax_amount:
       properties:
         amount:
@@ -18334,29 +18334,12 @@ components:
         in_class: subscription
     subscription_schedule:
       properties:
-        billing_thresholds:
-          anyOf:
-          - "$ref": "#/components/schemas/subscription_billing_thresholds"
-          description: Define thresholds at which an invoice will be sent, and the
-            subscription advanced to a new billing period
-          nullable: true
         canceled_at:
           description: Time at which the subscription schedule was canceled. Measured
             in seconds since the Unix epoch.
           format: unix-time
           nullable: true
           type: integer
-        collection_method:
-          description: Either `charge_automatically`, or `send_invoice`. When charging
-            automatically, Stripe will attempt to pay the underlying subscription
-            at the end of each billing cycle using the default source attached to
-            the customer. When sending an invoice, Stripe will email your customer
-            an invoice with payment instructions.
-          enum:
-          - charge_automatically
-          - send_invoice
-          nullable: true
-          type: string
         completed_at:
           description: Time at which the subscription schedule was completed. Measured
             in seconds since the Unix epoch.
@@ -18383,31 +18366,8 @@ components:
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/customer"
-        default_payment_method:
-          anyOf:
-          - maxLength: 5000
-            type: string
-          - "$ref": "#/components/schemas/payment_method"
-          description: ID of the default payment method for the subscription schedule.
-            If not set, invoices will use the default payment method in the customer's
-            invoice settings.
-          nullable: true
-          x-expansionResources:
-            oneOf:
-            - "$ref": "#/components/schemas/payment_method"
         default_settings:
           "$ref": "#/components/schemas/subscription_schedules_resource_default_settings"
-        default_source:
-          anyOf:
-          - maxLength: 5000
-            type: string
-          - "$ref": "#/components/schemas/payment_source"
-          description: ID of the default payment source for the subscription schedule.
-            If not set, defaults to the customer's default source.
-          nullable: true
-          x-expansionResources:
-            oneOf:
-            - "$ref": "#/components/schemas/payment_source"
         end_behavior:
           description: Behavior of the subscription schedule and underlying subscription
             when it ends.
@@ -18421,11 +18381,6 @@ components:
           description: Unique identifier for the object.
           maxLength: 5000
           type: string
-        invoice_settings:
-          anyOf:
-          - "$ref": "#/components/schemas/invoice_setting_subscription_schedule_setting"
-          description: The subscription schedule's default invoice settings.
-          nullable: true
         livemode:
           description: Has the value `true` if the object exists in live mode or the
             value `false` if the object exists in test mode.
@@ -18502,13 +18457,9 @@ components:
       title: SubscriptionSchedule
       type: object
       x-expandableFields:
-      - billing_thresholds
       - current_phase
       - customer
-      - default_payment_method
       - default_settings
-      - default_source
-      - invoice_settings
       - phases
       - renewal_interval
       - subscription
@@ -18603,7 +18554,6 @@ components:
         has_collection_class: true
         in_package: ''
         inner_classes:
-        - invoice_setting_subscription_schedule_setting
         - subscription_schedule_configuration_item
         - subscription_schedule_current_phase
         - subscription_schedule_phase_configuration
@@ -18834,6 +18784,8 @@ components:
       x-stripeResource:
         class_name: DefaultSettings
         in_class: subscription_schedule
+        inner_classes:
+        - invoice_setting_subscription_schedule_setting
     tax_deducted_at_source:
       properties:
         id:
@@ -20622,7 +20574,7 @@ info:
     details.
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
-  version: '2019-10-17'
+  version: '2019-11-05'
   x-stripeSpecFilename: spec3.sdk
 openapi: 3.0.0
 paths:
@@ -21509,10 +21461,10 @@ paths:
                   type: object
                 requested_capabilities:
                   description: The set of capabilities you want to unlock for this
-                    account (US only). Each capability will be inactive until you
-                    have provided its specific requirements and Stripe has verified
-                    them. An account may have some of its requested capabilities be
-                    active and some be inactive.
+                    account. Each capability will be inactive until you have provided
+                    its specific requirements and Stripe has verified them. An account
+                    may have some of its requested capabilities be active and some
+                    be inactive.
                   items:
                     enum:
                     - card_issuing
@@ -22367,10 +22319,10 @@ paths:
                   type: object
                 requested_capabilities:
                   description: The set of capabilities you want to unlock for this
-                    account (US only). Each capability will be inactive until you
-                    have provided its specific requirements and Stripe has verified
-                    them. An account may have some of its requested capabilities be
-                    active and some be inactive.
+                    account. Each capability will be inactive until you have provided
+                    its specific requirements and Stripe has verified them. An account
+                    may have some of its requested capabilities be active and some
+                    be inactive.
                   items:
                     enum:
                     - card_issuing
@@ -48370,16 +48322,10 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
-              billing_thresholds:
-                explode: true
-                style: deepObject
               default_settings:
                 explode: true
                 style: deepObject
               expand:
-                explode: true
-                style: deepObject
-              invoice_settings:
                 explode: true
                 style: deepObject
               metadata:
@@ -48394,48 +48340,9 @@ paths:
             schema:
               additionalProperties: false
               properties:
-                billing_thresholds:
-                  anyOf:
-                  - properties:
-                      amount_gte:
-                        description: Monetary threshold that triggers the subscription
-                          to advance to a new billing period
-                        type: integer
-                      reset_billing_cycle_anchor:
-                        description: Indicates if the `billing_cycle_anchor` should
-                          be reset when a threshold is reached. If true, `billing_cycle_anchor`
-                          will be updated to the date/time the threshold was last
-                          reached; otherwise, the value will remain unchanged.
-                        type: boolean
-                    title: billing_thresholds_param
-                    type: object
-                  - enum:
-                    - ''
-                    type: string
-                  description: Define thresholds at which an invoice will be sent,
-                    and the subscription advanced to a new billing period. Pass an
-                    empty string to remove previously-defined thresholds.
-                collection_method:
-                  description: Either `charge_automatically`, or `send_invoice`. When
-                    charging automatically, Stripe will attempt to pay the underlying
-                    subscription at the end of each billing cycle using the default
-                    source attached to the customer. When sending an invoice, Stripe
-                    will email your customer an invoice with payment instructions.
-                    Defaults to `charge_automatically` on creation.
-                  enum:
-                  - charge_automatically
-                  - send_invoice
-                  type: string
                 customer:
                   description: The identifier of the customer to create the subscription
                     schedule for.
-                  maxLength: 5000
-                  type: string
-                default_payment_method:
-                  description: ID of the default payment method for the subscription
-                    schedule. It must belong to the customer associated with the subscription
-                    schedule. If not set, invoices will use the default payment method
-                    in the customer's invoice settings.
                   maxLength: 5000
                   type: string
                 default_settings:
@@ -48492,13 +48399,6 @@ paths:
                       type: object
                   title: default_settings_params
                   type: object
-                default_source:
-                  description: ID of the default payment source for the subscription
-                    schedule. It must belong to the customer associated with the subscription
-                    schedule and be in a chargeable state. If not set, defaults to
-                    the customer's default source.
-                  maxLength: 5000
-                  type: string
                 end_behavior:
                   description: Configures how the subscription schedule behaves when
                     it ends. Possible values are `release` or `cancel` with the default
@@ -48525,13 +48425,6 @@ paths:
                     cannot be set since their values will be inferred from the subscription.
                   maxLength: 5000
                   type: string
-                invoice_settings:
-                  description: All invoices will be billed using the specified settings.
-                  properties:
-                    days_until_due:
-                      type: integer
-                  title: subscription_schedules_param
-                  type: object
                 metadata:
                   additionalProperties:
                     type: string
@@ -48803,16 +48696,10 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
-              billing_thresholds:
-                explode: true
-                style: deepObject
               default_settings:
                 explode: true
                 style: deepObject
               expand:
-                explode: true
-                style: deepObject
-              invoice_settings:
                 explode: true
                 style: deepObject
               metadata:
@@ -48824,45 +48711,6 @@ paths:
             schema:
               additionalProperties: false
               properties:
-                billing_thresholds:
-                  anyOf:
-                  - properties:
-                      amount_gte:
-                        description: Monetary threshold that triggers the subscription
-                          to advance to a new billing period
-                        type: integer
-                      reset_billing_cycle_anchor:
-                        description: Indicates if the `billing_cycle_anchor` should
-                          be reset when a threshold is reached. If true, `billing_cycle_anchor`
-                          will be updated to the date/time the threshold was last
-                          reached; otherwise, the value will remain unchanged.
-                        type: boolean
-                    title: billing_thresholds_param
-                    type: object
-                  - enum:
-                    - ''
-                    type: string
-                  description: Define thresholds at which an invoice will be sent,
-                    and the subscription advanced to a new billing period. Pass an
-                    empty string to remove previously-defined thresholds.
-                collection_method:
-                  description: Either `charge_automatically`, or `send_invoice`. When
-                    charging automatically, Stripe will attempt to pay the underlying
-                    subscription at the end of each billing cycle using the default
-                    source attached to the customer. When sending an invoice, Stripe
-                    will email your customer an invoice with payment instructions.
-                    Defaults to `charge_automatically` on creation.
-                  enum:
-                  - charge_automatically
-                  - send_invoice
-                  type: string
-                default_payment_method:
-                  description: ID of the default payment method for the subscription
-                    schedule. It must belong to the customer associated with the subscription
-                    schedule. If not set, invoices will use the default payment method
-                    in the customer's invoice settings.
-                  maxLength: 5000
-                  type: string
                 default_settings:
                   description: Object representing the subscription schedule's default
                     settings.
@@ -48917,13 +48765,6 @@ paths:
                       type: object
                   title: default_settings_params
                   type: object
-                default_source:
-                  description: ID of the default payment source for the subscription
-                    schedule. It must belong to the customer associated with the subscription
-                    schedule and be in a chargeable state. If not set, defaults to
-                    the customer's default source.
-                  maxLength: 5000
-                  type: string
                 end_behavior:
                   description: Configures how the subscription schedule behaves when
                     it ends. Possible values are `release` or `cancel` with the default
@@ -48942,13 +48783,6 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
-                invoice_settings:
-                  description: All invoices will be billed using the specified settings.
-                  properties:
-                    days_until_due:
-                      type: integer
-                  title: subscription_schedules_param
-                  type: object
                 metadata:
                   additionalProperties:
                     type: string
@@ -53214,6 +53048,7 @@ paths:
                   - '2019-09-09'
                   - '2019-10-08'
                   - '2019-10-17'
+                  - '2019-11-05'
                   maxLength: 5000
                   type: string
                   x-stripeBypassValidation: true
