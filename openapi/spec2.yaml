@@ -1501,6 +1501,9 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/dispute"
+      disputed:
+        description: Whether the charge has been disputed.
+        type: boolean
       failure_code:
         description: Error code explaining reason for charge failure if available
           (see [the errors section](https://stripe.com/docs/api#errors) for a list
@@ -1665,6 +1668,7 @@ definitions:
     - captured
     - created
     - currency
+    - disputed
     - id
     - livemode
     - metadata
@@ -3337,6 +3341,12 @@ definitions:
         enum:
         - dispute
         type: string
+      payment_intent:
+        description: ID of the PaymentIntent that was disputed.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/payment_intent"
       reason:
         description: Reason given by cardholder for dispute. Possible values are `bank_cannot_process`,
           `check_returned`, `credit_not_processed`, `customer_initiated`, `debit_not_authorized`,
@@ -3380,6 +3390,7 @@ definitions:
     - charge
     - evidence
     - evidence_details
+    - payment_intent
     x-resourceId: dispute
   dispute_evidence:
     properties:
@@ -9960,7 +9971,8 @@ definitions:
         type: array
       description:
         description: The product's description, meant to be displayable to the customer.
-          Only applicable to products of `type=good`.
+          Use this field to optionally store a long form explanation of the product
+          being sold for your own rendering purposes.
         type: string
       id:
         description: Unique identifier for the object.
@@ -9982,7 +9994,8 @@ definitions:
         type: object
       name:
         description: The product's name, meant to be displayable to the customer.
-          Applicable to both `service` and `good` types.
+          Whenever this product is sold via a subscription, name will show up on associated
+          invoice line item descriptions.
         type: string
       object:
         description: String representing the object's type. Objects of the same type
@@ -9999,8 +10012,7 @@ definitions:
       statement_descriptor:
         description: Extra information about a product which will appear on your customer's
           credit card statement. In the case that multiple products are billed at
-          once, the first statement descriptor will be used. Only available on products
-          of type=`service`.
+          once, the first statement descriptor will be used.
         type: string
       type:
         description: The type of the product. The product is either of type `good`,
@@ -10011,9 +10023,9 @@ definitions:
         - service
         type: string
       unit_label:
-        description: A label that represents units of this product, such as seat(s),
-          in Stripe and on customers’ receipts and invoices. Only available on products
-          of type=`service`.
+        description: A label that represents units of this product in Stripe and on
+          customers’ receipts and invoices. When set, this will be included in associated
+          invoice line item descriptions.
         type: string
       updated:
         type: integer
@@ -10414,6 +10426,12 @@ definitions:
         enum:
         - refund
         type: string
+      payment_intent:
+        description: ID of the PaymentIntent that was refunded.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/payment_intent"
       reason:
         description: Reason for the refund. If set, possible values are `duplicate`,
           `fraudulent`, and `requested_by_customer`.
@@ -10457,6 +10475,7 @@ definitions:
     - balance_transaction
     - charge
     - failure_balance_transaction
+    - payment_intent
     - source_transfer_reversal
     - transfer_reversal
     x-resourceId: refund
@@ -19838,6 +19857,8 @@ paths:
               type: array
             metadata:
               type: object
+            payment_intent:
+              type: string
             reason:
               enum:
               - duplicate
@@ -19959,6 +19980,8 @@ paths:
               type: array
             metadata:
               type: object
+            payment_intent:
+              type: string
             reason:
               enum:
               - duplicate
@@ -33128,7 +33151,7 @@ paths:
             "$ref": "#/definitions/error"
     post:
       description: <p>Creates a new product object. To create a product for use with
-        subscriptions, see <a href="#create_service_product">Subscriptions Products</a>.</p>
+        orders, see <a href="#create_product">Products</a>.</p>
       operationId: PostProducts
       parameters:
       - description: Body parameters for the request.
@@ -33142,8 +33165,7 @@ paths:
                 Defaults to `true`.
               type: boolean
             attributes:
-              description: A list of up to 5 alphanumeric attributes. Applicable to
-                both `service` and `good` types.
+              description: A list of up to 5 alphanumeric attributes.
               items:
                 type: string
               type: array
@@ -33160,7 +33182,8 @@ paths:
               type: array
             description:
               description: The product's description, meant to be displayable to the
-                customer. May only be set if type=`good`.
+                customer. Use this field to optionally store a long form explanation
+                of the product being sold for your own rendering purposes.
               type: string
             expand:
               description: Specifies which fields in the response should be expanded.
@@ -33170,8 +33193,7 @@ paths:
             id:
               description: An identifier will be randomly generated by Stripe. You
                 can optionally override this ID, but the ID must be unique across
-                all products in your Stripe account. Applicable to both `service`
-                and `good` types.
+                all products in your Stripe account.
               type: string
             images:
               description: A list of up to 8 URLs of images for this product, meant
@@ -33182,12 +33204,12 @@ paths:
             metadata:
               description: A set of key-value pairs that you can attach to a product
                 object. It can be useful for storing additional information about
-                the product in a structured format. Applicable to both `service` and
-                `good` types.
+                the product in a structured format.
               type: object
             name:
               description: The product's name, meant to be displayable to the customer.
-                Applicable to both `service` and `good` types.
+                Whenever this product is sold via a subscription, name will show up
+                on associated invoice line item descriptions.
               type: string
             package_dimensions:
               description: The dimensions of this product for shipping purposes. A
@@ -33220,20 +33242,22 @@ paths:
                 customer's statement in capital letters. Non-ASCII characters are
                 automatically stripped. While most banks display this information
                 consistently, some may display it incorrectly or not at all. It must
-                contain at least one letter. May only be set if type=`service`.
+                contain at least one letter.
               type: string
             type:
-              description: The type of the product. The product is either of type
-                `service`, which is eligible for use with Subscriptions and Plans
-                or `good`, which is eligible for use with Orders and SKUs.
+              description: The type of the product. Defaults to `service` if not explicitly
+                specified, enabling use of this product with Subscriptions and Plans.
+                Set this parameter to `good` to use this product with Orders and SKUs.
+                On API versions before `2018-02-05`, this field defaults to `good`
+                for compatibility reasons.
               enum:
               - good
               - service
               type: string
             unit_label:
-              description: A label that represents units of this product, such as
-                seat(s), in Stripe and on customers’ receipts and invoices. Only available
-                on products of type=`service`.
+              description: A label that represents units of this product in Stripe
+                and on customers’ receipts and invoices. When set, this will be included
+                in associated invoice line item descriptions.
               type: string
             url:
               description: A URL of a publicly-accessible webpage for this product.
@@ -33241,7 +33265,6 @@ paths:
               type: string
           required:
           - name
-          - type
           type: object
       responses:
         '200':
@@ -33321,25 +33344,28 @@ paths:
               type: boolean
             attributes:
               description: A list of up to 5 alphanumeric attributes that each SKU
-                can provide values for (e.g., `["color", "size"]`). If a value for
-                `attributes` is specified, the list specified will replace the existing
-                attributes list on this product. Any attributes not present after
-                the update will be deleted from the SKUs for this product.
+                can provide values for (e.g., `["color", "size"]`). ' 'If a value
+                for `attributes` is specified, the list specified will replace the
+                existing attributes list on this product. Any attributes not present
+                after the update will be deleted from the SKUs for this product. May
+                only be set if type=`good`.
               items:
                 type: string
             caption:
               description: A short one-line description of the product, meant to be
-                displayable to the customer.
+                displayable to the customer. May only be set if type=`good`.
               type: string
             deactivate_on:
               description: An array of Connect application names or identifiers that
-                should not be able to order the SKUs for this product.
+                should not be able to order the SKUs for this product. May only be
+                set if type=`good`.
               items:
                 type: string
               type: array
             description:
               description: The product's description, meant to be displayable to the
-                customer.
+                customer. Use this field to optionally store a long form explanation
+                of the product being sold for your own rendering purposes.
               type: string
             expand:
               description: Specifies which fields in the response should be expanded.
@@ -33348,7 +33374,7 @@ paths:
               type: array
             images:
               description: A list of up to 8 URLs of images for this product, meant
-                to be displayable to the customer.
+                to be displayable to the customer. May only be set if type=`good`.
               items:
                 type: string
             metadata:
@@ -33358,15 +33384,16 @@ paths:
               type: object
             name:
               description: The product's name, meant to be displayable to the customer.
-                Applicable to both `service` and `good` types.
+                Whenever this product is sold via a subscription, name will show up
+                on associated invoice line item descriptions.
               type: string
             package_dimensions:
               description: The dimensions of this product for shipping purposes. A
                 SKU associated with this product can override this value by having
-                its own `package_dimensions`.
+                its own `package_dimensions`. May only be set if type=`good`.
             shippable:
               description: Whether this product is shipped (i.e., physical goods).
-                Defaults to `true`.
+                Defaults to `true`. May only be set if type=`good`.
               type: boolean
             statement_descriptor:
               description: An arbitrary string to be displayed on your customer's
@@ -33375,15 +33402,14 @@ paths:
                 customer's statement in capital letters. Non-ASCII characters are
                 automatically stripped. While most banks display this information
                 consistently, some may display it incorrectly or not at all. It must
-                contain at least one letter. May only be set if type=`service`.
+                contain at least one letter.
               type: string
             unit_label:
-              description: A label that represents units of this product, such as
-                seat(s), in Stripe and on customers’ receipts and invoices. Only available
-                on products of type=`service`.
+              description: A label that represents units of this product in Stripe
+                and on customers’ receipts and invoices. When set, this will be included
+                in associated invoice line item descriptions.
               type: string
             url:
-              description: A URL of a publicly-accessible webpage for this product.
               type: string
           type: object
       responses:
@@ -34215,6 +34241,11 @@ paths:
         name: limit
         required: false
         type: integer
+      - description: Only return refunds for the PaymentIntent specified by this ID.
+        in: query
+        name: payment_intent
+        required: false
+        type: string
       - description: A cursor for use in pagination. `starting_after` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, ending with `obj_foo`, your subsequent
@@ -34279,6 +34310,8 @@ paths:
               type: array
             metadata:
               type: object
+            payment_intent:
+              type: string
             reason:
               enum:
               - duplicate
