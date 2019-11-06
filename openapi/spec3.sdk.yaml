@@ -2432,6 +2432,14 @@ components:
         polymorphic_groups:
         - external_account
         - payment_source
+    card_mandate_payment_method_details:
+      properties: {}
+      title: card_mandate_payment_method_details
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Card
+        in_class: mandate_payment_method_details
     charge:
       properties:
         alternate_statement_descriptors:
@@ -4206,6 +4214,37 @@ components:
         - invoice_setting_customer_setting
         - tax_info
         - tax_info_verification
+    customer_acceptance:
+      properties:
+        accepted_at:
+          description: The time at which the customer accepted the Mandate.
+          format: unix-time
+          nullable: true
+          type: integer
+        offline:
+          "$ref": "#/components/schemas/offline_acceptance"
+        online:
+          "$ref": "#/components/schemas/online_acceptance"
+        type:
+          description: The type of customer acceptance information included with the
+            Mandate. One of `online` or `offline`.
+          enum:
+          - offline
+          - online
+          type: string
+      required:
+      - type
+      title: customer_acceptance
+      type: object
+      x-expandableFields:
+      - offline
+      - online
+      x-stripeResource:
+        class_name: CustomerAcceptance
+        in_class: mandate
+        inner_classes:
+        - offline_acceptance
+        - online_acceptance
     customer_balance_transaction:
       properties:
         amount:
@@ -10580,6 +10619,168 @@ components:
       x-stripeResource:
         class_name: LoginLink
         in_package: ''
+    mandate:
+      properties:
+        customer_acceptance:
+          "$ref": "#/components/schemas/customer_acceptance"
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        livemode:
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+          type: boolean
+        multi_use:
+          "$ref": "#/components/schemas/mandate_multi_use"
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - mandate
+          type: string
+        payment_method:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/payment_method"
+          description: ID of the payment method associated with this mandate.
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/payment_method"
+        payment_method_details:
+          "$ref": "#/components/schemas/mandate_payment_method_details"
+        single_use:
+          "$ref": "#/components/schemas/mandate_single_use"
+        status:
+          description: The status of the Mandate, one of `active`, `inactive`, or
+            `pending`. The Mandate can be used to initiate a payment only if status=active.
+          enum:
+          - active
+          - inactive
+          - pending
+          type: string
+        type:
+          description: The type of the mandate, one of `multi_use` or `single_use`
+          enum:
+          - multi_use
+          - single_use
+          type: string
+      required:
+      - customer_acceptance
+      - id
+      - livemode
+      - object
+      - payment_method
+      - payment_method_details
+      - status
+      - type
+      title: Mandate
+      type: object
+      x-expandableFields:
+      - customer_acceptance
+      - multi_use
+      - payment_method
+      - payment_method_details
+      - single_use
+      x-resourceId: mandate
+      x-stripeOperations:
+      - method_name: retrieve
+        method_on: class
+        method_type: retrieve
+        operation: get
+        path: "/v1/mandates/{mandate}"
+        path_resource_variables:
+        - method_parameter: mandate
+          name: mandate
+      - method_name: retrieve
+        method_on: service
+        method_type: retrieve
+        operation: get
+        path: "/v1/mandates/{mandate}"
+        path_resource_variables:
+        - method_parameter: mandate
+          name: mandate
+      x-stripeResource:
+        class_name: Mandate
+        in_package: ''
+        inner_classes:
+        - customer_acceptance
+        - mandate_multi_use
+        - mandate_payment_method_details
+        - mandate_single_use
+    mandate_multi_use:
+      properties: {}
+      title: mandate_multi_use
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: MultiUse
+        in_class: mandate
+    mandate_payment_method_details:
+      properties:
+        card:
+          "$ref": "#/components/schemas/card_mandate_payment_method_details"
+        sepa_debit:
+          "$ref": "#/components/schemas/mandate_sepa_debit"
+        type:
+          description: The type of the payment method associated with this mandate.
+            An additional hash is included on `payment_method_details` with a name
+            matching this value. It contains mandate information specific to the payment
+            method.
+          maxLength: 5000
+          type: string
+      required:
+      - type
+      title: mandate_payment_method_details
+      type: object
+      x-expandableFields:
+      - card
+      - sepa_debit
+      x-stripeResource:
+        class_name: PaymentMethodDetails
+        in_class: mandate
+        inner_classes:
+        - card_mandate_payment_method_details
+        - mandate_sepa_debit
+    mandate_sepa_debit:
+      properties:
+        reference:
+          description: The unique reference of the mandate.
+          maxLength: 5000
+          type: string
+        url:
+          description: The URL of the mandate. This URL generally contains sensitive
+            information about the customer and should be shared with them exclusively.
+          maxLength: 5000
+          type: string
+      required:
+      - reference
+      - url
+      title: mandate_sepa_debit
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: SepaDebit
+        in_class: mandate_payment_method_details
+    mandate_single_use:
+      properties:
+        amount:
+          description: On a single use mandate, the amount of the payment.
+          type: integer
+        currency:
+          description: On a single use mandate, the currency of the payment.
+          maxLength: 3
+          type: string
+      required:
+      - amount
+      - currency
+      title: mandate_single_use
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: SingleUse
+        in_class: mandate
     notification_event_data:
       properties:
         object:
@@ -10622,6 +10823,33 @@ components:
       x-stripeResource:
         class_name: EventRequest
         in_package: ''
+    offline_acceptance:
+      properties: {}
+      title: offline_acceptance
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Offline
+        in_class: customer_acceptance
+    online_acceptance:
+      properties:
+        ip_address:
+          description: The IP address from which the Mandate was accepted by the customer.
+          maxLength: 5000
+          nullable: true
+          type: string
+        user_agent:
+          description: The user agent of the browser from which the Mandate was accepted
+            by the customer.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: online_acceptance
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Online
+        in_class: customer_acceptance
     order:
       properties:
         amount:
@@ -11648,6 +11876,8 @@ components:
           description: Unique identifier for the object.
           maxLength: 5000
           type: string
+        ideal:
+          "$ref": "#/components/schemas/payment_method_ideal"
         livemode:
           description: Has the value `true` if the object exists in live mode or the
             value `false` if the object exists in test mode.
@@ -11666,6 +11896,8 @@ components:
           enum:
           - payment_method
           type: string
+        sepa_debit:
+          "$ref": "#/components/schemas/payment_method_sepa_debit"
         type:
           description: The type of the PaymentMethod. An additional hash is included
             on the PaymentMethod with a name matching this value. It contains additional
@@ -11673,6 +11905,8 @@ components:
           enum:
           - card
           - card_present
+          - ideal
+          - sepa_debit
           type: string
       required:
       - billing_details
@@ -11689,6 +11923,8 @@ components:
       - card
       - card_present
       - customer
+      - ideal
+      - sepa_debit
       x-resourceId: payment_method
       x-stripeOperations:
       - method_name: create
@@ -11783,6 +12019,8 @@ components:
         - billing_details
         - payment_method_card
         - payment_method_card_present
+        - payment_method_ideal
+        - payment_method_sepa_debit
     payment_method_card:
       properties:
         brand:
@@ -13109,6 +13347,51 @@ components:
       x-stripeResource:
         class_name: Wechat
         in_class: payment_method_details
+    payment_method_ideal:
+      properties:
+        bank:
+          description: The customer's bank, if provided. Can be one of `abn_amro`,
+            `asn_bank`, `bunq`, `handelsbanken`, `ing`, `knab`, `moneyou`, `rabobank`,
+            `regiobank`, `sns_bank`, `triodos_bank`, or `van_lanschot`.
+          enum:
+          - abn_amro
+          - asn_bank
+          - bunq
+          - handelsbanken
+          - ing
+          - knab
+          - moneyou
+          - rabobank
+          - regiobank
+          - sns_bank
+          - triodos_bank
+          - van_lanschot
+          nullable: true
+          type: string
+        bic:
+          description: The Bank Identifier Code of the customer's bank, if the bank
+            was provided.
+          enum:
+          - ABNANL2A
+          - ASNBNL21
+          - BUNQNL2A
+          - FVLBNL22
+          - HANDNL2A
+          - INGBNL2A
+          - KNABNL2H
+          - MOYONL21
+          - RABONL2U
+          - RBRBNL21
+          - SNSBNL2A
+          - TRIONL2U
+          nullable: true
+          type: string
+      title: payment_method_ideal
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Ideal
+        in_class: payment_method
     payment_method_options_card_installments:
       properties:
         available_plans:
@@ -13137,6 +13420,41 @@ components:
         in_class: payment_intent_payment_method_options_card
         inner_classes:
         - payment_method_details_card_installments_plan
+    payment_method_sepa_debit:
+      properties:
+        bank_code:
+          description: Bank code of bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        branch_code:
+          description: Branch code of bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        country:
+          description: Two-letter ISO code representing the country the bank account
+            is located in.
+          maxLength: 5000
+          nullable: true
+          type: string
+        fingerprint:
+          description: Uniquely identifies this particular bank account. You can use
+            this attribute to check whether two bank accounts are the same.
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          description: Last four characters of the IBAN.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_sepa_debit
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: SepaDebit
+        in_class: payment_method
     payment_source:
       anyOf:
       - "$ref": "#/components/schemas/account"
@@ -15703,6 +16021,16 @@ components:
           description: Has the value `true` if the object exists in live mode or the
             value `false` if the object exists in test mode.
           type: boolean
+        mandate:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/mandate"
+          description: ID of the multi use Mandate generated by the SetupIntent.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/mandate"
         metadata:
           additionalProperties:
             maxLength: 500
@@ -15755,6 +16083,16 @@ components:
             maxLength: 5000
             type: string
           type: array
+        single_use_mandate:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/mandate"
+          description: ID of the single_use Mandate generated by the SetupIntent.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/mandate"
         status:
           description: "[Status](https://stripe.com/docs/payments/intents#intent-statuses)
             of this SetupIntent, one of `requires_payment_method`, `requires_confirmation`,
@@ -15788,10 +16126,12 @@ components:
       - application
       - customer
       - last_setup_error
+      - mandate
       - next_action
       - on_behalf_of
       - payment_method
       - payment_method_options
+      - single_use_mandate
       x-resourceId: setup_intent
       x-stripeOperations:
       - method_name: create
@@ -38890,6 +39230,51 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
+  "/v1/mandates/{mandate}":
+    get:
+      description: "<p>Retrieves a Mandate object.</p>"
+      operationId: GetMandatesMandate
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - description: ID of the Mandate to retrieve.
+        in: path
+        name: mandate
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/mandate"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
   "/v1/order_returns":
     get:
       description: "<p>Returns a list of your order returns. The returns are returned
@@ -39937,6 +40322,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              mandate_data:
+                explode: true
+                style: deepObject
               metadata:
                 explode: true
                 style: deepObject
@@ -40028,6 +40416,65 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                mandate:
+                  description: ID of the mandate to be used for this payment. This
+                    parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm).
+                  maxLength: 5000
+                  type: string
+                mandate_data:
+                  description: This hash contains details about the Mandate to create.
+                    This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm).
+                  properties:
+                    customer_acceptance:
+                      description: This hash contains details about the customer acceptance
+                        of the Mandate.
+                      properties:
+                        accepted_at:
+                          description: The time at which the customer accepted the
+                            Mandate.
+                          format: unix-time
+                          type: integer
+                        offline:
+                          description: If this is a Mandate accepted offline, this
+                            hash contains details about the offline acceptance.
+                          properties: {}
+                          title: offline_param
+                          type: object
+                        online:
+                          description: If this is a Mandate accepted online, this
+                            hash contains details about the online acceptance.
+                          properties:
+                            ip_address:
+                              description: The IP address from which the Mandate was
+                                accepted by the customer.
+                              maxLength: 5000
+                              type: string
+                            user_agent:
+                              description: The user agent of the browser from which
+                                the Mandate was accepted by the customer.
+                              maxLength: 5000
+                              type: string
+                          required:
+                          - ip_address
+                          - user_agent
+                          title: online_param
+                          type: object
+                        type:
+                          description: The type of customer acceptance information
+                            included with the Mandate. One of `online` or `offline`.
+                          enum:
+                          - offline
+                          - online
+                          maxLength: 5000
+                          type: string
+                      required:
+                      - type
+                      title: customer_acceptance_param
+                      type: object
+                  required:
+                  - customer_acceptance
+                  title: secret_key_param
+                  type: object
                 metadata:
                   additionalProperties:
                     type: string
@@ -40798,6 +41245,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              mandate_data:
+                explode: true
+                style: deepObject
               off_session:
                 explode: true
                 style: deepObject
@@ -40819,6 +41269,103 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                mandate:
+                  description: ID of the mandate to be used for this payment.
+                  maxLength: 5000
+                  type: string
+                mandate_data:
+                  anyOf:
+                  - properties:
+                      customer_acceptance:
+                        description: This hash contains details about the customer
+                          acceptance of the Mandate.
+                        properties:
+                          accepted_at:
+                            description: The time at which the customer accepted the
+                              Mandate.
+                            format: unix-time
+                            type: integer
+                          offline:
+                            description: If this is a Mandate accepted offline, this
+                              hash contains details about the offline acceptance.
+                            properties: {}
+                            title: offline_param
+                            type: object
+                          online:
+                            description: If this is a Mandate accepted online, this
+                              hash contains details about the online acceptance.
+                            properties:
+                              ip_address:
+                                description: The IP address from which the Mandate
+                                  was accepted by the customer.
+                                maxLength: 5000
+                                type: string
+                              user_agent:
+                                description: The user agent of the browser from which
+                                  the Mandate was accepted by the customer.
+                                maxLength: 5000
+                                type: string
+                            required:
+                            - ip_address
+                            - user_agent
+                            title: online_param
+                            type: object
+                          type:
+                            description: The type of customer acceptance information
+                              included with the Mandate. One of `online` or `offline`.
+                            enum:
+                            - offline
+                            - online
+                            maxLength: 5000
+                            type: string
+                        required:
+                        - type
+                        title: customer_acceptance_param
+                        type: object
+                    required:
+                    - customer_acceptance
+                    title: secret_key_param
+                    type: object
+                  - properties:
+                      customer_acceptance:
+                        description: This hash contains details about the customer
+                          acceptance of the Mandate.
+                        properties:
+                          online:
+                            description: If this is a Mandate accepted online, this
+                              hash contains details about the online acceptance.
+                            properties:
+                              ip_address:
+                                description: The IP address from which the Mandate
+                                  was accepted by the customer.
+                                maxLength: 5000
+                                type: string
+                              user_agent:
+                                description: The user agent of the browser from which
+                                  the Mandate was accepted by the customer.
+                                maxLength: 5000
+                                type: string
+                            title: online_param
+                            type: object
+                          type:
+                            description: The type of customer acceptance information
+                              included with the Mandate.
+                            enum:
+                            - online
+                            maxLength: 5000
+                            type: string
+                        required:
+                        - online
+                        - type
+                        title: customer_acceptance_param
+                        type: object
+                    required:
+                    - customer_acceptance
+                    title: client_key_param
+                    type: object
+                    x-stripeParam:
+                      class_name: MandateDataPublishableKey
+                  description: This hash contains details about the Mandate to create
                 off_session:
                   anyOf:
                   - type: boolean
@@ -41098,6 +41645,8 @@ paths:
           enum:
           - card
           - card_present
+          - ideal
+          - sepa_debit
           maxLength: 5000
           type: string
           x-stripeBypassValidation: true
@@ -41169,7 +41718,13 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              ideal:
+                explode: true
+                style: deepObject
               metadata:
+                explode: true
+                style: deepObject
+              sepa_debit:
                 explode: true
                 style: deepObject
             schema:
@@ -41273,6 +41828,29 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                ideal:
+                  description: If this is an `ideal` PaymentMethod, this hash contains
+                    details about the iDEAL payment method.
+                  properties:
+                    bank:
+                      description: The customer's bank.
+                      enum:
+                      - abn_amro
+                      - asn_bank
+                      - bunq
+                      - handelsbanken
+                      - ing
+                      - knab
+                      - moneyou
+                      - rabobank
+                      - regiobank
+                      - sns_bank
+                      - triodos_bank
+                      - van_lanschot
+                      maxLength: 5000
+                      type: string
+                  title: param
+                  type: object
                 metadata:
                   additionalProperties:
                     type: string
@@ -41284,6 +41862,17 @@ paths:
                   description: The PaymentMethod to share.
                   maxLength: 5000
                   type: string
+                sepa_debit:
+                  description: If this is a `sepa_debit` PaymentMethod, this hash
+                    contains details about the SEPA debit bank account.
+                  properties:
+                    iban:
+                      maxLength: 5000
+                      type: string
+                  required:
+                  - iban
+                  title: param
+                  type: object
                 type:
                   description: The type of the PaymentMethod. An additional hash is
                     included on the PaymentMethod with a name matching this value.
@@ -41294,6 +41883,8 @@ paths:
                   enum:
                   - card
                   - card_present
+                  - ideal
+                  - sepa_debit
                   type: string
                   x-stripeBypassValidation: true
               type: object
@@ -45422,6 +46013,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              mandate_data:
+                explode: true
+                style: deepObject
               metadata:
                 explode: true
                 style: deepObject
@@ -45429,6 +46023,9 @@ paths:
                 explode: true
                 style: deepObject
               payment_method_types:
+                explode: true
+                style: deepObject
+              single_use:
                 explode: true
                 style: deepObject
               usage:
@@ -45461,6 +46058,60 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                mandate_data:
+                  description: This hash contains details about the Mandate to create.
+                    This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/setup_intents/create#create_setup_intent-confirm).
+                  properties:
+                    customer_acceptance:
+                      description: This hash contains details about the customer acceptance
+                        of the Mandate.
+                      properties:
+                        accepted_at:
+                          description: The time at which the customer accepted the
+                            Mandate.
+                          format: unix-time
+                          type: integer
+                        offline:
+                          description: If this is a Mandate accepted offline, this
+                            hash contains details about the offline acceptance.
+                          properties: {}
+                          title: offline_param
+                          type: object
+                        online:
+                          description: If this is a Mandate accepted online, this
+                            hash contains details about the online acceptance.
+                          properties:
+                            ip_address:
+                              description: The IP address from which the Mandate was
+                                accepted by the customer.
+                              maxLength: 5000
+                              type: string
+                            user_agent:
+                              description: The user agent of the browser from which
+                                the Mandate was accepted by the customer.
+                              maxLength: 5000
+                              type: string
+                          required:
+                          - ip_address
+                          - user_agent
+                          title: online_param
+                          type: object
+                        type:
+                          description: The type of customer acceptance information
+                            included with the Mandate. One of `online` or `offline`.
+                          enum:
+                          - offline
+                          - online
+                          maxLength: 5000
+                          type: string
+                      required:
+                      - type
+                      title: customer_acceptance_param
+                      type: object
+                  required:
+                  - customer_acceptance
+                  title: secret_key_param
+                  type: object
                 metadata:
                   additionalProperties:
                     type: string
@@ -45528,6 +46179,28 @@ paths:
                     you can alternatively supply an application URI scheme. This parameter
                     can only be used with [`confirm=true`](https://stripe.com/docs/api/setup_intents/create#create_setup_intent-confirm).
                   type: string
+                single_use:
+                  description: If this hash is populated, this SetupIntent will generate
+                    a single_use Mandate on success.
+                  properties:
+                    amount:
+                      description: A positive integer representing how much to charge
+                        in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal)
+                        (e.g., 100 cents to charge $1.00 or 100 to charge ¥100, a
+                        zero-decimal currency). The minimum amount is $0.50 US or
+                        [equivalent in charge currency](https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts).
+                        The amount value supports up to eight digits (e.g., a value
+                        of 99999999 for a USD charge of $999,999.99).
+                      type: integer
+                    currency:
+                      description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                        in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  title: setup_intent_single_use_params
+                  type: object
                 usage:
                   anyOf:
                   - enum:
@@ -45784,6 +46457,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              mandate_data:
+                explode: true
+                style: deepObject
               payment_method_options:
                 explode: true
                 style: deepObject
@@ -45796,6 +46472,99 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                mandate_data:
+                  anyOf:
+                  - properties:
+                      customer_acceptance:
+                        description: This hash contains details about the customer
+                          acceptance of the Mandate.
+                        properties:
+                          accepted_at:
+                            description: The time at which the customer accepted the
+                              Mandate.
+                            format: unix-time
+                            type: integer
+                          offline:
+                            description: If this is a Mandate accepted offline, this
+                              hash contains details about the offline acceptance.
+                            properties: {}
+                            title: offline_param
+                            type: object
+                          online:
+                            description: If this is a Mandate accepted online, this
+                              hash contains details about the online acceptance.
+                            properties:
+                              ip_address:
+                                description: The IP address from which the Mandate
+                                  was accepted by the customer.
+                                maxLength: 5000
+                                type: string
+                              user_agent:
+                                description: The user agent of the browser from which
+                                  the Mandate was accepted by the customer.
+                                maxLength: 5000
+                                type: string
+                            required:
+                            - ip_address
+                            - user_agent
+                            title: online_param
+                            type: object
+                          type:
+                            description: The type of customer acceptance information
+                              included with the Mandate. One of `online` or `offline`.
+                            enum:
+                            - offline
+                            - online
+                            maxLength: 5000
+                            type: string
+                        required:
+                        - type
+                        title: customer_acceptance_param
+                        type: object
+                    required:
+                    - customer_acceptance
+                    title: secret_key_param
+                    type: object
+                  - properties:
+                      customer_acceptance:
+                        description: This hash contains details about the customer
+                          acceptance of the Mandate.
+                        properties:
+                          online:
+                            description: If this is a Mandate accepted online, this
+                              hash contains details about the online acceptance.
+                            properties:
+                              ip_address:
+                                description: The IP address from which the Mandate
+                                  was accepted by the customer.
+                                maxLength: 5000
+                                type: string
+                              user_agent:
+                                description: The user agent of the browser from which
+                                  the Mandate was accepted by the customer.
+                                maxLength: 5000
+                                type: string
+                            title: online_param
+                            type: object
+                          type:
+                            description: The type of customer acceptance information
+                              included with the Mandate.
+                            enum:
+                            - online
+                            maxLength: 5000
+                            type: string
+                        required:
+                        - online
+                        - type
+                        title: customer_acceptance_param
+                        type: object
+                    required:
+                    - customer_acceptance
+                    title: client_key_param
+                    type: object
+                    x-stripeParam:
+                      class_name: MandateDataPublishableKey
+                  description: This hash contains details about the Mandate to create
                 payment_method:
                   description: ID of the payment method (a PaymentMethod, Card, BankAccount,
                     or saved Source object) to attach to this SetupIntent.
@@ -53138,6 +53907,7 @@ paths:
                     - issuing_settlement.updated
                     - issuing_transaction.created
                     - issuing_transaction.updated
+                    - mandate.updated
                     - order.created
                     - order.payment_failed
                     - order.payment_succeeded
@@ -53435,6 +54205,7 @@ paths:
                     - issuing_settlement.updated
                     - issuing_transaction.created
                     - issuing_transaction.updated
+                    - mandate.updated
                     - order.created
                     - order.payment_failed
                     - order.payment_succeeded
