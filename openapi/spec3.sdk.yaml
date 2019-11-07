@@ -7461,6 +7461,11 @@ components:
           nullable: true
         billing:
           "$ref": "#/components/schemas/issuing_cardholder_address"
+        company:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_cardholder_company"
+          description: Additional information about a `business_entity` cardholder.
+          nullable: true
         created:
           description: Time at which the object was created. Measured in seconds since
             the Unix epoch.
@@ -7475,6 +7480,11 @@ components:
           description: Unique identifier for the object.
           maxLength: 5000
           type: string
+        individual:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_cardholder_individual"
+          description: Additional information about an `individual` cardholder.
+          nullable: true
         is_default:
           description: Whether or not this cardholder is the default cardholder.
           type: boolean
@@ -7539,6 +7549,8 @@ components:
       x-expandableFields:
       - authorization_controls
       - billing
+      - company
+      - individual
       - requirements
       x-resourceId: issuing.cardholder
       x-stripeOperations:
@@ -7601,6 +7613,8 @@ components:
         inner_classes:
         - issuing_cardholder_address
         - issuing_cardholder_authorization_controls
+        - issuing_cardholder_company
+        - issuing_cardholder_individual
         - issuing_cardholder_requirements
         - issuing_cardholder_spending_limit
     issuing.dispute:
@@ -9672,6 +9686,105 @@ components:
       x-stripeResource:
         class_name: AuthorizationControls
         in_class: issuing.cardholder
+    issuing_cardholder_company:
+      properties:
+        tax_id_provided:
+          description: Whether the company's business ID number was provided.
+          type: boolean
+      required:
+      - tax_id_provided
+      title: IssuingCardholderCompany
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Company
+        in_class: issuing.cardholder
+    issuing_cardholder_id_document:
+      properties:
+        back:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/file"
+          description: The back of a document returned by a [file upload](#create_file)
+            with a `purpose` value of `identity_document`.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/file"
+        front:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/file"
+          description: The front of a document returned by a [file upload](#create_file)
+            with a `purpose` value of `identity_document`.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/file"
+      title: IssuingCardholderIdDocument
+      type: object
+      x-expandableFields:
+      - back
+      - front
+      x-stripeResource:
+        class_name: Document
+        in_class: issuing_cardholder_verification
+    issuing_cardholder_individual:
+      properties:
+        dob:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_cardholder_individual_dob"
+          description: The date of birth of this cardholder.
+          nullable: true
+        first_name:
+          description: The first name of this cardholder.
+          maxLength: 5000
+          type: string
+        last_name:
+          description: The last name of this cardholder.
+          maxLength: 5000
+          type: string
+        verification:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_cardholder_verification"
+          description: Government-issued ID document for this cardholder.
+          nullable: true
+      required:
+      - first_name
+      - last_name
+      title: IssuingCardholderIndividual
+      type: object
+      x-expandableFields:
+      - dob
+      - verification
+      x-stripeResource:
+        class_name: Individual
+        in_class: issuing.cardholder
+        inner_classes:
+        - issuing_cardholder_individual_dob
+        - issuing_cardholder_verification
+    issuing_cardholder_individual_dob:
+      properties:
+        day:
+          description: The day of birth, between 1 and 31.
+          nullable: true
+          type: integer
+        month:
+          description: The month of birth, between 1 and 12.
+          nullable: true
+          type: integer
+        year:
+          description: The four-digit year of birth.
+          nullable: true
+          type: integer
+      title: IssuingCardholderIndividualDOB
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: DateOfBirth
+        in_class: issuing_cardholder_individual
     issuing_cardholder_requirements:
       properties:
         disabled_reason:
@@ -10022,6 +10135,22 @@ components:
       x-stripeResource:
         class_name: SpendingLimit
         in_class: issuing.cardholder
+    issuing_cardholder_verification:
+      properties:
+        document:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_cardholder_id_document"
+          description: An identifying document, either a passport or local ID card.
+          nullable: true
+      title: IssuingCardholderVerification
+      type: object
+      x-expandableFields:
+      - document
+      x-stripeResource:
+        class_name: Verification
+        in_class: issuing_cardholder_individual
+        inner_classes:
+        - issuing_cardholder_id_document
     issuing_dispute_evidence:
       properties:
         fraudulent:
@@ -11923,6 +12052,7 @@ components:
           - ideal
           - sepa_debit
           type: string
+          x-stripeBypassValidation: true
       required:
       - billing_details
       - created
@@ -34175,7 +34305,13 @@ paths:
               billing:
                 explode: true
                 style: deepObject
+              company:
+                explode: true
+                style: deepObject
               expand:
+                explode: true
+                style: deepObject
+              individual:
                 explode: true
                 style: deepObject
               metadata:
@@ -35151,6 +35287,15 @@ paths:
                   - address
                   title: billing_specs
                   type: object
+                company:
+                  description: Additional information about a `business_entity` cardholder.
+                  properties:
+                    tax_id:
+                      description: The entity's business ID number.
+                      maxLength: 5000
+                      type: string
+                  title: company_param
+                  type: object
                 email:
                   description: The cardholder's email address.
                   type: string
@@ -35160,6 +35305,61 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                individual:
+                  description: Additional information about an `individual` cardholder.
+                  properties:
+                    dob:
+                      description: The date of birth of this cardholder.
+                      properties:
+                        day:
+                          description: The day of birth, between 1 and 31.
+                          type: integer
+                        month:
+                          description: The month of birth, between 1 and 12.
+                          type: integer
+                        year:
+                          description: The four-digit year of birth.
+                          type: integer
+                      required:
+                      - day
+                      - month
+                      - year
+                      title: date_of_birth_specs
+                      type: object
+                    first_name:
+                      description: The first name of this cardholder.
+                      maxLength: 5000
+                      type: string
+                    last_name:
+                      description: The last name of this cardholder.
+                      maxLength: 5000
+                      type: string
+                    verification:
+                      description: Government-issued ID document for this cardholder.
+                      properties:
+                        document:
+                          description: An identifying document, either a passport
+                            or local ID card.
+                          properties:
+                            back:
+                              description: The back of an ID returned by a [file upload](#create_file)
+                                with a `purpose` value of `identity_document`.
+                              maxLength: 5000
+                              type: string
+                            front:
+                              description: The front of an ID returned by a [file
+                                upload](#create_file) with a `purpose` value of `identity_document`.
+                              maxLength: 5000
+                              type: string
+                          title: person_verification_document_param
+                          type: object
+                      title: person_verification_param
+                      type: object
+                  required:
+                  - first_name
+                  - last_name
+                  title: individual_param
+                  type: object
                 is_default:
                   description: Specifies whether to set this as the default cardholder.
                   type: boolean
@@ -35281,7 +35481,13 @@ paths:
               billing:
                 explode: true
                 style: deepObject
+              company:
+                explode: true
+                style: deepObject
               expand:
+                explode: true
+                style: deepObject
+              individual:
                 explode: true
                 style: deepObject
               metadata:
@@ -36257,6 +36463,15 @@ paths:
                   - address
                   title: billing_specs
                   type: object
+                company:
+                  description: Additional information about a `business_entity` cardholder.
+                  properties:
+                    tax_id:
+                      description: The entity's business ID number.
+                      maxLength: 5000
+                      type: string
+                  title: company_param
+                  type: object
                 email:
                   description: The cardholder's email address.
                   type: string
@@ -36266,6 +36481,61 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                individual:
+                  description: Additional information about an `individual` cardholder.
+                  properties:
+                    dob:
+                      description: The date of birth of this cardholder.
+                      properties:
+                        day:
+                          description: The day of birth, between 1 and 31.
+                          type: integer
+                        month:
+                          description: The month of birth, between 1 and 12.
+                          type: integer
+                        year:
+                          description: The four-digit year of birth.
+                          type: integer
+                      required:
+                      - day
+                      - month
+                      - year
+                      title: date_of_birth_specs
+                      type: object
+                    first_name:
+                      description: The first name of this cardholder.
+                      maxLength: 5000
+                      type: string
+                    last_name:
+                      description: The last name of this cardholder.
+                      maxLength: 5000
+                      type: string
+                    verification:
+                      description: Government-issued ID document for this cardholder.
+                      properties:
+                        document:
+                          description: An identifying document, either a passport
+                            or local ID card.
+                          properties:
+                            back:
+                              description: The back of an ID returned by a [file upload](#create_file)
+                                with a `purpose` value of `identity_document`.
+                              maxLength: 5000
+                              type: string
+                            front:
+                              description: The front of an ID returned by a [file
+                                upload](#create_file) with a `purpose` value of `identity_document`.
+                              maxLength: 5000
+                              type: string
+                          title: person_verification_document_param
+                          type: object
+                      title: person_verification_param
+                      type: object
+                  required:
+                  - first_name
+                  - last_name
+                  title: individual_param
+                  type: object
                 is_default:
                   description: Specifies whether to set this as the default cardholder.
                   type: boolean
@@ -42004,6 +42274,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              sepa_debit:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -42071,6 +42344,10 @@ paths:
                   description: Set of key-value pairs that you can attach to an object.
                     This can be useful for storing additional information about the
                     object in a structured format.
+                  type: object
+                sepa_debit:
+                  properties: {}
+                  title: update_param
                   type: object
               type: object
         required: false
