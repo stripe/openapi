@@ -10708,9 +10708,31 @@
             "type": "string"
           },
           "reason": {
-            "description": "One of `authentication_failed`, `authorization_controls`, `card_active`, `card_inactive`, `insufficient_funds`, `account_compliance_disabled`, `account_inactive`, `suspected_fraud`, `webhook_approved`, `webhook_declined`, or `webhook_timeout`.",
-            "maxLength": 5000,
+            "description": "The reason for the approval or decline.",
+            "enum": [
+              "account_compliance_disabled",
+              "account_inactive",
+              "authentication_failed",
+              "authorization_controls",
+              "card_active",
+              "card_inactive",
+              "cardholder_inactive",
+              "cardholder_verification_required",
+              "insufficient_funds",
+              "not_allowed",
+              "suspected_fraud",
+              "webhook_approved",
+              "webhook_declined",
+              "webhook_timeout"
+            ],
             "type": "string"
+          },
+          "violated_authorization_controls": {
+            "description": "When an authorization is declined due to `authorization_controls`, this array contains details about the authorization controls that were violated. Otherwise, it is empty.",
+            "items": {
+              "$ref": "#/components/schemas/issuing_authorization_violated_auth_control"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -10720,16 +10742,20 @@
           "created",
           "held_amount",
           "held_currency",
-          "reason"
+          "reason",
+          "violated_authorization_controls"
         ],
         "title": "IssuingAuthorizationRequest",
         "type": "object",
         "x-expandableFields": [
-
+          "violated_authorization_controls"
         ],
         "x-stripeResource": {
           "class_name": "RequestHistory",
-          "in_class": "issuing.authorization"
+          "in_class": "issuing.authorization",
+          "inner_classes": [
+            "issuing_authorization_violated_auth_control"
+          ]
         }
       },
       "issuing_authorization_verification_data": {
@@ -10769,6 +10795,43 @@
         "x-stripeResource": {
           "class_name": "VerificationData",
           "in_class": "issuing.authorization"
+        }
+      },
+      "issuing_authorization_violated_auth_control": {
+        "properties": {
+          "entity": {
+            "description": "Entity which the authorization control acts on. One of `account`, `card`, or `cardholder`.",
+            "enum": [
+              "account",
+              "card",
+              "cardholder"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the authorization control. One of `allowed_categories`, `blocked_categories`, `max_amount`, `max_approvals`, or `spending_limits`.",
+            "enum": [
+              "allowed_categories",
+              "blocked_categories",
+              "max_amount",
+              "max_approvals",
+              "spending_limits"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity",
+          "name"
+        ],
+        "title": "IssuingAuthorizationViolatedAuthControl",
+        "type": "object",
+        "x-expandableFields": [
+
+        ],
+        "x-stripeResource": {
+          "class_name": "ViolatedAuthControl",
+          "in_class": "issuing_authorization_request"
         }
       },
       "issuing_card_authorization_controls": {
@@ -14769,7 +14832,7 @@
             }
           },
           "application_fee_amount": {
-            "description": "The amount of the application fee (if any) for the resulting payment. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts) for details.",
+            "description": "The amount of the application fee (if any) for the resulting payment. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts) for details.",
             "nullable": true,
             "type": "integer"
           },
@@ -14794,7 +14857,7 @@
             "type": "string"
           },
           "capture_method": {
-            "description": "One of `automatic` (default) or `manual`.\n\nWhen the capture method is `automatic`, Stripe automatically captures funds when the customer authorizes the payment.\n\nChange `capture_method` to manual if you wish to [separate authorization and capture](https://stripe.com/docs/payments/payment-intents/creating-payment-intents#separate-authorization-and-capture) for payment methods that support this.",
+            "description": "One of `automatic` (default) or `manual`.\n\nWhen the capture method is `automatic`, Stripe automatically captures funds when the customer authorizes the payment.\n\nChange `capture_method` to manual if you wish to use [separate authorization and capture](https://stripe.com/docs/payments/capture-later) for payment methods that support this.",
             "enum": [
               "automatic",
               "manual"
@@ -14841,13 +14904,13 @@
             ]
           },
           "client_secret": {
-            "description": "The client secret of this PaymentIntent. Used for client-side retrieval using a publishable key. \n\nThe client secret can be used to complete a payment from your frontend. It should not be stored, logged, embedded in URLs, or exposed to anyone other than the customer. Make sure that you have TLS enabled on any page that includes the client secret.\n\nPlease refer to our [quickstart guide](https://stripe.com/docs/payments/payment-intents/web) to learn about how `client_secret` should be handled.",
+            "description": "The client secret of this PaymentIntent. Used for client-side retrieval using a publishable key. \n\nThe client secret can be used to complete a payment from your frontend. It should not be stored, logged, embedded in URLs, or exposed to anyone other than the customer. Make sure that you have TLS enabled on any page that includes the client secret.\n\nRefer to our docs to [accept a payment](https://stripe.com/docs/payments/accept-a-payment) and learn about how `client_secret` should be handled.",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
           },
           "confirmation_method": {
-            "description": "One of `automatic` (default) or `manual`.\n\nWhen the confirmation method is `automatic`, a PaymentIntent can be confirmed using a publishable key. After `next_action`s are handled, no additional confirmation is required to complete the payment.\n\nWhen the confirmation method is `manual`, all payment attempts must be made using a secret key. The PaymentIntent returns to the `requires_confirmation` state after handling `next_action`s, and requires your server to initiate each payment attempt with an explicit confirmation.\n\nLearn more about the different [confirmation flows](https://stripe.com/docs/payments/payment-intents/use-cases#one-time-payments).",
+            "description": "One of `automatic` (default) or `manual`.\n\nWhen the confirmation method is `automatic`, a PaymentIntent can be confirmed using a publishable key. After `next_action`s are handled, no additional confirmation is required to complete the payment.\n\nWhen the confirmation method is `manual`, all payment attempts must be made using a secret key. The PaymentIntent returns to the `requires_confirmation` state after handling `next_action`s, and requires your server to initiate each payment attempt with an explicit confirmation.",
             "enum": [
               "automatic",
               "manual"
@@ -14921,7 +14984,7 @@
                 "$ref": "#/components/schemas/api_errors"
               }
             ],
-            "description": "The payment error encountered in the previous PaymentIntent confirmation.",
+            "description": "The payment error encountered in the previous PaymentIntent confirmation. It will be cleared if the PaymentIntent is later updated for any reason.",
             "nullable": true
           },
           "livemode": {
@@ -14962,7 +15025,7 @@
                 "$ref": "#/components/schemas/account"
               }
             ],
-            "description": "The account (if any) for which the funds of the PaymentIntent are intended. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts) for details.",
+            "description": "The account (if any) for which the funds of the PaymentIntent are intended. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts) for details.",
             "nullable": true,
             "x-expansionResources": {
               "oneOf": [
@@ -15036,7 +15099,7 @@
             }
           },
           "setup_future_usage": {
-            "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf present, the payment method used with this PaymentIntent can be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer, even after the transaction completes.\n\nUse `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. See [Saving card details after a payment](https://stripe.com/docs/payments/cards/saving-cards-after-payment) to learn more.\n\nStripe uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules. For example, if your customer is impacted by [SCA](https://stripe.com/docs/strong-customer-authentication), using `off_session` will ensure that they are authenticated while processing this PaymentIntent. You will then be able to collect [off-session payments](https://stripe.com/docs/payments/cards/charging-saved-cards#off-session-payments-with-saved-cards) for this customer.",
+            "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf present, the payment method used with this PaymentIntent can be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer, even after the transaction completes.\n\nUse `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. For more, learn to [save card details after a payment](https://stripe.com/docs/payments/save-after-payment).\n\nStripe uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules. For example, if your customer is impacted by [SCA](https://stripe.com/docs/strong-customer-authentication), using `off_session` will ensure that they are authenticated while processing this PaymentIntent. You will then be able to collect [off-session payments](https://stripe.com/docs/payments/cards/charging-saved-cards#off-session-payments-with-saved-cards) for this customer.",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
@@ -15101,11 +15164,11 @@
                 "$ref": "#/components/schemas/transfer_data"
               }
             ],
-            "description": "The data with which to automatically create a Transfer when the payment is finalized. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts) for details.",
+            "description": "The data with which to automatically create a Transfer when the payment is finalized. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts) for details.",
             "nullable": true
           },
           "transfer_group": {
-            "description": "A string that identifies the resulting payment as part of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts) for details.",
+            "description": "A string that identifies the resulting payment as part of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts) for details.",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
@@ -18458,7 +18521,7 @@
             "type": "integer"
           },
           "usage_type": {
-            "description": "Configures how the quantity per period should be determined, can be either `metered` or `licensed`. `licensed` will automatically bill the `quantity` set for a plan when adding it to a subscription, `metered` will aggregate the total usage based on usage records. Defaults to `licensed`.",
+            "description": "Configures how the quantity per period should be determined, can be either `metered` or `licensed`. `licensed` will automatically bill the `quantity` set when adding it to a subscription, `metered` will aggregate the total usage based on usage records. Defaults to `licensed`.",
             "enum": [
               "licensed",
               "metered"
@@ -18694,7 +18757,7 @@
             "type": "boolean"
           },
           "attributes": {
-            "description": "A list of up to 5 attributes that each SKU can provide values for (e.g., `[\"color\", \"size\"]`). Only applicable to products of `type=good`.",
+            "description": "A list of up to 5 attributes that each SKU can provide values for (e.g., `[\"color\", \"size\"]`).",
             "items": {
               "maxLength": 5000,
               "type": "string"
@@ -25749,8 +25812,11 @@
             "type": "string"
           },
           "device_type": {
-            "description": "Type of reader, e.g., `verifone_P400` or `bbpos_chipper2x`.",
-            "maxLength": 5000,
+            "description": "Type of reader, one of [\"bbpos_chipper2x\", \"verifone_P400\"]",
+            "enum": [
+              "bbpos_chipper2x",
+              "verifone_P400"
+            ],
             "type": "string"
           },
           "id": {
@@ -28693,10 +28759,6 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "date",
-                      "ip"
-                    ],
                     "title": "tos_acceptance_specs",
                     "type": "object"
                   },
@@ -29642,10 +29704,6 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "date",
-                      "ip"
-                    ],
                     "title": "tos_acceptance_specs",
                     "type": "object"
                   }
@@ -33906,7 +33964,7 @@
                     "type": "integer"
                   },
                   "capture": {
-                    "description": "Whether to immediately capture the charge. Defaults to `true`. When `false`, the charge issues an authorization (or pre-authorization), and will need to be [captured](#capture_charge) later. Uncaptured charges expire in _seven days_. For more information, see the [authorizing charges and settling later](https://stripe.com/docs/charges#auth-and-capture) documentation.",
+                    "description": "Whether to immediately capture the charge. Defaults to `true`. When `false`, the charge issues an authorization (or pre-authorization), and will need to be [captured](#capture_charge) later. Uncaptured charges expire in _seven days_. For more information, see the [authorizing charges and settling later](https://stripe.com/docs/charges/placing-a-hold) documentation.",
                     "type": "boolean"
                   },
                   "currency": {
@@ -34839,7 +34897,7 @@
                     "description": "A subset of parameters to be passed to PaymentIntent creation for Checkout Sessions in `payment` mode.",
                     "properties": {
                       "application_fee_amount": {
-                        "description": "The amount of the application fee (if any) that will be applied to the payment and transferred to the\napplication owner's Stripe account. To use an application fee, the request must be made on\nbehalf of another account, using the `Stripe-Account` header or an OAuth key. For more\ninformation, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).",
+                        "description": "The amount of the application fee (if any) that will be applied to the payment and transferred to the\napplication owner's Stripe account. To use an application fee, the request must be made on\nbehalf of another account, using the `Stripe-Account` header or an OAuth key. For more\ninformation, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
                         "type": "integer"
                       },
                       "capture_method": {
@@ -34864,7 +34922,7 @@
                         "type": "object"
                       },
                       "on_behalf_of": {
-                        "description": "The Stripe account ID for which these funds are intended. For details,\nsee the PaymentIntents [use case for connected\naccounts](/docs/payments/payment-intents/use-cases#connected-accounts).",
+                        "description": "The Stripe account ID for which these funds are intended. For details,\nsee the PaymentIntents [use case for connected\naccounts](/docs/payments/connected-accounts).",
                         "type": "string"
                       },
                       "receipt_email": {
@@ -34873,7 +34931,7 @@
                         "type": "string"
                       },
                       "setup_future_usage": {
-                        "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf present, the payment method used with this PaymentIntent can be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer, even after the transaction completes.\n\nUse `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. See [Saving card details after a payment](https://stripe.com/docs/payments/cards/saving-cards-after-payment) to learn more.\n\nStripe uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules. For example, if your customer is impacted by [SCA](https://stripe.com/docs/strong-customer-authentication), using `off_session` will ensure that they are authenticated while processing this PaymentIntent. You will then be able to collect [off-session payments](https://stripe.com/docs/payments/cards/charging-saved-cards#off-session-payments-with-saved-cards) for this customer.",
+                        "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf present, the payment method used with this PaymentIntent can be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer, even after the transaction completes.\n\nUse `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. For more, learn to [save card details after a payment](https://stripe.com/docs/payments/save-after-payment).\n\nStripe uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules. For example, if your customer is impacted by [SCA](https://stripe.com/docs/strong-customer-authentication), using `off_session` will ensure that they are authenticated while processing this PaymentIntent. You will then be able to collect [off-session payments](https://stripe.com/docs/payments/cards/charging-saved-cards#off-session-payments-with-saved-cards) for this customer.",
                         "enum": [
                           "off_session",
                           "on_session"
@@ -34952,7 +35010,7 @@
                         "type": "string"
                       },
                       "transfer_data": {
-                        "description": "The parameters used to automatically create a Transfer when the payment succeeds.\nFor more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).",
+                        "description": "The parameters used to automatically create a Transfer when the payment succeeds.\nFor more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
                         "properties": {
                           "destination": {
                             "description": "If specified, successful charges will be attributed to the destination\naccount for tax reporting, and the funds from charges will be transferred\nto the destination account. The ID of the resulting transfer will be\nreturned on the successful charge's `transfer` field.",
@@ -34970,7 +35028,7 @@
                     "type": "object"
                   },
                   "payment_method_types": {
-                    "description": "A list of the types of payment methods (e.g. card) this Checkout\nSession is allowed to accept. The only supported value today is `card`.",
+                    "description": "A list of the types of payment methods (e.g. card) this Checkout\nSession is allowed to accept. The only supported values today are `card` and `ideal`.",
                     "items": {
                       "enum": [
                         "card",
@@ -42446,7 +42504,7 @@
                         "type": "string"
                       }
                     ],
-                    "description": "The tax rates which apply to this `subscription_item`. When set, the `default_tax_rates` on the subscription do not apply to this `subscription_item`."
+                    "description": "A list of [Tax Rate](https://stripe.com/docs/api/tax_rates) ids. These Tax Rates will override the [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates) on the Subscription."
                   }
                 },
                 "title": "subscription_item_update_params",
@@ -49282,7 +49340,7 @@
                     "type": "object"
                   },
                   "cardholder": {
-                    "description": "The [Cardholder](https://stripe.com/docs/api#issuing_cardholder_object) to associate the card with.",
+                    "description": "The [Cardholder](https://stripe.com/docs/api#issuing_cardholder_object) to associate the card with. (This field is deprecated and will be removed from future versions of the API.)",
                     "maxLength": 5000,
                     "type": "string"
                   },
@@ -51732,11 +51790,11 @@
                     "type": "integer"
                   },
                   "application_fee_amount": {
-                    "description": "The amount of the application fee (if any) that will be applied to the\npayment and transferred to the application owner's Stripe account. For\nmore information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).",
+                    "description": "The amount of the application fee (if any) that will be applied to the\npayment and transferred to the application owner's Stripe account. For\nmore information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
                     "type": "integer"
                   },
                   "capture_method": {
-                    "description": "One of `automatic` (default) or `manual`.\n\nWhen the capture method is `automatic`, Stripe automatically captures funds when the customer authorizes the payment.\n\nChange `capture_method` to manual if you wish to [separate authorization and capture](https://stripe.com/docs/payments/payment-intents/creating-payment-intents#separate-authorization-and-capture) for payment methods that support this.",
+                    "description": "One of `automatic` (default) or `manual`.\n\nWhen the capture method is `automatic`, Stripe automatically captures funds when the customer authorizes the payment.\n\nChange `capture_method` to manual if you wish to use [separate authorization and capture](https://stripe.com/docs/payments/capture-later) for payment methods that support this.",
                     "enum": [
                       "automatic",
                       "manual"
@@ -51749,7 +51807,7 @@
                     "type": "boolean"
                   },
                   "confirmation_method": {
-                    "description": "One of `automatic` (default) or `manual`.\n\nWhen the confirmation method is `automatic`, a PaymentIntent can be confirmed using a publishable key. After `next_action`s are handled, no additional confirmation is required to complete the payment.\n\nWhen the confirmation method is `manual`, all payment attempts must be made using a secret key. The PaymentIntent returns to the `requires_confirmation` state after handling `next_action`s, and requires your server to initiate each payment attempt with an explicit confirmation.\n\nLearn more about the different [confirmation flows](https://stripe.com/docs/payments/payment-intents/use-cases#one-time-payments).",
+                    "description": "One of `automatic` (default) or `manual`.\n\nWhen the confirmation method is `automatic`, a PaymentIntent can be confirmed using a publishable key. After `next_action`s are handled, no additional confirmation is required to complete the payment.\n\nWhen the confirmation method is `manual`, all payment attempts must be made using a secret key. The PaymentIntent returns to the `requires_confirmation` state after handling `next_action`s, and requires your server to initiate each payment attempt with an explicit confirmation.",
                     "enum": [
                       "automatic",
                       "manual"
@@ -51870,11 +51928,11 @@
                     "description": "Set to `true` to indicate that the customer is not in your checkout flow during this payment attempt, and therefore is unable to authenticate. This parameter is intended for scenarios where you collect card details and [charge them later](https://stripe.com/docs/payments/cards/charging-saved-cards). This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm)."
                   },
                   "on_behalf_of": {
-                    "description": "The Stripe account ID for which these funds are intended. For details, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).",
+                    "description": "The Stripe account ID for which these funds are intended. For details, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
                     "type": "string"
                   },
                   "payment_method": {
-                    "description": "ID of the payment method (a PaymentMethod, Card, BankAccount, or saved Source object) to attach to this PaymentIntent.",
+                    "description": "ID of the payment method (a PaymentMethod, Card, or [compatible Source](https://stripe.com/docs/payments/payment-methods#compatibility) object) to attach to this PaymentIntent.",
                     "maxLength": 5000,
                     "type": "string"
                   },
@@ -51977,11 +52035,11 @@
                     "type": "string"
                   },
                   "save_payment_method": {
-                    "description": "If the PaymentIntent has a `payment_method` and a `customer` or if you're attaching a payment method to the PaymentIntent in this request, you can pass `save_payment_method=true` to save the payment method to the customer. Defaults to `false`.\n\nIf the payment method is already saved to a customer, this does nothing. If this type of payment method cannot be saved to a customer, the request will error.",
+                    "description": "If the PaymentIntent has a `payment_method` and a `customer` or if you're attaching a payment method to the PaymentIntent in this request, you can pass `save_payment_method=true` to save the payment method to the customer. Defaults to `false`.\n\nIf the payment method is already saved to a customer, this does nothing. If this type of payment method cannot be saved to a customer, the request will error.\n\n_Note that saving a payment method using this parameter does not guarantee that the payment method can be charged._ To ensure that only payment methods which can be charged are saved to a customer, you can [manually save](https://stripe.com/docs/api/customers/create#create_customer-source) the payment method in response to the [`payment_intent.succeeded` webhook](https://stripe.com/docs/api/events/types#event_types-payment_intent.succeeded).",
                     "type": "boolean"
                   },
                   "setup_future_usage": {
-                    "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf present, the payment method used with this PaymentIntent can be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer, even after the transaction completes.\n\nUse `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. See [Saving card details after a payment](https://stripe.com/docs/payments/cards/saving-cards-after-payment) to learn more.\n\nStripe uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules. For example, if your customer is impacted by [SCA](https://stripe.com/docs/strong-customer-authentication), using `off_session` will ensure that they are authenticated while processing this PaymentIntent. You will then be able to collect [off-session payments](https://stripe.com/docs/payments/cards/charging-saved-cards#off-session-payments-with-saved-cards) for this customer.",
+                    "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf present, the payment method used with this PaymentIntent can be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer, even after the transaction completes.\n\nUse `on_session` if you intend to only reuse the payment method when your customer is present in your checkout flow. Use `off_session` if your customer may or may not be in your checkout flow. For more, learn to [save card details after a payment](https://stripe.com/docs/payments/save-after-payment).\n\nStripe uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules. For example, if your customer is impacted by [SCA](https://stripe.com/docs/strong-customer-authentication), using `off_session` will ensure that they are authenticated while processing this PaymentIntent. You will then be able to collect [off-session payments](https://stripe.com/docs/payments/cards/charging-saved-cards#off-session-payments-with-saved-cards) for this customer.",
                     "enum": [
                       "off_session",
                       "on_session"
@@ -52069,7 +52127,7 @@
                     "type": "string"
                   },
                   "transfer_data": {
-                    "description": "The parameters used to automatically create a Transfer when the payment succeeds.\nFor more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).",
+                    "description": "The parameters used to automatically create a Transfer when the payment succeeds.\nFor more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
                     "properties": {
                       "amount": {
                         "description": "The amount that will be transferred automatically when a charge succeeds.\nThe amount is capped at the total transaction amount and if no amount is set,\nthe full amount is transferred.\n\nIf you intend to collect a fee and you need a more robust reporting experience, using\n[application_fee_amount](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-application_fee_amount)\nmight be a better fit for your integration.",
@@ -52087,7 +52145,7 @@
                     "type": "object"
                   },
                   "transfer_group": {
-                    "description": "A string that identifies the resulting payment as part of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts) for details.",
+                    "description": "A string that identifies the resulting payment as part of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts) for details.",
                     "type": "string"
                   },
                   "use_stripe_sdk": {
@@ -52277,7 +52335,7 @@
                         "type": "string"
                       }
                     ],
-                    "description": "The amount of the application fee (if any) for the resulting payment. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts) for details."
+                    "description": "The amount of the application fee (if any) for the resulting payment. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts) for details."
                   },
                   "currency": {
                     "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -52309,7 +52367,7 @@
                     "type": "object"
                   },
                   "payment_method": {
-                    "description": "ID of the payment method (a PaymentMethod, Card, BankAccount, or saved Source object) to attach to this PaymentIntent.",
+                    "description": "ID of the payment method (a PaymentMethod, Card, or [compatible Source](https://stripe.com/docs/payments/payment-methods#compatibility) object) to attach to this PaymentIntent.",
                     "maxLength": 5000,
                     "type": "string"
                   },
@@ -52339,7 +52397,7 @@
                     "description": "Email address that the receipt for the resulting payment will be sent to."
                   },
                   "save_payment_method": {
-                    "description": "If the PaymentIntent has a `payment_method` and a `customer` or if you're attaching a payment method to the PaymentIntent in this request, you can pass `save_payment_method=true` to save the payment method to the customer. Defaults to `false`.\n\nIf the payment method is already saved to a customer, this does nothing. If this type of payment method cannot be saved to a customer, the request will error.",
+                    "description": "If the PaymentIntent has a `payment_method` and a `customer` or if you're attaching a payment method to the PaymentIntent in this request, you can pass `save_payment_method=true` to save the payment method to the customer. Defaults to `false`.\n\nIf the payment method is already saved to a customer, this does nothing. If this type of payment method cannot be saved to a customer, the request will error.\n\n_Note that saving a payment method using this parameter does not guarantee that the payment method can be charged._ To ensure that only payment methods which can be charged are saved to a customer, you can [manually save](https://stripe.com/docs/api/customers/create#create_customer-source) the payment method in response to the [`payment_intent.succeeded` webhook](https://stripe.com/docs/api/events/types#event_types-payment_intent.succeeded).",
                     "type": "boolean"
                   },
                   "setup_future_usage": {
@@ -52442,7 +52500,7 @@
                     "type": "string"
                   },
                   "transfer_data": {
-                    "description": "The parameters used to automatically create a Transfer when the payment succeeds. For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).",
+                    "description": "The parameters used to automatically create a Transfer when the payment succeeds. For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
                     "properties": {
                       "amount": {
                         "description": "The amount that will be transferred automatically when a charge succeeds.",
@@ -52453,7 +52511,7 @@
                     "type": "object"
                   },
                   "transfer_group": {
-                    "description": "A string that identifies the resulting payment as part of a group. `transfer_group` may only be provided if it has not been set. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts) for details.",
+                    "description": "A string that identifies the resulting payment as part of a group. `transfer_group` may only be provided if it has not been set. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts) for details.",
                     "type": "string"
                   }
                 },
@@ -52569,7 +52627,7 @@
     },
     "/v1/payment_intents/{intent}/capture": {
       "post": {
-        "description": "<p>Capture the funds of an existing uncaptured PaymentIntent when its status is <code>requires_capture</code>.</p>\n\n<p>Uncaptured PaymentIntents will be canceled exactly seven days after they are created.</p>\n\n<p>Read the <a href=\"/docs/payments/payment-intents/creating-payment-intents#separate-auth-capture\">expanded documentation</a> to learn more about separate authorization and capture.</p>",
+        "description": "<p>Capture the funds of an existing uncaptured PaymentIntent when its status is <code>requires_capture</code>.</p>\n\n<p>Uncaptured PaymentIntents will be canceled exactly seven days after they are created.</p>\n\n<p>Learn more about <a href=\"/docs/payments/capture-later\">separate authorization and capture</a>.</p>",
         "operationId": "PostPaymentIntentsIntentCapture",
         "parameters": [
           {
@@ -52605,7 +52663,7 @@
                     "type": "integer"
                   },
                   "application_fee_amount": {
-                    "description": "The amount of the application fee (if any) that will be applied to the\npayment and transferred to the application owner's Stripe account. For\nmore information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).",
+                    "description": "The amount of the application fee (if any) that will be applied to the\npayment and transferred to the application owner's Stripe account. For\nmore information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
                     "type": "integer"
                   },
                   "expand": {
@@ -52627,7 +52685,7 @@
                     "type": "string"
                   },
                   "transfer_data": {
-                    "description": "The parameters used to automatically create a Transfer when the payment\nis captured. For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/payment-intents/use-cases#connected-accounts).",
+                    "description": "The parameters used to automatically create a Transfer when the payment\nis captured. For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
                     "properties": {
                       "amount": {
                         "description": "The amount that will be transferred automatically when a charge succeeds.",
@@ -52861,7 +52919,7 @@
                     "description": "Set to `true` to indicate that the customer is not in your checkout flow during this payment attempt, and therefore is unable to authenticate. This parameter is intended for scenarios where you collect card details and [charge them later](https://stripe.com/docs/payments/cards/charging-saved-cards)."
                   },
                   "payment_method": {
-                    "description": "ID of the payment method (a PaymentMethod, Card, BankAccount, or saved Source object) to attach to this PaymentIntent.",
+                    "description": "ID of the payment method (a PaymentMethod, Card, or [compatible Source](https://stripe.com/docs/payments/payment-methods#compatibility) object) to attach to this PaymentIntent.",
                     "maxLength": 5000,
                     "type": "string"
                   },
@@ -52963,7 +53021,7 @@
                     "type": "string"
                   },
                   "save_payment_method": {
-                    "description": "If the PaymentIntent has a `payment_method` and a `customer` or if you're attaching a payment method to the PaymentIntent in this request, you can pass `save_payment_method=true` to save the payment method to the customer. Defaults to `false`.\n\nIf the payment method is already saved to a customer, this does nothing. If this type of payment method cannot be saved to a customer, the request will error.",
+                    "description": "If the PaymentIntent has a `payment_method` and a `customer` or if you're attaching a payment method to the PaymentIntent in this request, you can pass `save_payment_method=true` to save the payment method to the customer. Defaults to `false`.\n\nIf the payment method is already saved to a customer, this does nothing. If this type of payment method cannot be saved to a customer, the request will error.\n\n_Note that saving a payment method using this parameter does not guarantee that the payment method can be charged._ To ensure that only payment methods which can be charged are saved to a customer, you can [manually save](https://stripe.com/docs/api/customers/create#create_customer-source) the payment method in response to the [`payment_intent.succeeded` webhook](https://stripe.com/docs/api/events/types#event_types-payment_intent.succeeded).",
                     "type": "boolean"
                   },
                   "setup_future_usage": {
@@ -54694,7 +54752,7 @@
                     "additionalProperties": {
                       "type": "string"
                     },
-                    "description": "A set of key-value pairs that you can attach to a plan object. It can be useful for storing additional information about the plan in a structured format.",
+                    "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
                   "nickname": {
@@ -55054,7 +55112,7 @@
                     "additionalProperties": {
                       "type": "string"
                     },
-                    "description": "A set of key-value pairs that you can attach to a plan object. It can be useful for storing additional information about the plan in a structured format.",
+                    "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                     "type": "object"
                   },
                   "nickname": {
@@ -55719,7 +55777,7 @@
                         "type": "string"
                       }
                     ],
-                    "description": "A list of up to 5 alphanumeric attributes that each SKU can provide values for (e.g., `[\"color\", \"size\"]`). ' 'If a value for `attributes` is specified, the list specified will replace the existing attributes list on this product. Any attributes not present after the update will be deleted from the SKUs for this product. May only be set if type=`good`."
+                    "description": "A list of up to 5 alphanumeric attributes that each SKU can provide values for (e.g., `[\"color\", \"size\"]`). If a value for `attributes` is specified, the list specified will replace the existing attributes list on this product. Any attributes not present after the update will be deleted from the SKUs for this product."
                   },
                   "caption": {
                     "description": "A short one-line description of the product, meant to be displayable to the customer. May only be set if type=`good`.",
@@ -59050,7 +59108,7 @@
                     "type": "string"
                   },
                   "payment_method": {
-                    "description": "ID of the payment method (a PaymentMethod, Card, BankAccount, or saved Source object) to attach to this SetupIntent.",
+                    "description": "ID of the payment method (a PaymentMethod, Card, or saved Source object) to attach to this SetupIntent.",
                     "maxLength": 5000,
                     "type": "string"
                   },
@@ -59305,7 +59363,7 @@
                     "type": "object"
                   },
                   "payment_method": {
-                    "description": "ID of the payment method (a PaymentMethod, Card, BankAccount, or saved Source object) to attach to this SetupIntent.",
+                    "description": "ID of the payment method (a PaymentMethod, Card, or saved Source object) to attach to this SetupIntent.",
                     "maxLength": 5000,
                     "type": "string"
                   },
@@ -59589,7 +59647,7 @@
                     "description": "This hash contains details about the Mandate to create"
                   },
                   "payment_method": {
-                    "description": "ID of the payment method (a PaymentMethod, Card, BankAccount, or saved Source object) to attach to this SetupIntent.",
+                    "description": "ID of the payment method (a PaymentMethod, Card, or saved Source object) to attach to this SetupIntent.",
                     "maxLength": 5000,
                     "type": "string"
                   },
@@ -61941,7 +61999,7 @@
                         "type": "string"
                       }
                     ],
-                    "description": "The tax rates which apply to this `subscription_item`. When set, the `default_tax_rates` on the subscription do not apply to this `subscription_item`."
+                    "description": "A list of [Tax Rate](https://stripe.com/docs/api/tax_rates) ids. These Tax Rates will override the [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates) on the Subscription."
                   }
                 },
                 "required": [
@@ -62242,7 +62300,7 @@
                         "type": "string"
                       }
                     ],
-                    "description": "The tax rates which apply to this `subscription_item`. When set, the `default_tax_rates` on the subscription do not apply to this `subscription_item`."
+                    "description": "A list of [Tax Rate](https://stripe.com/docs/api/tax_rates) ids. These Tax Rates will override the [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates) on the Subscription."
                   }
                 },
                 "type": "object"
@@ -62902,7 +62960,7 @@
                     "type": "array"
                   },
                   "from_subscription": {
-                    "description": "Migrate an existing subscription to be managed by a subscription schedule. If this parameter is set, a subscription schedule will be created using the subscription's plan(s), set to auto-renew using the subscription's interval. Other parameters cannot be set since their values will be inferred from the subscription.",
+                    "description": "Migrate an existing subscription to be managed by a subscription schedule. If this parameter is set, a subscription schedule will be created using the subscription's plan(s), set to auto-renew using the subscription's interval. When using this parameter, other parameters (such as phase values) cannot be set. To create a subscription schedule with other modifications, we recommend making two separate API calls.",
                     "maxLength": 5000,
                     "type": "string"
                   },
@@ -62983,7 +63041,7 @@
                               "type": "string"
                             }
                           ],
-                          "description": "The tax rates that will apply to any phase that does not have `tax_rates` set. Invoices created will have their `default_tax_rates` populated from the phase."
+                          "description": "A list of [Tax Rate](https://stripe.com/docs/api/tax_rates) ids. These Tax Rates will set the Subscription's [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates), which means they will be the Invoice's [`default_tax_rates`](https://stripe.com/docs/api/invoices/create#create_invoice-default_tax_rates) for any Invoices issued by the Subscription during this Phase."
                         },
                         "end_date": {
                           "description": "The date at which this phase of the subscription schedule ends. If set, `iterations` must not be set.",
@@ -63060,7 +63118,7 @@
                                     "type": "string"
                                   }
                                 ],
-                                "description": "The tax rates which apply to this `subscription_item`. When set, the `default_tax_rates` on the subscription do not apply to this `subscription_item`."
+                                "description": "A list of [Tax Rate](https://stripe.com/docs/api/tax_rates) ids. These Tax Rates will override the [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates) on the Subscription."
                               }
                             },
                             "required": [
@@ -63112,7 +63170,7 @@
                         "type": "string"
                       }
                     ],
-                    "description": "The date at which the subscription schedule starts."
+                    "description": "When the subscription schedule starts. We recommend using `now` so that it starts the subscription immediately. You can also use a Unix timestamp to backdate the subscription so that it starts on a past date, or set a future date for the subscription to start on. When you backdate, the `billing_cycle_anchor` of the subscription is equivalent to the `start_date`."
                   }
                 },
                 "type": "object"
@@ -63404,7 +63462,7 @@
                               "type": "string"
                             }
                           ],
-                          "description": "The tax rates that will apply to any phase that does not have `tax_rates` set. Invoices created will have their `default_tax_rates` populated from the phase."
+                          "description": "A list of [Tax Rate](https://stripe.com/docs/api/tax_rates) ids. These Tax Rates will set the Subscription's [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates), which means they will be the Invoice's [`default_tax_rates`](https://stripe.com/docs/api/invoices/create#create_invoice-default_tax_rates) for any Invoices issued by the Subscription during this Phase."
                         },
                         "end_date": {
                           "anyOf": [
@@ -63491,7 +63549,7 @@
                                     "type": "string"
                                   }
                                 ],
-                                "description": "The tax rates which apply to this `subscription_item`. When set, the `default_tax_rates` on the subscription do not apply to this `subscription_item`."
+                                "description": "A list of [Tax Rate](https://stripe.com/docs/api/tax_rates) ids. These Tax Rates will override the [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates) on the Subscription."
                               }
                             },
                             "required": [
@@ -63518,7 +63576,7 @@
                               "type": "string"
                             }
                           ],
-                          "description": "The date at which this phase of the subscription schedule starts."
+                          "description": "The date at which this phase of the subscription schedule starts or `now`. Must be set on the first phase."
                         },
                         "tax_percent": {
                           "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period during thise phase of the schedule. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`.",
@@ -64262,7 +64320,7 @@
                               "type": "string"
                             }
                           ],
-                          "description": "The tax rates which apply to this `subscription_item`. When set, the `default_tax_rates` on the subscription do not apply to this `subscription_item`."
+                          "description": "A list of [Tax Rate](https://stripe.com/docs/api/tax_rates) ids. These Tax Rates will override the [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates) on the Subscription."
                         }
                       },
                       "required": [
@@ -64817,7 +64875,7 @@
                               "type": "string"
                             }
                           ],
-                          "description": "The tax rates which apply to this `subscription_item`. When set, the `default_tax_rates` on the subscription do not apply to this `subscription_item`."
+                          "description": "A list of [Tax Rate](https://stripe.com/docs/api/tax_rates) ids. These Tax Rates will override the [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates) on the Subscription."
                         }
                       },
                       "title": "subscription_item_update_params",
