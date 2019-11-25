@@ -6192,6 +6192,8 @@ components:
     issuing.transaction:
       properties:
         amount:
+          description: The amount of this transaction in your currency. This is the
+            amount that your balance will be updated by.
           type: integer
         authorization:
           anyOf:
@@ -6259,8 +6261,12 @@ components:
             value `false` if the object exists in test mode.
           type: boolean
         merchant_amount:
+          description: The amount that the merchant will receive, denominated in `merchant_currency`.
+            It will be different from `amount` if the merchant is taking payment in
+            a different currency.
           type: integer
         merchant_currency:
+          description: The currency with which the merchant is taking payment.
           maxLength: 3
           type: string
         merchant_data:
@@ -19363,8 +19369,9 @@ paths:
                   maxLength: 5000
                   type: string
                 collect:
-                  description: The information the platform wants to collect from
-                    users up-front. Possible values are `currently_due` and `eventually_due`.
+                  description: Which information the platform needs to collect from
+                    the user. One of `currently_due` or `eventually_due`. Default
+                    is `currently_due`.
                   enum:
                   - currently_due
                   - eventually_due
@@ -27297,8 +27304,10 @@ paths:
         <ul>
          <li>Refund: create a new refund (using <code>refund_amount</code>) or link an existing refund (using <code>refund</code>).</li>
          <li>Customer balance credit: credit the customer’s balance (using <code>credit_amount</code>) which will be automatically applied to their next invoice when it’s finalized.</li>
-         <li>Outside of Stripe credit: any positive value from the result of <code>amount - refund_amount - credit_amount</code> is represented as an “outside of Stripe” credit.</li>
+         <li>Outside of Stripe credit: record the amount that is or will be credited outside of Stripe (using <code>out_of_band_amount</code>).</li>
         </ul>
+
+        <p>For post-payment credit notes the sum of the refund, credit and outside of Stripe amounts must equal the credit note total.</p>
 
         <p>You may issue multiple credit notes for an invoice. Each credit note will increment the invoice’s <code>pre_payment_credit_notes_amount</code>
         or <code>post_payment_credit_notes_amount</code> depending on its <code>status</code> at the time of credit note creation.</p>
@@ -27348,6 +27357,10 @@ paths:
                     posting an empty value to them. All keys can be unset by posting
                     an empty value to `metadata`.
                   type: object
+                out_of_band_amount:
+                  description: The integer amount in **%s** representing the amount
+                    that is credited outside of Stripe.
+                  type: integer
                 reason:
                   description: Reason for issuing this credit note, one of `duplicate`,
                     `fraudulent`, `order_change`, or `product_unsatisfactory`
@@ -31110,7 +31123,8 @@ paths:
                     type: string
                   description: The tax rates that will apply to any subscription item
                     that does not have `tax_rates` set. Invoices created will have
-                    their `default_tax_rates` populated from the subscription.
+                    their `default_tax_rates` populated from the subscription. Pass
+                    an empty string to remove previously-defined tax rates.
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -33447,7 +33461,8 @@ paths:
                     type: string
                   description: The tax rates which apply to the invoice item. When
                     set, the `default_tax_rates` on the invoice do not apply to this
-                    invoice item.
+                    invoice item. Pass an empty string to remove previously-defined
+                    tax rates.
                 unit_amount:
                   description: The integer unit amount in **%s** of the charge to
                     be applied to the upcoming invoice. This unit_amount will be multiplied
@@ -34692,7 +34707,8 @@ paths:
                   description: A list of up to 4 custom fields to be displayed on
                     the invoice. If a value for `custom_fields` is specified, the
                     list specified will replace the existing custom field list on
-                    this invoice.
+                    this invoice. Pass an empty string to remove previously-defined
+                    fields.
                 days_until_due:
                   description: The number of days from which the invoice is created
                     until it is due. Only valid for invoices where `collection_method=send_invoice`.
@@ -34724,7 +34740,7 @@ paths:
                     type: string
                   description: The tax rates that will apply to any line item that
                     does not have `tax_rates` set. Pass an empty string to remove
-                    previously-set default tax rates.
+                    previously-defined tax rates.
                 description:
                   maxLength: 1500
                   type: string
@@ -50070,7 +50086,8 @@ paths:
                     - ''
                     type: string
                   description: Define thresholds at which an invoice will be sent,
-                    and the subscription advanced to a new billing period
+                    and the subscription advanced to a new billing period. When updating,
+                    pass an empty string to remove previously-defined thresholds.
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -50128,7 +50145,8 @@ paths:
                     type: string
                   description: A list of [Tax Rate](https://stripe.com/docs/api/tax_rates)
                     ids. These Tax Rates will override the [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates)
-                    on the Subscription.
+                    on the Subscription. When updating, pass an empty string to remove
+                    previously-defined tax rates.
               required:
               - plan
               - subscription
@@ -50287,7 +50305,8 @@ paths:
                     - ''
                     type: string
                   description: Define thresholds at which an invoice will be sent,
-                    and the subscription advanced to a new billing period
+                    and the subscription advanced to a new billing period. When updating,
+                    pass an empty string to remove previously-defined thresholds.
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -50344,7 +50363,8 @@ paths:
                     type: string
                   description: A list of [Tax Rate](https://stripe.com/docs/api/tax_rates)
                     ids. These Tax Rates will override the [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates)
-                    on the Subscription.
+                    on the Subscription. When updating, pass an empty string to remove
+                    previously-defined tax rates.
               type: object
         required: false
       responses:
@@ -52080,7 +52100,8 @@ paths:
                     type: string
                   description: The tax rates that will apply to any subscription item
                     that does not have `tax_rates` set. Invoices created will have
-                    their `default_tax_rates` populated from the subscription.
+                    their `default_tax_rates` populated from the subscription. Pass
+                    an empty string to remove previously-defined tax rates.
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
