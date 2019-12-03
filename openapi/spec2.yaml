@@ -1834,9 +1834,8 @@ definitions:
           value `false` if the object exists in test mode.
         type: boolean
       locale:
-        description: |-
-          The IETF language tag of the locale Checkout is displayed in. If blank
-          or `auto`, the browser's locale is used.
+        description: The IETF language tag of the locale Checkout is displayed in.
+          If blank or `auto`, the browser's locale is used.
         enum:
         - auto
         - da
@@ -2475,10 +2474,6 @@ definitions:
         type: object
         x-expandableFields:
         - data
-      tax_info:
-        "$ref": "#/definitions/tax_info"
-      tax_info_verification:
-        "$ref": "#/definitions/tax_info_verification"
     required:
     - created
     - id
@@ -2496,8 +2491,6 @@ definitions:
     - sources
     - subscriptions
     - tax_ids
-    - tax_info
-    - tax_info_verification
     x-resourceId: customer
   customer_acceptance:
     properties:
@@ -6168,8 +6161,7 @@ definitions:
       address:
         "$ref": "#/definitions/address"
       carrier:
-        description: The delivery service that shipped a physical product, such as
-          Fedex, UPS, USPS, etc.
+        description: The delivery service that shipped a card. One of `fedex` or `usps`.
         type: string
       eta:
         description: A unix timestamp representing a best estimate of when the card
@@ -6179,8 +6171,14 @@ definitions:
         description: Recipient name.
         type: string
       status:
-        description: The delivery status of the card. One of `pending`, `shipped`,
-          `delivered`, `returned`, `failure`, or `canceled`.
+        description: The delivery status of the card.
+        enum:
+        - canceled
+        - delivered
+        - failure
+        - pending
+        - returned
+        - shipped
         type: string
       tracking_number:
         description: A tracking number for a card shipment.
@@ -6190,8 +6188,10 @@ definitions:
           information about a card shipment.
         type: string
       type:
-        description: One of `bulk` or `individual`. Bulk shipments will be grouped
-          and mailed together, while individual ones will not.
+        description: Packaging options.
+        enum:
+        - bulk
+        - individual
         type: string
     required:
     - address
@@ -8799,15 +8799,15 @@ definitions:
     properties:
       address_line1_check:
         description: If a address line1 was provided, results of the check, one of
-          'pass', 'failed', 'unavailable' or 'unchecked'.
+          `pass`, `fail`, `unavailable`, or `unchecked`.
         type: string
       address_postal_code_check:
         description: If a address postal code was provided, results of the check,
-          one of 'pass', 'failed', 'unavailable' or 'unchecked'.
+          one of `pass`, `fail`, `unavailable`, or `unchecked`.
         type: string
       cvc_check:
-        description: If a CVC was provided, results of the check, one of 'pass', 'failed',
-          'unavailable' or 'unchecked'.
+        description: If a CVC was provided, results of the check, one of `pass`, `fail`,
+          `unavailable`, or `unchecked`.
         type: string
     title: payment_method_card_checks
     type: object
@@ -9125,15 +9125,15 @@ definitions:
     properties:
       address_line1_check:
         description: If a address line1 was provided, results of the check, one of
-          'pass', 'failed', 'unavailable' or 'unchecked'.
+          `pass`, `fail`, `unavailable`, or `unchecked`.
         type: string
       address_postal_code_check:
         description: If a address postal code was provided, results of the check,
-          one of 'pass', 'failed', 'unavailable' or 'unchecked'.
+          one of `pass`, `fail`, `unavailable`, or `unchecked`.
         type: string
       cvc_check:
-        description: If a CVC was provided, results of the check, one of 'pass', 'failed',
-          'unavailable' or 'unchecked'.
+        description: If a CVC was provided, results of the check, one of `pass`, `fail`,
+          `unavailable`, or `unchecked`.
         type: string
     title: payment_method_details_card_checks
     type: object
@@ -12263,8 +12263,6 @@ definitions:
       id:
         description: Unique identifier for the object.
         type: string
-      invoice_customer_balance_settings:
-        "$ref": "#/definitions/subscription_invoice_customer_balance_settings"
       items:
         description: List of subscription items, each with an attached plan.
         properties:
@@ -12395,7 +12393,6 @@ definitions:
     - current_period_start
     - customer
     - id
-    - invoice_customer_balance_settings
     - items
     - livemode
     - metadata
@@ -12411,7 +12408,6 @@ definitions:
     - default_source
     - default_tax_rates
     - discount
-    - invoice_customer_balance_settings
     - items
     - latest_invoice
     - pending_invoice_item_interval
@@ -12433,17 +12429,6 @@ definitions:
           items with plans that have `aggregate_usage=last_ever`.
         type: boolean
     title: SubscriptionBillingThresholds
-    type: object
-    x-expandableFields: []
-  subscription_invoice_customer_balance_settings:
-    properties:
-      consume_applied_balance_on_void:
-        description: Controls whether a customer balance applied to this invoice should
-          be consumed and not credited or debited back to the customer if voided.
-        type: boolean
-    required:
-    - consume_applied_balance_on_void
-    title: SubscriptionInvoiceCustomerBalanceSettings
     type: object
     x-expandableFields: []
   subscription_item:
@@ -12884,32 +12869,6 @@ definitions:
     required:
     - status
     title: tax_id_verification
-    type: object
-    x-expandableFields: []
-  tax_info:
-    properties:
-      tax_id:
-        description: The customer's tax ID number.
-        type: string
-      type:
-        description: The type of ID number.
-        type: string
-    required:
-    - type
-    title: TaxInfo
-    type: object
-    x-expandableFields: []
-  tax_info_verification:
-    properties:
-      status:
-        description: The state of verification for this customer. Possible values
-          are `unverified`, `pending`, or `verified`.
-        type: string
-      verified_name:
-        description: The official name associated with the tax ID returned from the
-          external provider.
-        type: string
-    title: TaxInfoVerification
     type: object
     x-expandableFields: []
   tax_rate:
@@ -13690,7 +13649,7 @@ info:
     details.
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
-  version: '2019-11-05'
+  version: '2019-12-03'
   x-stripeSpecFilename: spec2
 paths:
   "/v1/3d_secure":
@@ -20300,9 +20259,7 @@ paths:
               type: array
             locale:
               description: The IETF language tag of the locale Checkout is displayed
-                in. If blank or `auto`, the browser's locale is used. Supported values
-                are `auto`, `da`, `de`, `en`, `es`, `fi`, `fr`, `it`, `ja`, `nb`,
-                `nl`, `pl`, `pt`, `sv`, or `zh`.
+                in. If blank or `auto`, the browser's locale is used.
               enum:
               - auto
               - da
@@ -21384,23 +21341,6 @@ paths:
                 title: data_params
                 type: object
               type: array
-            tax_info:
-              description: The customer's tax information. Appears on invoices emailed
-                to this customer. This parameter has been deprecated and will be removed
-                in a future API version, for further information view the [migration
-                guide](https://stripe.com/docs/billing/migration/taxes#moving-from-taxinfo-to-customer-tax-ids).
-              properties:
-                tax_id:
-                  type: string
-                type:
-                  enum:
-                  - vat
-                  type: string
-              required:
-              - tax_id
-              - type
-              title: tax_info_param
-              type: object
           type: object
       responses:
         '200':
@@ -21585,23 +21525,6 @@ paths:
               - none
               - reverse
               type: string
-            tax_info:
-              description: The customer's tax information. Appears on invoices emailed
-                to this customer. This parameter has been deprecated and will be removed
-                in a future API version, for further information view the [migration
-                guide](https://stripe.com/docs/billing/migration/taxes#moving-from-taxinfo-to-customer-tax-ids).
-              properties:
-                tax_id:
-                  type: string
-                type:
-                  enum:
-                  - vat
-                  type: string
-              required:
-              - tax_id
-              - type
-              title: tax_info_param
-              type: object
             trial_end:
               description: Unix timestamp representing the end of the trial period
                 the customer will get before being charged for the first time. This
@@ -31816,9 +31739,10 @@ paths:
                 For details, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).
               type: string
             payment_method:
-              description: ID of the payment method (a PaymentMethod, Card, or [compatible
-                Source](https://stripe.com/docs/payments/payment-methods#compatibility)
-                object) to attach to this PaymentIntent.
+              description: |-
+                ID of the payment method (a PaymentMethod, Card, or [compatible Source](https://stripe.com/docs/payments/payment-methods#compatibility) object) to attach to this PaymentIntent.
+
+                If this parameter is omitted with `confirm=true`, `customer.default_source` will be attached as this PaymentIntent's payment instrument to improve the migration experience for users of the Charges API. We recommend that you explicitly provide the `payment_method` going forward.
               type: string
             payment_method_options:
               description: Payment-method-specific configuration for this PaymentIntent.
@@ -37801,13 +37725,6 @@ paths:
               items:
                 type: string
               type: array
-            invoice_customer_balance_settings:
-              description: Controls whether a customer balance applied to an invoice
-                should be consumed and not credited or debited back to the customer
-                if voided by this subscription.
-              properties: {}
-              title: invoice_customer_balance_settings_param
-              type: object
             items:
               description: List of subscription items, each with an attached plan.
               items:
@@ -38049,13 +37966,6 @@ paths:
               items:
                 type: string
               type: array
-            invoice_customer_balance_settings:
-              description: Controls whether a customer balance applied to an invoice
-                should be consumed and not credited or debited back to the customer
-                if voided by this subscription.
-              properties: {}
-              title: invoice_customer_balance_settings_param
-              type: object
             items:
               description: List of subscription items, each with an attached plan.
               items:
@@ -40112,6 +40022,7 @@ paths:
               - '2019-10-08'
               - '2019-10-17'
               - '2019-11-05'
+              - '2019-12-03'
               type: string
             connect:
               description: Whether this endpoint should receive events from connected
