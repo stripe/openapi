@@ -10,6 +10,7 @@ Files can be found in the `openapi/` directory:
 * `fixtures3.{json,yaml}`: Test fixtures for resources in `spec3`. See below
   for more information.
 * `fixtures2.{json,yaml}`: Test fixtures for resources in `spec2`.
+* `spec3.sdk.{json,yaml}`: OpenAPI 3.0 spec that matches Stripe client libraries
 
 ## Vendor Extensions
 
@@ -100,6 +101,19 @@ definitions:
 invoice_line_item:
   ...
 ```
+
+## Reference version vs SDK version
+You will notice that we have two version of open API, spec3.{json,yaml} and spec3.sdk.{json,yaml}.
+
+The openapi/spec3.json file matches our publicly documented API, the one you can see in [Stripe API reference](https://stripe.com/docs/api).
+
+When we started generating client libraries, we ended up building support for features that are not yet public but that users might rely on before it's officially in our API reference. This can happen for multiple reasons such as
+
+- a feature being private and limited but used by enough users to require the client libraries we maintain to support it.
+- a feature being stable but in private beta before we release it publicly.
+- a feature we have deprecated but need to keep in the client libraries (such as stripe-java) until the next major version to avoid releasing a breaking change for every small incompatible changes. A good example is a string field becoming an enum for example.
+
+To support all those cases, we built a separate version of the spec, openapi/spec3.sdk.json, which mirrors the official one but has a few extra features in it.
 
 ## Updates
 
