@@ -4,7 +4,12 @@ This repository contains [OpenAPI specifications][openapi] for Stripe's API.
 
 Files can be found in the `openapi/` directory:
 
-* `spec3.{json,yaml}:` OpenAPI 3.0 spec.
+* `spec3.{json,yaml}:` OpenAPI 3.0 spec matching the public Stripe API.
+* `spec3.sdk.{json,yaml}:` Expanded OpenAPI 3.0 spec intended for Stripe-internal
+  use.
+    * Contains special annotations, deprecated endpoints, and pre-release
+      features specifically intended to support generating Stripe API
+      libraries. Users should use the `spec3.{json,yaml}` variant instead.
 * `spec2.{json,yaml}`: OpenAPI 2.0 spec. We're continuing to generate this for
   now, but it will be deprecated in favor of `spec3`.
 * `fixtures3.{json,yaml}`: Test fixtures for resources in `spec3`. See below
