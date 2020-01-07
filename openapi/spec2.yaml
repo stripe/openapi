@@ -7,7 +7,10 @@ definitions:
       business_profile:
         "$ref": "#/definitions/account_business_profile"
       business_type:
-        description: The business type. Can be `individual` or `company`.
+        description: The business type.
+        enum:
+        - company
+        - individual
         type: string
       capabilities:
         "$ref": "#/definitions/account_capabilities"
@@ -890,6 +893,11 @@ definitions:
         enum:
         - balance_transaction
         type: string
+      reporting_category:
+        description: "[Learn more](https://stripe.com/docs/reports/reporting-categories)
+          about how reporting categories can help you understand balance transactions
+          from an accounting perspective."
+        type: string
       source:
         description: The Stripe object to which this transaction is related.
         type: string
@@ -922,7 +930,9 @@ definitions:
           `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`,
           `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`,
           `transfer_cancel`, `transfer_failure`, or `transfer_refund`. [Learn more](https://stripe.com/docs/reports/balance-transaction-types)
-          about balance transaction types and what they represent.'
+          about balance transaction types and what they represent. If you are looking
+          to classify transactions for accounting purposes, you might want to consider
+          `reporting_category` instead.'
         enum:
         - adjustment
         - advance
@@ -964,6 +974,7 @@ definitions:
     - id
     - net
     - object
+    - reporting_category
     - status
     - type
     title: BalanceTransaction
@@ -1495,12 +1506,6 @@ definitions:
         description: An arbitrary string attached to the object. Often useful for
           displaying to users.
         type: string
-      dispute:
-        description: Details about the dispute if the charge has been disputed.
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/dispute"
       disputed:
         description: Whether the charge has been disputed.
         type: boolean
@@ -1686,7 +1691,6 @@ definitions:
     - balance_transaction
     - billing_details
     - customer
-    - dispute
     - fraud_details
     - invoice
     - on_behalf_of
@@ -4628,7 +4632,7 @@ definitions:
     properties:
       type:
         description: The type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
-          `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `unknown`, or `za_vat`
+          `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `sg_uen`, `unknown`, or `za_vat`
         enum:
         - au_abn
         - ch_vat
@@ -4637,6 +4641,7 @@ definitions:
         - mx_rfc
         - no_vat
         - nz_gst
+        - sg_uen
         - unknown
         - za_vat
         type: string
@@ -12706,6 +12711,7 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/coupon"
+          - "$ref": "#/definitions/deleted_coupon"
       default_payment_method:
         description: ID of the default payment method for the subscription schedule.
           It must belong to the customer associated with the subscription schedule.
@@ -12843,7 +12849,7 @@ definitions:
         type: string
       type:
         description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`, `in_gst`,
-          `mx_rfc`, `no_vat`, `nz_gst`, `za_vat`, or `unknown`
+          `mx_rfc`, `no_vat`, `nz_gst`, `sg_uen`, `za_vat`, or `unknown`
         enum:
         - au_abn
         - ch_vat
@@ -12852,6 +12858,7 @@ definitions:
         - mx_rfc
         - no_vat
         - nz_gst
+        - sg_uen
         - unknown
         - za_vat
         type: string
@@ -13860,7 +13867,10 @@ paths:
               title: business_profile_specs
               type: object
             business_type:
-              description: The business type. Can be `individual` or `company`.
+              description: The business type.
+              enum:
+              - company
+              - individual
               type: string
             company:
               description: Information about the company or business. This field is
@@ -15886,7 +15896,10 @@ paths:
               title: business_profile_specs
               type: object
             business_type:
-              description: The business type. Can be `individual` or `company`.
+              description: The business type.
+              enum:
+              - company
+              - individual
               type: string
             company:
               description: Information about the company or business. This field is
@@ -16331,7 +16344,10 @@ paths:
               title: business_profile_specs
               type: object
             business_type:
-              description: The business type. Can be `individual` or `company`.
+              description: The business type.
+              enum:
+              - company
+              - individual
               type: string
             company:
               description: Information about the company or business. This field is
@@ -21383,6 +21399,7 @@ paths:
                     - mx_rfc
                     - no_vat
                     - nz_gst
+                    - sg_uen
                     - za_vat
                     type: string
                   value:
@@ -21946,6 +21963,18 @@ paths:
         name: id
         required: true
         type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+          type: object
       responses:
         '200':
           description: Successful response.
@@ -22269,6 +22298,18 @@ paths:
         name: id
         required: true
         type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+          type: object
       responses:
         '200':
           description: Successful response.
@@ -22594,6 +22635,18 @@ paths:
         name: id
         required: true
         type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+          type: object
       responses:
         '200':
           description: Successful response.
@@ -22953,8 +23006,6 @@ paths:
                   tax_rates:
                     items:
                       type: string
-                required:
-                - plan
                 title: subscription_item_create_params
                 type: object
               type: array
@@ -23052,6 +23103,11 @@ paths:
         required: false
         schema:
           properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
             invoice_now:
               description: Can be set to `true` if `at_period_end` is not set to `true`.
                 Will generate a final invoice that invoices for any un-invoiced metered
@@ -23435,7 +23491,7 @@ paths:
               type: array
             type:
               description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
-                `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, or `za_vat`
+                `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `sg_uen`, or `za_vat`
               enum:
               - au_abn
               - ch_vat
@@ -23444,6 +23500,7 @@ paths:
               - mx_rfc
               - no_vat
               - nz_gst
+              - sg_uen
               - za_vat
               type: string
             value:
@@ -23805,6 +23862,18 @@ paths:
         name: key
         required: true
         type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+          type: object
       responses:
         '200':
           description: Successful response.
@@ -30834,12 +30903,12 @@ paths:
         name: expand
         required: false
         type: array
-      - description: Only return issuing transactions that belong to the given card.
+      - description: Only return transactions that belong to the given card.
         in: query
         name: card
         required: false
         type: string
-      - description: Only return authorizations belonging to the given cardholder.
+      - description: Only return transactions that belong to the given cardholder.
         in: query
         name: cardholder
         required: false
@@ -31471,6 +31540,11 @@ paths:
         schema:
           properties:
             application_fee:
+              description: A fee in %s that will be applied to the order and transferred
+                to the application owner's Stripe account. The request must be made
+                with an OAuth key or the `Stripe-Account` header in order to take
+                an application fee. For more information, see the application fees
+                [documentation](https://stripe.com/docs/connect/direct-charges#collecting-fees).
               type: integer
             customer:
               description: The ID of an existing customer that will be charged for
@@ -31496,7 +31570,7 @@ paths:
               description: A [Token](https://stripe.com/docs/api#tokens)'s or a [Source](https://stripe.com/docs/api#sources)'s
                 ID, as returned by [Elements](https://stripe.com/docs/elements). If
                 no customer was attached to the order at creation, either `source`
-                or `customer is required. Otherwise, the specified source will be
+                or `customer` is required. Otherwise, the specified source will be
                 charged intead of the customer attached to the order.
               type: string
           type: object
@@ -36798,7 +36872,6 @@ paths:
               items:
                 type: string
           required:
-          - plan
           - subscription
           type: object
       responses:
@@ -37293,8 +37366,6 @@ paths:
                         tax_rates:
                           items:
                             type: string
-                      required:
-                      - plan
                       title: configuration_item_params
                       type: object
                     type: array
@@ -37451,8 +37522,6 @@ paths:
                         tax_rates:
                           items:
                             type: string
-                      required:
-                      - plan
                       title: configuration_item_params
                       type: object
                     type: array
@@ -37775,8 +37844,6 @@ paths:
                   tax_rates:
                     items:
                       type: string
-                required:
-                - plan
                 title: subscription_item_create_params
                 type: object
               type: array
@@ -37872,6 +37939,11 @@ paths:
         required: false
         schema:
           properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
             invoice_now:
               description: Will generate a final invoice that invoices for any un-invoiced
                 metered usage and new/pending proration invoice items.
@@ -38827,6 +38899,9 @@ paths:
               description: Information for the account this token will represent.
               properties:
                 business_type:
+                  enum:
+                  - company
+                  - individual
                   type: string
                 company:
                   properties:
