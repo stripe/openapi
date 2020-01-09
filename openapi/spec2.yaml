@@ -7,7 +7,10 @@ definitions:
       business_profile:
         "$ref": "#/definitions/account_business_profile"
       business_type:
-        description: The business type. Can be `individual` or `company`.
+        description: The business type.
+        enum:
+        - company
+        - individual
         type: string
       capabilities:
         "$ref": "#/definitions/account_capabilities"
@@ -890,6 +893,11 @@ definitions:
         enum:
         - balance_transaction
         type: string
+      reporting_category:
+        description: "[Learn more](https://stripe.com/docs/reports/reporting-categories)
+          about how reporting categories can help you understand balance transactions
+          from an accounting perspective."
+        type: string
       source:
         description: The Stripe object to which this transaction is related.
         type: string
@@ -922,7 +930,9 @@ definitions:
           `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`,
           `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`,
           `transfer_cancel`, `transfer_failure`, or `transfer_refund`. [Learn more](https://stripe.com/docs/reports/balance-transaction-types)
-          about balance transaction types and what they represent.'
+          about balance transaction types and what they represent. If you are looking
+          to classify transactions for accounting purposes, you might want to consider
+          `reporting_category` instead.'
         enum:
         - adjustment
         - advance
@@ -964,6 +974,7 @@ definitions:
     - id
     - net
     - object
+    - reporting_category
     - status
     - type
     title: BalanceTransaction
@@ -1495,12 +1506,6 @@ definitions:
         description: An arbitrary string attached to the object. Often useful for
           displaying to users.
         type: string
-      dispute:
-        description: Details about the dispute if the charge has been disputed.
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/dispute"
       disputed:
         description: Whether the charge has been disputed.
         type: boolean
@@ -1686,7 +1691,6 @@ definitions:
     - balance_transaction
     - billing_details
     - customer
-    - dispute
     - fraud_details
     - invoice
     - on_behalf_of
@@ -4628,7 +4632,7 @@ definitions:
     properties:
       type:
         description: The type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
-          `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `unknown`, or `za_vat`
+          `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `sg_uen`, `unknown`, or `za_vat`
         enum:
         - au_abn
         - ch_vat
@@ -4637,6 +4641,7 @@ definitions:
         - mx_rfc
         - no_vat
         - nz_gst
+        - sg_uen
         - unknown
         - za_vat
         type: string
@@ -5131,8 +5136,7 @@ definitions:
       metadata:
         description: Set of key-value pairs that you can attach to an object. This
           can be useful for storing additional information about the object in a structured
-          format. Individual keys can be unset by posting an empty value to them.
-          All keys can be unset by posting an empty value to `metadata`.
+          format.
         type: object
       object:
         description: String representing the object's type. Objects of the same type
@@ -11828,10 +11832,12 @@ definitions:
   source_transaction_paper_check_data:
     properties:
       available_at:
-        description: String unix time for the available date.
+        description: Time at which the deposited funds will be available for use.
+          Measured in seconds since the Unix epoch.
         type: string
       invoices:
-        description: Invoice ID associated with the paper check.
+        description: Comma-separated list of invoice IDs associated with the paper
+          check.
         type: string
     title: SourceTransactionPaperCheckData
     type: object
@@ -12706,6 +12712,7 @@ definitions:
         x-expansionResources:
           oneOf:
           - "$ref": "#/definitions/coupon"
+          - "$ref": "#/definitions/deleted_coupon"
       default_payment_method:
         description: ID of the default payment method for the subscription schedule.
           It must belong to the customer associated with the subscription schedule.
@@ -12843,7 +12850,7 @@ definitions:
         type: string
       type:
         description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`, `in_gst`,
-          `mx_rfc`, `no_vat`, `nz_gst`, `za_vat`, or `unknown`
+          `mx_rfc`, `no_vat`, `nz_gst`, `sg_uen`, `za_vat`, or `unknown`
         enum:
         - au_abn
         - ch_vat
@@ -12852,6 +12859,7 @@ definitions:
         - mx_rfc
         - no_vat
         - nz_gst
+        - sg_uen
         - unknown
         - za_vat
         type: string
@@ -13346,9 +13354,9 @@ definitions:
           value `false` if the object exists in test mode.
         type: boolean
       metadata:
-        description: A set of key-value pairs that you can attach to a transfer object.
-          It can be useful for storing additional information about the transfer in
-          a structured format.
+        description: Set of key-value pairs that you can attach to an object. This
+          can be useful for storing additional information about the object in a structured
+          format.
         type: object
       object:
         description: String representing the object's type. Objects of the same type
@@ -13860,7 +13868,10 @@ paths:
               title: business_profile_specs
               type: object
             business_type:
-              description: The business type. Can be `individual` or `company`.
+              description: The business type.
+              enum:
+              - company
+              - individual
               type: string
             company:
               description: Information about the company or business. This field is
@@ -14085,9 +14096,11 @@ paths:
               title: individual_specs
               type: object
             metadata:
-              description: A set of key-value pairs that you can attach to an `Account`
-                object. This can be useful for storing additional information about
-                the account in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             requested_capabilities:
               description: The set of capabilities you want to unlock for this account.
@@ -14225,9 +14238,11 @@ paths:
                 instead.
               type: string
             metadata:
-              description: A set of key-value pairs that you can attach to an external
-                account object. It can be useful for storing additional information
-                about the external account in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
           type: object
       responses:
@@ -14342,6 +14357,11 @@ paths:
                 type: string
               type: array
             metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: Cardholder name.
@@ -14562,9 +14582,11 @@ paths:
                 instead.
               type: string
             metadata:
-              description: A set of key-value pairs that you can attach to an external
-                account object. It can be useful for storing additional information
-                about the external account in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
           type: object
       responses:
@@ -14679,6 +14701,11 @@ paths:
                 type: string
               type: array
             metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: Cardholder name.
@@ -15886,7 +15913,10 @@ paths:
               title: business_profile_specs
               type: object
             business_type:
-              description: The business type. Can be `individual` or `company`.
+              description: The business type.
+              enum:
+              - company
+              - individual
               type: string
             company:
               description: Information about the company or business. This field is
@@ -16118,9 +16148,11 @@ paths:
               title: individual_specs
               type: object
             metadata:
-              description: A set of key-value pairs that you can attach to an `Account`
-                object. This can be useful for storing additional information about
-                the account in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             requested_capabilities:
               description: The set of capabilities you want to unlock for this account.
@@ -16331,7 +16363,10 @@ paths:
               title: business_profile_specs
               type: object
             business_type:
-              description: The business type. Can be `individual` or `company`.
+              description: The business type.
+              enum:
+              - company
+              - individual
               type: string
             company:
               description: Information about the company or business. This field is
@@ -16556,9 +16591,11 @@ paths:
               title: individual_specs
               type: object
             metadata:
-              description: A set of key-value pairs that you can attach to an `Account`
-                object. This can be useful for storing additional information about
-                the account in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             requested_capabilities:
               description: The set of capabilities you want to unlock for this account.
@@ -16700,9 +16737,11 @@ paths:
                 instead.
               type: string
             metadata:
-              description: A set of key-value pairs that you can attach to an external
-                account object. It can be useful for storing additional information
-                about the external account in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
           type: object
       responses:
@@ -16829,6 +16868,11 @@ paths:
                 type: string
               type: array
             metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: Cardholder name.
@@ -17069,9 +17113,11 @@ paths:
                 instead.
               type: string
             metadata:
-              description: A set of key-value pairs that you can attach to an external
-                account object. It can be useful for storing additional information
-                about the external account in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
           type: object
       responses:
@@ -17198,6 +17244,11 @@ paths:
                 type: string
               type: array
             metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: Cardholder name.
@@ -19512,7 +19563,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             on_behalf_of:
               description: The Stripe account ID for which these funds are intended.
@@ -19935,9 +19988,11 @@ paths:
                 type: string
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a dispute
-                object. This can be useful for storing additional information about
-                the dispute in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             submit:
               description: Whether to immediately submit evidence to the bank. If
@@ -20142,6 +20197,11 @@ paths:
                 type: string
               type: array
             metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             payment_intent:
               type: string
@@ -20738,9 +20798,11 @@ paths:
                 have a 50% off coupon that the first 20 readers of your blog can use.
               type: integer
             metadata:
-              description: A set of key-value pairs that you can attach to a coupon
-                object. It can be useful for storing additional information about
-                the coupon in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: Name of the coupon displayed to customers on, for instance
@@ -20837,9 +20899,11 @@ paths:
                 type: string
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a coupon
-                object. It can be useful for storing additional information about
-                the coupon in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: Name of the coupon displayed to customers on, for instance
@@ -21332,9 +21396,11 @@ paths:
               title: customer_param
               type: object
             metadata:
-              description: A set of key-value pairs that you can attach to a customer
-                object. It can be useful for storing additional information about
-                the customer in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: The customer's full name or business name.
@@ -21383,6 +21449,7 @@ paths:
                     - mx_rfc
                     - no_vat
                     - nz_gst
+                    - sg_uen
                     - za_vat
                     type: string
                   value:
@@ -21543,9 +21610,11 @@ paths:
               title: customer_param
               type: object
             metadata:
-              description: A set of key-value pairs that you can attach to a customer
-                object. It can be useful for storing additional information about
-                the customer in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: The customer's full name or business name.
@@ -21711,7 +21780,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
           required:
           - amount
@@ -21789,7 +21860,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
           type: object
       responses:
@@ -21914,9 +21987,11 @@ paths:
                 type: string
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a card
-                object. It can be useful for storing additional information about
-                the card in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             source:
               description: Please refer to full [documentation](https://stripe.com/docs/api)
@@ -21946,6 +22021,18 @@ paths:
         name: id
         required: true
         type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+          type: object
       responses:
         '200':
           description: Successful response.
@@ -22044,6 +22131,11 @@ paths:
                 type: string
               type: array
             metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: Cardholder name.
@@ -22237,9 +22329,11 @@ paths:
                 type: string
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a card
-                object. It can be useful for storing additional information about
-                the card in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             source:
               description: Please refer to full [documentation](https://stripe.com/docs/api)
@@ -22269,6 +22363,18 @@ paths:
         name: id
         required: true
         type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+          type: object
       responses:
         '200':
           description: Successful response.
@@ -22367,6 +22473,11 @@ paths:
                 type: string
               type: array
             metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: Cardholder name.
@@ -22562,9 +22673,11 @@ paths:
                 type: string
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a card
-                object. It can be useful for storing additional information about
-                the card in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             source:
               description: Please refer to full [documentation](https://stripe.com/docs/api)
@@ -22594,6 +22707,18 @@ paths:
         name: id
         required: true
         type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+          type: object
       responses:
         '200':
           description: Successful response.
@@ -22689,6 +22814,11 @@ paths:
                 type: string
               type: array
             metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: Cardholder name.
@@ -22953,15 +23083,15 @@ paths:
                   tax_rates:
                     items:
                       type: string
-                required:
-                - plan
                 title: subscription_item_create_params
                 type: object
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a `Subscription`
-                object. It can be useful for storing additional information about
-                the subscription in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             off_session:
               description: Indicates if a customer is on or off-session while an invoice
@@ -23052,6 +23182,11 @@ paths:
         required: false
         schema:
           properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
             invoice_now:
               description: Can be set to `true` if `at_period_end` is not set to `true`.
                 Will generate a final invoice that invoices for any un-invoiced metered
@@ -23219,9 +23354,11 @@ paths:
                 type: object
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a subscription
-                object. This can be useful for storing additional information about
-                the subscription in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             off_session:
               description: Indicates if a customer is on or off-session while an invoice
@@ -23435,7 +23572,7 @@ paths:
               type: array
             type:
               description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
-                `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, or `za_vat`
+                `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `sg_uen`, or `za_vat`
               enum:
               - au_abn
               - ch_vat
@@ -23444,6 +23581,7 @@ paths:
               - mx_rfc
               - no_vat
               - nz_gst
+              - sg_uen
               - za_vat
               type: string
             value:
@@ -23707,9 +23845,11 @@ paths:
                 type: string
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a dispute
-                object. This can be useful for storing additional information about
-                the dispute in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             submit:
               description: Whether to immediately submit evidence to the bank. If
@@ -23805,6 +23945,18 @@ paths:
         name: key
         required: true
         type: string
+      - description: Body parameters for the request.
+        in: body
+        name: payload
+        required: false
+        schema:
+          properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
+          type: object
       responses:
         '200':
           description: Successful response.
@@ -24143,7 +24295,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
           required:
           - file
@@ -24208,7 +24362,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
           type: object
       responses:
@@ -24531,9 +24687,11 @@ paths:
                 invoices.
               type: string
             metadata:
-              description: A set of key-value pairs that you can attach to an invoice
-                item object. It can be useful for storing additional information about
-                the invoice item in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             period:
               description: The period associated with this invoice item.
@@ -24670,9 +24828,11 @@ paths:
                 type: string
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to an invoice
-                item object. It can be useful for storing additional information about
-                the invoice item in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             period:
               description: The period associated with this invoice item.
@@ -24905,6 +25065,11 @@ paths:
               description: Footer to be displayed on the invoice.
               type: string
             metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             statement_descriptor:
               description: Extra information about a charge for the customer's credit
@@ -25418,6 +25583,11 @@ paths:
               description: Footer to be displayed on the invoice.
               type: string
             metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             statement_descriptor:
               description: Extra information about a charge for the customer's credit
@@ -25969,7 +26139,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
           type: object
       responses:
         '200':
@@ -26010,7 +26182,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
           type: object
       responses:
         '200':
@@ -26045,7 +26219,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
           type: object
       responses:
         '200':
@@ -27163,6 +27339,11 @@ paths:
               description: Specifies whether to set this as the default cardholder.
               type: boolean
             metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: The cardholder's name. This will be printed on cards issued
@@ -29310,6 +29491,11 @@ paths:
                 type: string
               type: array
             metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             replacement_for:
               description: The card this is meant to be a replacement for (if any).
@@ -30334,7 +30520,12 @@ paths:
               items:
                 type: string
               type: array
-            metadata: {}
+            metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
             status:
               description: Whether authorizations can be approved on this card.
               enum:
@@ -30834,12 +31025,12 @@ paths:
         name: expand
         required: false
         type: array
-      - description: Only return issuing transactions that belong to the given card.
+      - description: Only return transactions that belong to the given card.
         in: query
         name: card
         required: false
         type: string
-      - description: Only return authorizations belonging to the given cardholder.
+      - description: Only return transactions that belong to the given cardholder.
         in: query
         name: cardholder
         required: false
@@ -30964,7 +31155,12 @@ paths:
               items:
                 type: string
               type: array
-            metadata: {}
+            metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
           type: object
       responses:
         '200':
@@ -31313,9 +31509,11 @@ paths:
                 type: object
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to an order
-                object. Limited to 500 characters. Metadata can be useful for storing
-                additional information about the order in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             shipping:
               description: Shipping address for the order. Required if any of the
@@ -31412,9 +31610,11 @@ paths:
                 type: string
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a product
-                object. It can be useful for storing additional information about
-                the order in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             selected_shipping_method:
               description: The shipping method to select for fulfilling this order.
@@ -31471,6 +31671,11 @@ paths:
         schema:
           properties:
             application_fee:
+              description: A fee in %s that will be applied to the order and transferred
+                to the application owner's Stripe account. The request must be made
+                with an OAuth key or the `Stripe-Account` header in order to take
+                an application fee. For more information, see the application fees
+                [documentation](https://stripe.com/docs/connect/direct-charges#collecting-fees).
               type: integer
             customer:
               description: The ID of an existing customer that will be charged for
@@ -31488,15 +31693,17 @@ paths:
                 type: string
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to an order
-                object. Limited to 500 characters. Metadata can be useful for storing
-                additional information about the order in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             source:
               description: A [Token](https://stripe.com/docs/api#tokens)'s or a [Source](https://stripe.com/docs/api#sources)'s
                 ID, as returned by [Elements](https://stripe.com/docs/elements). If
                 no customer was attached to the order at creation, either `source`
-                or `customer is required. Otherwise, the specified source will be
+                or `customer` is required. Otherwise, the specified source will be
                 charged intead of the customer attached to the order.
               type: string
           type: object
@@ -31761,7 +31968,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             off_session:
               description: Set to `true` to indicate that the customer is not in your
@@ -32011,7 +32220,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             payment_method:
               description: ID of the payment method (a PaymentMethod, Card, or [compatible
@@ -32535,7 +32746,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             payment_method:
               description: The PaymentMethod to share.
@@ -32654,7 +32867,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             sepa_debit:
               properties: {}
@@ -32868,9 +33083,11 @@ paths:
                 type: string
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a payout
-                object. It can be useful for storing additional information about
-                the payout in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             method:
               description: The method used to send this payout, which can be `standard`
@@ -32958,9 +33175,11 @@ paths:
                 type: string
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a payout
-                object. It can be useful for storing additional information about
-                the payout in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
           type: object
       responses:
@@ -33526,9 +33745,11 @@ paths:
                 type: string
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a product
-                object. It can be useful for storing additional information about
-                the product in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: The product's name, meant to be displayable to the customer.
@@ -33699,9 +33920,11 @@ paths:
               items:
                 type: string
             metadata:
-              description: A set of key-value pairs that you can attach to a product
-                object. It can be useful for storing additional information about
-                the product in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             name:
               description: The product's name, meant to be displayable to the customer.
@@ -34632,6 +34855,11 @@ paths:
                 type: string
               type: array
             metadata:
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             payment_intent:
               type: string
@@ -35269,7 +35497,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             on_behalf_of:
               description: The Stripe account ID for which this SetupIntent is created.
@@ -35401,7 +35631,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             payment_method:
               description: ID of the payment method (a PaymentMethod, Card, or saved
@@ -35823,9 +36055,11 @@ paths:
               title: inventory_specs
               type: object
             metadata:
-              description: A set of key-value pairs that you can attach to a SKU object.
-                It can be useful for storing additional information about the SKU
-                in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             package_dimensions:
               description: The dimensions of this SKU for shipping purposes.
@@ -35975,9 +36209,11 @@ paths:
               title: inventory_update_specs
               type: object
             metadata:
-              description: A set of key-value pairs that you can attach to a SKU object.
-                It can be useful for storing additional information about the SKU
-                in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             package_dimensions:
               description: The dimensions of this SKU for shipping purposes.
@@ -36109,9 +36345,11 @@ paths:
               title: mandate_params
               type: object
             metadata:
-              description: A set of key-value pairs that you can attach to a source
-                object. It can be useful for storing additional information about
-                the source in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             original_source:
               description: The source to share.
@@ -36386,9 +36624,11 @@ paths:
               title: mandate_params
               type: object
             metadata:
-              description: A set of key-value pairs that you can attach to a source
-                object. It can be useful for storing additional information about
-                the source in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             owner:
               description: Information about the owner of the payment instrument that
@@ -36758,7 +36998,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             payment_behavior:
               description: |-
@@ -36798,7 +37040,6 @@ paths:
               items:
                 type: string
           required:
-          - plan
           - subscription
           type: object
       responses:
@@ -36901,7 +37142,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             off_session:
               type: boolean
@@ -37248,7 +37491,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             phases:
               description: List representing phases of the subscription schedule.
@@ -37293,8 +37538,6 @@ paths:
                         tax_rates:
                           items:
                             type: string
-                      required:
-                      - plan
                       title: configuration_item_params
                       type: object
                     type: array
@@ -37406,7 +37649,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             phases:
               description: List representing phases of the subscription schedule.
@@ -37451,8 +37696,6 @@ paths:
                         tax_rates:
                           items:
                             type: string
-                      required:
-                      - plan
                       title: configuration_item_params
                       type: object
                     type: array
@@ -37775,15 +38018,15 @@ paths:
                   tax_rates:
                     items:
                       type: string
-                required:
-                - plan
                 title: subscription_item_create_params
                 type: object
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a `Subscription`
-                object. It can be useful for storing additional information about
-                the subscription in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             off_session:
               description: Indicates if a customer is on or off-session while an invoice
@@ -37872,6 +38115,11 @@ paths:
         required: false
         schema:
           properties:
+            expand:
+              description: Specifies which fields in the response should be expanded.
+              items:
+                type: string
+              type: array
             invoice_now:
               description: Will generate a final invoice that invoices for any un-invoiced
                 metered usage and new/pending proration invoice items.
@@ -38026,9 +38274,11 @@ paths:
                 type: object
               type: array
             metadata:
-              description: A set of key-value pairs that you can attach to a subscription
-                object. This can be useful for storing additional information about
-                the subscription in a structured format.
+              description: Set of key-value pairs that you can attach to an object.
+                This can be useful for storing additional information about the object
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             off_session:
               description: Indicates if a customer is on or off-session while an invoice
@@ -38480,7 +38730,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
           required:
           - address
@@ -38709,7 +38961,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             registration_code:
               description: A code generated by the reader used for registering to
@@ -38827,6 +39081,9 @@ paths:
               description: Information for the account this token will represent.
               properties:
                 business_type:
+                  enum:
+                  - company
+                  - individual
                   type: string
                 company:
                   properties:
@@ -39335,7 +39592,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
             source:
               description: The ID of a source to transfer funds from. For most users,
@@ -39417,7 +39676,9 @@ paths:
             metadata:
               description: Set of key-value pairs that you can attach to an object.
                 This can be useful for storing additional information about the object
-                in a structured format.
+                in a structured format. Individual keys can be unset by posting an
+                empty value to them. All keys can be unset by posting an empty value
+                to `metadata`.
               type: object
           type: object
       responses:
