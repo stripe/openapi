@@ -9,13 +9,10 @@ components:
           description: Optional information related to the business.
           nullable: true
         business_type:
-          description: The business type.
-          enum:
-          - company
-          - individual
+          description: The business type. Can be `individual` or `company`.
+          maxLength: 5000
           nullable: true
           type: string
-          x-stripeBypassValidation: true
         capabilities:
           "$ref": "#/components/schemas/account_capabilities"
         charges_enabled:
@@ -1055,12 +1052,6 @@ components:
           enum:
           - balance_transaction
           type: string
-        reporting_category:
-          description: "[Learn more](https://stripe.com/docs/reports/reporting-categories)
-            about how reporting categories can help you understand balance transactions
-            from an accounting perspective."
-          maxLength: 5000
-          type: string
         source:
           anyOf:
           - maxLength: 5000
@@ -1112,9 +1103,7 @@ components:
             `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`,
             `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`,
             `transfer_cancel`, `transfer_failure`, or `transfer_refund`. [Learn more](https://stripe.com/docs/reports/balance-transaction-types)
-            about balance transaction types and what they represent. If you are looking
-            to classify transactions for accounting purposes, you might want to consider
-            `reporting_category` instead.'
+            about balance transaction types and what they represent.'
           enum:
           - adjustment
           - advance
@@ -1156,7 +1145,6 @@ components:
       - id
       - net
       - object
-      - reporting_category
       - status
       - type
       title: BalanceTransaction
@@ -1829,6 +1817,16 @@ components:
           maxLength: 40000
           nullable: true
           type: string
+        dispute:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/dispute"
+          description: Details about the dispute if the charge has been disputed.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/dispute"
         disputed:
           description: Whether the charge has been disputed.
           type: boolean
@@ -2081,6 +2079,7 @@ components:
       - balance_transaction
       - billing_details
       - customer
+      - dispute
       - fraud_details
       - invoice
       - on_behalf_of
@@ -5441,7 +5440,7 @@ components:
       properties:
         type:
           description: The type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
-            `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `sg_uen`, `unknown`, or `za_vat`
+            `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `unknown`, or `za_vat`
           enum:
           - au_abn
           - ch_vat
@@ -5450,7 +5449,6 @@ components:
           - mx_rfc
           - no_vat
           - nz_gst
-          - sg_uen
           - unknown
           - za_vat
           type: string
@@ -14966,14 +14964,12 @@ components:
           - maxLength: 5000
             type: string
           - "$ref": "#/components/schemas/coupon"
-          - "$ref": "#/components/schemas/deleted_coupon"
           description: ID of the coupon to use during this phase of the subscription
             schedule.
           nullable: true
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/coupon"
-            - "$ref": "#/components/schemas/deleted_coupon"
         default_payment_method:
           anyOf:
           - maxLength: 5000
@@ -15148,7 +15144,7 @@ components:
           type: string
         type:
           description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`, `in_gst`,
-            `mx_rfc`, `no_vat`, `nz_gst`, `sg_uen`, `za_vat`, or `unknown`
+            `mx_rfc`, `no_vat`, `nz_gst`, `za_vat`, or `unknown`
           enum:
           - au_abn
           - ch_vat
@@ -15157,7 +15153,6 @@ components:
           - mx_rfc
           - no_vat
           - nz_gst
-          - sg_uen
           - unknown
           - za_vat
           type: string
@@ -16443,12 +16438,9 @@ paths:
                   title: business_profile_specs
                   type: object
                 business_type:
-                  description: The business type.
-                  enum:
-                  - company
-                  - individual
+                  description: The business type. Can be `individual` or `company`.
+                  maxLength: 5000
                   type: string
-                  x-stripeBypassValidation: true
                 company:
                   description: Information about the company or business. This field
                     is null unless `business_type` is set to `company`.
@@ -19600,12 +19592,9 @@ paths:
                   title: business_profile_specs
                   type: object
                 business_type:
-                  description: The business type.
-                  enum:
-                  - company
-                  - individual
+                  description: The business type. Can be `individual` or `company`.
+                  maxLength: 5000
                   type: string
-                  x-stripeBypassValidation: true
                 company:
                   description: Information about the company or business. This field
                     is null unless `business_type` is set to `company`.
@@ -20273,12 +20262,9 @@ paths:
                   title: business_profile_specs
                   type: object
                 business_type:
-                  description: The business type.
-                  enum:
-                  - company
-                  - individual
+                  description: The business type. Can be `individual` or `company`.
+                  maxLength: 5000
                   type: string
-                  x-stripeBypassValidation: true
                 company:
                   description: Information about the company or business. This field
                     is null unless `business_type` is set to `company`.
@@ -27972,7 +27958,6 @@ paths:
                         - mx_rfc
                         - no_vat
                         - nz_gst
-                        - sg_uen
                         - za_vat
                         maxLength: 5000
                         type: string
@@ -29041,19 +29026,10 @@ paths:
       requestBody:
         content:
           application/x-www-form-urlencoded:
-            encoding:
-              expand:
-                explode: true
-                style: deepObject
+            encoding: {}
             schema:
               additionalProperties: false
-              properties:
-                expand:
-                  description: Specifies which fields in the response should be expanded.
-                  items:
-                    maxLength: 5000
-                    type: string
-                  type: array
+              properties: {}
               type: object
         required: false
       responses:
@@ -29627,19 +29603,10 @@ paths:
       requestBody:
         content:
           application/x-www-form-urlencoded:
-            encoding:
-              expand:
-                explode: true
-                style: deepObject
+            encoding: {}
             schema:
               additionalProperties: false
-              properties:
-                expand:
-                  description: Specifies which fields in the response should be expanded.
-                  items:
-                    maxLength: 5000
-                    type: string
-                  type: array
+              properties: {}
               type: object
         required: false
       responses:
@@ -30243,19 +30210,10 @@ paths:
       requestBody:
         content:
           application/x-www-form-urlencoded:
-            encoding:
-              expand:
-                explode: true
-                style: deepObject
+            encoding: {}
             schema:
               additionalProperties: false
-              properties:
-                expand:
-                  description: Specifies which fields in the response should be expanded.
-                  items:
-                    maxLength: 5000
-                    type: string
-                  type: array
+              properties: {}
               type: object
         required: false
       responses:
@@ -30822,6 +30780,8 @@ paths:
                         - enum:
                           - ''
                           type: string
+                    required:
+                    - plan
                     title: subscription_item_create_params
                     type: object
                   type: array
@@ -30959,19 +30919,10 @@ paths:
       requestBody:
         content:
           application/x-www-form-urlencoded:
-            encoding:
-              expand:
-                explode: true
-                style: deepObject
+            encoding: {}
             schema:
               additionalProperties: false
               properties:
-                expand:
-                  description: Specifies which fields in the response should be expanded.
-                  items:
-                    maxLength: 5000
-                    type: string
-                  type: array
                 invoice_now:
                   description: Can be set to `true` if `at_period_end` is not set
                     to `true`. Will generate a final invoice that invoices for any
@@ -31592,7 +31543,7 @@ paths:
                   type: array
                 type:
                   description: Type of the tax ID, one of `au_abn`, `ch_vat`, `eu_vat`,
-                    `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `sg_uen`, or `za_vat`
+                    `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, or `za_vat`
                   enum:
                   - au_abn
                   - ch_vat
@@ -31601,7 +31552,6 @@ paths:
                   - mx_rfc
                   - no_vat
                   - nz_gst
-                  - sg_uen
                   - za_vat
                   maxLength: 5000
                   type: string
@@ -32154,19 +32104,10 @@ paths:
       requestBody:
         content:
           application/x-www-form-urlencoded:
-            encoding:
-              expand:
-                explode: true
-                style: deepObject
+            encoding: {}
             schema:
               additionalProperties: false
-              properties:
-                expand:
-                  description: Specifies which fields in the response should be expanded.
-                  items:
-                    maxLength: 5000
-                    type: string
-                  type: array
+              properties: {}
               type: object
         required: false
       responses:
@@ -41186,7 +41127,7 @@ paths:
         recently created object appearing first.</p>"
       operationId: GetIssuingTransactions
       parameters:
-      - description: Only return transactions that belong to the given card.
+      - description: Only return issuing transactions that belong to the given card.
         in: query
         name: card
         required: false
@@ -41194,7 +41135,7 @@ paths:
           maxLength: 5000
           type: string
         style: form
-      - description: Only return transactions that belong to the given cardholder.
+      - description: Only return authorizations belonging to the given cardholder.
         in: query
         name: cardholder
         required: false
@@ -42247,11 +42188,6 @@ paths:
               additionalProperties: false
               properties:
                 application_fee:
-                  description: A fee in %s that will be applied to the order and transferred
-                    to the application owner's Stripe account. The request must be
-                    made with an OAuth key or the `Stripe-Account` header in order
-                    to take an application fee. For more information, see the application
-                    fees [documentation](https://stripe.com/docs/connect/direct-charges#collecting-fees).
                   type: integer
                 customer:
                   description: The ID of an existing customer that will be charged
@@ -42283,7 +42219,7 @@ paths:
                   description: A [Token](https://stripe.com/docs/api#tokens)'s or
                     a [Source](https://stripe.com/docs/api#sources)'s ID, as returned
                     by [Elements](https://stripe.com/docs/elements). If no customer
-                    was attached to the order at creation, either `source` or `customer`
+                    was attached to the order at creation, either `source` or `customer
                     is required. Otherwise, the specified source will be charged intead
                     of the customer attached to the order.
                   maxLength: 5000
@@ -50222,6 +50158,7 @@ paths:
                     on the Subscription. When updating, pass an empty string to remove
                     previously-defined tax rates.
               required:
+              - plan
               - subscription
               type: object
         required: true
@@ -51006,6 +50943,8 @@ paths:
                               - enum:
                                 - ''
                                 type: string
+                          required:
+                          - plan
                           title: configuration_item_params
                           type: object
                         type: array
@@ -51270,6 +51209,8 @@ paths:
                               - enum:
                                 - ''
                                 type: string
+                          required:
+                          - plan
                           title: configuration_item_params
                           type: object
                         type: array
@@ -51807,6 +51748,8 @@ paths:
                         - enum:
                           - ''
                           type: string
+                    required:
+                    - plan
                     title: subscription_item_create_params
                     type: object
                   type: array
@@ -51939,19 +51882,10 @@ paths:
       requestBody:
         content:
           application/x-www-form-urlencoded:
-            encoding:
-              expand:
-                explode: true
-                style: deepObject
+            encoding: {}
             schema:
               additionalProperties: false
               properties:
-                expand:
-                  description: Specifies which fields in the response should be expanded.
-                  items:
-                    maxLength: 5000
-                    type: string
-                  type: array
                 invoice_now:
                   description: Will generate a final invoice that invoices for any
                     un-invoiced metered usage and new/pending proration invoice items.
@@ -53451,11 +53385,8 @@ paths:
                   description: Information for the account this token will represent.
                   properties:
                     business_type:
-                      enum:
-                      - company
-                      - individual
+                      maxLength: 5000
                       type: string
-                      x-stripeBypassValidation: true
                     company:
                       properties:
                         address:
