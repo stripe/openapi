@@ -11502,6 +11502,47 @@ components:
       - destination
       - failure_balance_transaction
       x-resourceId: payout
+    pending_update:
+      properties:
+        billing_cycle_anchor:
+          description: If the update is applied, determines the date of the first
+            full invoice, and, for plans with `month` or `year` intervals, the day
+            of the month for subsequent invoices.
+          format: unix-time
+          nullable: true
+          type: integer
+        expires_at:
+          description: The point after which the changes reflected by this update
+            will be discarded and no longer applied.
+          format: unix-time
+          type: integer
+        subscription_items:
+          description: List of subscription items, each with an attached plan, that
+            will be set if the update is applied.
+          items:
+            "$ref": "#/components/schemas/subscription_item"
+          nullable: true
+          type: array
+        trial_end:
+          description: Unix timestamp representing the end of the trial period the
+            customer will get before being charged for the first time, if the update
+            is applied.
+          format: unix-time
+          nullable: true
+          type: integer
+        trial_from_plan:
+          description: Indicates if a plan's `trial_period_days` should be applied
+            to the subscription. Setting `trial_end` per subscription is preferred,
+            and this defaults to `false`. Setting this flag to `true` together with
+            `trial_end` is not allowed.
+          nullable: true
+          type: boolean
+      required:
+      - expires_at
+      title: SubscriptionsResourcePendingUpdate
+      type: object
+      x-expandableFields:
+      - subscription_items
     period:
       properties:
         end:
@@ -14704,6 +14745,13 @@ components:
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/setup_intent"
+        pending_update:
+          anyOf:
+          - "$ref": "#/components/schemas/pending_update"
+          description: If specified, [deferred upgrade](https://stripe.com/docs/billing/subscriptions/upgrading-downgrading#deferred)
+            changes that will be applied to the subscription once the `latest_invoice`
+            has been paid.
+          nullable: true
         plan:
           anyOf:
           - "$ref": "#/components/schemas/plan"
@@ -14803,6 +14851,7 @@ components:
       - latest_invoice
       - pending_invoice_item_interval
       - pending_setup_intent
+      - pending_update
       - plan
       - schedule
       x-resourceId: subscription
@@ -31441,6 +31490,18 @@ paths:
                     `quantity` changes. If `false`, the anchor period will be free
                     (similar to a trial) and no proration adjustments will be created.
                   type: boolean
+                proration_behavior:
+                  description: Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
+                    when the billing cycle changes (e.g., when switching plans, resetting
+                    `billing_cycle_anchor=now`, or starting a trial), or if an item's
+                    `quantity` changes. The value defaults to `create_prorations`,
+                    indicating that proration invoice items should be created. Prorations
+                    can be disabled by setting the value to `none`.
+                  enum:
+                  - always_invoice
+                  - create_prorations
+                  - none
+                  type: string
                 tax_percent:
                   anyOf:
                   - type: number
@@ -31868,6 +31929,18 @@ paths:
                     `quantity` changes. If `false`, the anchor period will be free
                     (similar to a trial) and no proration adjustments will be created.
                   type: boolean
+                proration_behavior:
+                  description: Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
+                    when the billing cycle changes (e.g., when switching plans, resetting
+                    `billing_cycle_anchor=now`, or starting a trial), or if an item's
+                    `quantity` changes. The value defaults to `create_prorations`,
+                    indicating that proration invoice items should be created. Prorations
+                    can be disabled by setting the value to `none`.
+                  enum:
+                  - always_invoice
+                  - create_prorations
+                  - none
+                  type: string
                 proration_date:
                   description: If set, the proration will be calculated as though
                     the subscription was updated at the given time. This can be used
@@ -34729,6 +34802,21 @@ paths:
         schema:
           type: boolean
         style: form
+      - description: Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
+          when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`,
+          or starting a trial), or if an item's `quantity` changes. The value defaults
+          to `create_prorations`, indicating that proration invoice items should be
+          created. Prorations can be disabled by setting the value to `none`.
+        in: query
+        name: subscription_proration_behavior
+        required: false
+        schema:
+          enum:
+          - always_invoice
+          - create_prorations
+          - none
+          type: string
+        style: form
       - description: If previewing an update to a subscription, and doing proration,
           `subscription_proration_date` forces the proration to be calculated as though
           the update was done at the specified time. The time given must be within
@@ -35086,6 +35174,21 @@ paths:
         required: false
         schema:
           type: boolean
+        style: form
+      - description: Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
+          when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`,
+          or starting a trial), or if an item's `quantity` changes. The value defaults
+          to `create_prorations`, indicating that proration invoice items should be
+          created. Prorations can be disabled by setting the value to `none`.
+        in: query
+        name: subscription_proration_behavior
+        required: false
+        schema:
+          enum:
+          - always_invoice
+          - create_prorations
+          - none
+          type: string
         style: form
       - description: If previewing an update to a subscription, and doing proration,
           `subscription_proration_date` forces the proration to be calculated as though
@@ -50746,6 +50849,18 @@ paths:
                   description: Flag indicating whether to [prorate](https://stripe.com/docs/billing/subscriptions/prorations)
                     switching plans during a billing cycle.
                   type: boolean
+                proration_behavior:
+                  description: Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
+                    when the billing cycle changes (e.g., when switching plans, resetting
+                    `billing_cycle_anchor=now`, or starting a trial), or if an item's
+                    `quantity` changes. The value defaults to `create_prorations`,
+                    indicating that proration invoice items should be created. Prorations
+                    can be disabled by setting the value to `none`.
+                  enum:
+                  - always_invoice
+                  - create_prorations
+                  - none
+                  type: string
                 proration_date:
                   description: If set, the proration will be calculated as though
                     the subscription was updated at the given time. This can be used
@@ -50966,6 +51081,18 @@ paths:
                   description: Flag indicating whether to [prorate](https://stripe.com/docs/billing/subscriptions/prorations)
                     switching plans during a billing cycle.
                   type: boolean
+                proration_behavior:
+                  description: Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
+                    when the billing cycle changes (e.g., when switching plans, resetting
+                    `billing_cycle_anchor=now`, or starting a trial), or if an item's
+                    `quantity` changes. The value defaults to `create_prorations`,
+                    indicating that proration invoice items should be created. Prorations
+                    can be disabled by setting the value to `none`.
+                  enum:
+                  - always_invoice
+                  - create_prorations
+                  - none
+                  type: string
                 proration_date:
                   description: If set, the proration will be calculated as though
                     the subscription was updated at the given time. This can be used
@@ -52414,6 +52541,18 @@ paths:
                     `quantity` changes. If `false`, the anchor period will be free
                     (similar to a trial) and no proration adjustments will be created.
                   type: boolean
+                proration_behavior:
+                  description: Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
+                    when the billing cycle changes (e.g., when switching plans, resetting
+                    `billing_cycle_anchor=now`, or starting a trial), or if an item's
+                    `quantity` changes. The value defaults to `create_prorations`,
+                    indicating that proration invoice items should be created. Prorations
+                    can be disabled by setting the value to `none`.
+                  enum:
+                  - always_invoice
+                  - create_prorations
+                  - none
+                  type: string
                 tax_percent:
                   anyOf:
                   - type: number
@@ -52820,6 +52959,18 @@ paths:
                     `quantity` changes. If `false`, the anchor period will be free
                     (similar to a trial) and no proration adjustments will be created.
                   type: boolean
+                proration_behavior:
+                  description: Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
+                    when the billing cycle changes (e.g., when switching plans, resetting
+                    `billing_cycle_anchor=now`, or starting a trial), or if an item's
+                    `quantity` changes. The value defaults to `create_prorations`,
+                    indicating that proration invoice items should be created. Prorations
+                    can be disabled by setting the value to `none`.
+                  enum:
+                  - always_invoice
+                  - create_prorations
+                  - none
+                  type: string
                 proration_date:
                   description: If set, the proration will be calculated as though
                     the subscription was updated at the given time. This can be used
