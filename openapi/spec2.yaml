@@ -1438,7 +1438,8 @@ definitions:
           - "$ref": "#/definitions/recipient"
       tokenization_method:
         description: If the card number is tokenized, this is the method that was
-          used. Can be `apple_pay` or `google_pay`.
+          used. Can be `amex_express_checkout`, `android_pay` (includes Google Pay),
+          `apple_pay`, `masterpass`, `visa_checkout`, or null.
         type: string
     required:
     - brand
@@ -2343,7 +2344,7 @@ definitions:
           the credit note, including tax and discount.
         type: integer
       type:
-        description: Type of this credit note, one of `post_payment` or `pre_payment`.
+        description: Type of this credit note, one of `pre_payment` or `post_payment`.
           A `pre_payment` credit note means it was issued when the invoice was open.
           A `post_payment` credit note means it was issued when the invoice was paid.
         enum:
@@ -2425,8 +2426,8 @@ definitions:
           "$ref": "#/definitions/tax_rate"
         type: array
       type:
-        description: The type of the credit note line item, one of `custom_line_item`
-          or `invoice_line_item`. When the type is `invoice_line_item` there is an
+        description: The type of the credit note line item, one of `invoice_line_item`
+          or `custom_line_item`. When the type is `invoice_line_item` there is an
           additional `invoice_line_item` property on the resource the value of which
           is the id of the credited line item on the invoice.
         enum:
@@ -2763,8 +2764,8 @@ definitions:
         type: string
       type:
         description: 'Transaction type: `adjustment`, `applied_to_invoice`, `credit_note`,
-          `initial`, `invoice_too_large`, `invoice_too_small`, `unapplied_from_invoice`,
-          or `unspent_receiver_credit`. See the [Customer Balance page](https://stripe.com/docs/billing/customer/balance#types)
+          `initial`, `invoice_too_large`, `invoice_too_small`, `unspent_receiver_credit`,
+          or `unapplied_from_invoice`. See the [Customer Balance page](https://stripe.com/docs/billing/customer/balance#types)
           to learn more about transaction types.'
         enum:
         - adjustment
@@ -4820,18 +4821,24 @@ definitions:
   invoices_resource_invoice_tax_id:
     properties:
       type:
-        description: The type of the tax ID, one of `au_abn`, `ca_bn`, `ch_vat`, `es_cif`,
-          `eu_vat`, `hk_br`, `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `ru_inn`, `sg_uen`,
-          `th_vat`, `tw_vat`, `unknown`, or `za_vat`
+        description: The type of the tax ID, one of `eu_vat`, `nz_gst`, `au_abn`,
+          `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`, `ca_bn`,
+          `hk_br`, `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `li_uid`, `my_itn`, `us_ein`,
+          `kr_brn`, `ca_qst`, or `unknown`
         enum:
         - au_abn
         - ca_bn
+        - ca_qst
         - ch_vat
         - es_cif
         - eu_vat
         - hk_br
         - in_gst
+        - jp_cn
+        - kr_brn
+        - li_uid
         - mx_rfc
+        - my_itn
         - no_vat
         - nz_gst
         - ru_inn
@@ -4839,6 +4846,7 @@ definitions:
         - th_vat
         - tw_vat
         - unknown
+        - us_ein
         - za_vat
         type: string
       value:
@@ -5351,11 +5359,11 @@ definitions:
         - issuing.dispute
         type: string
       reason:
-        description: Reason for this dispute. One of `other` or `fraudulent`.
+        description: Reason for this dispute. One of `fraudulent` or `other`.
         type: string
       status:
-        description: Current status of dispute. One of `lost`, `under_review`, `unsubmitted`,
-          or `won`.
+        description: Current status of dispute. One of `unsubmitted`, `under_review`,
+          `won`, or `lost`.
         enum:
         - lost
         - under_review
@@ -5724,7 +5732,7 @@ definitions:
           `mismatch`, or `not_provided`.
         type: string
       authentication:
-        description: One of `exempt`, `failure`, `none`, or `success`.
+        description: One of `success`, `failure`, `exempt`, or `none`.
         type: string
       cvc_check:
         description: Whether the cardholder provided a CVC and if it matched Stripe’s
@@ -5741,8 +5749,8 @@ definitions:
   issuing_authorization_violated_auth_control:
     properties:
       entity:
-        description: Entity which the authorization control acts on. One of `account`,
-          `card`, or `cardholder`.
+        description: Entity which the authorization control acts on. One of `card`,
+          `cardholder`, or `account`.
         enum:
         - account
         - card
@@ -5750,7 +5758,7 @@ definitions:
         type: string
       name:
         description: Name of the authorization control. One of `allowed_categories`,
-          `blocked_categories`, `max_amount`, `max_approvals`, or `spending_limits`.
+          `blocked_categories`, `spending_limits`, `max_approvals`, or `max_amount`.
         enum:
         - allowed_categories
         - blocked_categories
@@ -8214,7 +8222,7 @@ definitions:
       single_use:
         "$ref": "#/definitions/mandate_single_use"
       status:
-        description: The status of the Mandate, one of `active`, `inactive`, or `pending`.
+        description: The status of the Mandate, one of `pending`, `inactive`, or `active`.
           The Mandate can be used to initiate a payment only if status=active.
         enum:
         - active
@@ -8222,7 +8230,7 @@ definitions:
         - pending
         type: string
       type:
-        description: The type of the mandate, one of `multi_use` or `single_use`
+        description: The type of the mandate, one of `single_use` or `multi_use`
         enum:
         - multi_use
         - single_use
@@ -9977,7 +9985,7 @@ definitions:
       method:
         description: The method used to send this payout, which can be `standard`
           or `instant`. `instant` is only supported for payouts to debit cards. (See
-          [Instant payouts for marketplaces](/blog/instant-payouts-for-marketplaces)
+          [Instant payouts for marketplaces](https://stripe.com/blog/instant-payouts-for-marketplaces)
           for more information.)
         type: string
       object:
@@ -13152,18 +13160,24 @@ definitions:
         - tax_id
         type: string
       type:
-        description: Type of the tax ID, one of `au_abn`, `ca_bn`, `ch_vat`, `es_cif`,
-          `eu_vat`, `hk_br`, `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`, `ru_inn`, `sg_uen`,
-          `th_vat`, `tw_vat`, `za_vat`, or `unknown`
+        description: Type of the tax ID, one of `eu_vat`, `nz_gst`, `au_abn`, `in_gst`,
+          `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`, `ca_bn`, `hk_br`,
+          `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `li_uid`, `my_itn`, `us_ein`, `kr_brn`,
+          or `ca_qst`. Note that some legacy tax IDs have type `unknown`
         enum:
         - au_abn
         - ca_bn
+        - ca_qst
         - ch_vat
         - es_cif
         - eu_vat
         - hk_br
         - in_gst
+        - jp_cn
+        - kr_brn
+        - li_uid
         - mx_rfc
+        - my_itn
         - no_vat
         - nz_gst
         - ru_inn
@@ -13171,6 +13185,7 @@ definitions:
         - th_vat
         - tw_vat
         - unknown
+        - us_ein
         - za_vat
         type: string
       value:
@@ -13196,8 +13211,8 @@ definitions:
   tax_id_verification:
     properties:
       status:
-        description: Verification status, one of `pending`, `unavailable`, `unverified`,
-          or `verified`.
+        description: Verification status, one of `pending`, `verified`, `unverified`,
+          or `unavailable`.
         enum:
         - pending
         - unavailable
@@ -20146,13 +20161,11 @@ paths:
                 refunded.
               type: integer
             application_fee:
-              description: An application fee to add on to this charge. Can only be
-                used with Stripe Connect.
+              description: An application fee to add on to this charge.
               type: integer
             application_fee_amount:
               description: An application fee amount to add on to this charge, which
-                must be less than or equal to the original amount. Can only be used
-                with Stripe Connect.
+                must be less than or equal to the original amount.
               type: integer
             expand:
               description: Specifies which fields in the response should be expanded.
@@ -21994,18 +22007,24 @@ paths:
                     enum:
                     - au_abn
                     - ca_bn
+                    - ca_qst
                     - ch_vat
                     - es_cif
                     - eu_vat
                     - hk_br
                     - in_gst
+                    - jp_cn
+                    - kr_brn
+                    - li_uid
                     - mx_rfc
+                    - my_itn
                     - no_vat
                     - nz_gst
                     - ru_inn
                     - sg_uen
                     - th_vat
                     - tw_vat
+                    - us_ein
                     - za_vat
                     type: string
                   value:
@@ -24121,24 +24140,31 @@ paths:
                 type: string
               type: array
             type:
-              description: Type of the tax ID, one of `au_abn`, `ca_bn`, `ch_vat`,
-                `es_cif`, `eu_vat`, `hk_br`, `in_gst`, `mx_rfc`, `no_vat`, `nz_gst`,
-                `ru_inn`, `sg_uen`, `th_vat`, `tw_vat`, or `za_vat`
+              description: Type of the tax ID, one of `eu_vat`, `nz_gst`, `au_abn`,
+                `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`,
+                `ca_bn`, `hk_br`, `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `li_uid`,
+                `my_itn`, `us_ein`, `kr_brn`, or `ca_qst`
               enum:
               - au_abn
               - ca_bn
+              - ca_qst
               - ch_vat
               - es_cif
               - eu_vat
               - hk_br
               - in_gst
+              - jp_cn
+              - kr_brn
+              - li_uid
               - mx_rfc
+              - my_itn
               - no_vat
               - nz_gst
               - ru_inn
               - sg_uen
               - th_vat
               - tw_vat
+              - us_ein
               - za_vat
               type: string
             value:
@@ -31353,10 +31379,7 @@ paths:
                 to `metadata`.
               type: object
             reason:
-              description: The reason for the dispute. One of `other` or `fraudulent`.
-              enum:
-              - fraudulent
-              - other
+              description: The reason for the dispute. One of `fraudulent` or `other`.
               type: string
           required:
           - disputed_transaction
@@ -39874,8 +39897,7 @@ paths:
             card: {}
             customer:
               description: The customer (owned by the application's account) for which
-                to create a token. For use only with [Stripe Connect](https://stripe.com/docs/connect).
-                Also, this can be used only with an [OAuth access token](https://stripe.com/docs/connect/standard-accounts)
+                to create a token. This can be used only with an [OAuth access token](https://stripe.com/docs/connect/standard-accounts)
                 or [Stripe-Account header](https://stripe.com/docs/connect/authentication).
                 For more details, see [Cloning Saved Payment Methods](https://stripe.com/docs/connect/cloning-saved-payment-methods).
               type: string
