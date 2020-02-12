@@ -400,6 +400,14 @@ components:
           - inactive
           - pending
           type: string
+        fpx_payments:
+          description: The status of the FPX payments capability of the account, or
+            whether the account can directly process FPX charges.
+          enum:
+          - active
+          - inactive
+          - pending
+          type: string
         legacy_payments:
           description: The status of the legacy payments capability of the account.
           enum:
@@ -1377,6 +1385,9 @@ components:
           type: integer
         card:
           description: Amount for card.
+          type: integer
+        fpx:
+          description: Amount for FPX.
           type: integer
       title: BalanceAmountBySourceType
       type: object
@@ -15597,8 +15608,8 @@ components:
           - payout
           type: string
         source_type:
-          description: The source balance this payout came from. One of `card` or
-            `bank_account`.
+          description: The source balance this payout came from. One of `card`, `fpx`,
+            or `bank_account`.
           maxLength: 5000
           type: string
         statement_descriptor:
@@ -16078,10 +16089,10 @@ components:
         aggregate_usage:
           description: Specifies a usage aggregation strategy for plans of `usage_type=metered`.
             Allowed values are `sum` for summing up all usage during a period, `last_during_period`
-            for picking the last usage record reported within a period, `last_ever`
-            for picking the last usage record ever (across period bounds) or `max`
-            which picks the usage record with the maximum reported usage during a
-            period. Defaults to `sum`.
+            for using the last usage record reported within a period, `last_ever`
+            for using the last usage record ever (across period bounds) or `max` which
+            uses the usage record with the maximum reported usage during a period.
+            Defaults to `sum`.
           enum:
           - last_during_period
           - last_ever
@@ -16125,8 +16136,8 @@ components:
           maxLength: 5000
           type: string
         interval:
-          description: One of `day`, `week`, `month` or `year`. The frequency with
-            which a subscription should be billed.
+          description: The frequency at which a subscription is billed. One of `day`,
+            `week`, `month` or `year`.
           enum:
           - day
           - month
@@ -16134,7 +16145,7 @@ components:
           - year
           type: string
         interval_count:
-          description: The number of intervals (specified in the `interval` property)
+          description: The number of intervals (specified in the `interval` attribute)
             between subscription billings. For example, `interval=month` and `interval_count=3`
             bills every 3 months.
           type: integer
@@ -16184,8 +16195,8 @@ components:
         tiers_mode:
           description: Defines if the tiering price should be `graduated` or `volume`
             based. In `volume`-based tiering, the maximum quantity within a period
-            determines the per unit price, in `graduated` tiering pricing can successively
-            change as the quantity grows.
+            determines the per unit price. In `graduated` tiering, pricing can change
+            as the quantity grows.
           enum:
           - graduated
           - volume
@@ -16195,7 +16206,7 @@ components:
           anyOf:
           - "$ref": "#/components/schemas/transform_usage"
           description: Apply a transformation to the reported usage or set quantity
-            before computing the billed price. Cannot be combined with `tiers`.
+            before computing the amount billed. Cannot be combined with `tiers`.
           nullable: true
         trial_period_days:
           description: Default number of trial days when subscribing a customer to
@@ -16203,9 +16214,9 @@ components:
           nullable: true
           type: integer
         usage_type:
-          description: Configures how the quantity per period should be determined,
-            can be either `metered` or `licensed`. `licensed` will automatically bill
-            the `quantity` set when adding it to a subscription, `metered` will aggregate
+          description: Configures how the quantity per period should be determined.
+            Can be either `metered` or `licensed`. `licensed` automatically bills
+            the `quantity` set when adding it to a subscription. `metered` aggregates
             the total usage based on usage records. Defaults to `licensed`.
           enum:
           - licensed
@@ -22565,8 +22576,8 @@ components:
             oneOf:
             - "$ref": "#/components/schemas/charge"
         source_type:
-          description: The source balance this transfer came from. One of `card` or
-            `bank_account`.
+          description: The source balance this transfer came from. One of `card`,
+            `fpx`, or `bank_account`.
           maxLength: 5000
           nullable: true
           type: string
@@ -29401,6 +29412,7 @@ paths:
                   items:
                     enum:
                     - card
+                    - fpx
                     - ideal
                     type: string
                     x-stripeBypassValidation: true
@@ -45498,6 +45510,7 @@ paths:
           enum:
           - card
           - card_present
+          - fpx
           - ideal
           - sepa_debit
           maxLength: 5000
@@ -46335,11 +46348,12 @@ paths:
                 source_type:
                   description: The balance type of your Stripe balance to draw this
                     payout from. Balances for different payment sources are kept separately.
-                    You can find the amounts with the balances API. One of `bank_account`
-                    or `card`.
+                    You can find the amounts with the balances API. One of `bank_account`,
+                    `card`, or `fpx`.
                   enum:
                   - bank_account
                   - card
+                  - fpx
                   maxLength: 5000
                   type: string
                   x-stripeBypassValidation: true
@@ -46689,11 +46703,11 @@ paths:
                 aggregate_usage:
                   description: Specifies a usage aggregation strategy for plans of
                     `usage_type=metered`. Allowed values are `sum` for summing up
-                    all usage during a period, `last_during_period` for picking the
-                    last usage record reported within a period, `last_ever` for picking
+                    all usage during a period, `last_during_period` for using the
+                    last usage record reported within a period, `last_ever` for using
                     the last usage record ever (across period bounds) or `max` which
-                    picks the usage record with the maximum reported usage during
-                    a period. Defaults to `sum`.
+                    uses the usage record with the maximum reported usage during a
+                    period. Defaults to `sum`.
                   enum:
                   - last_during_period
                   - last_ever
@@ -46900,11 +46914,11 @@ paths:
                     to this plan using [`trial_from_plan=true`](https://stripe.com/docs/api#create_subscription-trial_from_plan).
                   type: integer
                 usage_type:
-                  description: Configures how the quantity per period should be determined,
-                    can be either `metered` or `licensed`. `licensed` will automatically
-                    bill the `quantity` set for a plan when adding it to a subscription,
-                    `metered` will aggregate the total usage based on usage records.
-                    Defaults to `licensed`.
+                  description: Configures how the quantity per period should be determined.
+                    Can be either `metered` or `licensed`. `licensed` automatically
+                    bills the `quantity` set when adding it to a subscription. `metered`
+                    aggregates the total usage based on usage records. Defaults to
+                    `licensed`.
                   enum:
                   - licensed
                   - metered
@@ -57184,11 +57198,12 @@ paths:
                   type: string
                 source_type:
                   description: The source balance to use for this transfer. One of
-                    `bank_account` or `card`. For most users, this will default to
-                    `card`.
+                    `bank_account`, `card`, or `fpx`. For most users, this will default
+                    to `card`.
                   enum:
                   - bank_account
                   - card
+                  - fpx
                   maxLength: 5000
                   type: string
                   x-stripeBypassValidation: true
