@@ -12328,23 +12328,40 @@
       "issuing_authorization_verification_data": {
         "properties": {
           "address_line1_check": {
-            "description": "Whether the cardholder provided an address first line and if it matched the cardholder’s `billing.address.line1`. One of `match`, `mismatch`, or `not_provided`.",
-            "maxLength": 5000,
+            "description": "Whether the cardholder provided an address first line and if it matched the cardholder’s `billing.address.line1`.",
+            "enum": [
+              "match",
+              "mismatch",
+              "not_provided"
+            ],
             "type": "string"
           },
           "address_zip_check": {
-            "description": "Whether the cardholder provided a zip (or postal code) and if it matched the cardholder’s `billing.address.postal_code`. One of `match`, `mismatch`, or `not_provided`.",
-            "maxLength": 5000,
+            "description": "Whether the cardholder provided a zip (or postal code) and if it matched the cardholder’s `billing.address.postal_code`.",
+            "enum": [
+              "match",
+              "mismatch",
+              "not_provided"
+            ],
             "type": "string"
           },
           "authentication": {
-            "description": "One of `success`, `failure`, `exempt`, or `none`.",
-            "maxLength": 5000,
-            "type": "string"
+            "description": "Whether 3DS authentication was performed.",
+            "enum": [
+              "failure",
+              "none",
+              "success"
+            ],
+            "type": "string",
+            "x-stripeBypassValidation": true
           },
           "cvc_check": {
-            "description": "Whether the cardholder provided a CVC and if it matched Stripe’s record. One of `match`, `mismatch`, or `not_provided`.",
-            "maxLength": 5000,
+            "description": "Whether the cardholder provided a CVC and if it matched Stripe’s record.",
+            "enum": [
+              "match",
+              "mismatch",
+              "not_provided"
+            ],
             "type": "string"
           }
         },
@@ -17556,16 +17573,19 @@
       "payment_method_au_becs_debit": {
         "properties": {
           "bsb_number": {
+            "description": "Six-digit number identifying bank and branch associated with this bank account.",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
           },
           "fingerprint": {
+            "description": "Uniquely identifies this particular bank account. You can use this attribute to check whether two bank accounts are the same.",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
           },
           "last4": {
+            "description": "Last four digits of the bank account number.",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
@@ -56245,6 +56265,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "payment_method_options": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "payment_method_types": {
                   "explode": true,
                   "style": "deepObject"
@@ -56316,6 +56340,85 @@
                     "description": "ID of the payment method (a PaymentMethod, Card, or [compatible Source](https://stripe.com/docs/payments/payment-methods#compatibility) object) to attach to this PaymentIntent.",
                     "maxLength": 5000,
                     "type": "string"
+                  },
+                  "payment_method_options": {
+                    "description": "Payment-method-specific configuration for this PaymentIntent.",
+                    "properties": {
+                      "card": {
+                        "description": "Configuration for any card payments attempted on this PaymentIntent.",
+                        "properties": {
+                          "installments": {
+                            "description": "Installment configuration for payments attempted on this PaymentIntent (Mexico Only).\n\nFor more information, see the [installments integration guide](https://stripe.com/docs/payments/installments).",
+                            "properties": {
+                              "enabled": {
+                                "description": "Setting to true enables installments for this PaymentIntent.\nThis will cause the response to contain a list of available installment plans.\nSetting to false will prevent any selected plan from applying to a charge.",
+                                "type": "boolean"
+                              },
+                              "plan": {
+                                "anyOf": [
+                                  {
+                                    "properties": {
+                                      "count": {
+                                        "description": "For `fixed_count` installment plans, this is the number of installment payments your customer will make to their credit card.",
+                                        "type": "integer"
+                                      },
+                                      "interval": {
+                                        "description": "For `fixed_count` installment plans, this is the interval between installment payments your customer will make to their credit card.\nOne of `month`.",
+                                        "enum": [
+                                          "month"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "description": "Type of installment plan, one of `fixed_count`.",
+                                        "enum": [
+                                          "fixed_count"
+                                        ],
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "count",
+                                      "interval",
+                                      "type"
+                                    ],
+                                    "title": "installment_plan",
+                                    "type": "object"
+                                  },
+                                  {
+                                    "enum": [
+                                      ""
+                                    ],
+                                    "type": "string"
+                                  }
+                                ],
+                                "description": "The selected installment plan to use for this payment attempt.\nThis parameter can only be provided during confirmation."
+                              }
+                            },
+                            "title": "installments_param",
+                            "type": "object"
+                          },
+                          "moto": {
+                            "description": "When specified, this parameter indicates that a transaction will be marked\nas MOTO (Mail Order Telephone Order) and thus out of scope for SCA. This\nparameter can only be provided during confirmation.",
+                            "type": "boolean"
+                          },
+                          "request_three_d_secure": {
+                            "description": "We strongly recommend that you rely on our SCA Engine to automatically prompt your customers for authentication based on risk level and [other requirements](https://stripe.com/docs/strong-customer-authentication). However, if you wish to request 3D Secure based on logic from your own fraud engine, provide this option. Permitted values include: `automatic` or `any`. If not provided, defaults to `automatic`. Read our guide on [manually requesting 3D Secure](https://stripe.com/docs/payments/3d-secure#manual-three-ds) for more information on how this configuration interacts with Radar and our SCA Engine.",
+                            "enum": [
+                              "any",
+                              "automatic"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string",
+                            "x-stripeBypassValidation": true
+                          }
+                        },
+                        "title": "payment_intent_param",
+                        "type": "object"
+                      }
+                    },
+                    "title": "payment_method_options_param",
+                    "type": "object"
                   },
                   "payment_method_types": {
                     "description": "The list of payment method types (e.g. card) that this PaymentIntent is allowed to use.",
@@ -57303,7 +57406,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "au_becs_debit": {
-                    "description": "If this is a `au_becs_debit` PaymentMethod, this hash contains details about the bank account.",
+                    "description": "If this is an `au_becs_debit` PaymentMethod, this hash contains details about the bank account.",
                     "properties": {
                       "account_number": {
                         "maxLength": 5000,
