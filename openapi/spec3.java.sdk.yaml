@@ -8433,7 +8433,8 @@ components:
           - issuing.dispute
           type: string
         reason:
-          description: Reason for this dispute. One of `fraudulent` or `other`.
+          description: Reason for this dispute. One of `duplicate`, `product_not_received`,
+            `fraudulent`, or `other`.
           maxLength: 5000
           type: string
         status:
@@ -8521,9 +8522,11 @@ components:
         has_collection_class: true
         in_package: Issuing
         inner_classes:
+        - issuing_dispute_duplicate_evidence
         - issuing_dispute_evidence
         - issuing_dispute_fraudulent_evidence
         - issuing_dispute_other_evidence
+        - issuing_dispute_product_not_received_evidence
     issuing.transaction:
       description: |-
         Any use of an [issued card](https://stripe.com/docs/issuing) that results in funds entering or leaving
@@ -11088,9 +11091,52 @@ components:
         in_class: issuing_cardholder_individual
         inner_classes:
         - issuing_cardholder_id_document
+    issuing_dispute_duplicate_evidence:
+      description: ''
+      properties:
+        dispute_explanation:
+          description: Brief freeform text explaining why you are disputing this transaction.
+          maxLength: 5000
+          nullable: true
+          type: string
+        original_transaction:
+          description: Transaction (e.g., ipi_...) that the disputed transaction is
+            a duplicate of. Of the two or more transactions that are copies of each
+            other, this is original undisputed one.
+          maxLength: 5000
+          nullable: true
+          type: string
+        uncategorized_file:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/file"
+          description: "(ID of a [file upload](https://stripe.com/docs/guides/file-upload))
+            Additional file evidence supporting your dispute."
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/file"
+      required:
+      - dispute_explanation
+      - original_transaction
+      - uncategorized_file
+      title: IssuingDisputeDuplicateEvidence
+      type: object
+      x-expandableFields:
+      - uncategorized_file
+      x-stripeResource:
+        class_name: EvidenceDuplicate
+        in_class: issuing.dispute
     issuing_dispute_evidence:
       description: ''
       properties:
+        duplicate:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_dispute_duplicate_evidence"
+          description: Evidence to support a duplicate product dispute. This will
+            only be present if your dispute's `reason` is `duplicate`.
+          nullable: true
         fraudulent:
           anyOf:
           - "$ref": "#/components/schemas/issuing_dispute_fraudulent_evidence"
@@ -11103,14 +11149,24 @@ components:
           description: Evidence to support an uncategorized dispute. This will only
             be present if your dispute's `reason` is `other`.
           nullable: true
+        product_not_received:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_dispute_product_not_received_evidence"
+          description: Evidence to support a dispute where the product wasn't received.
+            This will only be present if your dispute's `reason` is `product_not_received`.
+          nullable: true
       required:
+      - duplicate
       - fraudulent
       - other
+      - product_not_received
       title: IssuingDisputeEvidence
       type: object
       x-expandableFields:
+      - duplicate
       - fraudulent
       - other
+      - product_not_received
       x-stripeResource:
         class_name: Evidence
         in_class: issuing.dispute
@@ -11170,6 +11226,35 @@ components:
       - uncategorized_file
       x-stripeResource:
         class_name: EvidenceOther
+        in_class: issuing.dispute
+    issuing_dispute_product_not_received_evidence:
+      description: ''
+      properties:
+        dispute_explanation:
+          description: Brief freeform text explaining why you are disputing this transaction.
+          maxLength: 5000
+          nullable: true
+          type: string
+        uncategorized_file:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/file"
+          description: "(ID of a [file upload](https://stripe.com/docs/guides/file-upload))
+            Additional file evidence supporting your dispute."
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/file"
+      required:
+      - dispute_explanation
+      - uncategorized_file
+      title: IssuingDisputeProductNotReceivedEvidence
+      type: object
+      x-expandableFields:
+      - uncategorized_file
+      x-stripeResource:
+        class_name: EvidenceProductNotReceived
         in_class: issuing.dispute
     legal_entity_company:
       description: ''
@@ -42704,6 +42789,30 @@ paths:
                     This should have a single key, equal to the provided `reason`,
                     mapping to an appropriate evidence object.
                   properties:
+                    duplicate:
+                      description: Evidence to support a duplicate dispute. Only provide
+                        this if your dispute's `reason` is `duplicate`.
+                      properties:
+                        dispute_explanation:
+                          description: Brief freeform text explaining why you are
+                            disputing this transaction.
+                          maxLength: 10000
+                          type: string
+                        original_transaction:
+                          description: Transaction (e.g., ipi_...) that the disputed
+                            transaction is a duplicate of. Of the two or more transactions
+                            that are copies of each other, this is original undisputed
+                            one.
+                          maxLength: 5000
+                          type: string
+                        uncategorized_file:
+                          description: "(ID of a [file upload](https://stripe.com/docs/guides/file-upload))
+                            Additional file evidence supporting your dispute."
+                          type: string
+                      required:
+                      - dispute_explanation
+                      title: duplicate
+                      type: object
                     fraudulent:
                       description: Evidence to support a fraudulent dispute. Only
                         provide this if your dispute's `reason` is `fraudulent`.
@@ -42738,6 +42847,24 @@ paths:
                       - dispute_explanation
                       title: other
                       type: object
+                    product_not_received:
+                      description: Evidence to support a dispute for a product that
+                        wasn't received. Only provide this if your dispute's `reason`
+                        is `product_not_received`.
+                      properties:
+                        dispute_explanation:
+                          description: Brief freeform text explaining why you are
+                            disputing this transaction.
+                          maxLength: 10000
+                          type: string
+                        uncategorized_file:
+                          description: "(ID of a [file upload](https://stripe.com/docs/guides/file-upload))
+                            Additional file evidence supporting your dispute."
+                          type: string
+                      required:
+                      - dispute_explanation
+                      title: product_not_received
+                      type: object
                   title: disputes_evidence
                   type: object
                 expand:
@@ -42758,8 +42885,10 @@ paths:
                 reason:
                   description: The reason for the dispute.
                   enum:
+                  - duplicate
                   - fraudulent
                   - other
+                  - product_not_received
                   type: string
               required:
               - disputed_transaction

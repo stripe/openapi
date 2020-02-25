@@ -8043,7 +8043,7 @@
             "type": "string"
           },
           "reason": {
-            "description": "Reason for this dispute. One of `fraudulent` or `other`.",
+            "description": "Reason for this dispute. One of `duplicate`, `product_not_received`, `fraudulent`, or `other`.",
             "maxLength": 5000,
             "type": "string"
           },
@@ -10879,9 +10879,60 @@
           "document"
         ]
       },
+      "issuing_dispute_duplicate_evidence": {
+        "description": "",
+        "properties": {
+          "dispute_explanation": {
+            "description": "Brief freeform text explaining why you are disputing this transaction.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "original_transaction": {
+            "description": "Transaction (e.g., ipi_...) that the disputed transaction is a duplicate of. Of the two or more transactions that are copies of each other, this is original undisputed one.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "uncategorized_file": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/file"
+              }
+            ],
+            "description": "(ID of a [file upload](https://stripe.com/docs/guides/file-upload)) Additional file evidence supporting your dispute.",
+            "nullable": true,
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/file"
+                }
+              ]
+            }
+          }
+        },
+        "title": "IssuingDisputeDuplicateEvidence",
+        "type": "object",
+        "x-expandableFields": [
+          "uncategorized_file"
+        ]
+      },
       "issuing_dispute_evidence": {
         "description": "",
         "properties": {
+          "duplicate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/issuing_dispute_duplicate_evidence"
+              }
+            ],
+            "description": "Evidence to support a duplicate product dispute. This will only be present if your dispute's `reason` is `duplicate`.",
+            "nullable": true
+          },
           "fraudulent": {
             "anyOf": [
               {
@@ -10899,13 +10950,24 @@
             ],
             "description": "Evidence to support an uncategorized dispute. This will only be present if your dispute's `reason` is `other`.",
             "nullable": true
+          },
+          "product_not_received": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/issuing_dispute_product_not_received_evidence"
+              }
+            ],
+            "description": "Evidence to support a dispute where the product wasn't received. This will only be present if your dispute's `reason` is `product_not_received`.",
+            "nullable": true
           }
         },
         "title": "IssuingDisputeEvidence",
         "type": "object",
         "x-expandableFields": [
+          "duplicate",
           "fraudulent",
-          "other"
+          "other",
+          "product_not_received"
         ]
       },
       "issuing_dispute_fraudulent_evidence": {
@@ -10977,6 +11039,42 @@
           "dispute_explanation"
         ],
         "title": "IssuingDisputeOtherEvidence",
+        "type": "object",
+        "x-expandableFields": [
+          "uncategorized_file"
+        ]
+      },
+      "issuing_dispute_product_not_received_evidence": {
+        "description": "",
+        "properties": {
+          "dispute_explanation": {
+            "description": "Brief freeform text explaining why you are disputing this transaction.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "uncategorized_file": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/file"
+              }
+            ],
+            "description": "(ID of a [file upload](https://stripe.com/docs/guides/file-upload)) Additional file evidence supporting your dispute.",
+            "nullable": true,
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/file"
+                }
+              ]
+            }
+          }
+        },
+        "title": "IssuingDisputeProductNotReceivedEvidence",
         "type": "object",
         "x-expandableFields": [
           "uncategorized_file"
@@ -53574,6 +53672,26 @@
                   "evidence": {
                     "description": "A hash containing all the evidence related to the dispute. This should have a single key, equal to the provided `reason`, mapping to an appropriate evidence object.",
                     "properties": {
+                      "duplicate": {
+                        "properties": {
+                          "dispute_explanation": {
+                            "maxLength": 10000,
+                            "type": "string"
+                          },
+                          "original_transaction": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "uncategorized_file": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "dispute_explanation"
+                        ],
+                        "title": "duplicate",
+                        "type": "object"
+                      },
                       "fraudulent": {
                         "properties": {
                           "dispute_explanation": {
@@ -53605,6 +53723,22 @@
                         ],
                         "title": "other",
                         "type": "object"
+                      },
+                      "product_not_received": {
+                        "properties": {
+                          "dispute_explanation": {
+                            "maxLength": 10000,
+                            "type": "string"
+                          },
+                          "uncategorized_file": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "dispute_explanation"
+                        ],
+                        "title": "product_not_received",
+                        "type": "object"
                       }
                     },
                     "title": "disputes_evidence",
@@ -53628,8 +53762,10 @@
                   "reason": {
                     "description": "The reason for the dispute.",
                     "enum": [
+                      "duplicate",
                       "fraudulent",
-                      "other"
+                      "other",
+                      "product_not_received"
                     ],
                     "type": "string"
                   }
