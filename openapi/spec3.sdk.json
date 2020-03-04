@@ -12512,6 +12512,8 @@
               "card_inactive",
               "cardholder_inactive",
               "cardholder_verification_required",
+              "incorrect_cvc",
+              "incorrect_expiry",
               "insufficient_funds",
               "not_allowed",
               "suspected_fraud",
@@ -12591,13 +12593,23 @@
               "not_provided"
             ],
             "type": "string"
+          },
+          "expiry_check": {
+            "description": "Whether the cardholder provided an expiry date and if it matched Stripe’s record.",
+            "enum": [
+              "match",
+              "mismatch",
+              "not_provided"
+            ],
+            "type": "string"
           }
         },
         "required": [
           "address_line1_check",
           "address_zip_check",
           "authentication",
-          "cvc_check"
+          "cvc_check",
+          "expiry_check"
         ],
         "title": "IssuingAuthorizationVerificationData",
         "type": "object",
@@ -38309,7 +38321,7 @@
                     "type": "object"
                   },
                   "payment_method_types": {
-                    "description": "A list of the types of payment methods (e.g. card) this Checkout\nSession is allowed to accept. The only supported values today are `card` and `ideal`.",
+                    "description": "A list of the types of payment methods (e.g., card) this Checkout session can accept.",
                     "items": {
                       "enum": [
                         "card",
@@ -72259,6 +72271,10 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
+                "account": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "bank_account": {
                   "explode": true,
                   "style": "deepObject"
@@ -72283,6 +72299,514 @@
               "schema": {
                 "additionalProperties": false,
                 "properties": {
+                  "account": {
+                    "description": "Information for the account this token will represent.",
+                    "properties": {
+                      "business_type": {
+                        "description": "The business type.",
+                        "enum": [
+                          "company",
+                          "government_entity",
+                          "individual",
+                          "non_profit"
+                        ],
+                        "type": "string",
+                        "x-stripeBypassValidation": true
+                      },
+                      "company": {
+                        "description": "Information about the company or business.",
+                        "properties": {
+                          "address": {
+                            "description": "The company's primary address.",
+                            "properties": {
+                              "city": {
+                                "description": "City, district, suburb, town, or village.",
+                                "maxLength": 100,
+                                "type": "string"
+                              },
+                              "country": {
+                                "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line1": {
+                                "description": "Address line 1 (e.g., street, PO Box, or company name).",
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              "line2": {
+                                "description": "Address line 2 (e.g., apartment, suite, unit, or building).",
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "description": "ZIP or postal code.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "state": {
+                                "description": "State, county, province, or region.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "title": "address_specs",
+                            "type": "object"
+                          },
+                          "address_kana": {
+                            "description": "The Kana variation of the company's primary address (Japan only).",
+                            "properties": {
+                              "city": {
+                                "description": "City or ward.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "country": {
+                                "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line1": {
+                                "description": "Block or building number.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line2": {
+                                "description": "Building details.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "description": "Postal code.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "state": {
+                                "description": "Prefecture.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "town": {
+                                "description": "Town or cho-me.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "title": "japan_address_kana_specs",
+                            "type": "object"
+                          },
+                          "address_kanji": {
+                            "description": "The Kanji variation of the company's primary address (Japan only).",
+                            "properties": {
+                              "city": {
+                                "description": "City or ward.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "country": {
+                                "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line1": {
+                                "description": "Block or building number.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line2": {
+                                "description": "Building details.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "description": "Postal code.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "state": {
+                                "description": "Prefecture.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "town": {
+                                "description": "Town or cho-me.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "title": "japan_address_kanji_specs",
+                            "type": "object"
+                          },
+                          "directors_provided": {
+                            "description": "Whether the company's directors have been provided. Set this Boolean to `true` after creating all the company's directors with [the Persons API](https://stripe.com/docs/api/persons) for accounts with a `relationship.director` requirement. This value is not automatically set to `true` after creating directors, so it needs to be updated to indicate all directors have been provided.",
+                            "type": "boolean"
+                          },
+                          "executives_provided": {
+                            "description": "Whether the company's executives have been provided. Set this Boolean to `true` after creating all the company's executives with [the Persons API](https://stripe.com/docs/api/persons) for accounts with a `relationship.executive` requirement.",
+                            "type": "boolean"
+                          },
+                          "name": {
+                            "description": "The company's legal name.",
+                            "maxLength": 100,
+                            "type": "string"
+                          },
+                          "name_kana": {
+                            "description": "The Kana variation of the company's legal name (Japan only).",
+                            "maxLength": 100,
+                            "type": "string"
+                          },
+                          "name_kanji": {
+                            "description": "The Kanji variation of the company's legal name (Japan only).",
+                            "maxLength": 100,
+                            "type": "string"
+                          },
+                          "owners_provided": {
+                            "description": "Whether the company's owners have been provided. Set this Boolean to `true` after creating all the company's owners with [the Persons API](https://stripe.com/docs/api/persons) for accounts with a `relationship.owner` requirement.",
+                            "type": "boolean"
+                          },
+                          "phone": {
+                            "description": "The company's phone number (used for verification).",
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "structure": {
+                            "description": "The category identifying the legal structure of the company or legal entity.",
+                            "enum": [
+                              "",
+                              "government_instrumentality",
+                              "governmental_unit",
+                              "incorporated_non_profit",
+                              "multi_member_llc",
+                              "private_corporation",
+                              "private_partnership",
+                              "public_corporation",
+                              "public_partnership",
+                              "tax_exempt_government_instrumentality",
+                              "unincorporated_association",
+                              "unincorporated_non_profit"
+                            ],
+                            "type": "string",
+                            "x-stripeBypassValidation": true
+                          },
+                          "tax_id": {
+                            "description": "The business ID number of the company, as appropriate for the company’s country. (Examples are an Employer ID Number in the U.S., a Business Number in Canada, or a Company Number in the UK.)",
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "tax_id_registrar": {
+                            "description": "The jurisdiction in which the `tax_id` is registered (Germany-based companies only).",
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "vat_id": {
+                            "description": "The VAT number of the company.",
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "verification": {
+                            "description": "Information on the verification state of the company.",
+                            "properties": {
+                              "document": {
+                                "description": "A document verifying the business.",
+                                "properties": {
+                                  "back": {
+                                    "description": "The back of a document returned by a [file upload](https://stripe.com/docs/api#create_file) with a `purpose` value of `additional_verification`. The uploaded file needs to be a color image (smaller than 8,000px by 8,000px), in JPG, PNG, or PDF format, and less than 10 MB in size.",
+                                    "maxLength": 500,
+                                    "type": "string"
+                                  },
+                                  "front": {
+                                    "description": "The front of a document returned by a [file upload](https://stripe.com/docs/api#create_file) with a `purpose` value of `additional_verification`. The uploaded file needs to be a color image (smaller than 8,000px by 8,000px), in JPG, PNG, or PDF format, and less than 10 MB in size.",
+                                    "maxLength": 500,
+                                    "type": "string"
+                                  }
+                                },
+                                "title": "verification_document_specs",
+                                "type": "object"
+                              }
+                            },
+                            "title": "verification_specs",
+                            "type": "object"
+                          }
+                        },
+                        "title": "company_specs",
+                        "type": "object"
+                      },
+                      "individual": {
+                        "description": "Information about the person represented by the account.",
+                        "properties": {
+                          "address": {
+                            "description": "The individual's primary address.",
+                            "properties": {
+                              "city": {
+                                "description": "City, district, suburb, town, or village.",
+                                "maxLength": 100,
+                                "type": "string"
+                              },
+                              "country": {
+                                "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line1": {
+                                "description": "Address line 1 (e.g., street, PO Box, or company name).",
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              "line2": {
+                                "description": "Address line 2 (e.g., apartment, suite, unit, or building).",
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "description": "ZIP or postal code.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "state": {
+                                "description": "State, county, province, or region.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "title": "address_specs",
+                            "type": "object"
+                          },
+                          "address_kana": {
+                            "description": "The Kana variation of the the individual's primary address (Japan only).",
+                            "properties": {
+                              "city": {
+                                "description": "City or ward.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "country": {
+                                "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line1": {
+                                "description": "Block or building number.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line2": {
+                                "description": "Building details.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "description": "Postal code.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "state": {
+                                "description": "Prefecture.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "town": {
+                                "description": "Town or cho-me.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "title": "japan_address_kana_specs",
+                            "type": "object"
+                          },
+                          "address_kanji": {
+                            "description": "The Kanji variation of the the individual's primary address (Japan only).",
+                            "properties": {
+                              "city": {
+                                "description": "City or ward.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "country": {
+                                "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line1": {
+                                "description": "Block or building number.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line2": {
+                                "description": "Building details.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "description": "Postal code.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "state": {
+                                "description": "Prefecture.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "town": {
+                                "description": "Town or cho-me.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "title": "japan_address_kanji_specs",
+                            "type": "object"
+                          },
+                          "dob": {
+                            "anyOf": [
+                              {
+                                "properties": {
+                                  "day": {
+                                    "description": "The day of birth, between 1 and 31.",
+                                    "type": "integer"
+                                  },
+                                  "month": {
+                                    "description": "The month of birth, between 1 and 12.",
+                                    "type": "integer"
+                                  },
+                                  "year": {
+                                    "description": "The four-digit year of birth.",
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "day",
+                                  "month",
+                                  "year"
+                                ],
+                                "title": "date_of_birth_specs",
+                                "type": "object"
+                              },
+                              {
+                                "enum": [
+                                  ""
+                                ],
+                                "type": "string"
+                              }
+                            ],
+                            "description": "The individual's date of birth."
+                          },
+                          "email": {
+                            "description": "The individual's email address.",
+                            "type": "string"
+                          },
+                          "first_name": {
+                            "description": "The individual's first name.",
+                            "maxLength": 100,
+                            "type": "string"
+                          },
+                          "first_name_kana": {
+                            "description": "The Kana variation of the the individual's first name (Japan only).",
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "first_name_kanji": {
+                            "description": "The Kanji variation of the individual's first name (Japan only).",
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "gender": {
+                            "description": "The individual's gender (International regulations require either \"male\" or \"female\").",
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "id_number": {
+                            "description": "The government-issued ID number of the individual, as appropriate for the representative’s country. (Examples are a Social Security Number in the U.S., or a Social Insurance Number in Canada). Instead of the number itself, you can also provide a [PII token created with Stripe.js](https://stripe.com/docs/stripe.js#collecting-pii-data).",
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "last_name": {
+                            "description": "The individual's last name.",
+                            "maxLength": 100,
+                            "type": "string"
+                          },
+                          "last_name_kana": {
+                            "description": "The Kana varation of the individual's last name (Japan only).",
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "last_name_kanji": {
+                            "description": "The Kanji varation of the individual's last name (Japan only).",
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "maiden_name": {
+                            "description": "The individual's maiden name.",
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "metadata": {
+                            "additionalProperties": {
+                              "type": "string"
+                            },
+                            "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
+                            "type": "object"
+                          },
+                          "phone": {
+                            "description": "The individual's phone number.",
+                            "type": "string"
+                          },
+                          "ssn_last_4": {
+                            "description": "The last four digits of the individual's Social Security Number (U.S. only).",
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "verification": {
+                            "description": "The individual's verification document information.",
+                            "properties": {
+                              "additional_document": {
+                                "description": "A document showing address, either a passport, local ID card, or utility bill from a well-known utility company.",
+                                "properties": {
+                                  "back": {
+                                    "description": "The back of an ID returned by a [file upload](https://stripe.com/docs/api#create_file) with a `purpose` value of `identity_document`. The uploaded file needs to be a color image (smaller than 8,000px by 8,000px), in JPG, PNG, or PDF format, and less than 10 MB in size.",
+                                    "maxLength": 500,
+                                    "type": "string"
+                                  },
+                                  "front": {
+                                    "description": "The front of an ID returned by a [file upload](https://stripe.com/docs/api#create_file) with a `purpose` value of `identity_document`. The uploaded file needs to be a color image (smaller than 8,000px by 8,000px), in JPG, PNG, or PDF format, and less than 10 MB in size.",
+                                    "maxLength": 500,
+                                    "type": "string"
+                                  }
+                                },
+                                "title": "person_verification_document_specs",
+                                "type": "object"
+                              },
+                              "document": {
+                                "description": "An identifying document, either a passport or local ID card.",
+                                "properties": {
+                                  "back": {
+                                    "description": "The back of an ID returned by a [file upload](https://stripe.com/docs/api#create_file) with a `purpose` value of `identity_document`. The uploaded file needs to be a color image (smaller than 8,000px by 8,000px), in JPG, PNG, or PDF format, and less than 10 MB in size.",
+                                    "maxLength": 500,
+                                    "type": "string"
+                                  },
+                                  "front": {
+                                    "description": "The front of an ID returned by a [file upload](https://stripe.com/docs/api#create_file) with a `purpose` value of `identity_document`. The uploaded file needs to be a color image (smaller than 8,000px by 8,000px), in JPG, PNG, or PDF format, and less than 10 MB in size.",
+                                    "maxLength": 500,
+                                    "type": "string"
+                                  }
+                                },
+                                "title": "person_verification_document_specs",
+                                "type": "object"
+                              }
+                            },
+                            "title": "person_verification_specs",
+                            "type": "object"
+                          }
+                        },
+                        "title": "individual_specs",
+                        "type": "object"
+                      },
+                      "tos_shown_and_accepted": {
+                        "description": "Whether the user described by the data in the token has been shown [the Stripe Connected Account Agreement](https://stripe.com/docs/connect/account-tokens#stripe-connected-account-agreement). When creating an account token to create a new Connect account, this value must be `true`.",
+                        "type": "boolean"
+                      }
+                    },
+                    "title": "connect_js_account_token_specs",
+                    "type": "object"
+                  },
                   "bank_account": {
                     "description": "The bank account this token will represent.",
                     "properties": {
