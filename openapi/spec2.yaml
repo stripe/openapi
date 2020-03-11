@@ -6130,6 +6130,21 @@ definitions:
     type: object
     x-expandableFields:
     - violated_authorization_controls
+  issuing_authorization_three_d_secure:
+    description: ''
+    properties:
+      result:
+        description: The outcome of the 3D Secure authentication request.
+        enum:
+        - attempt_acknowledged
+        - authenticated
+        - failed
+        type: string
+    required:
+    - result
+    title: IssuingAuthorizationThreeDSecure
+    type: object
+    x-expandableFields: []
   issuing_authorization_verification_data:
     description: ''
     properties:
@@ -6149,13 +6164,6 @@ definitions:
         - mismatch
         - not_provided
         type: string
-      authentication:
-        description: Whether 3DS authentication was performed.
-        enum:
-        - failure
-        - none
-        - success
-        type: string
       cvc_check:
         description: Whether the cardholder provided a CVC and if it matched Stripe’s
           record.
@@ -6172,15 +6180,17 @@ definitions:
         - mismatch
         - not_provided
         type: string
+      three_d_secure:
+        "$ref": "#/definitions/issuing_authorization_three_d_secure"
     required:
     - address_line1_check
     - address_zip_check
-    - authentication
     - cvc_check
     - expiry_check
     title: IssuingAuthorizationVerificationData
     type: object
-    x-expandableFields: []
+    x-expandableFields:
+    - three_d_secure
   issuing_authorization_violated_auth_control:
     description: ''
     properties:
@@ -11022,6 +11032,7 @@ definitions:
         type: string
     required:
     - active
+    - billing_scheme
     - created
     - currency
     - id
@@ -11136,7 +11147,7 @@ definitions:
         type: string
       images:
         description: A list of up to 8 URLs of images for this product, meant to be
-          displayable to the customer. Only applicable to products of `type=good`.
+          displayable to the customer.
         items:
           type: string
         type: array
@@ -32353,13 +32364,13 @@ paths:
         name: expand
         required: false
         type: array
-      - description: Only return issuing disputes that were created during the given
-          date interval.
+      - description: Select issuing disputes that were created during the given date
+          interval.
         in: query
         name: created
         required: false
         type: integer
-      - description: Only return issuing disputes for the given transaction.
+      - description: Select the issuing dispute for the given transaction.
         in: query
         name: disputed_transaction
         required: false

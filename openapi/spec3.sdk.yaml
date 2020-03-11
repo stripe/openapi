@@ -8836,6 +8836,7 @@ components:
         in_package: Issuing
         inner_classes:
         - issuing_authorization_request
+        - issuing_authorization_three_d_secure
         - issuing_authorization_verification_data
         polymorphic_groups:
         - balance_transaction_source
@@ -9736,6 +9737,24 @@ components:
         in_class: issuing.authorization
         inner_classes:
         - issuing_authorization_violated_auth_control
+    issuing_authorization_three_d_secure:
+      description: ''
+      properties:
+        result:
+          description: The outcome of the 3D Secure authentication request.
+          enum:
+          - attempt_acknowledged
+          - authenticated
+          - failed
+          type: string
+      required:
+      - result
+      title: IssuingAuthorizationThreeDSecure
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: ThreeDSecure
+        in_class: issuing.authorization
     issuing_authorization_verification_data:
       description: ''
       properties:
@@ -9756,7 +9775,7 @@ components:
           - not_provided
           type: string
         authentication:
-          description: Whether 3DS authentication was performed.
+          description: "[DEPRECATED] Whether 3DS authentication was performed."
           enum:
           - failure
           - none
@@ -9779,15 +9798,21 @@ components:
           - mismatch
           - not_provided
           type: string
+        three_d_secure:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_authorization_three_d_secure"
+          description: 3D Secure details on this authorization.
+          nullable: true
       required:
       - address_line1_check
       - address_zip_check
-      - authentication
       - cvc_check
       - expiry_check
+      - three_d_secure
       title: IssuingAuthorizationVerificationData
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - three_d_secure
       x-stripeResource:
         class_name: VerificationData
         in_class: issuing.authorization
@@ -16800,7 +16825,6 @@ components:
           enum:
           - per_unit
           - tiered
-          nullable: true
           type: string
         created:
           description: Time at which the object was created. Measured in seconds since
@@ -17138,7 +17162,7 @@ components:
           type: string
         images:
           description: A list of up to 8 URLs of images for this product, meant to
-            be displayable to the customer. Only applicable to products of `type=good`.
+            be displayable to the customer.
           items:
             maxLength: 5000
             type: string
@@ -43753,8 +43777,8 @@ paths:
         created object appearing first.</p>"
       operationId: GetIssuingDisputes
       parameters:
-      - description: Only return issuing disputes that were created during the given
-          date interval.
+      - description: Select issuing disputes that were created during the given date
+          interval.
         explode: true
         in: query
         name: created
@@ -43778,7 +43802,7 @@ paths:
             type: object
           - type: integer
         style: deepObject
-      - description: Only return issuing disputes for the given transaction.
+      - description: Select the issuing dispute for the given transaction.
         in: query
         name: disputed_transaction
         required: false
