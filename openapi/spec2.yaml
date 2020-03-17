@@ -1619,8 +1619,8 @@ definitions:
       Related guide: [Accept a payment with the Charges API](https://stripe.com/docs/payments/accept-a-payment-charges).
     properties:
       amount:
-        description: Amount intended to be collected by this PaymentIntent. A positive
-          integer representing how much to charge in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal)
+        description: Amount intended to be collected by this payment. A positive integer
+          representing how much to charge in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal)
           (e.g., 100 cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency).
           The minimum amount is $0.50 US or [equivalent in charge currency](https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts).
           The amount value supports up to eight digits (e.g., a value of 99999999
@@ -5318,11 +5318,15 @@ definitions:
   issuing.authorization:
     description: |-
       When an [issued card](https://stripe.com/docs/issuing) is used to make a purchase, an Issuing `Authorization`
-      object is created. [Authorizations](https://stripe.com/docs/issuing/authorizations) must be approved for the
+      object is created. [Authorizations](https://stripe.com/docs/issuing/purchases/authorizations) must be approved for the
       purchase to be completed successfully.
 
-      Related guide: [Issued Card Authorizations](https://stripe.com/docs/issuing/authorizations).
+      Related guide: [Issued Card Authorizations](https://stripe.com/docs/issuing/purchases/authorizations).
     properties:
+      amount:
+        description: The total amount in the card's currency that was authorized or
+          rejected.
+        type: integer
       approved:
         description: Whether the authorization has been approved.
         type: boolean
@@ -5361,6 +5365,10 @@ definitions:
         description: Time at which the object was created. Measured in seconds since
           the Unix epoch.
         type: integer
+      currency:
+        description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+          in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+        type: string
       held_amount:
         description: The amount the authorization is expected to be in `held_currency`.
           When Stripe holds funds from you, this is the amount reserved for the authorization.
@@ -5383,6 +5391,15 @@ definitions:
         description: Has the value `true` if the object exists in live mode or the
           value `false` if the object exists in test mode.
         type: boolean
+      merchant_amount:
+        description: The total amount that was authorized or rejected in the local
+          merchant_currency.
+        type: integer
+      merchant_currency:
+        description: The currency that was presented to the cardholder for the authorization.
+          Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+          in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+        type: string
       merchant_data:
         "$ref": "#/definitions/issuing_authorization_merchant_data"
       metadata:
@@ -5405,11 +5422,13 @@ definitions:
           approved. This field will only be non-zero during an `issuing.authorization.request`
           webhook.
         type: integer
+      pending_request:
+        "$ref": "#/definitions/issuing_authorization_pending_request"
       request_history:
         description: History of every time the authorization was approved/denied (whether
           approved/denied by you directly, or by Stripe based on your authorization_controls).
           If the merchant changes the authorization by performing an [incremental
-          authorization or partial capture](https://stripe.com/docs/issuing/authorizations/special_scenarios#incremental-authorizations),
+          authorization or partial capture](https://stripe.com/docs/issuing/purchases/authorizations),
           you can look at request_history to see the previous states of the authorization.
         items:
           "$ref": "#/definitions/issuing_authorization_request"
@@ -5434,23 +5453,21 @@ definitions:
           One of `apple_pay`, `google_pay`, or `samsung_pay`.
         type: string
     required:
+    - amount
     - approved
     - authorization_method
-    - authorized_amount
-    - authorized_currency
     - balance_transactions
     - card
     - created
-    - held_amount
-    - held_currency
+    - currency
     - id
     - is_held_amount_controllable
     - livemode
+    - merchant_amount
+    - merchant_currency
     - merchant_data
     - metadata
     - object
-    - pending_authorized_amount
-    - pending_held_amount
     - request_history
     - status
     - transactions
@@ -5462,6 +5479,7 @@ definitions:
     - card
     - cardholder
     - merchant_data
+    - pending_request
     - request_history
     - transactions
     - verification_data
@@ -5517,6 +5535,12 @@ definitions:
         type: string
       pin:
         "$ref": "#/definitions/issuing_card_pin"
+      replaced_by:
+        description: The latest card that replaces this card, if any.
+        type: string
+        x-expansionResources:
+          oneOf:
+          - "$ref": "#/definitions/issuing.card"
       replacement_for:
         description: The card this card replaces, if any.
         type: string
@@ -5569,6 +5593,7 @@ definitions:
     - authorization_controls
     - cardholder
     - pin
+    - replaced_by
     - replacement_for
     - shipping
     x-resourceId: issuing.card
@@ -5957,11 +5982,8 @@ definitions:
         description: The nature of the transaction.
         enum:
         - capture
-        - cash_withdrawal
         - dispute
-        - dispute_loss
         - refund
-        - refund_reversal
         type: string
     required:
     - amount
@@ -6070,9 +6092,46 @@ definitions:
     title: IssuingAuthorizationMerchantData
     type: object
     x-expandableFields: []
+  issuing_authorization_pending_request:
+    description: ''
+    properties:
+      amount:
+        description: The additional amount Stripe will hold if the authorization is
+          approved, in the [currency](https://stripe.com/docs/api#issuing_authorization_object-pending-request-currency),
+          which is always the card's currency.
+        type: integer
+      currency:
+        description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+          in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+        type: string
+      is_amount_controllable:
+        description: If set `true`, you may provide [amount](https://stripe.com/docs/api/issuing/authorizations/approve#approve_issuing_authorization-amount)
+          to control how much to hold for the authorization.
+        type: boolean
+      merchant_amount:
+        description: The amount the merchant is requesting to be authorized in the
+          `merchant_currency`.
+        type: integer
+      merchant_currency:
+        description: The local currency the merchant is requesting to authorize.
+        type: string
+    required:
+    - amount
+    - currency
+    - is_amount_controllable
+    - merchant_amount
+    - merchant_currency
+    title: IssuingAuthorizationPendingRequest
+    type: object
+    x-expandableFields: []
   issuing_authorization_request:
     description: ''
     properties:
+      amount:
+        description: The amount of the authorization is your card's currency. Stripe
+          held this amount from your account to fund the authorization, if the request
+          was approved
+        type: integer
       approved:
         description: Whether this request was approved.
         type: boolean
@@ -6088,12 +6147,24 @@ definitions:
         description: Time at which the object was created. Measured in seconds since
           the Unix epoch.
         type: integer
+      currency:
+        description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+          in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+        type: string
       held_amount:
         description: The amount Stripe held from your account to fund the authorization,
           if the request was approved
         type: integer
       held_currency:
         description: The currency of the [held amount](https://stripe.com/docs/api#issuing_authorization_object-held_amount)
+        type: string
+      merchant_amount:
+        description: The amount that was authorized at the time of this request
+        type: integer
+      merchant_currency:
+        description: The currency that was collected by the merchant and presented
+          to the cardholder for the authorization. Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+          in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
         type: string
       reason:
         description: The reason for the approval or decline.
@@ -6123,12 +6194,16 @@ definitions:
           "$ref": "#/definitions/issuing_authorization_violated_auth_control"
         type: array
     required:
+    - amount
     - approved
     - authorized_amount
     - authorized_currency
     - created
+    - currency
     - held_amount
     - held_currency
+    - merchant_amount
+    - merchant_currency
     - reason
     - violated_authorization_controls
     title: IssuingAuthorizationRequest
@@ -14659,8 +14734,6 @@ definitions:
         description: The version of 3D Secure that was used for this payment.
         type: string
     required:
-    - authenticated
-    - succeeded
     - version
     title: three_d_secure_details
     type: object
@@ -21096,10 +21169,10 @@ paths:
         schema:
           properties:
             amount:
-              description: Amount intended to be collected by this PaymentIntent.
-                A positive integer representing how much to charge in the [smallest
-                currency unit](https://stripe.com/docs/currencies#zero-decimal) (e.g.,
-                100 cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency).
+              description: Amount intended to be collected by this payment. A positive
+                integer representing how much to charge in the [smallest currency
+                unit](https://stripe.com/docs/currencies#zero-decimal) (e.g., 100
+                cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency).
                 The minimum amount is $0.50 US or [equivalent in charge currency](https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts).
                 The amount value supports up to eight digits (e.g., a value of 99999999
                 for a USD charge of $999,999.99).
@@ -21982,12 +22055,10 @@ paths:
               type: string
             customer:
               description: |-
-                ID of an existing customer, if one exists. Only supported for Checkout
-                Sessions in `payment` or `subscription` mode, but not Checkout Sessions
-                in `setup` mode. The email stored on the customer will be used to prefill
-                the email field on the Checkout page. If the customer changes their email
-                on the Checkout page, the Customer object will be updated with the new
-                email.
+                ID of an existing customer, if one exists. The email stored on the
+                customer will be used to prefill the email field on the Checkout page.
+                If the customer changes their email on the Checkout page, the Customer
+                object will be updated with the new email.
                 If blank for Checkout Sessions in `payment` or `subscription` mode,
                 Checkout will create a new customer object based on information
                 provided during the session.
@@ -28368,6 +28439,12 @@ paths:
         required: false
         schema:
           properties:
+            amount:
+              description: If the authorization's `pending_request.is_amount_controllable`
+                property is `true`, you may provide this value to control how much
+                to hold for the authorization. Must be positive (use [`decline`](https://stripe.com/docs/api/issuing/authorizations/decline)
+                to decline an authorization request).
+              type: integer
             expand:
               description: Specifies which fields in the response should be expanded.
               items:
@@ -30773,7 +30850,7 @@ paths:
           properties:
             authorization_controls:
               description: Spending rules that give you some control over how your
-                cards can be used. Refer to our [authorizations](https://stripe.com/docs/issuing/authorizations)
+                cards can be used. Refer to our [authorizations](https://stripe.com/docs/issuing/purchases/authorizations)
                 documentation for more details.
               properties:
                 allowed_categories:
