@@ -2520,8 +2520,10 @@ components:
           type: integer
         fingerprint:
           description: Uniquely identifies this particular card number. You can use
-            this attribute to check whether two customers who've signed up with you
-            are using the same card number, for example.
+            this attribute to check whether two customers who’ve signed up with you
+            are using the same card number,for example. For payment methods that tokenize
+            card information (Apple Pay, Google Pay), the tokenized number might be
+            provided instead of the underlying card number.
           maxLength: 5000
           nullable: true
           type: string
@@ -10245,13 +10247,12 @@ components:
         address:
           "$ref": "#/components/schemas/address"
         name:
-          description: The cardholder’s billing name.
+          description: "[DEPRECATED] The cardholder’s billing name."
           maxLength: 5000
           nullable: true
           type: string
       required:
       - address
-      - name
       title: IssuingCardholderAddress
       type: object
       x-expandableFields:
@@ -13737,8 +13738,10 @@ components:
           type: integer
         fingerprint:
           description: Uniquely identifies this particular card number. You can use
-            this attribute to check whether two customers who've signed up with you
-            are using the same card number, for example.
+            this attribute to check whether two customers who’ve signed up with you
+            are using the same card number,for example. For payment methods that tokenize
+            card information (Apple Pay, Google Pay), the tokenized number might be
+            provided instead of the underlying card number.
           maxLength: 5000
           nullable: true
           type: string
@@ -14414,8 +14417,10 @@ components:
           type: integer
         fingerprint:
           description: Uniquely identifies this particular card number. You can use
-            this attribute to check whether two customers who've signed up with you
-            are using the same card number, for example.
+            this attribute to check whether two customers who’ve signed up with you
+            are using the same card number,for example. For payment methods that tokenize
+            card information (Apple Pay, Google Pay), the tokenized number might be
+            provided instead of the underlying card number.
           maxLength: 5000
           nullable: true
           type: string
@@ -14610,8 +14615,10 @@ components:
           type: integer
         fingerprint:
           description: Uniquely identifies this particular card number. You can use
-            this attribute to check whether two customers who've signed up with you
-            are using the same card number, for example.
+            this attribute to check whether two customers who’ve signed up with you
+            are using the same card number,for example. For payment methods that tokenize
+            card information (Apple Pay, Google Pay), the tokenized number might be
+            provided instead of the underlying card number.
           maxLength: 5000
           nullable: true
           type: string
@@ -20781,6 +20788,12 @@ components:
           enum:
           - subscription
           type: string
+        pause_collection:
+          anyOf:
+          - "$ref": "#/components/schemas/subscriptions_resource_pause_collection"
+          description: If specified, payment collection for this subscription will
+            be paused.
+          nullable: true
         pending_invoice_item_interval:
           anyOf:
           - "$ref": "#/components/schemas/subscription_pending_invoice_item_interval"
@@ -20911,6 +20924,7 @@ components:
       - metadata
       - next_pending_invoice_item_invoice
       - object
+      - pause_collection
       - pending_invoice_item_interval
       - pending_setup_intent
       - pending_update
@@ -20933,6 +20947,7 @@ components:
       - discount
       - items
       - latest_invoice
+      - pause_collection
       - pending_invoice_item_interval
       - pending_setup_intent
       - pending_update
@@ -21032,6 +21047,7 @@ components:
         inner_classes:
         - subscription_billing_thresholds
         - subscription_pending_invoice_item_interval
+        - subscriptions_resource_pause_collection
         - subscriptions_resource_pending_update
     subscription_billing_thresholds:
       description: ''
@@ -21759,6 +21775,34 @@ components:
       x-stripeResource:
         class_name: DefaultSettings
         in_class: subscription_schedule
+    subscriptions_resource_pause_collection:
+      description: |-
+        The Pause Collection settings determine how we will pause collection for this subscription and for how long the subscription
+        should be paused.
+      properties:
+        behavior:
+          description: The payment collection behavior for this subscription while
+            paused. One of `keep_as_draft`, `mark_uncollectible`, or `void`.
+          enum:
+          - keep_as_draft
+          - mark_uncollectible
+          - void
+          type: string
+        resumes_at:
+          description: The time after which the subscription will resume collecting
+            payments.
+          format: unix-time
+          nullable: true
+          type: integer
+      required:
+      - behavior
+      - resumes_at
+      title: SubscriptionsResourcePauseCollection
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: PauseCollection
+        in_class: subscription
     subscriptions_resource_pending_update:
       description: |-
         Pending Updates store the changes pending from a previous update that will be applied
@@ -41304,8 +41348,8 @@ paths:
           maxLength: 5000
           type: string
         style: form
-      - description: Only return cards whose full card number matches that of this
-          card source ID.
+      - description: "[DEPRECATED] Only return cards whose full card number matches
+          that of this card source ID."
         in: query
         name: source
         required: false
@@ -56712,6 +56756,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              pause_collection:
+                explode: true
+                style: deepObject
               pending_invoice_item_interval:
                 explode: true
                 style: deepObject
@@ -56931,6 +56978,32 @@ paths:
                   description: Indicates if a customer is on or off-session while
                     an invoice payment is attempted.
                   type: boolean
+                pause_collection:
+                  anyOf:
+                  - properties:
+                      behavior:
+                        description: The payment collection behavior for this subscription
+                          while paused. One of `keep_as_draft`, `mark_uncollectible`,
+                          or `void`.
+                        enum:
+                        - keep_as_draft
+                        - mark_uncollectible
+                        - void
+                        type: string
+                      resumes_at:
+                        description: The time after which the subscription will resume
+                          collecting payments.
+                        format: unix-time
+                        type: integer
+                    required:
+                    - behavior
+                    title: pause_collection_param
+                    type: object
+                  - enum:
+                    - ''
+                    type: string
+                  description: If specified, payment collection for this subscription
+                    will be paused.
                 payment_behavior:
                   description: |-
                     Use `allow_incomplete` to transition the subscription to `status=past_due` if a payment is required but cannot be paid. This allows you to manage scenarios where additional user actions are needed to pay a subscription's invoice. For example, SCA regulation may require 3DS authentication to complete payment. See the [SCA Migration Guide](https://stripe.com/docs/billing/migration/strong-customer-authentication) for Billing to learn more. This is the default behavior.
