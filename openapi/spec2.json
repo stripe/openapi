@@ -6462,9 +6462,6 @@
     "issuing.card": {
       "description": "You can [create physical or virtual cards](https://stripe.com/docs/issuing/cards) that are issued to cardholders.",
       "properties": {
-        "authorization_controls": {
-          "$ref": "#/definitions/issuing_card_authorization_controls"
-        },
         "brand": {
           "description": "The brand of the card.",
           "type": "string"
@@ -6505,7 +6502,7 @@
           "type": "object"
         },
         "name": {
-          "description": "The name of the cardholder, printed on the card.",
+          "description": "[DEPRECATED] The name of the cardholder, printed on the card. Refer to `cardholder.name` instead.",
           "type": "string"
         },
         "object": {
@@ -6553,6 +6550,9 @@
         "shipping": {
           "$ref": "#/definitions/issuing_card_shipping"
         },
+        "spending_controls": {
+          "$ref": "#/definitions/issuing_card_authorization_controls"
+        },
         "status": {
           "description": "Whether authorizations can be approved on this card.",
           "enum": [
@@ -6574,8 +6574,8 @@
         }
       },
       "required": [
-        "authorization_controls",
         "brand",
+        "cardholder",
         "created",
         "currency",
         "exp_month",
@@ -6584,20 +6584,20 @@
         "last4",
         "livemode",
         "metadata",
-        "name",
         "object",
+        "spending_controls",
         "status",
         "type"
       ],
       "title": "IssuingCard",
       "type": "object",
       "x-expandableFields": [
-        "authorization_controls",
         "cardholder",
         "pin",
         "replaced_by",
         "replacement_for",
-        "shipping"
+        "shipping",
+        "spending_controls"
       ],
       "x-resourceId": "issuing.card"
     },
@@ -6678,9 +6678,6 @@
     "issuing.cardholder": {
       "description": "An Issuing `Cardholder` object represents an individual or business entity who is [issued](https://stripe.com/docs/issuing) cards.\n\nRelated guide: [How to create a Cardholder](https://stripe.com/docs/issuing/cards#create-cardholder)",
       "properties": {
-        "authorization_controls": {
-          "$ref": "#/definitions/issuing_cardholder_authorization_controls"
-        },
         "billing": {
           "$ref": "#/definitions/issuing_cardholder_address"
         },
@@ -6732,6 +6729,9 @@
         "requirements": {
           "$ref": "#/definitions/issuing_cardholder_requirements"
         },
+        "spending_controls": {
+          "$ref": "#/definitions/issuing_cardholder_authorization_controls"
+        },
         "status": {
           "description": "Specifies whether to permit authorizations on this cardholder's cards.",
           "enum": [
@@ -6765,11 +6765,11 @@
       "title": "IssuingCardholder",
       "type": "object",
       "x-expandableFields": [
-        "authorization_controls",
         "billing",
         "company",
         "individual",
-        "requirements"
+        "requirements",
+        "spending_controls"
       ],
       "x-resourceId": "issuing.cardholder"
     },
@@ -7274,29 +7274,20 @@
           "enum": [
             "account_compliance_disabled",
             "account_inactive",
-            "authentication_failed",
-            "authorization_controls",
             "card_active",
             "card_inactive",
             "cardholder_inactive",
             "cardholder_verification_required",
-            "incorrect_cvc",
-            "incorrect_expiry",
             "insufficient_funds",
             "not_allowed",
+            "spending_controls",
             "suspected_fraud",
+            "verification_failed",
             "webhook_approved",
             "webhook_declined",
             "webhook_timeout"
           ],
           "type": "string"
-        },
-        "violated_authorization_controls": {
-          "description": "When an authorization is declined due to `authorization_controls`, this array contains details about the authorization controls that were violated. Otherwise, it is empty.",
-          "items": {
-            "$ref": "#/definitions/issuing_authorization_violated_auth_control"
-          },
-          "type": "array"
         }
       },
       "required": [
@@ -7306,13 +7297,12 @@
         "currency",
         "merchant_amount",
         "merchant_currency",
-        "reason",
-        "violated_authorization_controls"
+        "reason"
       ],
       "title": "IssuingAuthorizationRequest",
       "type": "object",
       "x-expandableFields": [
-        "violated_authorization_controls"
+
       ]
     },
     "issuing_authorization_three_d_secure": {
@@ -7390,40 +7380,6 @@
       "type": "object",
       "x-expandableFields": [
         "three_d_secure"
-      ]
-    },
-    "issuing_authorization_violated_auth_control": {
-      "description": "",
-      "properties": {
-        "entity": {
-          "description": "Entity which the authorization control acts on. One of `card`, `cardholder`, or `account`.",
-          "enum": [
-            "account",
-            "card",
-            "cardholder"
-          ],
-          "type": "string"
-        },
-        "name": {
-          "description": "Name of the authorization control. One of `allowed_categories`, `blocked_categories`, `spending_limits`, `max_approvals`, or `max_amount`.",
-          "enum": [
-            "allowed_categories",
-            "blocked_categories",
-            "max_amount",
-            "max_approvals",
-            "spending_limits"
-          ],
-          "type": "string"
-        }
-      },
-      "required": [
-        "entity",
-        "name"
-      ],
-      "title": "IssuingAuthorizationViolatedAuthControl",
-      "type": "object",
-      "x-expandableFields": [
-
       ]
     },
     "issuing_card_authorization_controls": {
@@ -8023,10 +7979,6 @@
           },
           "type": "array"
         },
-        "currency": {
-          "description": "The currency of the card. See [max_amount](https://stripe.com/docs/api#issuing_card_object-authorization_controls-max_amount)",
-          "type": "string"
-        },
         "max_approvals": {
           "description": "Maximum count of approved authorizations on this card. Counts all authorizations retroactively.",
           "type": "integer"
@@ -8093,10 +8045,10 @@
           "type": "string"
         },
         "service": {
-          "description": "Shipment service, such as standard or overnight.",
+          "description": "Shipment service, such as `standard` or `express`.",
           "enum": [
             "express",
-            "overnight",
+            "priority",
             "standard"
           ],
           "type": "string"
@@ -9752,7 +9704,7 @@
           "type": "string"
         },
         "structure": {
-          "description": "The category identifying the legal structure of the company or legal entity.",
+          "description": "The category identifying the legal structure of the company or legal entity. See [Business structure](https://stripe.com/docs/connect/identity-verification#business-structure) for more details.",
           "enum": [
             "government_instrumentality",
             "governmental_unit",
@@ -34547,7 +34499,139 @@
             "required": true,
             "schema": {
               "properties": {
-                "authorization_controls": {
+                "billing": {
+                  "description": "The cardholder's billing address.",
+                  "properties": {
+                    "address": {
+                      "properties": {
+                        "city": {
+                          "type": "string"
+                        },
+                        "country": {
+                          "type": "string"
+                        },
+                        "line1": {
+                          "type": "string"
+                        },
+                        "line2": {
+                          "type": "string"
+                        },
+                        "postal_code": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "city",
+                        "country",
+                        "line1",
+                        "postal_code"
+                      ],
+                      "title": "required_address",
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "address"
+                  ],
+                  "title": "billing_specs",
+                  "type": "object"
+                },
+                "company": {
+                  "description": "Additional information about a `company` cardholder.",
+                  "properties": {
+                    "tax_id": {
+                      "type": "string"
+                    }
+                  },
+                  "title": "company_param",
+                  "type": "object"
+                },
+                "email": {
+                  "description": "The cardholder's email address.",
+                  "type": "string"
+                },
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "individual": {
+                  "description": "Additional information about an `individual` cardholder.",
+                  "properties": {
+                    "dob": {
+                      "properties": {
+                        "day": {
+                          "type": "integer"
+                        },
+                        "month": {
+                          "type": "integer"
+                        },
+                        "year": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "day",
+                        "month",
+                        "year"
+                      ],
+                      "title": "date_of_birth_specs",
+                      "type": "object"
+                    },
+                    "first_name": {
+                      "type": "string"
+                    },
+                    "last_name": {
+                      "type": "string"
+                    },
+                    "verification": {
+                      "properties": {
+                        "document": {
+                          "properties": {
+                            "back": {
+                              "type": "string"
+                            },
+                            "front": {
+                              "type": "string"
+                            }
+                          },
+                          "title": "person_verification_document_param",
+                          "type": "object"
+                        }
+                      },
+                      "title": "person_verification_param",
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "first_name",
+                    "last_name"
+                  ],
+                  "title": "individual_param",
+                  "type": "object"
+                },
+                "is_default": {
+                  "description": "[DEPRECATED] Specifies whether to set this as the default cardholder.",
+                  "type": "boolean"
+                },
+                "metadata": {
+                  "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
+                  "type": "object"
+                },
+                "name": {
+                  "description": "The cardholder's name. This will be printed on cards issued to them.",
+                  "type": "string"
+                },
+                "phone_number": {
+                  "description": "The cardholder's phone number. This will be transformed to [E.164](https://en.wikipedia.org/wiki/E.164) if it is not provided in that format already.",
+                  "type": "string"
+                },
+                "spending_controls": {
                   "description": "Spending rules that give you control over how your cardholders can make charges. Refer to our [authorizations](https://stripe.com/docs/issuing/purchases/authorizations) documentation for more details.",
                   "properties": {
                     "allowed_categories": {
@@ -35472,6 +35556,99 @@
                   "title": "authorization_controls_param_v2",
                   "type": "object"
                 },
+                "status": {
+                  "description": "Specifies whether to permit authorizations on this cardholder's cards. Defaults to `active`.",
+                  "enum": [
+                    "active",
+                    "inactive"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "description": "One of `individual`, `business_entity`, or `company`.",
+                  "enum": [
+                    "company",
+                    "individual"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "billing",
+                "name",
+                "type"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/issuing.cardholder"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/issuing/cardholders/{cardholder}": {
+      "get": {
+        "description": "<p>Retrieves an Issuing <code>Cardholder</code> object.</p>",
+        "operationId": "GetIssuingCardholdersCardholder",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "in": "path",
+            "name": "cardholder",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "schema": {
+              "$ref": "#/definitions/issuing.cardholder"
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "<p>Updates the specified Issuing <code>Cardholder</code> object by setting the values of the parameters passed. Any parameters not provided will be left unchanged.</p>",
+        "operationId": "PostIssuingCardholdersCardholder",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "cardholder",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Body parameters for the request.",
+            "in": "body",
+            "name": "payload",
+            "required": false,
+            "schema": {
+              "properties": {
                 "billing": {
                   "description": "The cardholder's billing address.",
                   "properties": {
@@ -35596,108 +35773,11 @@
                   "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
                   "type": "object"
                 },
-                "name": {
-                  "description": "The cardholder's name. This will be printed on cards issued to them.",
-                  "type": "string"
-                },
                 "phone_number": {
-                  "description": "The cardholder's phone number. This will be transformed to [E.164](https://en.wikipedia.org/wiki/E.164) if it is not provided in that format already.",
+                  "description": "The cardholder's phone number.",
                   "type": "string"
                 },
-                "status": {
-                  "description": "Specifies whether to permit authorizations on this cardholder's cards. Defaults to `active`.",
-                  "enum": [
-                    "active",
-                    "inactive"
-                  ],
-                  "type": "string"
-                },
-                "type": {
-                  "description": "One of `individual`, `business_entity`, or `company`.",
-                  "enum": [
-                    "company",
-                    "individual"
-                  ],
-                  "type": "string"
-                }
-              },
-              "required": [
-                "billing",
-                "name",
-                "type"
-              ],
-              "type": "object"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response.",
-            "schema": {
-              "$ref": "#/definitions/issuing.cardholder"
-            }
-          },
-          "default": {
-            "description": "Error response.",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
-    "/v1/issuing/cardholders/{cardholder}": {
-      "get": {
-        "description": "<p>Retrieves an Issuing <code>Cardholder</code> object.</p>",
-        "operationId": "GetIssuingCardholdersCardholder",
-        "parameters": [
-          {
-            "description": "Specifies which fields in the response should be expanded.",
-            "in": "query",
-            "name": "expand",
-            "required": false,
-            "type": "array"
-          },
-          {
-            "in": "path",
-            "name": "cardholder",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response.",
-            "schema": {
-              "$ref": "#/definitions/issuing.cardholder"
-            }
-          },
-          "default": {
-            "description": "Error response.",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "<p>Updates the specified Issuing <code>Cardholder</code> object by setting the values of the parameters passed. Any parameters not provided will be left unchanged.</p>",
-        "operationId": "PostIssuingCardholdersCardholder",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "cardholder",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "description": "Body parameters for the request.",
-            "in": "body",
-            "name": "payload",
-            "required": false,
-            "schema": {
-              "properties": {
-                "authorization_controls": {
+                "spending_controls": {
                   "description": "Spending rules that give you some control over how your cards can be used. Refer to our [authorizations](https://stripe.com/docs/issuing/purchases/authorizations) documentation for more details.",
                   "properties": {
                     "allowed_categories": {
@@ -36622,134 +36702,6 @@
                   "title": "authorization_controls_param_v2",
                   "type": "object"
                 },
-                "billing": {
-                  "description": "The cardholder's billing address.",
-                  "properties": {
-                    "address": {
-                      "properties": {
-                        "city": {
-                          "type": "string"
-                        },
-                        "country": {
-                          "type": "string"
-                        },
-                        "line1": {
-                          "type": "string"
-                        },
-                        "line2": {
-                          "type": "string"
-                        },
-                        "postal_code": {
-                          "type": "string"
-                        },
-                        "state": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "city",
-                        "country",
-                        "line1",
-                        "postal_code"
-                      ],
-                      "title": "required_address",
-                      "type": "object"
-                    }
-                  },
-                  "required": [
-                    "address"
-                  ],
-                  "title": "billing_specs",
-                  "type": "object"
-                },
-                "company": {
-                  "description": "Additional information about a `company` cardholder.",
-                  "properties": {
-                    "tax_id": {
-                      "type": "string"
-                    }
-                  },
-                  "title": "company_param",
-                  "type": "object"
-                },
-                "email": {
-                  "description": "The cardholder's email address.",
-                  "type": "string"
-                },
-                "expand": {
-                  "description": "Specifies which fields in the response should be expanded.",
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                "individual": {
-                  "description": "Additional information about an `individual` cardholder.",
-                  "properties": {
-                    "dob": {
-                      "properties": {
-                        "day": {
-                          "type": "integer"
-                        },
-                        "month": {
-                          "type": "integer"
-                        },
-                        "year": {
-                          "type": "integer"
-                        }
-                      },
-                      "required": [
-                        "day",
-                        "month",
-                        "year"
-                      ],
-                      "title": "date_of_birth_specs",
-                      "type": "object"
-                    },
-                    "first_name": {
-                      "type": "string"
-                    },
-                    "last_name": {
-                      "type": "string"
-                    },
-                    "verification": {
-                      "properties": {
-                        "document": {
-                          "properties": {
-                            "back": {
-                              "type": "string"
-                            },
-                            "front": {
-                              "type": "string"
-                            }
-                          },
-                          "title": "person_verification_document_param",
-                          "type": "object"
-                        }
-                      },
-                      "title": "person_verification_param",
-                      "type": "object"
-                    }
-                  },
-                  "required": [
-                    "first_name",
-                    "last_name"
-                  ],
-                  "title": "individual_param",
-                  "type": "object"
-                },
-                "is_default": {
-                  "description": "[DEPRECATED] Specifies whether to set this as the default cardholder.",
-                  "type": "boolean"
-                },
-                "metadata": {
-                  "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
-                  "type": "object"
-                },
-                "phone_number": {
-                  "description": "The cardholder's phone number.",
-                  "type": "string"
-                },
                 "status": {
                   "description": "Specifies whether to permit authorizations on this cardholder's cards.",
                   "enum": [
@@ -36841,7 +36793,7 @@
             "type": "integer"
           },
           {
-            "description": "Only return cards that have the given name.",
+            "description": "[DEPRECATED] Only return cards that have the given name.",
             "in": "query",
             "name": "name",
             "required": false,
@@ -36935,7 +36887,99 @@
             "required": true,
             "schema": {
               "properties": {
-                "authorization_controls": {
+                "cardholder": {
+                  "description": "The [Cardholder](https://stripe.com/docs/api#issuing_cardholder_object) object with which the card will be associated.",
+                  "type": "string"
+                },
+                "currency": {
+                  "description": "The currency for the card. This currently must be `usd`.",
+                  "type": "string"
+                },
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "metadata": {
+                  "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
+                  "type": "object"
+                },
+                "replacement_for": {
+                  "description": "The card this is meant to be a replacement for (if any).",
+                  "type": "string"
+                },
+                "replacement_reason": {
+                  "description": "If `replacement_for` is specified, this should indicate why that card is being replaced.",
+                  "enum": [
+                    "damage",
+                    "expiration",
+                    "loss",
+                    "theft"
+                  ],
+                  "type": "string"
+                },
+                "shipping": {
+                  "description": "The address where the card will be shipped.",
+                  "properties": {
+                    "address": {
+                      "properties": {
+                        "city": {
+                          "type": "string"
+                        },
+                        "country": {
+                          "type": "string"
+                        },
+                        "line1": {
+                          "type": "string"
+                        },
+                        "line2": {
+                          "type": "string"
+                        },
+                        "postal_code": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "city",
+                        "country",
+                        "line1",
+                        "postal_code"
+                      ],
+                      "title": "required_address",
+                      "type": "object"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "service": {
+                      "enum": [
+                        "express",
+                        "priority",
+                        "standard"
+                      ],
+                      "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "bulk",
+                        "individual"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "address",
+                    "name"
+                  ],
+                  "title": "shipping_specs",
+                  "type": "object"
+                },
+                "spending_controls": {
                   "description": "Spending rules that give you some control over how your cards can be used. Refer to our [authorizations](https://stripe.com/docs/issuing/purchases/authorizations) documentation for more details.",
                   "properties": {
                     "allowed_categories": {
@@ -37858,98 +37902,6 @@
                     }
                   },
                   "title": "authorization_controls_param",
-                  "type": "object"
-                },
-                "cardholder": {
-                  "description": "The [Cardholder](https://stripe.com/docs/api#issuing_cardholder_object) object with which the card will be associated.",
-                  "type": "string"
-                },
-                "currency": {
-                  "description": "The currency for the card. This currently must be `usd`.",
-                  "type": "string"
-                },
-                "expand": {
-                  "description": "Specifies which fields in the response should be expanded.",
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                "metadata": {
-                  "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
-                  "type": "object"
-                },
-                "replacement_for": {
-                  "description": "The card this is meant to be a replacement for (if any).",
-                  "type": "string"
-                },
-                "replacement_reason": {
-                  "description": "If `replacement_for` is specified, this should indicate why that card is being replaced.",
-                  "enum": [
-                    "damage",
-                    "expiration",
-                    "loss",
-                    "theft"
-                  ],
-                  "type": "string"
-                },
-                "shipping": {
-                  "description": "The address where the card will be shipped.",
-                  "properties": {
-                    "address": {
-                      "properties": {
-                        "city": {
-                          "type": "string"
-                        },
-                        "country": {
-                          "type": "string"
-                        },
-                        "line1": {
-                          "type": "string"
-                        },
-                        "line2": {
-                          "type": "string"
-                        },
-                        "postal_code": {
-                          "type": "string"
-                        },
-                        "state": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "city",
-                        "country",
-                        "line1",
-                        "postal_code"
-                      ],
-                      "title": "required_address",
-                      "type": "object"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "service": {
-                      "enum": [
-                        "express",
-                        "overnight",
-                        "standard"
-                      ],
-                      "type": "string"
-                    },
-                    "type": {
-                      "enum": [
-                        "bulk",
-                        "individual"
-                      ],
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "address",
-                    "name"
-                  ],
-                  "title": "shipping_specs",
                   "type": "object"
                 },
                 "status": {
@@ -38044,7 +37996,17 @@
             "required": false,
             "schema": {
               "properties": {
-                "authorization_controls": {
+                "expand": {
+                  "description": "Specifies which fields in the response should be expanded.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "metadata": {
+                  "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`."
+                },
+                "spending_controls": {
                   "description": "Spending rules that give you some control over how your cards can be used. Refer to our [authorizations](https://stripe.com/docs/issuing/purchases/authorizations) documentation for more details.",
                   "properties": {
                     "allowed_categories": {
@@ -38968,16 +38930,6 @@
                   },
                   "title": "authorization_controls_param",
                   "type": "object"
-                },
-                "expand": {
-                  "description": "Specifies which fields in the response should be expanded.",
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                "metadata": {
-                  "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`."
                 },
                 "status": {
                   "description": "Whether authorizations can be approved on this card.",
