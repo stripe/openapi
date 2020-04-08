@@ -2920,11 +2920,16 @@ components:
             for later capture."
           type: boolean
         payment_intent:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/payment_intent"
           description: ID of the PaymentIntent associated with this charge, if one
             exists.
-          maxLength: 5000
           nullable: true
-          type: string
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/payment_intent"
         payment_method:
           description: ID of the payment method used in this charge.
           maxLength: 5000
@@ -2954,6 +2959,7 @@ components:
             If the charge is for an Invoice, the receipt will be stylized as an Invoice
             receipt.
           maxLength: 5000
+          nullable: true
           type: string
         refunded:
           description: Whether the charge has been fully refunded. If the charge is
@@ -3133,6 +3139,7 @@ components:
       - on_behalf_of
       - order
       - outcome
+      - payment_intent
       - payment_method_details
       - refunds
       - review
@@ -7041,10 +7048,11 @@ components:
             on the invoice's charge.
           nullable: true
         webhooks_delivered_at:
-          description: The time at which webhooks for this invoice were successfully
-            delivered (if the invoice had no webhooks to deliver, this will match
-            `created`). Invoice payment is delayed until webhooks are delivered, or
-            until all webhook delivery attempts have been exhausted.
+          description: Invoices are automatically paid or sent 1 hour after webhooks
+            are delivered, or until all webhook delivery attempts have [been exhausted](https://stripe.com/docs/billing/webhooks#understand).
+            This field tracks the time when webhooks for this invoice were successfully
+            delivered. If the invoice had no webhooks to deliver, this will be set
+            while the invoice is being created.
           format: unix-time
           nullable: true
           type: integer
@@ -7852,8 +7860,8 @@ components:
         Related guide: [Issued Card Authorizations](https://stripe.com/docs/issuing/purchases/authorizations).
       properties:
         amount:
-          description: The total amount in the card's currency that was authorized
-            or rejected.
+          description: The total amount that was authorized or rejected. This amount
+            is in the card's currency and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
           type: integer
         approved:
           description: Whether the authorization has been approved.
@@ -7926,8 +7934,8 @@ components:
             value `false` if the object exists in test mode.
           type: boolean
         merchant_amount:
-          description: The total amount that was authorized or rejected in the local
-            merchant_currency.
+          description: The total amount that was authorized or rejected. This amount
+            is in the `merchant_currency` and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
           type: integer
         merchant_currency:
           description: The currency that was presented to the cardholder for the authorization.
@@ -8132,6 +8140,13 @@ components:
           description: The brand of the card.
           maxLength: 5000
           type: string
+        cancellation_reason:
+          description: The reason why the card was canceled.
+          enum:
+          - lost
+          - stolen
+          nullable: true
+          type: string
         cardholder:
           "$ref": "#/components/schemas/issuing.cardholder"
         created:
@@ -8209,8 +8224,12 @@ components:
           description: The reason why the previous card needed to be replaced.
           enum:
           - damage
+          - damaged
           - expiration
+          - expired
           - loss
+          - lost
+          - stolen
           - theft
           nullable: true
           type: string
@@ -8238,6 +8257,7 @@ components:
           type: string
       required:
       - brand
+      - cancellation_reason
       - cardholder
       - created
       - currency
@@ -8719,8 +8739,8 @@ components:
         Related guide: [Issued Card Transactions](https://stripe.com/docs/issuing/purchases/transactions).
       properties:
         amount:
-          description: The amount of this transaction in your currency. This is the
-            amount that your balance will be updated by.
+          description: The transaction amount, which will be reflected in your balance.
+            This amount is in your currency and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
           type: integer
         authorization:
           anyOf:
@@ -8790,7 +8810,8 @@ components:
             value `false` if the object exists in test mode.
           type: boolean
         merchant_amount:
-          description: The amount that the merchant will receive, denominated in `merchant_currency`.
+          description: The amount that the merchant will receive, denominated in `merchant_currency`
+            and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
             It will be different from `amount` if the merchant is taking payment in
             a different currency.
           type: integer
@@ -8962,8 +8983,8 @@ components:
       properties:
         amount:
           description: The additional amount Stripe will hold if the authorization
-            is approved, in the [currency](https://stripe.com/docs/api#issuing_authorization_object-pending-request-currency),
-            which is always the card's currency.
+            is approved, in the card's [currency](https://stripe.com/docs/api#issuing_authorization_object-pending-request-currency)
+            and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
           type: integer
         currency:
           description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
@@ -8975,7 +8996,7 @@ components:
           type: boolean
         merchant_amount:
           description: The amount the merchant is requesting to be authorized in the
-            `merchant_currency`.
+            `merchant_currency`. The amount is in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
           type: integer
         merchant_currency:
           description: The local currency the merchant is requesting to authorize.
@@ -8996,9 +9017,10 @@ components:
       description: ''
       properties:
         amount:
-          description: The amount of the authorization in your card's currency. Stripe
-            held this amount from your account to fund the authorization, if the request
-            was approved.
+          description: The authorization amount in your card's currency and in the
+            [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
+            Stripe held this amount from your account to fund the authorization if
+            the request was approved.
           type: integer
         approved:
           description: Whether this request was approved.
@@ -9033,6 +9055,8 @@ components:
           type: string
         merchant_amount:
           description: The amount that was authorized at the time of this request.
+            This amount is in the `merchant_currency` and in the [smallest currency
+            unit](https://stripe.com/docs/currencies#zero-decimal).
           type: integer
         merchant_currency:
           description: The currency that was collected by the merchant and presented
@@ -11015,8 +11039,8 @@ components:
           nullable: true
           type: string
         past_due:
-          description: If not empty, this field contains the list of fields that need
-            to be collected in order to verify and re-enabled the cardholder.
+          description: Array of fields that need to be collected in order to verify
+            and re-enable the cardholder.
           items:
             enum:
             - individual.dob.day
@@ -12185,15 +12209,15 @@ components:
         single_use:
           "$ref": "#/components/schemas/mandate_single_use"
         status:
-          description: The status of the Mandate, one of `pending`, `inactive`, or
-            `active`. The Mandate can be used to initiate a payment only if status=active.
+          description: The status of the mandate, which indicates whether it can be
+            used to initiate a payment.
           enum:
           - active
           - inactive
           - pending
           type: string
         type:
-          description: The type of the mandate, one of `single_use` or `multi_use`
+          description: The type of the mandate.
           enum:
           - multi_use
           - single_use
@@ -44331,8 +44355,12 @@ paths:
                     why that card is being replaced.
                   enum:
                   - damage
+                  - damaged
                   - expiration
+                  - expired
                   - loss
+                  - lost
+                  - stolen
                   - theft
                   type: string
                 shipping:
@@ -46383,6 +46411,12 @@ paths:
                         containee_entity_name: spending_limit
                   title: authorization_controls_param
                   type: object
+                cancellation_reason:
+                  description: Reason why the `status` of this card is `canceled`.
+                  enum:
+                  - lost
+                  - stolen
+                  type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -47337,7 +47371,9 @@ paths:
                   title: authorization_controls_param
                   type: object
                 status:
-                  description: Whether authorizations can be approved on this card.
+                  description: Dictates whether authorizations can be approved on
+                    this card. If this card is being canceled because it was lost
+                    or stolen, this information should be provided as `cancellation_reason`.
                   enum:
                   - active
                   - canceled
@@ -51129,6 +51165,12 @@ paths:
     post:
       description: |-
         <p>Attaches a PaymentMethod object to a Customer.</p>
+
+        <p>To attach a new PaymentMethod to a customer for future payments, we recommend you use a <a href="/docs/api/setup_intents">SetupIntent</a>
+        or a PaymentIntent with <a href="/docs/api/payment_intents/create#create_payment_intent-setup_future_usage">setup_future_usage</a>.
+        These approaches will perform any necessary steps to ensure that the PaymentMethod can be used in a future payment. Using the
+        <code>/v1/payment_methods/:id/attach</code> endpoint does not ensure that future payments can be made with the attached PaymentMethod.
+        See <a href="/docs/payments/payment-intents#future-usage">Optimizing cards for future payments</a> for more information about setting up future payments.</p>
 
         <p>To use this PaymentMethod as the default for invoice or subscription payments,
         set <a href="/docs/api/customers/update#update_customer-invoice_settings-default_payment_method"><code>invoice_settings.default_payment_method</code></a>,
@@ -59142,8 +59184,7 @@ paths:
                           ids. These Tax Rates will set the Subscription's [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates),
                           which means they will be the Invoice's [`default_tax_rates`](https://stripe.com/docs/api/invoices/create#create_invoice-default_tax_rates)
                           for any Invoices issued by the Subscription during this
-                          Phase. When updating, pass an empty string to remove previously-defined
-                          tax rates.
+                          Phase.
                       end_date:
                         description: The date at which this phase of the subscription
                           schedule ends. If set, `iterations` must not be set.
@@ -59532,8 +59573,7 @@ paths:
                           ids. These Tax Rates will set the Subscription's [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates),
                           which means they will be the Invoice's [`default_tax_rates`](https://stripe.com/docs/api/invoices/create#create_invoice-default_tax_rates)
                           for any Invoices issued by the Subscription during this
-                          Phase. When updating, pass an empty string to remove previously-defined
-                          tax rates.
+                          Phase.
                       end_date:
                         anyOf:
                         - type: integer
