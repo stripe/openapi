@@ -8223,7 +8223,7 @@ components:
           - maxLength: 5000
             type: string
           - "$ref": "#/components/schemas/account"
-          description: The account (if any) where funds from the payment will be transferred
+          description: The account where funds from the payment will be transferred
             to upon payment success.
           x-expansionResources:
             oneOf:
@@ -8479,7 +8479,7 @@ components:
           description: The type of the tax ID, one of `eu_vat`, `nz_gst`, `au_abn`,
             `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`,
             `ca_bn`, `hk_br`, `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `li_uid`, `my_itn`,
-            `us_ein`, `kr_brn`, `ca_qst`, `my_sst`, or `unknown`
+            `us_ein`, `kr_brn`, `ca_qst`, `my_sst`, `sg_gst`, or `unknown`
           enum:
           - au_abn
           - ca_bn
@@ -8498,6 +8498,7 @@ components:
           - no_vat
           - nz_gst
           - ru_inn
+          - sg_gst
           - sg_uen
           - th_vat
           - tw_vat
@@ -11844,6 +11845,7 @@ components:
             and re-enable the cardholder.
           items:
             enum:
+            - business_entity.tax_id
             - individual.dob.day
             - individual.dob.month
             - individual.dob.year
@@ -21773,7 +21775,7 @@ components:
           type: number
         transfer_data:
           anyOf:
-          - "$ref": "#/components/schemas/invoice_transfer_data"
+          - "$ref": "#/components/schemas/subscription_transfer_data"
           description: If specified, the funds from the subscription's invoices will
             be transferred to the destination and the ID of the resulting transfers
             will be found on the resulting charges.
@@ -21935,6 +21937,7 @@ components:
         inner_classes:
         - subscription_billing_thresholds
         - subscription_pending_invoice_item_interval
+        - subscription_transfer_data
         - subscriptions_resource_pause_collection
         - subscriptions_resource_pending_update
     subscription_billing_thresholds:
@@ -22670,6 +22673,28 @@ components:
       x-stripeResource:
         class_name: DefaultSettings
         in_class: subscription_schedule
+    subscription_transfer_data:
+      description: ''
+      properties:
+        destination:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/account"
+          description: The account where funds from the payment will be transferred
+            to upon payment success.
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/account"
+      required:
+      - destination
+      title: SubscriptionTransferData
+      type: object
+      x-expandableFields:
+      - destination
+      x-stripeResource:
+        class_name: SubscriptionTransferData
+        in_class: subscription
     subscriptions_resource_pause_collection:
       description: |-
         The Pause Collection settings determine how we will pause collection for this subscription and for how long the subscription
@@ -22833,9 +22858,9 @@ components:
         type:
           description: Type of the tax ID, one of `au_abn`, `ca_bn`, `ca_qst`, `ch_vat`,
             `es_cif`, `eu_vat`, `hk_br`, `in_gst`, `jp_cn`, `kr_brn`, `li_uid`, `mx_rfc`,
-            `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `ru_inn`, `sg_uen`, `th_vat`,
-            `tw_vat`, `us_ein`, or `za_vat`. Note that some legacy tax IDs have type
-            `unknown`
+            `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `ru_inn`, `sg_gst`, `sg_uen`,
+            `th_vat`, `tw_vat`, `us_ein`, or `za_vat`. Note that some legacy tax IDs
+            have type `unknown`
           enum:
           - au_abn
           - ca_bn
@@ -22854,6 +22879,7 @@ components:
           - no_vat
           - nz_gst
           - ru_inn
+          - sg_gst
           - sg_uen
           - th_vat
           - tw_vat
@@ -33438,7 +33464,7 @@ paths:
                           `au_abn`, `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`,
                           `sg_uen`, `ru_inn`, `ca_bn`, `hk_br`, `es_cif`, `tw_vat`,
                           `th_vat`, `jp_cn`, `li_uid`, `my_itn`, `us_ein`, `kr_brn`,
-                          `ca_qst`, or `my_sst`
+                          `ca_qst`, `my_sst`, or `sg_gst`
                         enum:
                         - au_abn
                         - ca_bn
@@ -33457,6 +33483,7 @@ paths:
                         - no_vat
                         - nz_gst
                         - ru_inn
+                        - sg_gst
                         - sg_uen
                         - th_vat
                         - tw_vat
@@ -34859,7 +34886,7 @@ paths:
                   description: Type of the tax ID, one of `eu_vat`, `nz_gst`, `au_abn`,
                     `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`,
                     `ca_bn`, `hk_br`, `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `li_uid`,
-                    `my_itn`, `us_ein`, `kr_brn`, `ca_qst`, or `my_sst`
+                    `my_itn`, `us_ein`, `kr_brn`, `ca_qst`, `my_sst`, or `sg_gst`
                   enum:
                   - au_abn
                   - ca_bn
@@ -34878,6 +34905,7 @@ paths:
                   - no_vat
                   - nz_gst
                   - ru_inn
+                  - sg_gst
                   - sg_uen
                   - th_vat
                   - tw_vat
@@ -37552,12 +37580,10 @@ paths:
                 transfer_data:
                   description: If specified, the funds from the invoice will be transferred
                     to the destination and the ID of the resulting transfer will be
-                    found on the invoice's charge. This will be unset if you POST
-                    an empty value.
+                    found on the invoice's charge.
                   properties:
                     destination:
                       description: ID of an existing, connected Stripe account.
-                      maxLength: 5000
                       type: string
                   required:
                   - destination
@@ -38732,7 +38758,6 @@ paths:
                   - properties:
                       destination:
                         description: ID of an existing, connected Stripe account.
-                        maxLength: 5000
                         type: string
                     required:
                     - destination
@@ -39550,7 +39575,9 @@ paths:
           description: Error response.
   "/v1/issuing/authorizations/{authorization}/approve":
     post:
-      description: "<p>Approves a pending Issuing <code>Authorization</code> object.</p>"
+      description: <p>Approves a pending Issuing <code>Authorization</code> object.
+        This request should be made within the timeout window of the <a href="/docs/issuing/controls/real-time-authorizations">real
+        time authorization</a> flow.</p>
       operationId: PostIssuingAuthorizationsAuthorizationApprove
       parameters:
       - in: path
@@ -39621,7 +39648,9 @@ paths:
           description: Error response.
   "/v1/issuing/authorizations/{authorization}/decline":
     post:
-      description: "<p>Declines a pending Issuing <code>Authorization</code> object.</p>"
+      description: <p>Declines a pending Issuing <code>Authorization</code> object.
+        This request should be made within the timeout window of the <a href="/docs/issuing/controls/real-time-authorizations">real
+        time authorization</a> flow.</p>
       operationId: PostIssuingAuthorizationsAuthorizationDecline
       parameters:
       - in: path
@@ -60183,8 +60212,7 @@ paths:
                     using `now` so that it starts the subscription immediately. You
                     can also use a Unix timestamp to backdate the subscription so
                     that it starts on a past date, or set a future date for the subscription
-                    to start on. When you backdate, the `billing_cycle_anchor` of
-                    the subscription is equivalent to the `start_date`.
+                    to start on.
               type: object
         required: false
       responses:
@@ -61239,12 +61267,10 @@ paths:
                 transfer_data:
                   description: If specified, the funds from the subscription's invoices
                     will be transferred to the destination and the ID of the resulting
-                    transfers will be found on the resulting charges. This will be
-                    unset if you POST an empty value.
+                    transfers will be found on the resulting charges.
                   properties:
                     destination:
                       description: ID of an existing, connected Stripe account.
-                      maxLength: 5000
                       type: string
                   required:
                   - destination
@@ -61765,7 +61791,6 @@ paths:
                   - properties:
                       destination:
                         description: ID of an existing, connected Stripe account.
-                        maxLength: 5000
                         type: string
                     required:
                     - destination
