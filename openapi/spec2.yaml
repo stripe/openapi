@@ -5436,10 +5436,10 @@ definitions:
         "$ref": "#/definitions/issuing_authorization_pending_request"
       request_history:
         description: History of every time the authorization was approved/denied (whether
-          approved/denied by you directly, or by Stripe based on your authorization_controls).
+          approved/denied by you directly or by Stripe based on your `spending_controls`).
           If the merchant changes the authorization by performing an [incremental
           authorization or partial capture](https://stripe.com/docs/issuing/purchases/authorizations),
-          you can look at request_history to see the previous states of the authorization.
+          you can look at this field to see the previous states of the authorization.
         items:
           "$ref": "#/definitions/issuing_authorization_request"
         type: array
@@ -5604,63 +5604,6 @@ definitions:
     - shipping
     - spending_controls
     x-resourceId: issuing.card
-  issuing.card_details:
-    description: ''
-    properties:
-      card:
-        "$ref": "#/definitions/issuing.card"
-      cvc:
-        description: The CVC number for the card.
-        type: string
-      exp_month:
-        description: The expiration month of the card.
-        type: integer
-      exp_year:
-        description: The expiration year of the card.
-        type: integer
-      number:
-        description: The card number.
-        type: string
-      object:
-        description: String representing the object's type. Objects of the same type
-          share the same value.
-        enum:
-        - issuing.card_details
-        type: string
-    required:
-    - card
-    - cvc
-    - exp_month
-    - exp_year
-    - number
-    - object
-    title: IssuingCardDetails
-    type: object
-    x-expandableFields:
-    - card
-    x-resourceId: issuing.card_details
-  issuing.card_pin:
-    description: The PIN of a `Card` object
-    properties:
-      card:
-        "$ref": "#/definitions/issuing.card"
-      object:
-        description: String representing the object's type. Objects of the same type
-          share the same value.
-        enum:
-        - issuing.card_pin
-        type: string
-      pin:
-        description: The PIN (4 digits number)
-        type: string
-    required:
-    - card
-    - object
-    title: IssuingPinPinResponse
-    type: object
-    x-expandableFields:
-    - card
-    x-resourceId: issuing.card_pin
   issuing.cardholder:
     description: |-
       An Issuing `Cardholder` object represents an individual or business entity who is [issued](https://stripe.com/docs/issuing) cards.
@@ -5720,7 +5663,6 @@ definitions:
       type:
         description: One of `individual` or `company`.
         enum:
-        - business_entity
         - company
         - individual
         type: string
@@ -5750,26 +5692,6 @@ definitions:
 
       Related guide: [Disputing Transactions](https://stripe.com/docs/issuing/purchases/disputes)
     properties:
-      amount:
-        description: Disputed amount. Usually the amount of the `disputed_transaction`,
-          but can differ (usually because of currency fluctuation or because only
-          part of the order is disputed).
-        type: integer
-      created:
-        description: Time at which the object was created. Measured in seconds since
-          the Unix epoch.
-        type: integer
-      currency:
-        description: The currency the `disputed_transaction` was made in.
-        type: string
-      disputed_transaction:
-        description: The transaction being disputed.
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/issuing.transaction"
-      evidence:
-        "$ref": "#/definitions/issuing_dispute_evidence"
       id:
         description: Unique identifier for the object.
         type: string
@@ -5777,29 +5699,11 @@ definitions:
         description: Has the value `true` if the object exists in live mode or the
           value `false` if the object exists in test mode.
         type: boolean
-      metadata:
-        description: Set of key-value pairs that you can attach to an object. This
-          can be useful for storing additional information about the object in a structured
-          format.
-        type: object
       object:
         description: String representing the object's type. Objects of the same type
           share the same value.
         enum:
         - issuing.dispute
-        type: string
-      reason:
-        description: Reason for this dispute. One of `duplicate`, `product_not_received`,
-          `fraudulent`, or `other`.
-        type: string
-      status:
-        description: Current status of dispute. One of `unsubmitted`, `under_review`,
-          `won`, or `lost`.
-        enum:
-        - lost
-        - under_review
-        - unsubmitted
-        - won
         type: string
     required:
     - id
@@ -5807,9 +5711,7 @@ definitions:
     - object
     title: IssuingDispute
     type: object
-    x-expandableFields:
-    - disputed_transaction
-    - evidence
+    x-expandableFields: []
     x-resourceId: issuing.dispute
   issuing.settlement:
     description: When a non-stripe BIN is used, any use of an [issued card](https://stripe.com/docs/issuing)
@@ -5941,12 +5843,6 @@ definitions:
         description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
           in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
         type: string
-      dispute:
-        description: If you've disputed the transaction, the ID of the dispute.
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/issuing.dispute"
       id:
         description: Unique identifier for the object.
         type: string
@@ -5980,7 +5876,6 @@ definitions:
         description: The nature of the transaction.
         enum:
         - capture
-        - dispute
         - refund
         type: string
     required:
@@ -6003,58 +5898,8 @@ definitions:
     - balance_transaction
     - card
     - cardholder
-    - dispute
     - merchant_data
     x-resourceId: issuing.transaction
-  issuing.verification:
-    description: An Issuing `Verification` object holds a one-time code request on
-      behalf of a cardholder.
-    properties:
-      card:
-        description: The id of the `Card` on which the verification was requested
-        type: string
-      created:
-        description: Time at which the object was created. Measured in seconds since
-          the Unix epoch.
-        type: integer
-      expires_at:
-        description: Timestamp of the expiry for that verification
-        type: integer
-      id:
-        description: Unique identifier for the object.
-        type: string
-      object:
-        description: String representing the object's type. Objects of the same type
-          share the same value.
-        enum:
-        - issuing.verification
-        type: string
-      scope:
-        description: The scope of the verification (one of `card_pin_retrieve` or
-          `card_pin_update`)
-        enum:
-        - card_pin_retrieve
-        - card_pin_update
-        type: string
-      verification_method:
-        description: The method by which the cardholder will be sent a one-time code
-          (one of `email` or `sms`)
-        enum:
-        - email
-        - sms
-        type: string
-    required:
-    - card
-    - created
-    - expires_at
-    - id
-    - object
-    - scope
-    - verification_method
-    title: IssuingVerification
-    type: object
-    x-expandableFields: []
-    x-resourceId: issuing.verification
   issuing_authorization_merchant_data:
     description: ''
     properties:
@@ -6151,17 +5996,11 @@ definitions:
       reason:
         description: The reason for the approval or decline.
         enum:
-        - account_compliance_disabled
         - account_disabled
-        - account_inactive
-        - authentication_failed
-        - authorization_controls
         - card_active
         - card_inactive
         - cardholder_inactive
         - cardholder_verification_required
-        - incorrect_cvc
-        - incorrect_expiry
         - insufficient_funds
         - not_allowed
         - spending_controls
@@ -7907,7 +7746,7 @@ definitions:
           and re-enable the cardholder.
         items:
           enum:
-          - business_entity.tax_id
+          - company.tax_id
           - individual.dob.day
           - individual.dob.month
           - individual.dob.year
@@ -8246,99 +8085,6 @@ definitions:
     type: object
     x-expandableFields:
     - document
-  issuing_dispute_duplicate_evidence:
-    description: ''
-    properties:
-      dispute_explanation:
-        description: Brief freeform text explaining why you are disputing this transaction.
-        type: string
-      original_transaction:
-        description: Transaction (e.g., ipi_...) that the disputed transaction is
-          a duplicate of. Of the two or more transactions that are copies of each
-          other, this is original undisputed one.
-        type: string
-      uncategorized_file:
-        description: "(ID of a [file upload](https://stripe.com/docs/guides/file-upload))
-          Additional file evidence supporting your dispute."
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/file"
-    title: IssuingDisputeDuplicateEvidence
-    type: object
-    x-expandableFields:
-    - uncategorized_file
-  issuing_dispute_evidence:
-    description: ''
-    properties:
-      duplicate:
-        "$ref": "#/definitions/issuing_dispute_duplicate_evidence"
-      fraudulent:
-        "$ref": "#/definitions/issuing_dispute_fraudulent_evidence"
-      other:
-        "$ref": "#/definitions/issuing_dispute_other_evidence"
-      product_not_received:
-        "$ref": "#/definitions/issuing_dispute_product_not_received_evidence"
-    title: IssuingDisputeEvidence
-    type: object
-    x-expandableFields:
-    - duplicate
-    - fraudulent
-    - other
-    - product_not_received
-  issuing_dispute_fraudulent_evidence:
-    description: ''
-    properties:
-      dispute_explanation:
-        description: Brief freeform text explaining why you are disputing this transaction.
-        type: string
-      uncategorized_file:
-        description: "(ID of a [file upload](https://stripe.com/docs/guides/file-upload))
-          Additional file evidence supporting your dispute."
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/file"
-    title: IssuingDisputeFraudulentEvidence
-    type: object
-    x-expandableFields:
-    - uncategorized_file
-  issuing_dispute_other_evidence:
-    description: ''
-    properties:
-      dispute_explanation:
-        description: Brief freeform text explaining why you are disputing this transaction.
-        type: string
-      uncategorized_file:
-        description: "(ID of a [file upload](https://stripe.com/docs/guides/file-upload))
-          Additional file evidence supporting your dispute."
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/file"
-    required:
-    - dispute_explanation
-    title: IssuingDisputeOtherEvidence
-    type: object
-    x-expandableFields:
-    - uncategorized_file
-  issuing_dispute_product_not_received_evidence:
-    description: ''
-    properties:
-      dispute_explanation:
-        description: Brief freeform text explaining why you are disputing this transaction.
-        type: string
-      uncategorized_file:
-        description: "(ID of a [file upload](https://stripe.com/docs/guides/file-upload))
-          Additional file evidence supporting your dispute."
-        type: string
-        x-expansionResources:
-          oneOf:
-          - "$ref": "#/definitions/file"
-    title: IssuingDisputeProductNotReceivedEvidence
-    type: object
-    x-expandableFields:
-    - uncategorized_file
   legal_entity_company:
     description: ''
     properties:
@@ -29672,7 +29418,6 @@ paths:
             type:
               description: One of `individual` or `company`.
               enum:
-              - business_entity
               - company
               - individual
               type: string
@@ -30808,7 +30553,7 @@ paths:
         required: false
         type: string
       - description: Only return cards that have the given status. One of `active`,
-          `inactive`, `canceled`, `lost`, or `stolen`.
+          `inactive`, or `canceled`.
         in: query
         name: status
         required: false
@@ -32851,112 +32596,6 @@ paths:
           description: Error response.
           schema:
             "$ref": "#/definitions/error"
-  "/v1/issuing/cards/{card}/details":
-    get:
-      description: <p>For virtual cards only. Retrieves an Issuing <code>card_details</code>
-        object that contains <a href="/docs/issuing/cards/virtual#virtual-card-info">the
-        sensitive details</a> of a virtual card.</p>
-      operationId: GetIssuingCardsCardDetails
-      parameters:
-      - description: Specifies which fields in the response should be expanded.
-        in: query
-        name: expand
-        required: false
-        type: array
-      - in: path
-        name: card
-        required: true
-        type: string
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/issuing.card_details"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-  "/v1/issuing/cards/{card}/pin":
-    get:
-      description: <p>Retrieves the PIN for a card object, subject to cardholder verification,
-        see <a href="/docs/issuing/pin_management">Retrieve and update cardholder
-        PIN</a></p>
-      operationId: GetIssuingCardsCardPin
-      parameters:
-      - description: Specifies which fields in the response should be expanded.
-        in: query
-        name: expand
-        required: false
-        type: array
-      - in: path
-        name: card
-        required: true
-        type: string
-      - description: The id of the `Verification` that was sent and the code entered
-          by the cardholder
-        in: query
-        name: verification
-        required: true
-        type: string
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/issuing.card_pin"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-    post:
-      description: <p>Updates the PIN for a card, subject to cardholder verification.
-        See <a href="/docs/issuing/pin_management">Retrieve and update cardholder
-        PIN</a></p>
-      operationId: PostIssuingCardsCardPin
-      parameters:
-      - in: path
-        name: card
-        required: true
-        type: string
-      - description: Body parameters for the request.
-        in: body
-        name: payload
-        required: true
-        schema:
-          properties:
-            expand:
-              description: Specifies which fields in the response should be expanded.
-              items:
-                type: string
-              type: array
-            pin:
-              description: The new desired PIN
-              type: string
-            verification:
-              description: The id of the `Verification` that was sent and the code
-                entered by the cardholder
-              properties:
-                id:
-                  type: string
-                one_time_code:
-                  type: string
-              required:
-              - id
-              - one_time_code
-              title: verification_params
-              type: object
-          required:
-          - pin
-          - verification
-          type: object
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/issuing.card_pin"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
   "/v1/issuing/disputes":
     get:
       description: "<p>Returns a list of Issuing <code>Dispute</code> objects. The
@@ -32969,17 +32608,6 @@ paths:
         name: expand
         required: false
         type: array
-      - description: Select issuing disputes that were created during the given date
-          interval.
-        in: query
-        name: created
-        required: false
-        type: integer
-      - description: Select the issuing dispute for the given transaction.
-        in: query
-        name: disputed_transaction
-        required: false
-        type: string
       - description: A cursor for use in pagination. `ending_before` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, starting with `obj_bar`, your subsequent
@@ -33047,65 +32675,9 @@ paths:
       - description: Body parameters for the request.
         in: body
         name: payload
-        required: true
+        required: false
         schema:
           properties:
-            amount:
-              description: Amount to dispute, defaults to full value, given in the
-                currency the transaction was made in.
-              type: integer
-            disputed_transaction:
-              description: The ID of the issuing transaction to create a dispute for.
-              type: string
-            evidence:
-              description: A hash containing all the evidence related to the dispute.
-                This should have a single key, equal to the provided `reason`, mapping
-                to an appropriate evidence object.
-              properties:
-                duplicate:
-                  properties:
-                    dispute_explanation:
-                      type: string
-                    original_transaction:
-                      type: string
-                    uncategorized_file:
-                      type: string
-                  required:
-                  - dispute_explanation
-                  title: duplicate
-                  type: object
-                fraudulent:
-                  properties:
-                    dispute_explanation:
-                      type: string
-                    uncategorized_file:
-                      type: string
-                  required:
-                  - dispute_explanation
-                  title: fraudulent
-                  type: object
-                other:
-                  properties:
-                    dispute_explanation:
-                      type: string
-                    uncategorized_file:
-                      type: string
-                  required:
-                  - dispute_explanation
-                  title: other
-                  type: object
-                product_not_received:
-                  properties:
-                    dispute_explanation:
-                      type: string
-                    uncategorized_file:
-                      type: string
-                  required:
-                  - dispute_explanation
-                  title: product_not_received
-                  type: object
-              title: disputes_evidence
-              type: object
             expand:
               description: Specifies which fields in the response should be expanded.
               items:
@@ -33118,17 +32690,6 @@ paths:
                 empty value to them. All keys can be unset by posting an empty value
                 to `metadata`.
               type: object
-            reason:
-              description: The reason for the dispute.
-              enum:
-              - duplicate
-              - fraudulent
-              - other
-              - product_not_received
-              type: string
-          required:
-          - disputed_transaction
-          - reason
           type: object
       responses:
         '200':
@@ -33366,11 +32927,6 @@ paths:
         name: created
         required: false
         type: integer
-      - description: Only return transactions that originate from a given dispute.
-        in: query
-        name: dispute
-        required: false
-        type: string
       - description: A cursor for use in pagination. `ending_before` is an object
           ID that defines your place in the list. For instance, if you make a list
           request and receive 100 objects, starting with `obj_bar`, your subsequent
@@ -33486,54 +33042,6 @@ paths:
           description: Successful response.
           schema:
             "$ref": "#/definitions/issuing.transaction"
-        default:
-          description: Error response.
-          schema:
-            "$ref": "#/definitions/error"
-  "/v1/issuing/verifications":
-    post:
-      description: "<p>Some actions (eg: updating a PIN) need confirmation from the
-        cardholder</p>"
-      operationId: PostIssuingVerifications
-      parameters:
-      - description: Body parameters for the request.
-        in: body
-        name: payload
-        required: true
-        schema:
-          properties:
-            card:
-              description: The `Card` for which a verification is requested
-              type: string
-            expand:
-              description: Specifies which fields in the response should be expanded.
-              items:
-                type: string
-              type: array
-            scope:
-              description: The scope of the verification (one of `card_pin_retrieve`
-                or `card_pin_update`)
-              enum:
-              - card_pin_retrieve
-              - card_pin_update
-              type: string
-            verification_method:
-              description: The method used to send the cardholder the verification
-                (one of `email` or `sms`)
-              enum:
-              - email
-              - sms
-              type: string
-          required:
-          - card
-          - scope
-          - verification_method
-          type: object
-      responses:
-        '200':
-          description: Successful response.
-          schema:
-            "$ref": "#/definitions/issuing.verification"
         default:
           description: Error response.
           schema:
@@ -43423,10 +42931,6 @@ paths:
                 - issuing_card.updated
                 - issuing_cardholder.created
                 - issuing_cardholder.updated
-                - issuing_dispute.created
-                - issuing_dispute.updated
-                - issuing_settlement.created
-                - issuing_settlement.updated
                 - issuing_transaction.created
                 - issuing_transaction.updated
                 - mandate.updated
@@ -43673,10 +43177,6 @@ paths:
                 - issuing_card.updated
                 - issuing_cardholder.created
                 - issuing_cardholder.updated
-                - issuing_dispute.created
-                - issuing_dispute.updated
-                - issuing_settlement.created
-                - issuing_settlement.updated
                 - issuing_transaction.created
                 - issuing_transaction.updated
                 - mandate.updated
