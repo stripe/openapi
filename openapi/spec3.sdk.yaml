@@ -521,6 +521,7 @@ components:
       - current_deadline
       - currently_due
       - disabled_reason
+      - errors
       - eventually_due
       - past_due
       - pending_verification
@@ -776,6 +777,7 @@ components:
       - current_deadline
       - currently_due
       - disabled_reason
+      - errors
       - eventually_due
       - past_due
       - pending_verification
@@ -8925,6 +8927,14 @@ components:
           description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
             in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
           type: string
+        cvc:
+          description: The card's CVC. For security reasons, this is only available
+            for virtual cards, and will be omitted unless you explicitly request it
+            with [the `expand` parameter](https://stripe.com/docs/api/expanding_objects).
+            Additionally, it's only available via the ["Retrieve a card" endpoint](https://stripe.com/docs/api/issuing/cards/retrieve),
+            not via "List all cards" or any other endpoint.
+          maxLength: 5000
+          type: string
         exp_month:
           description: The expiration month of the card.
           type: integer
@@ -8951,6 +8961,14 @@ components:
             can be useful for storing additional information about the object in a
             structured format.
           type: object
+        number:
+          description: The full unredacted card number. For security reasons, this
+            is only available for virtual cards, and will be omitted unless you explicitly
+            request it with [the `expand` parameter](https://stripe.com/docs/api/expanding_objects).
+            Additionally, it's only available via the ["Retrieve a card" endpoint](https://stripe.com/docs/api/issuing/cards/retrieve),
+            not via "List all cards" or any other endpoint.
+          maxLength: 5000
+          type: string
         object:
           description: String representing the object's type. Objects of the same
             type share the same value.
@@ -14563,14 +14581,26 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        institution_number:
+          description: Institution number of the bank account
+          maxLength: 5000
+          nullable: true
+          type: string
         last4:
           description: Last four digits of the bank account number.
           maxLength: 5000
           nullable: true
           type: string
+        transit_number:
+          description: Transit number of the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
       required:
       - fingerprint
+      - institution_number
       - last4
+      - transit_number
       title: payment_method_details_acss_debit
       type: object
       x-expandableFields: []
@@ -16711,6 +16741,7 @@ components:
           type: array
       required:
       - currently_due
+      - errors
       - eventually_due
       - past_due
       - pending_verification
@@ -16731,7 +16762,7 @@ components:
         Related guides: [Set up a subscription](https://stripe.com/docs/billing/subscriptions/set-up-subscription) and more about [products and plans](https://stripe.com/docs/billing/subscriptions/products-and-plans).
       properties:
         active:
-          description: Whether the plan is currently available for new subscriptions.
+          description: Whether the price can be used for new purchases.
           type: boolean
         aggregate_usage:
           description: Specifies a usage aggregation strategy for plans of `usage_type=metered`.
@@ -16760,10 +16791,11 @@ components:
         billing_scheme:
           description: Describes how to compute the price per period. Either `per_unit`
             or `tiered`. `per_unit` indicates that the fixed amount (specified in
-            `amount`) will be charged per unit in `quantity` (for plans with `usage_type=licensed`),
-            or per unit of total usage (for plans with `usage_type=metered`). `tiered`
-            indicates that the unit pricing will be computed using a tiering strategy
-            as defined using the `tiers` and `tiers_mode` attributes.
+            `unit_amount` or `unit_amount_decimal`) will be charged per unit in `quantity`
+            (for prices with `usage_type=licensed`), or per unit of total usage (for
+            prices with `usage_type=metered`). `tiered` indicates that the unit pricing
+            will be computed using a tiering strategy as defined using the `tiers`
+            and `tiers_mode` attributes.
           enum:
           - per_unit
           - tiered
