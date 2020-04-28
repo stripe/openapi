@@ -10,10 +10,15 @@ Files can be found in the `openapi/` directory:
     * Contains special annotations, deprecated endpoints, and pre-release
       features specifically intended to support generating Stripe API
       libraries. Users should use the `spec3.{json,yaml}` variant instead.
-* `spec2.{json,yaml}`: OpenAPI 2.0 spec. We're continuing to generate this for
-  now, but it will be deprecated in favor of `spec3`.
 * `fixtures3.{json,yaml}`: Test fixtures for resources in `spec3`. See below
   for more information.
+
+We used to support OpenAPI 2.0, but have since deprecated its use, and it's no
+longer receiving updates. It will still be available in `DEPRECATED_openapi`
+for the next few months:
+
+* `spec2.{json,yaml}`: OpenAPI 2.0 spec. No longer receiving updates.
+  Deprecated in favor of `spec3`.
 * `fixtures2.{json,yaml}`: Test fixtures for resources in `spec2`.
 
 ## Vendor Extensions
