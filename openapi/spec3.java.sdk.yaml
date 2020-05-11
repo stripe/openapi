@@ -2061,7 +2061,7 @@ components:
         Sessions are short-lived and will expire if the customer does not visit the URL.
         Create Sessions on-demand.
 
-        Related guide: [self-serve portal](https://stripe.com/docs/billing/subscriptions/integrating-self-serve).
+        Integration guide: [Billing self-serve portal](https://stripe.com/docs/billing/subscriptions/integrating-self-serve-portal).
       properties:
         created:
           description: Time at which the object was created. Measured in seconds since
@@ -3528,6 +3528,39 @@ components:
             in Stripe.js.
           maxLength: 5000
           type: string
+        line_items:
+          description: The line items purchased by the customer. [Expand](https://stripe.com/docs/api/expanding_objects)
+            this field to include it in the response.
+          nullable: true
+          properties:
+            data:
+              description: Details about each object.
+              items:
+                "$ref": "#/components/schemas/item"
+              type: array
+            has_more:
+              description: True if this list has another page of items after this
+                one that can be fetched.
+              type: boolean
+            object:
+              description: String representing the object's type. Objects of the same
+                type share the same value. Always has the value `list`.
+              enum:
+              - list
+              type: string
+            url:
+              description: The URL where this list can be accessed.
+              maxLength: 5000
+              type: string
+          required:
+          - data
+          - has_more
+          - object
+          - url
+          title: PaymentPagesCheckoutSessionListLineItems
+          type: object
+          x-expandableFields:
+          - data
         livemode:
           description: Has the value `true` if the object exists in live mode or the
             value `false` if the object exists in test mode.
@@ -3676,6 +3709,7 @@ components:
       x-expandableFields:
       - customer
       - display_items
+      - line_items
       - payment_intent
       - setup_intent
       - shipping
@@ -7149,9 +7183,9 @@ components:
         transfer_data:
           anyOf:
           - "$ref": "#/components/schemas/invoice_transfer_data"
-          description: If specified, the funds from the invoice will be transferred
-            to the destination and the ID of the resulting transfer will be found
-            on the invoice's charge.
+          description: The account (if any) the payment will be attributed to for
+            tax reporting, and where funds from the payment will be transferred to
+            for the invoice.
           nullable: true
         webhooks_delivered_at:
           description: Invoices are automatically paid or sent 1 hour after webhooks
@@ -11192,6 +11226,87 @@ components:
         in_class: issuing_cardholder_individual
         inner_classes:
         - issuing_cardholder_id_document
+    item:
+      description: Checkout Session line item.
+      properties:
+        amount_subtotal:
+          description: Total before any discounts or taxes is applied.
+          nullable: true
+          type: integer
+        amount_total:
+          description: Total after discounts and taxes.
+          nullable: true
+          type: integer
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+          type: string
+        description:
+          description: An arbitrary string attached to the object. Often useful for
+            displaying to users. Defaults to product name.
+          maxLength: 5000
+          type: string
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - item
+          type: string
+        price:
+          "$ref": "#/components/schemas/price"
+        quantity:
+          description: The quantity of products being purchased.
+          nullable: true
+          type: integer
+        taxes:
+          description: The taxes applied to the line item.
+          items:
+            "$ref": "#/components/schemas/payment_pages_checkout_session_line_item_resource_line_item_tax"
+          nullable: true
+          type: array
+      required:
+      - amount_subtotal
+      - amount_total
+      - currency
+      - description
+      - id
+      - object
+      - price
+      - quantity
+      - taxes
+      title: PaymentPagesCheckoutSessionLineItem
+      type: object
+      x-expandableFields:
+      - price
+      - taxes
+      x-resourceId: item
+      x-stripeOperations:
+      - method_name: list
+        method_on: collection
+        method_type: list
+        operation: get
+        path: "/v1/checkout/sessions/{session}/line_items"
+        path_resource_variables:
+        - method_parameter: session
+          name: session
+      - method_name: list
+        method_on: service
+        method_type: list
+        operation: get
+        path: "/v1/checkout/sessions/{session}/line_items"
+        path_resource_variables:
+        - method_parameter: session
+          name: session
+      x-stripeResource:
+        class_name: LineItem
+        has_collection_class: true
+        in_package: ''
+        inner_classes:
+        - payment_pages_checkout_session_line_item_resource_line_item_tax
     legal_entity_company:
       description: ''
       properties:
@@ -15140,6 +15255,24 @@ components:
       x-stripeResource:
         class_name: SepaDebit
         in_class: payment_method
+    payment_pages_checkout_session_line_item_resource_line_item_tax:
+      description: ''
+      properties:
+        amount:
+          description: Amount of tax for this line item.
+          type: integer
+        rate:
+          "$ref": "#/components/schemas/tax_rate"
+      required:
+      - amount
+      - rate
+      title: PaymentPagesCheckoutSessionLineItemResourceLineItemTax
+      type: object
+      x-expandableFields:
+      - rate
+      x-stripeResource:
+        class_name: Tax
+        in_class: item
     payment_pages_payment_page_resources_shipping_address_collection:
       description: ''
       properties:
@@ -16098,12 +16231,13 @@ components:
           nullable: true
           type: string
         amount:
-          description: The amount in %s to be charged on the interval specified.
+          description: The unit amount in %s to be charged, represented as a whole
+            integer if possible.
           nullable: true
           type: integer
         amount_decimal:
-          description: Same as `amount`, but contains a decimal value with at most
-            12 decimal places.
+          description: The unit amount in %s to be charged, represented as a decimal
+            string with at most 12 decimal places.
           format: decimal
           nullable: true
           type: string
@@ -16504,12 +16638,13 @@ components:
           - recurring
           type: string
         unit_amount:
-          description: The unit amount in %s to be charged.
+          description: The unit amount in %s to be charged, represented as a whole
+            integer if possible.
           nullable: true
           type: integer
         unit_amount_decimal:
-          description: Same as `amount`, but contains a decimal value with at most
-            12 decimal places.
+          description: The unit amount in %s to be charged, represented as a decimal
+            string with at most 12 decimal places.
           format: decimal
           nullable: true
           type: string
@@ -16629,7 +16764,7 @@ components:
       description: |-
         Products describe the specific goods or services you offer to your customers.
         For example, you might offer a Standard and Premium version of your goods or service; each version would be a separate Product.
-        They can be used in conjuction with [SKUs](https://stripe.com/docs/api#skus) and [Plans](https://stripe.com/docs/api#plans) to configure pricing in Checkout and Subscriptions.
+        They can be used in conjunction with [SKUs](https://stripe.com/docs/api#skus) and [Plans](https://stripe.com/docs/api#plans) to configure pricing in Checkout and Subscriptions.
 
         Related guides: [Set up a subscription](https://stripe.com/docs/billing/subscriptions/set-up-subscription) or accept [one-time payments with Checkout](https://stripe.com/docs/payments/checkout/client#create-products) and more about [Products and Plans](https://stripe.com/docs/billing/subscriptions/products-and-plans)
       properties:
@@ -20862,9 +20997,9 @@ components:
         transfer_data:
           anyOf:
           - "$ref": "#/components/schemas/subscription_transfer_data"
-          description: If specified, the funds from the subscription's invoices will
-            be transferred to the destination and the ID of the resulting transfers
-            will be found on the resulting charges.
+          description: The account (if any) the subscription's payments will be attributed
+            to for tax reporting, and where funds from each payment will be transferred
+            to for each of the subscription's invoices.
           nullable: true
         trial_end:
           description: If the subscription has a trial, the end of that trial.
@@ -24170,9 +24305,6 @@ paths:
       description: |-
         <p>With <a href="/docs/connect">Connect</a>, you can create Stripe accounts for your users.
         To do this, you’ll first need to <a href="https://dashboard.stripe.com/account/applications/settings">register your platform</a>.</p>
-
-        <p>For Standard accounts, parameters other than <code>country</code>, <code>email</code>, and <code>type</code>
-        are used to prefill the account application that we ask the account holder to complete.</p>
       operationId: PostAccounts
       requestBody:
         content:
@@ -30126,6 +30258,8 @@ paths:
                     A list of items the customer is purchasing. Use this parameter for
                     one-time payments or adding invoice line items to a subscription (used
                     in conjunction with `subscription_data`).
+                    There is a maximum of 100 line items, however it is recommended to
+                    consolidate line items if there are more than a few dozen.
                   items:
                     properties:
                       amount:
@@ -30154,6 +30288,60 @@ paths:
                         description: The name for the line item.
                         maxLength: 5000
                         type: string
+                      price:
+                        description: The ID of the price object.
+                        maxLength: 5000
+                        type: string
+                      price_data:
+                        description: Data used to generate a new price object inline.
+                        properties:
+                          currency:
+                            description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                              in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+                            type: string
+                          product:
+                            description: The ID of the product that this price will
+                              belong to.
+                            maxLength: 5000
+                            type: string
+                          recurring:
+                            description: The recurring components of a price such
+                              as `interval` and `usage_type`.
+                            properties:
+                              interval:
+                                description: Specifies billing frequency. Either `day`,
+                                  `week`, `month` or `year`.
+                                enum:
+                                - day
+                                - month
+                                - week
+                                - year
+                                type: string
+                              interval_count:
+                                description: The number of intervals between subscription
+                                  billings. For example, `interval=month` and `interval_count=3`
+                                  bills every 3 months. Maximum of one year interval
+                                  allowed (1 year, 12 months, or 52 weeks).
+                                type: integer
+                            required:
+                            - interval
+                            title: recurring_adhoc
+                            type: object
+                          unit_amount:
+                            description: A positive integer in %s (or 0 for a free
+                              price) representing how much to charge.
+                            type: integer
+                          unit_amount_decimal:
+                            description: Same as `unit_amount`, but accepts a decimal
+                              value with at most 12 decimal places. Only one of `unit_amount`
+                              and `unit_amount_decimal` can be set.
+                            format: decimal
+                            type: string
+                        required:
+                        - currency
+                        - product
+                        title: price_data
+                        type: object
                       quantity:
                         description: The quantity of the line item being purchased.
                         type: integer
@@ -30828,6 +31016,115 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
+  "/v1/checkout/sessions/{session}/line_items":
+    get:
+      description: "<p>When retrieving a Checkout Session, there is an includable
+        <strong>line_items</strong> property containing the first handful of those
+        items. There is also a URL where you can retrieve the full (paginated) list
+        of line items.</p>"
+      operationId: GetCheckoutSessionsSessionLineItems
+      parameters:
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      - in: path
+        name: session
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        schema:
+          maxLength: 5000
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: ''
+                properties:
+                  data:
+                    description: Details about each object.
+                    items:
+                      "$ref": "#/components/schemas/item"
+                    type: array
+                  has_more:
+                    description: True if this list has another page of items after
+                      this one that can be fetched.
+                    type: boolean
+                  object:
+                    description: String representing the object's type. Objects of
+                      the same type share the same value. Always has the value `list`.
+                    enum:
+                    - list
+                    type: string
+                  url:
+                    description: The URL where this list can be accessed.
+                    maxLength: 5000
+                    type: string
+                required:
+                - data
+                - has_more
+                - object
+                - url
+                title: PaymentPagesCheckoutSessionListLineItems
+                type: object
+                x-expandableFields:
+                - data
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
   "/v1/country_specs":
     get:
       description: "<p>Lists all Country Spec objects available in the API.</p>"
@@ -31144,11 +31441,9 @@ paths:
                   type: array
                 id:
                   description: Unique string of your choice that will be used to identify
-                    this coupon when applying it to a customer. This is often a specific
-                    code you'll give to your customer to use when signing up (e.g.,
-                    `FALL25OFF`). If you don't want to specify a particular code,
-                    you can leave the ID blank and we'll generate a random code for
-                    you.
+                    this coupon when applying it to a customer. If you don't want
+                    to specify a particular code, you can leave the ID blank and we'll
+                    generate a random code for you.
                   maxLength: 5000
                   type: string
                 max_redemptions:
@@ -48466,7 +48761,6 @@ paths:
                       enum:
                       - down
                       - up
-                      maxLength: 5000
                       type: string
                   required:
                   - divide_by
@@ -49103,7 +49397,6 @@ paths:
                       enum:
                       - down
                       - up
-                      maxLength: 5000
                       type: string
                   required:
                   - divide_by
