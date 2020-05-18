@@ -2072,7 +2072,7 @@
             "type": "string"
           },
           "type": {
-            "description": "Transaction type: `adjustment`, `advance`, `advance_funding`, `application_fee`, `application_fee_refund`, `charge`, `connect_collection_transfer`, `issuing_authorization_hold`, `issuing_authorization_release`, `issuing_transaction`, `payment`, `payment_failure_refund`, `payment_refund`, `payout`, `payout_cancel`, `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`, `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`, `transfer_cancel`, `transfer_failure`, or `transfer_refund`. [Learn more](https://stripe.com/docs/reports/balance-transaction-types) about balance transaction types and what they represent. If you are looking to classify transactions for accounting purposes, you might want to consider `reporting_category` instead.",
+            "description": "Transaction type: `adjustment`, `advance`, `advance_funding`, `application_fee`, `application_fee_refund`, `charge`, `connect_collection_transfer`, `issuing_authorization_hold`, `issuing_authorization_release`, `issuing_dispute`, `issuing_transaction`, `payment`, `payment_failure_refund`, `payment_refund`, `payout`, `payout_cancel`, `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`, `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`, `transfer_cancel`, `transfer_failure`, or `transfer_refund`. [Learn more](https://stripe.com/docs/reports/balance-transaction-types) about balance transaction types and what they represent. If you are looking to classify transactions for accounting purposes, you might want to consider `reporting_category` instead.",
             "enum": [
               "adjustment",
               "advance",
@@ -2083,6 +2083,7 @@
               "connect_collection_transfer",
               "issuing_authorization_hold",
               "issuing_authorization_release",
+              "issuing_dispute",
               "issuing_transaction",
               "payment",
               "payment_failure_refund",
@@ -8766,11 +8767,11 @@
             "method_on": "class",
             "method_type": "retrieve",
             "operation": "get",
-            "path": "/v1/exchange_rates/{currency}",
+            "path": "/v1/exchange_rates/{rate_id}",
             "path_resource_variables": [
               {
-                "method_parameter": "currency",
-                "name": "currency"
+                "method_parameter": "rate_id",
+                "name": "rate_id"
               }
             ]
           },
@@ -8779,11 +8780,11 @@
             "method_on": "service",
             "method_type": "retrieve",
             "operation": "get",
-            "path": "/v1/exchange_rates/{currency}",
+            "path": "/v1/exchange_rates/{rate_id}",
             "path_resource_variables": [
               {
-                "method_parameter": "currency",
-                "name": "currency"
+                "method_parameter": "rate_id",
+                "name": "rate_id"
               }
             ]
           }
@@ -10765,6 +10766,11 @@
       "invoice_transfer_data": {
         "description": "",
         "properties": {
+          "amount": {
+            "description": "The amount in %s that will be transferred to the destination account when the invoice is paid. By default, the entire amount is transferred to the destination.",
+            "nullable": true,
+            "type": "integer"
+          },
           "destination": {
             "anyOf": [
               {
@@ -10786,6 +10792,7 @@
           }
         },
         "required": [
+          "amount",
           "destination"
         ],
         "title": "InvoiceTransferData",
@@ -10985,6 +10992,7 @@
           "object",
           "period",
           "plan",
+          "price",
           "proration",
           "quantity",
           "subscription",
@@ -12161,6 +12169,13 @@
       "issuing.dispute": {
         "description": "As a [card issuer](https://stripe.com/docs/issuing), you can [dispute](https://stripe.com/docs/issuing/purchases/disputes) transactions that you do not recognize, suspect to be fraudulent, or have some other issue.\n\nRelated guide: [Disputing Transactions](https://stripe.com/docs/issuing/purchases/disputes)",
         "properties": {
+          "balance_transactions": {
+            "description": "List of balance transactions associated with this dispute.",
+            "items": {
+              "$ref": "#/components/schemas/balance_transaction"
+            },
+            "type": "array"
+          },
           "id": {
             "description": "Unique identifier for the object.",
             "maxLength": 5000,
@@ -12179,6 +12194,7 @@
           }
         },
         "required": [
+          "balance_transactions",
           "id",
           "livemode",
           "object"
@@ -12186,7 +12202,7 @@
         "title": "IssuingDispute",
         "type": "object",
         "x-expandableFields": [
-
+          "balance_transactions"
         ],
         "x-resourceId": "issuing.dispute",
         "x-stripeOperations": [
@@ -16108,6 +16124,7 @@
           "object",
           "period",
           "plan",
+          "price",
           "proration",
           "quantity",
           "subscription",
@@ -17218,6 +17235,36 @@
         "x-stripeResource": {
           "class_name": "PackageDimensions",
           "in_package": ""
+        }
+      },
+      "payment_flows_private_payment_methods_alipay_details": {
+        "description": "",
+        "properties": {
+          "fingerprint": {
+            "description": "Uniquely identifies this particular Alipay account. You can use this attribute to check whether two Alipay accounts are the same.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "transaction_id": {
+            "description": "Transaction ID of this particular Alipay transaction.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "fingerprint",
+          "transaction_id"
+        ],
+        "title": "PaymentFlowsPrivatePaymentMethodsAlipayDetails",
+        "type": "object",
+        "x-expandableFields": [
+
+        ],
+        "x-stripeResource": {
+          "class_name": "Alipay",
+          "in_class": "payment_method_details"
         }
       },
       "payment_intent": {
@@ -18655,7 +18702,7 @@
             "$ref": "#/components/schemas/payment_method_details_acss_debit"
           },
           "alipay": {
-            "$ref": "#/components/schemas/payment_method_details_alipay"
+            "$ref": "#/components/schemas/payment_flows_private_payment_methods_alipay_details"
           },
           "au_becs_debit": {
             "$ref": "#/components/schemas/payment_method_details_au_becs_debit"
@@ -18746,10 +18793,10 @@
           "class_name": "PaymentMethodDetails",
           "in_class": "charge",
           "inner_classes": [
+            "payment_flows_private_payment_methods_alipay_details",
             "payment_method_details_ach_credit_transfer",
             "payment_method_details_ach_debit",
             "payment_method_details_acss_debit",
-            "payment_method_details_alipay",
             "payment_method_details_au_becs_debit",
             "payment_method_details_bancontact",
             "payment_method_details_bitcoin",
@@ -18916,20 +18963,6 @@
         ],
         "x-stripeResource": {
           "class_name": "AcssDebit",
-          "in_class": "payment_method_details"
-        }
-      },
-      "payment_method_details_alipay": {
-        "description": "",
-        "properties": {
-        },
-        "title": "payment_method_details_alipay",
-        "type": "object",
-        "x-expandableFields": [
-
-        ],
-        "x-stripeResource": {
-          "class_name": "Alipay",
           "in_class": "payment_method_details"
         }
       },
@@ -21579,7 +21612,7 @@
         }
       },
       "plan": {
-        "description": "Plans define the base price, currency, and billing cycle for recurring purchases of products.\nProducts help you track inventory or provisioning, and plans help you track pricing. Different physical goods or levels of service should be represented by products, and pricing options should be represented by plans. This approach lets you change prices without having to change your provisioning scheme.\n\nFor example, you might have a single \"gold\" product that has plans for $10/month, $100/year, €9/month, and €90/year.\n\nRelated guides: [Set up a subscription](https://stripe.com/docs/billing/subscriptions/set-up-subscription) and more about [products and plans](https://stripe.com/docs/billing/subscriptions/products-and-plans).",
+        "description": "You can now model subscriptions more flexibly using the [Prices API](https://stripe.com/docs/api#prices). It replaces the Plans API and is backwards compatible to simplify your migration.\n\nPlans define the base price, currency, and billing cycle for recurring purchases of products.\n[Products](https://stripe.com/docs/api#products) help you track inventory or provisioning, and plans help you track pricing. Different physical goods or levels of service should be represented by products, and pricing options should be represented by plans. This approach lets you change prices without having to change your provisioning scheme.\n\nFor example, you might have a single \"gold\" product that has plans for $10/month, $100/year, €9/month, and €90/year.\n\nRelated guides: [Set up a subscription](https://stripe.com/docs/billing/subscriptions/set-up-subscription) and more about [products and prices](https://stripe.com/docs/billing/subscriptions/products-and-prices).",
         "properties": {
           "active": {
             "description": "Whether the plan can be used for new purchases.",
@@ -21982,7 +22015,7 @@
         }
       },
       "price": {
-        "description": "Prices define the unit cost, currency, and (optional) billing cycle for both recurring and one-time purchases of products.\nProducts help you track inventory or provisioning, and prices help you track payment terms. Different physical goods or levels of service should be represented by products, and pricing options should be represented by prices. This approach lets you change prices without having to change your provisioning scheme.\n\nFor example, you might have a single \"gold\" product that has prices for $10/month, $100/year, and €9 once.\n\nRelated guides: [Set up a subscription](https://stripe.com/docs/billing/subscriptions/set-up-subscription), [create an invoice](https://stripe.com/docs/billing/invoices/create), and more about [products and prices](https://stripe.com/docs/billing/prices-guide).",
+        "description": "Prices define the unit cost, currency, and (optional) billing cycle for both recurring and one-time purchases of products.\n[Products](https://stripe.com/docs/api#products) help you track inventory or provisioning, and prices help you track payment terms. Different physical goods or levels of service should be represented by products, and pricing options should be represented by prices. This approach lets you change prices without having to change your provisioning scheme.\n\nFor example, you might have a single \"gold\" product that has prices for $10/month, $100/year, and €9 once.\n\nRelated guides: [Set up a subscription](https://stripe.com/docs/billing/subscriptions/set-up-subscription), [create an invoice](https://stripe.com/docs/billing/invoices/create), and more about [products and prices](https://stripe.com/docs/billing/prices-guide).",
         "properties": {
           "active": {
             "description": "Whether the price can be used for new purchases.",
@@ -22049,6 +22082,9 @@
               },
               {
                 "$ref": "#/components/schemas/product"
+              },
+              {
+                "$ref": "#/components/schemas/deleted_product"
               }
             ],
             "description": "The ID of the product this price is associated with.",
@@ -22056,6 +22092,9 @@
               "oneOf": [
                 {
                   "$ref": "#/components/schemas/product"
+                },
+                {
+                  "$ref": "#/components/schemas/deleted_product"
                 }
               ]
             }
@@ -22286,7 +22325,7 @@
         }
       },
       "product": {
-        "description": "Products describe the specific goods or services you offer to your customers.\nFor example, you might offer a Standard and Premium version of your goods or service; each version would be a separate Product.\nThey can be used in conjunction with [Prices](https://stripe.com/docs/api#prices) to configure pricing in Checkout and Subscriptions.\n\nRelated guides: [Set up a subscription](https://stripe.com/docs/billing/subscriptions/set-up-subscription) or accept [one-time payments with Checkout](https://stripe.com/docs/payments/checkout/client#create-products) and more about [Products and Plans](https://stripe.com/docs/billing/subscriptions/products-and-plans)",
+        "description": "Products describe the specific goods or services you offer to your customers.\nFor example, you might offer a Standard and Premium version of your goods or service; each version would be a separate Product.\nThey can be used in conjunction with [Prices](https://stripe.com/docs/api#prices) to configure pricing in Checkout and Subscriptions.\n\nRelated guides: [Set up a subscription](https://stripe.com/docs/billing/subscriptions/set-up-subscription) or accept [one-time payments with Checkout](https://stripe.com/docs/payments/checkout/client#create-products) and more about [Products and Prices](https://stripe.com/docs/billing/subscriptions/products-and-prices)",
         "properties": {
           "active": {
             "description": "Whether the product is currently available for purchase.",
@@ -28023,6 +28062,7 @@
           "metadata",
           "object",
           "plan",
+          "price",
           "subscription",
           "tax_rates"
         ],
@@ -28580,6 +28620,7 @@
             }
           },
           "quantity": {
+            "description": "The quantity of the invoice item.",
             "nullable": true,
             "type": "integer"
           }
@@ -28677,6 +28718,7 @@
         "required": [
           "billing_thresholds",
           "plan",
+          "price",
           "quantity"
         ],
         "title": "SubscriptionScheduleConfigurationItem",
@@ -28724,6 +28766,7 @@
         "description": "A phase describes the plans, coupon, and trialing status of a subscription for a predefined time period.",
         "properties": {
           "add_invoice_items": {
+            "description": "A list of prices and quantities that will generate invoice items appended to the first invoice for this phase.",
             "items": {
               "$ref": "#/components/schemas/subscription_schedule_add_invoice_item"
             },
@@ -28855,6 +28898,7 @@
           }
         },
         "required": [
+          "add_invoice_items",
           "application_fee_percent",
           "billing_thresholds",
           "collection_method",
@@ -28956,6 +29000,11 @@
       "subscription_transfer_data": {
         "description": "",
         "properties": {
+          "amount_percent": {
+            "description": "A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the destination account. By default, the entire amount is transferred to the destination.",
+            "nullable": true,
+            "type": "number"
+          },
           "destination": {
             "anyOf": [
               {
@@ -28977,6 +29026,7 @@
           }
         },
         "required": [
+          "amount_percent",
           "destination"
         ],
         "title": "SubscriptionTransferData",
@@ -37561,7 +37611,7 @@
             "style": "form"
           },
           {
-            "description": "Only returns transactions of the given type. One of: `charge`, `refund`, `adjustment`, `application_fee`, `application_fee_refund`, `transfer`, `payment`, `payout`, `payout_failure`, `stripe_fee`, or `network_cost`.",
+            "description": "Only returns transactions of the given type. One of: `adjustment`, `advance`, `advance_funding`, `application_fee`, `application_fee_refund`, `charge`, `connect_collection_transfer`, `issuing_authorization_hold`, `issuing_authorization_release`, `issuing_dispute`, `issuing_transaction`, `payment`, `payment_failure_refund`, `payment_refund`, `payout`, `payout_cancel`, `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`, `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`, `transfer_cancel`, `transfer_failure`, or `transfer_refund`.",
             "in": "query",
             "name": "type",
             "required": false,
@@ -46282,21 +46332,11 @@
         }
       }
     },
-    "/v1/exchange_rates/{currency}": {
+    "/v1/exchange_rates/{rate_id}": {
       "get": {
         "description": "<p>Retrieves the exchange rates from the given currency to every supported currency.</p>",
-        "operationId": "GetExchangeRatesCurrency",
+        "operationId": "GetExchangeRatesRateId",
         "parameters": [
-          {
-            "in": "path",
-            "name": "currency",
-            "required": true,
-            "schema": {
-              "maxLength": 3,
-              "type": "string"
-            },
-            "style": "simple"
-          },
           {
             "description": "Specifies which fields in the response should be expanded.",
             "explode": true,
@@ -46311,6 +46351,16 @@
               "type": "array"
             },
             "style": "deepObject"
+          },
+          {
+            "in": "path",
+            "name": "rate_id",
+            "required": true,
+            "schema": {
+              "maxLength": 3,
+              "type": "string"
+            },
+            "style": "simple"
           }
         ],
         "requestBody": {
@@ -48324,6 +48374,10 @@
                   "transfer_data": {
                     "description": "If specified, the funds from the invoice will be transferred to the destination and the ID of the resulting transfer will be found on the invoice's charge.",
                     "properties": {
+                      "amount": {
+                        "description": "The amount that will be transferred automatically when the invoice is paid. If no amount is set, the full amount is transferred.",
+                        "type": "integer"
+                      },
                       "destination": {
                         "description": "ID of an existing, connected Stripe account.",
                         "type": "string"
@@ -49635,7 +49689,7 @@
     },
     "/v1/invoices/{invoice}": {
       "delete": {
-        "description": "<p>Permanently deletes a draft invoice. This cannot be undone. Attempts to delete invoices that are no longer in a draft state will fail; once an invoice has been finalized, it must be <a href=\"#void_invoice\">voided</a>.</p>",
+        "description": "<p>Permanently deletes a one-off invoice draft. This cannot be undone. Attempts to delete invoices that are no longer in a draft state will fail; once an invoice has been finalized or if an invoice is for a subscription, it must be <a href=\"#void_invoice\">voided</a>.</p>",
         "operationId": "DeleteInvoicesInvoice",
         "parameters": [
           {
@@ -49954,6 +50008,10 @@
                     "anyOf": [
                       {
                         "properties": {
+                          "amount": {
+                            "description": "The amount that will be transferred automatically when the invoice is paid. If no amount is set, the full amount is transferred.",
+                            "type": "integer"
+                          },
                           "destination": {
                             "description": "ID of an existing, connected Stripe account.",
                             "type": "string"
@@ -63432,7 +63490,7 @@
     },
     "/v1/products/{id}": {
       "delete": {
-        "description": "<p>Delete a product. Deleting a product with type=<code>good</code> is only possible if it has no SKUs associated with it. Deleting a product with type=<code>service</code> is only possible if it has no plans associated with it.</p>",
+        "description": "<p>Delete a product. Deleting a product is only possible if it has no prices associated with it. Additionally, deleting a product with <code>type=good</code> is only possible if it has no SKUs associated with it.</p>",
         "operationId": "DeleteProductsId",
         "parameters": [
           {
@@ -66091,6 +66149,7 @@
                           "financing_payout_reversal",
                           "issuing_authorization_hold",
                           "issuing_authorization_release",
+                          "issuing_dispute",
                           "issuing_transaction",
                           "network_cost",
                           "other_adjustment",
@@ -73549,6 +73608,10 @@
                   "transfer_data": {
                     "description": "If specified, the funds from the subscription's invoices will be transferred to the destination and the ID of the resulting transfers will be found on the resulting charges.",
                     "properties": {
+                      "amount_percent": {
+                        "description": "A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the destination account. By default, the entire amount is transferred to the destination.",
+                        "type": "number"
+                      },
                       "destination": {
                         "description": "ID of an existing, connected Stripe account.",
                         "type": "string"
@@ -74290,6 +74353,10 @@
                     "anyOf": [
                       {
                         "properties": {
+                          "amount_percent": {
+                            "description": "A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the destination account. By default, the entire amount is transferred to the destination.",
+                            "type": "number"
+                          },
                           "destination": {
                             "description": "ID of an existing, connected Stripe account.",
                             "type": "string"
@@ -78821,6 +78888,9 @@
                         "plan.created",
                         "plan.deleted",
                         "plan.updated",
+                        "price.created",
+                        "price.deleted",
+                        "price.updated",
                         "product.created",
                         "product.deleted",
                         "product.updated",
@@ -79213,6 +79283,9 @@
                         "plan.created",
                         "plan.deleted",
                         "plan.updated",
+                        "price.created",
+                        "price.deleted",
+                        "price.updated",
                         "product.created",
                         "product.deleted",
                         "product.updated",
