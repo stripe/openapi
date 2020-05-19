@@ -1613,11 +1613,12 @@
             "type": "string"
           },
           "type": {
-            "description": "Transaction type: `adjustment`, `advance`, `advance_funding`, `application_fee`, `application_fee_refund`, `charge`, `connect_collection_transfer`, `issuing_authorization_hold`, `issuing_authorization_release`, `issuing_dispute`, `issuing_transaction`, `payment`, `payment_failure_refund`, `payment_refund`, `payout`, `payout_cancel`, `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`, `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`, `transfer_cancel`, `transfer_failure`, or `transfer_refund`. [Learn more](https://stripe.com/docs/reports/balance-transaction-types) about balance transaction types and what they represent. If you are looking to classify transactions for accounting purposes, you might want to consider `reporting_category` instead.",
+            "description": "Transaction type: `adjustment`, `advance`, `advance_funding`, `anticipation_repayment`, `application_fee`, `application_fee_refund`, `charge`, `connect_collection_transfer`, `issuing_authorization_hold`, `issuing_authorization_release`, `issuing_dispute`, `issuing_transaction`, `payment`, `payment_failure_refund`, `payment_refund`, `payout`, `payout_cancel`, `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`, `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`, `transfer_cancel`, `transfer_failure`, or `transfer_refund`. [Learn more](https://stripe.com/docs/reports/balance-transaction-types) about balance transaction types and what they represent. If you are looking to classify transactions for accounting purposes, you might want to consider `reporting_category` instead.",
             "enum": [
               "adjustment",
               "advance",
               "advance_funding",
+              "anticipation_repayment",
               "application_fee",
               "application_fee_refund",
               "charge",
@@ -1850,7 +1851,7 @@
         ]
       },
       "billing_portal.session": {
-        "description": "A Session describes the instantiation of the self-serve portal for\na particular customer. By visiting the self-serve portal's URL, the customer\ncan manage their subscriptions and billing details. For security reasons,\nSessions are short-lived and will expire if the customer does not visit the URL.\nCreate Sessions on-demand.\n\nIntegration guide: [Billing self-serve portal](https://stripe.com/docs/billing/subscriptions/integrating-self-serve-portal).",
+        "description": "A session describes the instantiation of the self-serve portal for\na particular customer. By visiting the self-serve portal's URL, the customer\ncan manage their subscriptions and billing details. For security reasons,\nsessions are short-lived and will expire if the customer does not visit the URL.\nCreate Sessions on-demand.\n\nIntegration guide: [Billing self-serve portal](https://stripe.com/docs/billing/subscriptions/integrating-self-serve-portal).",
         "properties": {
           "created": {
             "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
@@ -3123,7 +3124,7 @@
             "type": "string"
           },
           "line_items": {
-            "description": "The line items purchased by the customer. [Expand](https://stripe.com/docs/api/expanding_objects) this field to include it in the response.",
+            "description": "The line items purchased by the customer.",
             "nullable": true,
             "properties": {
               "data": {
@@ -13076,6 +13077,9 @@
           "ideal": {
             "$ref": "#/components/schemas/payment_method_ideal"
           },
+          "interac_present": {
+            "$ref": "#/components/schemas/payment_method_interac_present"
+          },
           "livemode": {
             "description": "Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
             "type": "boolean"
@@ -13130,6 +13134,7 @@
           "customer",
           "fpx",
           "ideal",
+          "interac_present",
           "sepa_debit"
         ],
         "x-resourceId": "payment_method"
@@ -13528,6 +13533,9 @@
           "ideal": {
             "$ref": "#/components/schemas/payment_method_details_ideal"
           },
+          "interac_present": {
+            "$ref": "#/components/schemas/payment_method_details_interac_present"
+          },
           "klarna": {
             "$ref": "#/components/schemas/payment_method_details_klarna"
           },
@@ -13572,6 +13580,7 @@
           "fpx",
           "giropay",
           "ideal",
+          "interac_present",
           "klarna",
           "multibanco",
           "p24",
@@ -14015,6 +14024,11 @@
       "payment_method_details_card_present_receipt": {
         "description": "",
         "properties": {
+          "account_type": {
+            "description": "For Interac transactions - the source account type of the funds",
+            "maxLength": 5000,
+            "type": "string"
+          },
           "application_cryptogram": {
             "description": "EMV tag 9F26, cryptogram generated by the integrated circuit chip.",
             "maxLength": 5000,
@@ -14401,6 +14415,95 @@
 
         ]
       },
+      "payment_method_details_interac_present": {
+        "description": "",
+        "properties": {
+          "brand": {
+            "description": "Card brand. Can be `interac`, `mastercard` or `visa`.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "cardholder_name": {
+            "description": "The cardholder name as read from the card, in [ISO 7813](https://en.wikipedia.org/wiki/ISO/IEC_7813) format. May include alphanumeric characters, special characters and first/last name separator (`/`).",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "description": "Two-letter ISO code representing the country of the card. You could use this attribute to get a sense of the international breakdown of cards you've collected.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "emv_auth_data": {
+            "description": "Authorization response cryptogram.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "exp_month": {
+            "description": "Two-digit number representing the card's expiration month.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "exp_year": {
+            "description": "Four-digit number representing the card's expiration year.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "fingerprint": {
+            "description": "Uniquely identifies this particular card number. You can use this attribute to check whether two customers who’ve signed up with you are using the same card number,for example. For payment methods that tokenize card information (Apple Pay, Google Pay), the tokenized number might be provided instead of the underlying card number.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "funding": {
+            "description": "Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "generated_card": {
+            "description": "ID of a card PaymentMethod generated from the card_present PaymentMethod that may be attached to a Customer for future transactions. Only present if it was possible to generate a card PaymentMethod.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "last4": {
+            "description": "The last four digits of the card.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "network": {
+            "description": "Identifies which network this charge was processed on. Can be `amex`, `diners`, `discover`, `interac`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "read_method": {
+            "description": "How were card details read in this transaction. Can be contact_emv, contactless_emv, magnetic_stripe_fallback, magnetic_stripe_track2, or contactless_magstripe_mode",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "receipt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/payment_method_details_card_present_receipt"
+              }
+            ],
+            "description": "A collection of fields required to be displayed on receipts. Only required for EMV transactions.",
+            "nullable": true
+          }
+        },
+        "title": "payment_method_details_interac_present",
+        "type": "object",
+        "x-expandableFields": [
+          "receipt"
+        ]
+      },
       "payment_method_details_klarna": {
         "description": "",
         "properties": {
@@ -14649,6 +14752,16 @@
           }
         },
         "title": "payment_method_ideal",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
+      "payment_method_interac_present": {
+        "description": "",
+        "properties": {
+        },
+        "title": "payment_method_interac_present",
         "type": "object",
         "x-expandableFields": [
 
@@ -23231,7 +23344,7 @@
         }
       },
       "post": {
-        "description": "<p>Updates the metadata, account holder name, and account holder type of a bank account belonging to a <a href=\"/docs/connect/custom-accounts\">Custom account</a>, and optionally sets it as the default for its currency. Other bank account details are not editable by design.</p>\n<p>You can re-enable a disabled bank account by performing an update call without providing any arguments or changes.</p>",
+        "description": "<p>Updates the metadata, account holder name, and account holder type of a bank account belonging to a <a href=\"/docs/connect/custom-accounts\">Custom account</a>, and optionally sets it as the default for its currency. Other bank account details are not editable by design.</p>\n\n<p>You can re-enable a disabled bank account by performing an update call without providing any arguments or changes.</p>",
         "operationId": "PostAccountBankAccountsId",
         "parameters": [
           {
@@ -23998,7 +24111,7 @@
         }
       },
       "post": {
-        "description": "<p>Updates the metadata, account holder name, and account holder type of a bank account belonging to a <a href=\"/docs/connect/custom-accounts\">Custom account</a>, and optionally sets it as the default for its currency. Other bank account details are not editable by design.</p>\n<p>You can re-enable a disabled bank account by performing an update call without providing any arguments or changes.</p>",
+        "description": "<p>Updates the metadata, account holder name, and account holder type of a bank account belonging to a <a href=\"/docs/connect/custom-accounts\">Custom account</a>, and optionally sets it as the default for its currency. Other bank account details are not editable by design.</p>\n\n<p>You can re-enable a disabled bank account by performing an update call without providing any arguments or changes.</p>",
         "operationId": "PostAccountExternalAccountsId",
         "parameters": [
           {
@@ -28658,7 +28771,7 @@
         }
       },
       "post": {
-        "description": "<p>Updates the metadata, account holder name, and account holder type of a bank account belonging to a <a href=\"/docs/connect/custom-accounts\">Custom account</a>, and optionally sets it as the default for its currency. Other bank account details are not editable by design.</p>\n<p>You can re-enable a disabled bank account by performing an update call without providing any arguments or changes.</p>",
+        "description": "<p>Updates the metadata, account holder name, and account holder type of a bank account belonging to a <a href=\"/docs/connect/custom-accounts\">Custom account</a>, and optionally sets it as the default for its currency. Other bank account details are not editable by design.</p>\n\n<p>You can re-enable a disabled bank account by performing an update call without providing any arguments or changes.</p>",
         "operationId": "PostAccountsAccountBankAccountsId",
         "parameters": [
           {
@@ -29507,7 +29620,7 @@
         }
       },
       "post": {
-        "description": "<p>Updates the metadata, account holder name, and account holder type of a bank account belonging to a <a href=\"/docs/connect/custom-accounts\">Custom account</a>, and optionally sets it as the default for its currency. Other bank account details are not editable by design.</p>\n<p>You can re-enable a disabled bank account by performing an update call without providing any arguments or changes.</p>",
+        "description": "<p>Updates the metadata, account holder name, and account holder type of a bank account belonging to a <a href=\"/docs/connect/custom-accounts\">Custom account</a>, and optionally sets it as the default for its currency. Other bank account details are not editable by design.</p>\n\n<p>You can re-enable a disabled bank account by performing an update call without providing any arguments or changes.</p>",
         "operationId": "PostAccountsAccountExternalAccountsId",
         "parameters": [
           {
@@ -33246,7 +33359,7 @@
             "style": "form"
           },
           {
-            "description": "Only returns transactions of the given type. One of: `adjustment`, `advance`, `advance_funding`, `application_fee`, `application_fee_refund`, `charge`, `connect_collection_transfer`, `issuing_authorization_hold`, `issuing_authorization_release`, `issuing_dispute`, `issuing_transaction`, `payment`, `payment_failure_refund`, `payment_refund`, `payout`, `payout_cancel`, `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`, `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`, `transfer_cancel`, `transfer_failure`, or `transfer_refund`.",
+            "description": "Only returns transactions of the given type. One of: `adjustment`, `advance`, `advance_funding`, `anticipation_repayment`, `application_fee`, `application_fee_refund`, `charge`, `connect_collection_transfer`, `issuing_authorization_hold`, `issuing_authorization_release`, `issuing_dispute`, `issuing_transaction`, `payment`, `payment_failure_refund`, `payment_refund`, `payout`, `payout_cancel`, `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`, `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`, `transfer_cancel`, `transfer_failure`, or `transfer_refund`.",
             "in": "query",
             "name": "type",
             "required": false,
@@ -33551,7 +33664,7 @@
             "style": "form"
           },
           {
-            "description": "Only returns transactions of the given type. One of: `adjustment`, `advance`, `advance_funding`, `application_fee`, `application_fee_refund`, `charge`, `connect_collection_transfer`, `issuing_authorization_hold`, `issuing_authorization_release`, `issuing_dispute`, `issuing_transaction`, `payment`, `payment_failure_refund`, `payment_refund`, `payout`, `payout_cancel`, `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`, `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`, `transfer_cancel`, `transfer_failure`, or `transfer_refund`.",
+            "description": "Only returns transactions of the given type. One of: `adjustment`, `advance`, `advance_funding`, `anticipation_repayment`, `application_fee`, `application_fee_refund`, `charge`, `connect_collection_transfer`, `issuing_authorization_hold`, `issuing_authorization_release`, `issuing_dispute`, `issuing_transaction`, `payment`, `payment_failure_refund`, `payment_refund`, `payout`, `payout_cancel`, `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`, `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`, `transfer_cancel`, `transfer_failure`, or `transfer_refund`.",
             "in": "query",
             "name": "type",
             "required": false,
@@ -33709,7 +33822,7 @@
     },
     "/v1/billing_portal/sessions": {
       "post": {
-        "description": "<p>Creates a session of the self-serve Portal.</p>",
+        "description": "<p>Creates a session of the self-serve portal.</p>",
         "operationId": "PostBillingPortalSessions",
         "requestBody": {
           "content": {
@@ -35554,6 +35667,10 @@
                 "metadata": {
                   "explode": true,
                   "style": "deepObject"
+                },
+                "payment_method_data": {
+                  "explode": true,
+                  "style": "deepObject"
                 }
               },
               "schema": {
@@ -35590,6 +35707,219 @@
                   "payment_intent": {
                     "maxLength": 5000,
                     "type": "string"
+                  },
+                  "payment_method_data": {
+                    "properties": {
+                      "au_becs_debit": {
+                        "properties": {
+                          "account_number": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "bsb_number": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "account_number",
+                          "bsb_number"
+                        ],
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "billing_details": {
+                        "properties": {
+                          "address": {
+                            "properties": {
+                              "city": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "country": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line1": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line2": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "state": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "title": "billing_details_address",
+                            "type": "object"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "phone": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "title": "billing_details_inner_params",
+                        "type": "object"
+                      },
+                      "card": {
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "cvc": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "exp_month": {
+                                "type": "integer"
+                              },
+                              "exp_year": {
+                                "type": "integer"
+                              },
+                              "number": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "exp_month",
+                              "exp_year",
+                              "number"
+                            ],
+                            "title": "card_details_params",
+                            "type": "object"
+                          },
+                          {
+                            "properties": {
+                              "token": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "token"
+                            ],
+                            "title": "token_params",
+                            "type": "object"
+                          }
+                        ],
+                        "x-stripeBypassValidation": true
+                      },
+                      "fpx": {
+                        "properties": {
+                          "bank": {
+                            "enum": [
+                              "affin_bank",
+                              "alliance_bank",
+                              "ambank",
+                              "bank_islam",
+                              "bank_muamalat",
+                              "bank_rakyat",
+                              "bsn",
+                              "cimb",
+                              "deutsche_bank",
+                              "hong_leong_bank",
+                              "hsbc",
+                              "kfh",
+                              "maybank2e",
+                              "maybank2u",
+                              "ocbc",
+                              "pb_enterprise",
+                              "public_bank",
+                              "rhb",
+                              "standard_chartered",
+                              "uob"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string",
+                            "x-stripeBypassValidation": true
+                          }
+                        },
+                        "required": [
+                          "bank"
+                        ],
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "ideal": {
+                        "properties": {
+                          "bank": {
+                            "enum": [
+                              "abn_amro",
+                              "asn_bank",
+                              "bunq",
+                              "handelsbanken",
+                              "ing",
+                              "knab",
+                              "moneyou",
+                              "rabobank",
+                              "regiobank",
+                              "sns_bank",
+                              "triodos_bank",
+                              "van_lanschot"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "interac_present": {
+                        "properties": {
+                        },
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "metadata": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "sepa_debit": {
+                        "properties": {
+                          "iban": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "iban"
+                        ],
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "type": {
+                        "enum": [
+                          "au_becs_debit",
+                          "card",
+                          "fpx",
+                          "ideal",
+                          "sepa_debit"
+                        ],
+                        "type": "string",
+                        "x-stripeBypassValidation": true
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "title": "method_params",
+                    "type": "object"
                   },
                   "reason": {
                     "enum": [
@@ -35797,6 +36127,10 @@
                 "metadata": {
                   "explode": true,
                   "style": "deepObject"
+                },
+                "payment_method_data": {
+                  "explode": true,
+                  "style": "deepObject"
                 }
               },
               "schema": {
@@ -35833,6 +36167,219 @@
                   "payment_intent": {
                     "maxLength": 5000,
                     "type": "string"
+                  },
+                  "payment_method_data": {
+                    "properties": {
+                      "au_becs_debit": {
+                        "properties": {
+                          "account_number": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "bsb_number": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "account_number",
+                          "bsb_number"
+                        ],
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "billing_details": {
+                        "properties": {
+                          "address": {
+                            "properties": {
+                              "city": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "country": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line1": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line2": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "state": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "title": "billing_details_address",
+                            "type": "object"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "phone": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "title": "billing_details_inner_params",
+                        "type": "object"
+                      },
+                      "card": {
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "cvc": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "exp_month": {
+                                "type": "integer"
+                              },
+                              "exp_year": {
+                                "type": "integer"
+                              },
+                              "number": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "exp_month",
+                              "exp_year",
+                              "number"
+                            ],
+                            "title": "card_details_params",
+                            "type": "object"
+                          },
+                          {
+                            "properties": {
+                              "token": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "token"
+                            ],
+                            "title": "token_params",
+                            "type": "object"
+                          }
+                        ],
+                        "x-stripeBypassValidation": true
+                      },
+                      "fpx": {
+                        "properties": {
+                          "bank": {
+                            "enum": [
+                              "affin_bank",
+                              "alliance_bank",
+                              "ambank",
+                              "bank_islam",
+                              "bank_muamalat",
+                              "bank_rakyat",
+                              "bsn",
+                              "cimb",
+                              "deutsche_bank",
+                              "hong_leong_bank",
+                              "hsbc",
+                              "kfh",
+                              "maybank2e",
+                              "maybank2u",
+                              "ocbc",
+                              "pb_enterprise",
+                              "public_bank",
+                              "rhb",
+                              "standard_chartered",
+                              "uob"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string",
+                            "x-stripeBypassValidation": true
+                          }
+                        },
+                        "required": [
+                          "bank"
+                        ],
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "ideal": {
+                        "properties": {
+                          "bank": {
+                            "enum": [
+                              "abn_amro",
+                              "asn_bank",
+                              "bunq",
+                              "handelsbanken",
+                              "ing",
+                              "knab",
+                              "moneyou",
+                              "rabobank",
+                              "regiobank",
+                              "sns_bank",
+                              "triodos_bank",
+                              "van_lanschot"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "interac_present": {
+                        "properties": {
+                        },
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "metadata": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "sepa_debit": {
+                        "properties": {
+                          "iban": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "iban"
+                        ],
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "type": {
+                        "enum": [
+                          "au_becs_debit",
+                          "card",
+                          "fpx",
+                          "ideal",
+                          "sepa_debit"
+                        ],
+                        "type": "string",
+                        "x-stripeBypassValidation": true
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "title": "method_params",
+                    "type": "object"
                   },
                   "reason": {
                     "enum": [
@@ -37985,7 +38532,7 @@
         }
       },
       "post": {
-        "description": "<p>Issue a credit note to adjust the amount of a finalized invoice. For a <code>status=open</code> invoice, a credit note reduces\nits <code>amount_due</code>. For a <code>status=paid</code> invoice, a credit note does not affect its <code>amount_due</code>. Instead, it can result\nin any combination of the following:</p>\n\n<ul>\n <li>Refund: create a new refund (using <code>refund_amount</code>) or link an existing refund (using <code>refund</code>).</li>\n <li>Customer balance credit: credit the customer’s balance (using <code>credit_amount</code>) which will be automatically applied to their next invoice when it’s finalized.</li>\n <li>Outside of Stripe credit: record the amount that is or will be credited outside of Stripe (using <code>out_of_band_amount</code>).</li>\n</ul>\n\n<p>For post-payment credit notes the sum of the refund, credit and outside of Stripe amounts must equal the credit note total.</p>\n\n<p>You may issue multiple credit notes for an invoice. Each credit note will increment the invoice’s <code>pre_payment_credit_notes_amount</code>\nor <code>post_payment_credit_notes_amount</code> depending on its <code>status</code> at the time of credit note creation.</p>",
+        "description": "<p>Issue a credit note to adjust the amount of a finalized invoice. For a <code>status=open</code> invoice, a credit note reduces\nits <code>amount_due</code>. For a <code>status=paid</code> invoice, a credit note does not affect its <code>amount_due</code>. Instead, it can result\nin any combination of the following:</p>\n\n<ul>\n<li>Refund: create a new refund (using <code>refund_amount</code>) or link an existing refund (using <code>refund</code>).</li>\n<li>Customer balance credit: credit the customer’s balance (using <code>credit_amount</code>) which will be automatically applied to their next invoice when it’s finalized.</li>\n<li>Outside of Stripe credit: record the amount that is or will be credited outside of Stripe (using <code>out_of_band_amount</code>).</li>\n</ul>\n\n<p>For post-payment credit notes the sum of the refund, credit and outside of Stripe amounts must equal the credit note total.</p>\n\n<p>You may issue multiple credit notes for an invoice. Each credit note will increment the invoice’s <code>pre_payment_credit_notes_amount</code>\nor <code>post_payment_credit_notes_amount</code> depending on its <code>status</code> at the time of credit note creation.</p>",
         "operationId": "PostCreditNotes",
         "requestBody": {
           "content": {
@@ -59027,7 +59574,7 @@
     },
     "/v1/payment_intents/{intent}/cancel": {
       "post": {
-        "description": "<p>A PaymentIntent object can be canceled when it is in one of these statuses: <code>requires_payment_method</code>, <code>requires_capture</code>, <code>requires_confirmation</code>, <code>requires_action</code>. </p>\n\n<p>Once canceled, no additional charges will be made by the PaymentIntent and any operations on the PaymentIntent will fail with an error. For PaymentIntents with <code>status='requires_capture'</code>, the remaining <code>amount_capturable</code> will automatically be refunded.</p>",
+        "description": "<p>A PaymentIntent object can be canceled when it is in one of these statuses: <code>requires_payment_method</code>, <code>requires_capture</code>, <code>requires_confirmation</code>, <code>requires_action</code>. </p>\n\n<p>Once canceled, no additional charges will be made by the PaymentIntent and any operations on the PaymentIntent will fail with an error. For PaymentIntents with <code>status=’requires_capture’</code>, the remaining <code>amount_capturable</code> will automatically be refunded.</p>",
         "operationId": "PostPaymentIntentsIntentCancel",
         "parameters": [
           {
@@ -59800,6 +60347,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "interac_present": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "metadata": {
                   "explode": true,
                   "style": "deepObject"
@@ -59994,6 +60545,13 @@
                         "maxLength": 5000,
                         "type": "string"
                       }
+                    },
+                    "title": "param",
+                    "type": "object"
+                  },
+                  "interac_present": {
+                    "description": "If this is an `interac_present` PaymentMethod, this hash contains details about the Interac Present payment method.",
+                    "properties": {
                     },
                     "title": "param",
                     "type": "object"
@@ -64962,6 +65520,10 @@
                 "metadata": {
                   "explode": true,
                   "style": "deepObject"
+                },
+                "payment_method_data": {
+                  "explode": true,
+                  "style": "deepObject"
                 }
               },
               "schema": {
@@ -65002,6 +65564,219 @@
                   "payment_intent": {
                     "maxLength": 5000,
                     "type": "string"
+                  },
+                  "payment_method_data": {
+                    "properties": {
+                      "au_becs_debit": {
+                        "properties": {
+                          "account_number": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "bsb_number": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "account_number",
+                          "bsb_number"
+                        ],
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "billing_details": {
+                        "properties": {
+                          "address": {
+                            "properties": {
+                              "city": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "country": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line1": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line2": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "state": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "title": "billing_details_address",
+                            "type": "object"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "phone": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "title": "billing_details_inner_params",
+                        "type": "object"
+                      },
+                      "card": {
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "cvc": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "exp_month": {
+                                "type": "integer"
+                              },
+                              "exp_year": {
+                                "type": "integer"
+                              },
+                              "number": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "exp_month",
+                              "exp_year",
+                              "number"
+                            ],
+                            "title": "card_details_params",
+                            "type": "object"
+                          },
+                          {
+                            "properties": {
+                              "token": {
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "token"
+                            ],
+                            "title": "token_params",
+                            "type": "object"
+                          }
+                        ],
+                        "x-stripeBypassValidation": true
+                      },
+                      "fpx": {
+                        "properties": {
+                          "bank": {
+                            "enum": [
+                              "affin_bank",
+                              "alliance_bank",
+                              "ambank",
+                              "bank_islam",
+                              "bank_muamalat",
+                              "bank_rakyat",
+                              "bsn",
+                              "cimb",
+                              "deutsche_bank",
+                              "hong_leong_bank",
+                              "hsbc",
+                              "kfh",
+                              "maybank2e",
+                              "maybank2u",
+                              "ocbc",
+                              "pb_enterprise",
+                              "public_bank",
+                              "rhb",
+                              "standard_chartered",
+                              "uob"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string",
+                            "x-stripeBypassValidation": true
+                          }
+                        },
+                        "required": [
+                          "bank"
+                        ],
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "ideal": {
+                        "properties": {
+                          "bank": {
+                            "enum": [
+                              "abn_amro",
+                              "asn_bank",
+                              "bunq",
+                              "handelsbanken",
+                              "ing",
+                              "knab",
+                              "moneyou",
+                              "rabobank",
+                              "regiobank",
+                              "sns_bank",
+                              "triodos_bank",
+                              "van_lanschot"
+                            ],
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "interac_present": {
+                        "properties": {
+                        },
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "metadata": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "sepa_debit": {
+                        "properties": {
+                          "iban": {
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "iban"
+                        ],
+                        "title": "param",
+                        "type": "object"
+                      },
+                      "type": {
+                        "enum": [
+                          "au_becs_debit",
+                          "card",
+                          "fpx",
+                          "ideal",
+                          "sepa_debit"
+                        ],
+                        "type": "string",
+                        "x-stripeBypassValidation": true
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "title": "method_params",
+                    "type": "object"
                   },
                   "reason": {
                     "enum": [
@@ -65419,6 +66194,7 @@
                         "enum": [
                           "advance",
                           "advance_funding",
+                          "anticipation_repayment",
                           "charge",
                           "charge_failure",
                           "connect_collection_transfer",

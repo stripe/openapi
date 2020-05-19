@@ -1665,13 +1665,13 @@ components:
           type: string
         type:
           description: 'Transaction type: `adjustment`, `advance`, `advance_funding`,
-            `application_fee`, `application_fee_refund`, `charge`, `connect_collection_transfer`,
-            `issuing_authorization_hold`, `issuing_authorization_release`, `issuing_dispute`,
-            `issuing_transaction`, `payment`, `payment_failure_refund`, `payment_refund`,
-            `payout`, `payout_cancel`, `payout_failure`, `refund`, `refund_failure`,
-            `reserve_transaction`, `reserved_funds`, `stripe_fee`, `stripe_fx_fee`,
-            `tax_fee`, `topup`, `topup_reversal`, `transfer`, `transfer_cancel`, `transfer_failure`,
-            or `transfer_refund`. [Learn more](https://stripe.com/docs/reports/balance-transaction-types)
+            `anticipation_repayment`, `application_fee`, `application_fee_refund`,
+            `charge`, `connect_collection_transfer`, `issuing_authorization_hold`,
+            `issuing_authorization_release`, `issuing_dispute`, `issuing_transaction`,
+            `payment`, `payment_failure_refund`, `payment_refund`, `payout`, `payout_cancel`,
+            `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`,
+            `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`,
+            `transfer_cancel`, `transfer_failure`, or `transfer_refund`. [Learn more](https://stripe.com/docs/reports/balance-transaction-types)
             about balance transaction types and what they represent. If you are looking
             to classify transactions for accounting purposes, you might want to consider
             `reporting_category` instead.'
@@ -1679,6 +1679,7 @@ components:
           - adjustment
           - advance
           - advance_funding
+          - anticipation_repayment
           - application_fee
           - application_fee_refund
           - charge
@@ -2063,10 +2064,10 @@ components:
         in_class: payment_method
     billing_portal.session:
       description: |-
-        A Session describes the instantiation of the self-serve portal for
+        A session describes the instantiation of the self-serve portal for
         a particular customer. By visiting the self-serve portal's URL, the customer
         can manage their subscriptions and billing details. For security reasons,
-        Sessions are short-lived and will expire if the customer does not visit the URL.
+        sessions are short-lived and will expire if the customer does not visit the URL.
         Create Sessions on-demand.
 
         Integration guide: [Billing self-serve portal](https://stripe.com/docs/billing/subscriptions/integrating-self-serve-portal).
@@ -3568,8 +3569,7 @@ components:
           maxLength: 5000
           type: string
         line_items:
-          description: The line items purchased by the customer. [Expand](https://stripe.com/docs/api/expanding_objects)
-            this field to include it in the response.
+          description: The line items purchased by the customer.
           nullable: true
           properties:
             data:
@@ -3730,6 +3730,7 @@ components:
       - customer
       - customer_email
       - id
+      - line_items
       - livemode
       - locale
       - metadata
@@ -14417,6 +14418,8 @@ components:
           type: string
         ideal:
           "$ref": "#/components/schemas/payment_method_ideal"
+        interac_present:
+          "$ref": "#/components/schemas/payment_method_interac_present"
         livemode:
           description: Has the value `true` if the object exists in live mode or the
             value `false` if the object exists in test mode.
@@ -14469,6 +14472,7 @@ components:
       - customer
       - fpx
       - ideal
+      - interac_present
       - sepa_debit
       x-resourceId: payment_method
       x-stripeOperations:
@@ -14567,6 +14571,7 @@ components:
         - payment_method_card_present
         - payment_method_fpx
         - payment_method_ideal
+        - payment_method_interac_present
         - payment_method_sepa_debit
     payment_method_au_becs_debit:
       description: ''
@@ -14945,6 +14950,8 @@ components:
           "$ref": "#/components/schemas/payment_method_details_giropay"
         ideal:
           "$ref": "#/components/schemas/payment_method_details_ideal"
+        interac_present:
+          "$ref": "#/components/schemas/payment_method_details_interac_present"
         klarna:
           "$ref": "#/components/schemas/payment_method_details_klarna"
         multibanco:
@@ -14986,6 +14993,7 @@ components:
       - fpx
       - giropay
       - ideal
+      - interac_present
       - klarna
       - multibanco
       - p24
@@ -15011,6 +15019,7 @@ components:
         - payment_method_details_fpx
         - payment_method_details_giropay
         - payment_method_details_ideal
+        - payment_method_details_interac_present
         - payment_method_details_klarna
         - payment_method_details_multibanco
         - payment_method_details_p24
@@ -15577,6 +15586,10 @@ components:
     payment_method_details_card_present_receipt:
       description: ''
       properties:
+        account_type:
+          description: For Interac transactions - the source account type of the funds
+          maxLength: 5000
+          type: string
         application_cryptogram:
           description: EMV tag 9F26, cryptogram generated by the integrated circuit
             chip.
@@ -15987,6 +16000,109 @@ components:
       x-stripeResource:
         class_name: Ideal
         in_class: payment_method_details
+    payment_method_details_interac_present:
+      description: ''
+      properties:
+        brand:
+          description: Card brand. Can be `interac`, `mastercard` or `visa`.
+          maxLength: 5000
+          nullable: true
+          type: string
+        cardholder_name:
+          description: The cardholder name as read from the card, in [ISO 7813](https://en.wikipedia.org/wiki/ISO/IEC_7813)
+            format. May include alphanumeric characters, special characters and first/last
+            name separator (`/`).
+          maxLength: 5000
+          nullable: true
+          type: string
+        country:
+          description: Two-letter ISO code representing the country of the card. You
+            could use this attribute to get a sense of the international breakdown
+            of cards you've collected.
+          maxLength: 5000
+          nullable: true
+          type: string
+        emv_auth_data:
+          description: Authorization response cryptogram.
+          maxLength: 5000
+          nullable: true
+          type: string
+        exp_month:
+          description: Two-digit number representing the card's expiration month.
+          nullable: true
+          type: integer
+        exp_year:
+          description: Four-digit number representing the card's expiration year.
+          nullable: true
+          type: integer
+        fingerprint:
+          description: Uniquely identifies this particular card number. You can use
+            this attribute to check whether two customers who’ve signed up with you
+            are using the same card number,for example. For payment methods that tokenize
+            card information (Apple Pay, Google Pay), the tokenized number might be
+            provided instead of the underlying card number.
+          maxLength: 5000
+          nullable: true
+          type: string
+        funding:
+          description: Card funding type. Can be `credit`, `debit`, `prepaid`, or
+            `unknown`.
+          maxLength: 5000
+          nullable: true
+          type: string
+        generated_card:
+          description: ID of a card PaymentMethod generated from the card_present
+            PaymentMethod that may be attached to a Customer for future transactions.
+            Only present if it was possible to generate a card PaymentMethod.
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          description: The last four digits of the card.
+          maxLength: 5000
+          nullable: true
+          type: string
+        network:
+          description: Identifies which network this charge was processed on. Can
+            be `amex`, `diners`, `discover`, `interac`, `jcb`, `mastercard`, `unionpay`,
+            `visa`, or `unknown`.
+          maxLength: 5000
+          nullable: true
+          type: string
+        read_method:
+          description: How were card details read in this transaction. Can be contact_emv,
+            contactless_emv, magnetic_stripe_fallback, magnetic_stripe_track2, or
+            contactless_magstripe_mode
+          maxLength: 5000
+          nullable: true
+          type: string
+        receipt:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_details_card_present_receipt"
+          description: A collection of fields required to be displayed on receipts.
+            Only required for EMV transactions.
+          nullable: true
+      required:
+      - brand
+      - cardholder_name
+      - country
+      - emv_auth_data
+      - exp_month
+      - exp_year
+      - fingerprint
+      - funding
+      - generated_card
+      - last4
+      - network
+      - read_method
+      - receipt
+      title: payment_method_details_interac_present
+      type: object
+      x-expandableFields:
+      - receipt
+      x-stripeResource:
+        class_name: InteracPresent
+        in_class: payment_method_details
     payment_method_details_klarna:
       description: ''
       properties: {}
@@ -16281,6 +16397,15 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: Ideal
+        in_class: payment_method
+    payment_method_interac_present:
+      description: ''
+      properties: {}
+      title: payment_method_interac_present
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: InteracPresent
         in_class: payment_method
     payment_method_options_card_installments:
       description: ''
@@ -22986,6 +23111,13 @@ components:
             to the customer.
           nullable: true
           type: number
+        transfer_data:
+          anyOf:
+          - "$ref": "#/components/schemas/subscription_transfer_data"
+          description: The account (if any) the subscription's payments will be attributed
+            to for tax reporting, and where funds from each payment will be transferred
+            to for each of the subscription's invoices.
+          nullable: true
         trial_end:
           description: When the trial ends within the phase.
           format: unix-time
@@ -23015,6 +23147,7 @@ components:
       - default_tax_rates
       - invoice_settings
       - plans
+      - transfer_data
       x-stripeResource:
         class_name: Phase
         in_class: subscription_schedule
@@ -23055,6 +23188,13 @@ components:
           - "$ref": "#/components/schemas/invoice_setting_subscription_schedule_setting"
           description: The subscription schedule's default invoice settings.
           nullable: true
+        transfer_data:
+          anyOf:
+          - "$ref": "#/components/schemas/subscription_transfer_data"
+          description: The account (if any) the subscription's payments will be attributed
+            to for tax reporting, and where funds from each payment will be transferred
+            to for each of the subscription's invoices.
+          nullable: true
       required:
       - billing_thresholds
       - collection_method
@@ -23066,6 +23206,7 @@ components:
       - billing_thresholds
       - default_payment_method
       - invoice_settings
+      - transfer_data
       x-stripeResource:
         class_name: DefaultSettings
         in_class: subscription_schedule
@@ -27728,6 +27869,7 @@ paths:
     post:
       description: |-
         <p>Updates the metadata, account holder name, and account holder type of a bank account belonging to a <a href="/docs/connect/custom-accounts">Custom account</a>, and optionally sets it as the default for its currency. Other bank account details are not editable by design.</p>
+
         <p>You can re-enable a disabled bank account by performing an update call without providing any arguments or changes.</p>
       operationId: PostAccountsAccountExternalAccountsId
       parameters:
@@ -28881,6 +29023,7 @@ paths:
     post:
       description: |-
         <p>Updates the metadata, account holder name, and account holder type of a bank account belonging to a <a href="/docs/connect/custom-accounts">Custom account</a>, and optionally sets it as the default for its currency. Other bank account details are not editable by design.</p>
+
         <p>You can re-enable a disabled bank account by performing an update call without providing any arguments or changes.</p>
       operationId: PostAccountsAccountX-stripeparametersoverrideBankAccountId
       parameters:
@@ -29939,13 +30082,13 @@ paths:
           type: string
         style: form
       - description: 'Only returns transactions of the given type. One of: `adjustment`,
-          `advance`, `advance_funding`, `application_fee`, `application_fee_refund`,
-          `charge`, `connect_collection_transfer`, `issuing_authorization_hold`, `issuing_authorization_release`,
-          `issuing_dispute`, `issuing_transaction`, `payment`, `payment_failure_refund`,
-          `payment_refund`, `payout`, `payout_cancel`, `payout_failure`, `refund`,
-          `refund_failure`, `reserve_transaction`, `reserved_funds`, `stripe_fee`,
-          `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`, `transfer_cancel`,
-          `transfer_failure`, or `transfer_refund`.'
+          `advance`, `advance_funding`, `anticipation_repayment`, `application_fee`,
+          `application_fee_refund`, `charge`, `connect_collection_transfer`, `issuing_authorization_hold`,
+          `issuing_authorization_release`, `issuing_dispute`, `issuing_transaction`,
+          `payment`, `payment_failure_refund`, `payment_refund`, `payout`, `payout_cancel`,
+          `payout_failure`, `refund`, `refund_failure`, `reserve_transaction`, `reserved_funds`,
+          `stripe_fee`, `stripe_fx_fee`, `tax_fee`, `topup`, `topup_reversal`, `transfer`,
+          `transfer_cancel`, `transfer_failure`, or `transfer_refund`.'
         in: query
         name: type
         required: false
@@ -30054,7 +30197,7 @@ paths:
           description: Error response.
   "/v1/billing_portal/sessions":
     post:
-      description: "<p>Creates a session of the self-serve Portal.</p>"
+      description: "<p>Creates a session of the self-serve portal.</p>"
       operationId: PostBillingPortalSessions
       requestBody:
         content:
@@ -32976,9 +33119,9 @@ paths:
         in any combination of the following:</p>
 
         <ul>
-         <li>Refund: create a new refund (using <code>refund_amount</code>) or link an existing refund (using <code>refund</code>).</li>
-         <li>Customer balance credit: credit the customer’s balance (using <code>credit_amount</code>) which will be automatically applied to their next invoice when it’s finalized.</li>
-         <li>Outside of Stripe credit: record the amount that is or will be credited outside of Stripe (using <code>out_of_band_amount</code>).</li>
+        <li>Refund: create a new refund (using <code>refund_amount</code>) or link an existing refund (using <code>refund</code>).</li>
+        <li>Customer balance credit: credit the customer’s balance (using <code>credit_amount</code>) which will be automatically applied to their next invoice when it’s finalized.</li>
+        <li>Outside of Stripe credit: record the amount that is or will be credited outside of Stripe (using <code>out_of_band_amount</code>).</li>
         </ul>
 
         <p>For post-payment credit notes the sum of the refund, credit and outside of Stripe amounts must equal the credit note total.</p>
@@ -47956,7 +48099,7 @@ paths:
       description: |-
         <p>A PaymentIntent object can be canceled when it is in one of these statuses: <code>requires_payment_method</code>, <code>requires_capture</code>, <code>requires_confirmation</code>, <code>requires_action</code>. </p>
 
-        <p>Once canceled, no additional charges will be made by the PaymentIntent and any operations on the PaymentIntent will fail with an error. For PaymentIntents with <code>status='requires_capture'</code>, the remaining <code>amount_capturable</code> will automatically be refunded.</p>
+        <p>Once canceled, no additional charges will be made by the PaymentIntent and any operations on the PaymentIntent will fail with an error. For PaymentIntents with <code>status=’requires_capture’</code>, the remaining <code>amount_capturable</code> will automatically be refunded.</p>
       operationId: PostPaymentIntentsIntentCancel
       parameters:
       - in: path
@@ -48644,6 +48787,9 @@ paths:
               ideal:
                 explode: true
                 style: deepObject
+              interac_present:
+                explode: true
+                style: deepObject
               metadata:
                 explode: true
                 style: deepObject
@@ -48838,6 +48984,12 @@ paths:
                       - van_lanschot
                       maxLength: 5000
                       type: string
+                  title: param
+                  type: object
+                interac_present:
+                  description: If this is an `interac_present` PaymentMethod, this
+                    hash contains details about the Interac Present payment method.
+                  properties: {}
                   title: param
                   type: object
                 metadata:
@@ -52774,6 +52926,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              payment_method_data:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -52804,6 +52959,235 @@ paths:
                 payment_intent:
                   maxLength: 5000
                   type: string
+                payment_method_data:
+                  properties:
+                    au_becs_debit:
+                      description: If this is an `au_becs_debit` PaymentMethod, this
+                        hash contains details about the bank account.
+                      properties:
+                        account_number:
+                          description: The account number for the bank account.
+                          maxLength: 5000
+                          type: string
+                        bsb_number:
+                          description: Bank-State-Branch number of the bank account.
+                          maxLength: 5000
+                          type: string
+                      required:
+                      - account_number
+                      - bsb_number
+                      title: param
+                      type: object
+                    billing_details:
+                      description: Billing information associated with the PaymentMethod
+                        that may be used or required by particular types of payment
+                        methods.
+                      properties:
+                        address:
+                          description: Billing address.
+                          properties:
+                            city:
+                              description: City, district, suburb, town, or village.
+                              maxLength: 5000
+                              type: string
+                            country:
+                              description: Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).
+                              maxLength: 5000
+                              type: string
+                            line1:
+                              description: Address line 1 (e.g., street, PO Box, or
+                                company name).
+                              maxLength: 5000
+                              type: string
+                            line2:
+                              description: Address line 2 (e.g., apartment, suite,
+                                unit, or building).
+                              maxLength: 5000
+                              type: string
+                            postal_code:
+                              description: ZIP or postal code.
+                              maxLength: 5000
+                              type: string
+                            state:
+                              description: State, county, province, or region.
+                              maxLength: 5000
+                              type: string
+                          title: billing_details_address
+                          type: object
+                        email:
+                          description: Email address.
+                          type: string
+                        name:
+                          description: Full name.
+                          maxLength: 5000
+                          type: string
+                        phone:
+                          description: Billing phone number (including extension).
+                          maxLength: 5000
+                          type: string
+                      title: billing_details_inner_params
+                      type: object
+                    card:
+                      anyOf:
+                      - properties:
+                          cvc:
+                            description: The card's CVC. It is highly recommended
+                              to always include this value.
+                            maxLength: 5000
+                            type: string
+                          exp_month:
+                            description: Two-digit number representing the card's
+                              expiration month.
+                            type: integer
+                          exp_year:
+                            description: Four-digit number representing the card's
+                              expiration year.
+                            type: integer
+                          number:
+                            description: The card number, as a string without any
+                              separators.
+                            maxLength: 5000
+                            type: string
+                        required:
+                        - exp_month
+                        - exp_year
+                        - number
+                        title: card_details_params
+                        type: object
+                        x-stripeParam:
+                          class_name: CardDetails
+                      - properties:
+                          token:
+                            maxLength: 5000
+                            type: string
+                        required:
+                        - token
+                        title: token_params
+                        type: object
+                        x-stripeParam:
+                          class_name: Token
+                      description: 'If this is a `card` PaymentMethod, this hash contains
+                        the user''s card details. For backwards compatibility, you
+                        can alternatively provide a Stripe token (e.g., for Apple
+                        Pay, Amex Express Checkout, or legacy Checkout) into the card
+                        hash with format `card: {token: "tok_visa"}`. When creating
+                        with a card number, you must meet the requirements for [PCI
+                        compliance](https://stripe.com/docs/security#validating-pci-compliance).
+                        We strongly recommend using Stripe.js instead of interacting
+                        with this API directly.'
+                      x-stripeBypassValidation: true
+                    fpx:
+                      description: If this is an `fpx` PaymentMethod, this hash contains
+                        details about the FPX payment method.
+                      properties:
+                        account_holder_type:
+                          description: Account holder type for FPX transaction
+                          enum:
+                          - company
+                          - individual
+                          maxLength: 5000
+                          type: string
+                        bank:
+                          description: The customer's bank.
+                          enum:
+                          - affin_bank
+                          - alliance_bank
+                          - ambank
+                          - bank_islam
+                          - bank_muamalat
+                          - bank_rakyat
+                          - bsn
+                          - cimb
+                          - deutsche_bank
+                          - hong_leong_bank
+                          - hsbc
+                          - kfh
+                          - maybank2e
+                          - maybank2u
+                          - ocbc
+                          - pb_enterprise
+                          - public_bank
+                          - rhb
+                          - standard_chartered
+                          - uob
+                          maxLength: 5000
+                          type: string
+                          x-stripeBypassValidation: true
+                      required:
+                      - bank
+                      title: param
+                      type: object
+                    ideal:
+                      description: If this is an `ideal` PaymentMethod, this hash
+                        contains details about the iDEAL payment method.
+                      properties:
+                        bank:
+                          description: The customer's bank.
+                          enum:
+                          - abn_amro
+                          - asn_bank
+                          - bunq
+                          - handelsbanken
+                          - ing
+                          - knab
+                          - moneyou
+                          - rabobank
+                          - regiobank
+                          - sns_bank
+                          - triodos_bank
+                          - van_lanschot
+                          maxLength: 5000
+                          type: string
+                      title: param
+                      type: object
+                    interac_present:
+                      description: If this is an `interac_present` PaymentMethod,
+                        this hash contains details about the Interac Present payment
+                        method.
+                      properties: {}
+                      title: param
+                      type: object
+                    metadata:
+                      additionalProperties:
+                        type: string
+                      description: Set of key-value pairs that you can attach to an
+                        object. This can be useful for storing additional information
+                        about the object in a structured format. Individual keys can
+                        be unset by posting an empty value to them. All keys can be
+                        unset by posting an empty value to `metadata`.
+                      type: object
+                    sepa_debit:
+                      description: If this is a `sepa_debit` PaymentMethod, this hash
+                        contains details about the SEPA debit bank account.
+                      properties:
+                        iban:
+                          description: IBAN of the bank account.
+                          maxLength: 5000
+                          type: string
+                      required:
+                      - iban
+                      title: param
+                      type: object
+                    type:
+                      description: The type of the PaymentMethod. An additional hash
+                        is included on the PaymentMethod with a name matching this
+                        value. It contains additional information specific to the
+                        PaymentMethod type. Required unless `payment_method` is specified
+                        (see the [Cloning PaymentMethods](https://stripe.com/docs/payments/payment-methods/connect#cloning-payment-methods)
+                        guide)
+                      enum:
+                      - au_becs_debit
+                      - card
+                      - card_present
+                      - fpx
+                      - ideal
+                      - sepa_debit
+                      type: string
+                      x-stripeBypassValidation: true
+                  required:
+                  - type
+                  title: method_params
+                  type: object
                 reason:
                   enum:
                   - duplicate
@@ -53123,6 +53507,7 @@ paths:
                       enum:
                       - advance
                       - advance_funding
+                      - anticipation_repayment
                       - charge
                       - charge_failure
                       - connect_collection_transfer
@@ -57725,6 +58110,28 @@ paths:
                           type: integer
                       title: subscription_schedules_param
                       type: object
+                    transfer_data:
+                      anyOf:
+                      - properties:
+                          amount_percent:
+                            description: A non-negative decimal between 0 and 100,
+                              with at most two decimal places. This represents the
+                              percentage of the subscription invoice subtotal that
+                              will be transferred to the destination account. By default,
+                              the entire amount is transferred to the destination.
+                            type: number
+                          destination:
+                            description: ID of an existing, connected Stripe account.
+                            type: string
+                        required:
+                        - destination
+                        title: transfer_data_specs
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: The data with which to automatically create a Transfer
+                        for each of the subscription's invoices.
                   title: default_settings_params
                   type: object
                 end_behavior:
@@ -58052,6 +58459,24 @@ paths:
                           view the [migration docs](https://stripe.com/docs/billing/migration/taxes)
                           for `tax_rates`.
                         type: number
+                      transfer_data:
+                        description: The data with which to automatically create a
+                          Transfer for each of the subscription's invoices.
+                        properties:
+                          amount_percent:
+                            description: A non-negative decimal between 0 and 100,
+                              with at most two decimal places. This represents the
+                              percentage of the subscription invoice subtotal that
+                              will be transferred to the destination account. By default,
+                              the entire amount is transferred to the destination.
+                            type: number
+                          destination:
+                            description: ID of an existing, connected Stripe account.
+                            type: string
+                        required:
+                        - destination
+                        title: transfer_data_specs
+                        type: object
                       trial:
                         description: If set to true the entire phase is counted as
                           a trial and the customer will not be charged for any fees.
@@ -58229,6 +58654,28 @@ paths:
                           type: integer
                       title: subscription_schedules_param
                       type: object
+                    transfer_data:
+                      anyOf:
+                      - properties:
+                          amount_percent:
+                            description: A non-negative decimal between 0 and 100,
+                              with at most two decimal places. This represents the
+                              percentage of the subscription invoice subtotal that
+                              will be transferred to the destination account. By default,
+                              the entire amount is transferred to the destination.
+                            type: number
+                          destination:
+                            description: ID of an existing, connected Stripe account.
+                            type: string
+                        required:
+                        - destination
+                        title: transfer_data_specs
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: The data with which to automatically create a Transfer
+                        for each of the subscription's invoices.
                   title: default_settings_params
                   type: object
                 end_behavior:
@@ -58560,6 +59007,24 @@ paths:
                           view the [migration docs](https://stripe.com/docs/billing/migration/taxes)
                           for `tax_rates`.
                         type: number
+                      transfer_data:
+                        description: The data with which to automatically create a
+                          Transfer for each of the subscription's invoices.
+                        properties:
+                          amount_percent:
+                            description: A non-negative decimal between 0 and 100,
+                              with at most two decimal places. This represents the
+                              percentage of the subscription invoice subtotal that
+                              will be transferred to the destination account. By default,
+                              the entire amount is transferred to the destination.
+                            type: number
+                          destination:
+                            description: ID of an existing, connected Stripe account.
+                            type: string
+                        required:
+                        - destination
+                        title: transfer_data_specs
+                        type: object
                       trial:
                         description: If set to true the entire phase is counted as
                           a trial and the customer will not be charged for any fees.
