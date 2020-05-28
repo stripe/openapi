@@ -2378,7 +2378,7 @@ components:
       description: |-
         This is an object representing a capability for a Stripe account.
 
-        Related guide: [Capabilities Overview](https://stripe.com/docs/connect/capabilities-overview).
+        Related guide: [Account capabilities](https://stripe.com/docs/connect/account-capabilities).
       properties:
         account:
           anyOf:
@@ -14997,6 +14997,7 @@ components:
           description: |-
             Owner's verified full name. Values are verified or provided by EPS directly
             (if supported) at the time of authorization or settlement. They cannot be set or mutated.
+            EPS rarely provides this information so the attribute is usually empty.
           maxLength: 5000
           nullable: true
           type: string
@@ -15084,6 +15085,7 @@ components:
           description: |-
             Owner's verified full name. Values are verified or provided by Giropay directly
             (if supported) at the time of authorization or settlement. They cannot be set or mutated.
+            Giropay rarely provides this information so the attribute is usually empty.
           maxLength: 5000
           nullable: true
           type: string
@@ -15374,6 +15376,7 @@ components:
           description: |-
             Owner's verified full name. Values are verified or provided by Przelewy24 directly
             (if supported) at the time of authorization or settlement. They cannot be set or mutated.
+            Przelewy24 rarely provides this information so the attribute is usually empty.
           maxLength: 5000
           nullable: true
           type: string
@@ -23299,6 +23302,16 @@ components:
           description: Whether or not authentication was performed. 3D Secure will
             succeed without authentication when the card is not enrolled.
           type: boolean
+        authentication_flow:
+          description: |-
+            For authenticated transactions: whether issuing bank authenticated the
+            cardholder with a traditional challenge screen, or with device data
+            via the 3DS2 frictionless flow.
+          enum:
+          - challenge
+          - frictionless
+          nullable: true
+          type: string
         result:
           description: Indicates the outcome of 3D Secure authentication.
           enum:
@@ -23331,6 +23344,7 @@ components:
           - 2.2.0
           type: string
       required:
+      - authentication_flow
       - result
       - result_reason
       - version
@@ -30844,9 +30858,49 @@ paths:
                             type: string
                           product:
                             description: The ID of the product that this price will
-                              belong to.
+                              belong to. One of `product` or `product_data` is required.
                             maxLength: 5000
                             type: string
+                          product_data:
+                            description: Data used to generate a new product object
+                              inline. One of `product` or `product_data` is required.
+                            properties:
+                              description:
+                                description: The product's description, meant to be
+                                  displayable to the customer. Use this field to optionally
+                                  store a long form explanation of the product being
+                                  sold for your own rendering purposes.
+                                maxLength: 40000
+                                type: string
+                              images:
+                                description: A list of up to 8 URLs of images for
+                                  this product, meant to be displayable to the customer.
+                                items:
+                                  type: string
+                                type: array
+                                x-stripeParam:
+                                  containee_entity_name: image
+                              metadata:
+                                additionalProperties:
+                                  type: string
+                                description: Set of key-value pairs that you can attach
+                                  to an object. This can be useful for storing additional
+                                  information about the object in a structured format.
+                                  Individual keys can be unset by posting an empty
+                                  value to them. All keys can be unset by posting
+                                  an empty value to `metadata`.
+                                type: object
+                              name:
+                                description: The product's name, meant to be displayable
+                                  to the customer. Whenever this product is sold via
+                                  a subscription, name will show up on associated
+                                  invoice line item descriptions.
+                                maxLength: 5000
+                                type: string
+                            required:
+                            - name
+                            title: product_data
+                            type: object
                           recurring:
                             description: The recurring components of a price such
                               as `interval` and `usage_type`.
@@ -56346,7 +56400,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     get:
-      description: "<p>Retrieves the invoice item with the given ID.</p>"
+      description: "<p>Retrieves the subscription item with the given ID.</p>"
       operationId: GetSubscriptionItemsItem
       parameters:
       - description: Specifies which fields in the response should be expanded.
