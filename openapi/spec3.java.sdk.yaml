@@ -287,6 +287,21 @@ components:
         - transfer_schedule
         polymorphic_groups:
         - payment_source
+    account_bacs_debit_payments_settings:
+      description: ''
+      properties:
+        display_name:
+          description: The Bacs Direct Debit Display Name for this account. For payments
+            made with Bacs Direct Debit, this will appear on the mandate, and as the
+            statement descriptor.
+          maxLength: 5000
+          type: string
+      title: AccountBacsDebitPaymentsSettings
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: BacsDebitPayments
+        in_class: account_settings
     account_branding_settings:
       description: ''
       properties:
@@ -872,6 +887,8 @@ components:
     account_settings:
       description: ''
       properties:
+        bacs_debit_payments:
+          "$ref": "#/components/schemas/account_bacs_debit_payments_settings"
         branding:
           "$ref": "#/components/schemas/account_branding_settings"
         card_payments:
@@ -890,6 +907,7 @@ components:
       title: AccountSettings
       type: object
       x-expandableFields:
+      - bacs_debit_payments
       - branding
       - card_payments
       - dashboard
@@ -898,6 +916,8 @@ components:
       x-stripeResource:
         class_name: Settings
         in_class: account
+        inner_classes:
+        - account_bacs_debit_payments_settings
     account_tos_acceptance:
       description: ''
       properties:
@@ -3516,12 +3536,13 @@ components:
             If not provided, customers will be asked to enter their email address.
             Use this parameter to prefill customer data if you already have an email
             on file. To access information about the customer once a session is
-            complete, use the `customer` field.
+            complete, use the `customer` attribute.
           maxLength: 5000
           nullable: true
           type: string
         display_items:
-          description: The line items, plans, or SKUs purchased by the customer.
+          description: The line items, plans, or SKUs purchased by the customer. Prefer
+            using `line_items`.
           items:
             "$ref": "#/components/schemas/checkout_session_display_item"
           type: array
@@ -12263,6 +12284,7 @@ components:
         inner_classes:
         - customer_acceptance
         - mandate_au_becs_debit
+        - mandate_bacs_debit
         - mandate_multi_use
         - mandate_payment_method_details
         - mandate_single_use
@@ -12282,6 +12304,32 @@ components:
       x-stripeResource:
         class_name: AuBecsDebit
         in_class: mandate
+    mandate_bacs_debit:
+      description: ''
+      properties:
+        network_status:
+          enum:
+          - accepted
+          - pending
+          - refused
+          - revoked
+          type: string
+        reference:
+          maxLength: 5000
+          type: string
+        url:
+          maxLength: 5000
+          type: string
+      required:
+      - network_status
+      - reference
+      - url
+      title: mandate_bacs_debit
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: BacsDebit
+        in_class: mandate
     mandate_multi_use:
       description: ''
       properties: {}
@@ -12296,6 +12344,8 @@ components:
       properties:
         au_becs_debit:
           "$ref": "#/components/schemas/mandate_au_becs_debit"
+        bacs_debit:
+          "$ref": "#/components/schemas/mandate_bacs_debit"
         card:
           "$ref": "#/components/schemas/card_mandate_payment_method_details"
         sepa_debit:
@@ -12313,6 +12363,7 @@ components:
       type: object
       x-expandableFields:
       - au_becs_debit
+      - bacs_debit
       - card
       - sepa_debit
       x-stripeResource:
@@ -13552,6 +13603,8 @@ components:
       properties:
         au_becs_debit:
           "$ref": "#/components/schemas/payment_method_au_becs_debit"
+        bacs_debit:
+          "$ref": "#/components/schemas/payment_method_bacs_debit"
         billing_details:
           "$ref": "#/components/schemas/billing_details"
         card:
@@ -13610,6 +13663,7 @@ components:
             information specific to the PaymentMethod type.
           enum:
           - au_becs_debit
+          - bacs_debit
           - card
           - card_present
           - fpx
@@ -13630,6 +13684,7 @@ components:
       type: object
       x-expandableFields:
       - au_becs_debit
+      - bacs_debit
       - billing_details
       - card
       - card_present
@@ -13731,6 +13786,7 @@ components:
         inner_classes:
         - billing_details
         - payment_method_au_becs_debit
+        - payment_method_bacs_debit
         - payment_method_card
         - payment_method_card_present
         - payment_method_fpx
@@ -13766,6 +13822,35 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: AuBecsDebit
+        in_class: payment_method
+    payment_method_bacs_debit:
+      description: ''
+      properties:
+        fingerprint:
+          description: Uniquely identifies this particular bank account. You can use
+            this attribute to check whether two bank accounts are the same.
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          description: Last four digits of the bank account number.
+          maxLength: 5000
+          nullable: true
+          type: string
+        sort_code:
+          description: Sort code of the bank account. (e.g., `10-20-30`)
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+      - fingerprint
+      - last4
+      - sort_code
+      title: payment_method_bacs_debit
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: BacsDebit
         in_class: payment_method
     payment_method_card:
       description: ''
@@ -14098,6 +14183,8 @@ components:
           "$ref": "#/components/schemas/payment_flows_private_payment_methods_alipay_details"
         au_becs_debit:
           "$ref": "#/components/schemas/payment_method_details_au_becs_debit"
+        bacs_debit:
+          "$ref": "#/components/schemas/payment_method_details_bacs_debit"
         bancontact:
           "$ref": "#/components/schemas/payment_method_details_bancontact"
         bitcoin:
@@ -14149,6 +14236,7 @@ components:
       - acss_debit
       - alipay
       - au_becs_debit
+      - bacs_debit
       - bancontact
       - bitcoin
       - card
@@ -14175,6 +14263,7 @@ components:
         - payment_method_details_ach_debit
         - payment_method_details_acss_debit
         - payment_method_details_au_becs_debit
+        - payment_method_details_bacs_debit
         - payment_method_details_bancontact
         - payment_method_details_bitcoin
         - payment_method_details_card
@@ -14345,6 +14434,41 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: AuBecsDebit
+        in_class: payment_method_details
+    payment_method_details_bacs_debit:
+      description: ''
+      properties:
+        fingerprint:
+          description: Uniquely identifies this particular bank account. You can use
+            this attribute to check whether two bank accounts are the same.
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          description: Last four digits of the bank account number.
+          maxLength: 5000
+          nullable: true
+          type: string
+        mandate:
+          description: ID of the mandate used to make this payment.
+          maxLength: 5000
+          nullable: true
+          type: string
+        sort_code:
+          description: Sort code of the bank account. (e.g., `10-20-30`)
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+      - fingerprint
+      - last4
+      - mandate
+      - sort_code
+      title: payment_method_details_bacs_debit
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: BacsDebit
         in_class: payment_method_details
     payment_method_details_bancontact:
       description: ''
@@ -16434,7 +16558,8 @@ components:
             what information needs to be collected, and by when.
           nullable: true
         ssn_last_4_provided:
-          description: Whether the last 4 digits of this person's SSN have been provided.
+          description: Whether the last four digits of the person's Social Security
+            number have been provided (U.S. only).
           type: boolean
         verification:
           "$ref": "#/components/schemas/legal_entity_person_verification"
@@ -23304,9 +23429,8 @@ components:
           type: boolean
         authentication_flow:
           description: |-
-            For authenticated transactions: whether issuing bank authenticated the
-            cardholder with a traditional challenge screen, or with device data
-            via the 3DS2 frictionless flow.
+            For authenticated transactions: how the customer was authenticated by
+            the issuing bank.
           enum:
           - challenge
           - frictionless
@@ -23322,7 +23446,9 @@ components:
           - processing_error
           type: string
         result_reason:
-          description: Additional information about why 3D Secure succeeded or failed.
+          description: |-
+            Additional information about why 3D Secure succeeded or failed based
+            on the `result`.
           enum:
           - abandoned
           - bypassed
@@ -27661,7 +27787,8 @@ paths:
                   title: relationship_specs
                   type: object
                 ssn_last_4:
-                  description: The last 4 digits of the person's social security number.
+                  description: The last four digits of the person's Social Security
+                    number (U.S. only).
                   type: string
                 verification:
                   description: The person's verification status.
@@ -28109,7 +28236,8 @@ paths:
                   title: relationship_specs
                   type: object
                 ssn_last_4:
-                  description: The last 4 digits of the person's social security number.
+                  description: The last four digits of the person's Social Security
+                    number (U.S. only).
                   type: string
                 verification:
                   description: The person's verification status.
@@ -30804,7 +30932,7 @@ paths:
                   description: |-
                     A list of items the customer is purchasing. Use this parameter to pass one-time or recurring [prices](https://stripe.com/docs/api/prices).
 
-                    Alternatively, if not using recurring prices, this parameter is for one-time payments or
+                    If not using recurring prices, this parameter is for one-time payments or
                     adding invoice line items to a subscription (used in conjunction with `subscription_data.items`).
 
                     There is a maximum of 100 line items, however it is recommended to
@@ -30844,8 +30972,8 @@ paths:
                         maxLength: 5000
                         type: string
                       price:
-                        description: The ID of the price object. One of `price`, `price_data`
-                          or `amount` is required.
+                        description: The ID of the price or plan object. One of `price`,
+                          `price_data` or `amount` is required.
                         maxLength: 5000
                         type: string
                       price_data:
@@ -31484,8 +31612,7 @@ paths:
                         containee_entity_name: default_tax_rate
                     items:
                       description: A list of items, each with an attached plan, that
-                        the customer is subscribing to. Use this parameter for subscriptions.
-                        To create one-time payments, use `line_items`.
+                        the customer is subscribing to. Prefer using `line_items`.
                       items:
                         properties:
                           plan:
@@ -48023,6 +48150,9 @@ paths:
               au_becs_debit:
                 explode: true
                 style: deepObject
+              bacs_debit:
+                explode: true
+                style: deepObject
               billing_details:
                 explode: true
                 style: deepObject
@@ -48065,6 +48195,24 @@ paths:
                   required:
                   - account_number
                   - bsb_number
+                  title: param
+                  type: object
+                bacs_debit:
+                  description: If this is a `bacs_debit` PaymentMethod, this hash
+                    contains details about the Bacs Direct Debit bank account.
+                  properties:
+                    account_number:
+                      description: Account number of the bank account that the funds
+                        will be debited from.
+                      maxLength: 5000
+                      type: string
+                    iban:
+                      maxLength: 5000
+                      type: string
+                    sort_code:
+                      description: Sort code of the bank account. (e.g., `10-20-30`)
+                      maxLength: 5000
+                      type: string
                   title: param
                   type: object
                 billing_details:
@@ -48277,6 +48425,7 @@ paths:
                     guide)
                   enum:
                   - au_becs_debit
+                  - bacs_debit
                   - card
                   - card_present
                   - fpx
@@ -49152,7 +49301,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: <p>You can create plans using the API, or in the Stripe <a href="https://dashboard.stripe.com/subscriptions/products">Dashboard</a>.</p>
+      description: <p>You can create plans using the API, or in the Stripe <a href="https://dashboard.stripe.com/products">Dashboard</a>.</p>
       operationId: PostPlans
       requestBody:
         content:
@@ -61498,8 +61647,8 @@ paths:
                       title: relationship_specs
                       type: object
                     ssn_last_4:
-                      description: The last 4 digits of the person's social security
-                        number.
+                      description: The last four digits of the person's Social Security
+                        number (U.S. only).
                       type: string
                     verification:
                       description: The person's verification status.
