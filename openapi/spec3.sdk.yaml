@@ -880,6 +880,20 @@ components:
       x-stripeResource:
         class_name: Errors
         in_class: account_requirements
+    account_sepa_debit_payments_settings:
+      description: ''
+      properties:
+        creditor_id:
+          description: SEPA creditor identifier that identifies the company making
+            the payment.
+          maxLength: 5000
+          type: string
+      title: AccountSepaDebitPaymentsSettings
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: SepaDebitPayments
+        in_class: account_settings
     account_settings:
       description: ''
       properties:
@@ -895,6 +909,8 @@ components:
           "$ref": "#/components/schemas/account_payments_settings"
         payouts:
           "$ref": "#/components/schemas/account_payout_settings"
+        sepa_debit_payments:
+          "$ref": "#/components/schemas/account_sepa_debit_payments_settings"
       required:
       - branding
       - card_payments
@@ -909,11 +925,13 @@ components:
       - dashboard
       - payments
       - payouts
+      - sepa_debit_payments
       x-stripeResource:
         class_name: Settings
         in_class: account
         inner_classes:
         - account_bacs_debit_payments_settings
+        - account_sepa_debit_payments_settings
     account_tos_acceptance:
       description: ''
       properties:
@@ -3629,21 +3647,34 @@ components:
             If blank or `auto`, the browser's locale is used.
           enum:
           - auto
+          - bg
+          - cs
           - da
           - de
+          - el
           - en
           - es
+          - et
           - fi
           - fr
+          - hu
           - it
           - ja
+          - lt
+          - lv
           - ms
+          - mt
           - nb
           - nl
           - pl
           - pt
           - pt-BR
+          - ro
+          - ru
+          - sk
+          - sl
           - sv
+          - tr
           - zh
           nullable: true
           type: string
@@ -8034,6 +8065,7 @@ components:
       - tax_percent
       - total
       - total_tax_amounts
+      - transfer_data
       - webhooks_delivered_at
       title: Invoice
       type: object
@@ -21153,6 +21185,12 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        parent:
+          description: The ID of the associated object for this line item. Expandable
+            if not null (e.g., expandable to a SKU).
+          maxLength: 5000
+          nullable: true
+          type: string
         quantity:
           description: The quantity of this order item. When type is `sku`, this is
             the number of instances of the SKU to be ordered.
@@ -21166,6 +21204,7 @@ components:
       - amount
       - currency
       - description
+      - parent
       - type
       title: SourceOrderItem
       type: object
@@ -22533,6 +22572,7 @@ components:
       - start_date
       - status
       - tax_percent
+      - transfer_data
       - trial_end
       - trial_start
       title: Subscription
@@ -23343,6 +23383,7 @@ components:
       - proration_behavior
       - start_date
       - tax_percent
+      - transfer_data
       - trial_end
       title: SubscriptionSchedulePhaseConfiguration
       type: object
@@ -23407,6 +23448,7 @@ components:
       - collection_method
       - default_payment_method
       - invoice_settings
+      - transfer_data
       title: SubscriptionSchedulesResourceDefaultSettings
       type: object
       x-expandableFields:
@@ -31841,9 +31883,7 @@ paths:
                 line_items:
                   description: |-
                     A list of items the customer is purchasing. Use this parameter to pass one-time or recurring [prices](https://stripe.com/docs/api/prices).
-
-                    If not using recurring prices, this parameter is for one-time payments or
-                    adding invoice line items to a subscription (used in conjunction with `subscription_data.items`).
+                    One-time prices in `subscription` mode will be on the initial invoice only.
 
                     There is a maximum of 100 line items, however it is recommended to
                     consolidate line items if there are more than a few dozen.
@@ -31963,8 +32003,8 @@ paths:
                             title: recurring_adhoc
                             type: object
                           unit_amount:
-                            description: A positive integer in %s (or 0 for a free
-                              price) representing how much to charge.
+                            description: A positive integer in %s representing how
+                              much to charge.
                             type: integer
                           unit_amount_decimal:
                             description: Same as `unit_amount`, but accepts a decimal
@@ -32000,21 +32040,34 @@ paths:
                     in. If blank or `auto`, the browser's locale is used.
                   enum:
                   - auto
+                  - bg
+                  - cs
                   - da
                   - de
+                  - el
                   - en
                   - es
+                  - et
                   - fi
                   - fr
+                  - hu
                   - it
                   - ja
+                  - lt
+                  - lv
                   - ms
+                  - mt
                   - nb
                   - nl
                   - pl
                   - pt
                   - pt-BR
+                  - ro
+                  - ru
+                  - sk
+                  - sl
                   - sv
+                  - tr
                   - zh
                   type: string
                   x-stripeBypassValidation: true
@@ -32188,8 +32241,15 @@ paths:
                   title: payment_intent_data_params
                   type: object
                 payment_method_types:
-                  description: A list of the types of payment methods (e.g., card)
-                    this Checkout session can accept.
+                  description: |-
+                    A list of the types of payment methods (e.g., `card`) this Checkout session can accept.
+
+                    Read more about the supported payment methods and their requirements in our [payment
+                    method details guide](/docs/payments/checkout/payment-methods).
+
+                    If multiple payment methods are passed, Checkout will dynamically reorder them to
+                    prioritize the most relevant payment methods based on the customer's location and
+                    other characteristics.
                   items:
                     enum:
                     - card
