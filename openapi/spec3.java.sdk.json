@@ -2299,7 +2299,7 @@
         }
       },
       "bank_account": {
-        "description": "These bank accounts are payment methods on `Customer` objects.\n\nOn the other hand [External Accounts](https://stripe.com/docs/api#external_accounts) are transfer\ndestinations on `Account` objects for [Custom accounts](https://stripe.com/docs/connect/custom-accounts).\nThey can be bank accounts or debit cards as well, and are documented in the links above.\n\nRelated guide: [Processing ACH & Bank Transfers](https://stripe.com/docs/payments/ach-bank-transfers).",
+        "description": "These bank accounts are payment methods on `Customer` objects.\n\nOn the other hand [External Accounts](https://stripe.com/docs/api#external_accounts) are transfer\ndestinations on `Account` objects for [Custom accounts](https://stripe.com/docs/connect/custom-accounts).\nThey can be bank accounts or debit cards as well, and are documented in the links above.\n\nRelated guide: [Bank Debits and Transfers](https://stripe.com/docs/payments/bank-debits-transfers).",
         "properties": {
           "account": {
             "anyOf": [
@@ -14361,7 +14361,7 @@
         }
       },
       "item": {
-        "description": "Checkout Session line item.",
+        "description": "A line item.",
         "properties": {
           "amount_subtotal": {
             "description": "Total before any discounts or taxes is applied.",
@@ -14405,7 +14405,7 @@
           "taxes": {
             "description": "The taxes applied to the line item.",
             "items": {
-              "$ref": "#/components/schemas/payment_pages_checkout_session_line_item_resource_line_item_tax"
+              "$ref": "#/components/schemas/line_items_resource_tax"
             },
             "type": "array"
           }
@@ -14420,7 +14420,7 @@
           "price",
           "quantity"
         ],
-        "title": "PaymentPagesCheckoutSessionLineItem",
+        "title": "LineItems",
         "type": "object",
         "x-expandableFields": [
           "price",
@@ -14460,7 +14460,7 @@
           "has_collection_class": true,
           "in_package": "",
           "inner_classes": [
-            "payment_pages_checkout_session_line_item_resource_line_item_tax"
+            "line_items_resource_tax"
           ]
         }
       },
@@ -15174,6 +15174,31 @@
           "class_name": "InvoiceLineItem",
           "has_collection_class": true,
           "in_package": ""
+        }
+      },
+      "line_items_resource_tax": {
+        "description": "",
+        "properties": {
+          "amount": {
+            "description": "Amount of tax for this line item.",
+            "type": "integer"
+          },
+          "rate": {
+            "$ref": "#/components/schemas/tax_rate"
+          }
+        },
+        "required": [
+          "amount",
+          "rate"
+        ],
+        "title": "LineItemsResourceTax",
+        "type": "object",
+        "x-expandableFields": [
+          "rate"
+        ],
+        "x-stripeResource": {
+          "class_name": "Tax",
+          "in_class": "item"
         }
       },
       "login_link": {
@@ -19935,31 +19960,6 @@
         "x-stripeResource": {
           "class_name": "SepaDebit",
           "in_class": "payment_method"
-        }
-      },
-      "payment_pages_checkout_session_line_item_resource_line_item_tax": {
-        "description": "",
-        "properties": {
-          "amount": {
-            "description": "Amount of tax for this line item.",
-            "type": "integer"
-          },
-          "rate": {
-            "$ref": "#/components/schemas/tax_rate"
-          }
-        },
-        "required": [
-          "amount",
-          "rate"
-        ],
-        "title": "PaymentPagesCheckoutSessionLineItemResourceLineItemTax",
-        "type": "object",
-        "x-expandableFields": [
-          "rate"
-        ],
-        "x-stripeResource": {
-          "class_name": "Tax",
-          "in_class": "item"
         }
       },
       "payment_pages_payment_page_resources_shipping_address_collection": {
@@ -31004,7 +31004,7 @@
             "type": "boolean"
           },
           "description": {
-            "description": "An optional description of what the wehbook is used for.",
+            "description": "An optional description of what the webhook is used for.",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
@@ -31424,7 +31424,7 @@
     },
     "/v1/account_links": {
       "post": {
-        "description": "<p>Creates an AccountLink object that returns a single-use Stripe URL that the user can redirect their user to in order to take them through the Connect Onboarding flow.</p>",
+        "description": "<p>Creates an AccountLink object that includes a single-use Stripe URL that the platform can redirect their user to in order to take them through the Connect Onboarding flow.</p>",
         "operationId": "PostAccountLinks",
         "requestBody": {
           "content": {
@@ -31460,11 +31460,19 @@
                     "type": "array"
                   },
                   "failure_url": {
-                    "description": "The URL that the user will be redirected to if the account link is no longer valid.",
+                    "description": "Alternate name for refresh_url to ensure backwards compatibility",
+                    "type": "string"
+                  },
+                  "refresh_url": {
+                    "description": "The URL that the user will be redirected to if the account link is no longer valid. Your `refresh_url` should trigger a method on your server to create a new account link using this API, with the same parameters, and redirect the user to the new account link.",
+                    "type": "string"
+                  },
+                  "return_url": {
+                    "description": "The URL that the user will be redirected to upon leaving or completing the linked flow.",
                     "type": "string"
                   },
                   "success_url": {
-                    "description": "The URL that the user will be redirected to upon leaving or completing the linked flow successfully.",
+                    "description": "Alternate name for return_url to ensure backwards compatibility",
                     "type": "string"
                   },
                   "type": {
@@ -31479,8 +31487,6 @@
                 },
                 "required": [
                   "account",
-                  "failure_url",
-                  "success_url",
                   "type"
                 ],
                 "type": "object"
@@ -63124,7 +63130,7 @@
                     "type": "boolean"
                   },
                   "attributes": {
-                    "description": "A list of up to 5 alphanumeric attributes.",
+                    "description": "A list of up to 5 alphanumeric attributes. Should only be set if type=`good`.",
                     "items": {
                       "maxLength": 5000,
                       "type": "string"
@@ -78647,7 +78653,7 @@
                     "type": "boolean"
                   },
                   "description": {
-                    "description": "An optional description of what the wehbook is used for.",
+                    "description": "An optional description of what the webhook is used for.",
                     "maxLength": 5000,
                     "type": "string"
                   },
@@ -78730,6 +78736,9 @@
                         "issuing_card.updated",
                         "issuing_cardholder.created",
                         "issuing_cardholder.updated",
+                        "issuing_dispute.created",
+                        "issuing_dispute.funds_reinstated",
+                        "issuing_dispute.updated",
                         "issuing_transaction.created",
                         "issuing_transaction.updated",
                         "mandate.updated",
@@ -79040,7 +79049,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "description": {
-                    "description": "An optional description of what the wehbook is used for.",
+                    "description": "An optional description of what the webhook is used for.",
                     "maxLength": 5000,
                     "type": "string"
                   },
@@ -79127,6 +79136,9 @@
                         "issuing_card.updated",
                         "issuing_cardholder.created",
                         "issuing_cardholder.updated",
+                        "issuing_dispute.created",
+                        "issuing_dispute.funds_reinstated",
+                        "issuing_dispute.updated",
                         "issuing_transaction.created",
                         "issuing_transaction.updated",
                         "mandate.updated",

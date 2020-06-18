@@ -1416,7 +1416,7 @@ components:
         destinations on `Account` objects for [Custom accounts](https://stripe.com/docs/connect/custom-accounts).
         They can be bank accounts or debit cards as well, and are documented in the links above.
 
-        Related guide: [Processing ACH & Bank Transfers](https://stripe.com/docs/payments/ach-bank-transfers).
+        Related guide: [Bank Debits and Transfers](https://stripe.com/docs/payments/bank-debits-transfers).
       properties:
         account:
           anyOf:
@@ -9552,7 +9552,7 @@ components:
       type: object
       x-expandableFields: []
     item:
-      description: Checkout Session line item.
+      description: A line item.
       properties:
         amount_subtotal:
           description: Total before any discounts or taxes is applied.
@@ -9590,7 +9590,7 @@ components:
         taxes:
           description: The taxes applied to the line item.
           items:
-            "$ref": "#/components/schemas/payment_pages_checkout_session_line_item_resource_line_item_tax"
+            "$ref": "#/components/schemas/line_items_resource_tax"
           type: array
       required:
       - currency
@@ -9598,7 +9598,7 @@ components:
       - id
       - object
       - price
-      title: PaymentPagesCheckoutSessionLineItem
+      title: LineItems
       type: object
       x-expandableFields:
       - price
@@ -10034,6 +10034,21 @@ components:
       - tax_amounts
       - tax_rates
       x-resourceId: line_item
+    line_items_resource_tax:
+      description: ''
+      properties:
+        amount:
+          description: Amount of tax for this line item.
+          type: integer
+        rate:
+          "$ref": "#/components/schemas/tax_rate"
+      required:
+      - amount
+      - rate
+      title: LineItemsResourceTax
+      type: object
+      x-expandableFields:
+      - rate
     login_link:
       description: ''
       properties:
@@ -12806,21 +12821,6 @@ components:
       title: payment_method_sepa_debit
       type: object
       x-expandableFields: []
-    payment_pages_checkout_session_line_item_resource_line_item_tax:
-      description: ''
-      properties:
-        amount:
-          description: Amount of tax for this line item.
-          type: integer
-        rate:
-          "$ref": "#/components/schemas/tax_rate"
-      required:
-      - amount
-      - rate
-      title: PaymentPagesCheckoutSessionLineItemResourceLineItemTax
-      type: object
-      x-expandableFields:
-      - rate
     payment_pages_payment_page_resources_shipping_address_collection:
       description: ''
       properties:
@@ -18839,7 +18839,7 @@ components:
           format: unix-time
           type: integer
         description:
-          description: An optional description of what the wehbook is used for.
+          description: An optional description of what the webhook is used for.
           maxLength: 5000
           nullable: true
           type: string
@@ -22165,8 +22165,8 @@ paths:
           description: Error response.
   "/v1/account_links":
     post:
-      description: "<p>Creates an AccountLink object that returns a single-use Stripe
-        URL that the user can redirect their user to in order to take them through
+      description: "<p>Creates an AccountLink object that includes a single-use Stripe
+        URL that the platform can redirect their user to in order to take them through
         the Connect Onboarding flow.</p>"
       operationId: PostAccountLinks
       requestBody:
@@ -22198,13 +22198,16 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
-                failure_url:
+                refresh_url:
                   description: The URL that the user will be redirected to if the
-                    account link is no longer valid.
+                    account link is no longer valid. Your `refresh_url` should trigger
+                    a method on your server to create a new account link using this
+                    API, with the same parameters, and redirect the user to the new
+                    account link.
                   type: string
-                success_url:
+                return_url:
                   description: The URL that the user will be redirected to upon leaving
-                    or completing the linked flow successfully.
+                    or completing the linked flow.
                   type: string
                 type:
                   description: The type of account link the user is requesting. Possible
@@ -22216,8 +22219,6 @@ paths:
                   x-stripeBypassValidation: true
               required:
               - account
-              - failure_url
-              - success_url
               - type
               type: object
         required: true
@@ -50522,7 +50523,8 @@ paths:
                     Defaults to `true`.
                   type: boolean
                 attributes:
-                  description: A list of up to 5 alphanumeric attributes.
+                  description: A list of up to 5 alphanumeric attributes. Should only
+                    be set if type=`good`.
                   items:
                     maxLength: 5000
                     type: string
@@ -61835,7 +61837,7 @@ paths:
                     `false`.
                   type: boolean
                 description:
-                  description: An optional description of what the wehbook is used
+                  description: An optional description of what the webhook is used
                     for.
                   maxLength: 5000
                   type: string
@@ -61920,6 +61922,9 @@ paths:
                     - issuing_card.updated
                     - issuing_cardholder.created
                     - issuing_cardholder.updated
+                    - issuing_dispute.created
+                    - issuing_dispute.funds_reinstated
+                    - issuing_dispute.updated
                     - issuing_transaction.created
                     - issuing_transaction.updated
                     - mandate.updated
@@ -62150,7 +62155,7 @@ paths:
               additionalProperties: false
               properties:
                 description:
-                  description: An optional description of what the wehbook is used
+                  description: An optional description of what the webhook is used
                     for.
                   maxLength: 5000
                   type: string
@@ -62238,6 +62243,9 @@ paths:
                     - issuing_card.updated
                     - issuing_cardholder.created
                     - issuing_cardholder.updated
+                    - issuing_dispute.created
+                    - issuing_dispute.funds_reinstated
+                    - issuing_dispute.updated
                     - issuing_transaction.created
                     - issuing_transaction.updated
                     - mandate.updated
