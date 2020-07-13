@@ -525,8 +525,8 @@ components:
           nullable: true
           type: string
         errors:
-          description: The fields that need to be collected again because validation
-            or verification failed for some reason.
+          description: The fields that are `currently_due` and need to be collected
+            again because validation or verification failed for some reason.
           items:
             "$ref": "#/components/schemas/account_requirements_error"
           type: array
@@ -777,8 +777,8 @@ components:
           nullable: true
           type: string
         errors:
-          description: The fields that need to be collected again because validation
-            or verification failed for some reason.
+          description: The fields that are `currently_due` and need to be collected
+            again because validation or verification failed for some reason.
           items:
             "$ref": "#/components/schemas/account_requirements_error"
           nullable: true
@@ -2741,8 +2741,8 @@ components:
             - "$ref": "#/components/schemas/recipient"
         tokenization_method:
           description: If the card number is tokenized, this is the method that was
-            used. Can be `amex_express_checkout`, `android_pay` (includes Google Pay),
-            `apple_pay`, `masterpass`, `visa_checkout`, or null.
+            used. Can be `android_pay` (includes Google Pay), `apple_pay`, `masterpass`,
+            `visa_checkout`, or null.
           maxLength: 5000
           nullable: true
           type: string
@@ -3626,6 +3626,7 @@ components:
           - el
           - en
           - es
+          - es-419
           - et
           - fi
           - fr
@@ -4861,6 +4862,7 @@ components:
           - data
         subscriptions:
           description: The customer's current subscriptions, if any.
+          nullable: true
           properties:
             data:
               description: Details about each object.
@@ -5966,7 +5968,7 @@ components:
         [webhooks](http://en.wikipedia.org/wiki/Webhook) system for sending the
         `Event` objects directly to an endpoint on your server. Webhooks are managed
         in your
-        [account settings](https://dashboard.stripe.com/account/webhooks'),
+        [account settings](https://dashboard.stripe.com/account/webhooks),
         and our [Using Webhooks](https://stripe.com/docs/webhooks) guide will help you get set up.
 
         When using [Connect](https://stripe.com/docs/connect), you can also receive notifications of
@@ -11425,7 +11427,7 @@ components:
           maxLength: 5000
           type: string
         unit:
-          description: The units for `volume`. One of `us_gallon` or `liter`.
+          description: The units for `volume_decimal`. One of `us_gallon` or `liter`.
           maxLength: 5000
           type: string
         unit_cost_decimal:
@@ -16961,8 +16963,8 @@ components:
             type: string
           type: array
         errors:
-          description: The fields that need to be collected again because validation
-            or verification failed for some reason.
+          description: The fields that are `currently_due` and need to be collected
+            again because validation or verification failed for some reason.
           items:
             "$ref": "#/components/schemas/account_requirements_error"
           type: array
@@ -18228,8 +18230,7 @@ components:
         [Connect](https://stripe.com/docs/connect), specifically Connect's much more powerful
         [Account objects](https://stripe.com/docs/api#account). Stripe accounts that don't already use
         recipients can no longer begin doing so. Please use `Account` objects
-        instead. If you are already using recipients, please see our
-        [migration guide](https://stripe.com/docs/connect/recipient-account-migrations) for more information.**
+        instead.**
       properties:
         active_account:
           anyOf:
@@ -22564,6 +22565,17 @@ components:
             during this phase of the schedule.
           nullable: true
           type: number
+        billing_cycle_anchor:
+          description: Possible values are `phase_start` or `automatic`. If `phase_start`
+            then billing cycle anchor of the subscription is set to the start of the
+            phase when entering the phase. If `automatic` then the billing cycle anchor
+            is automatically modified as needed when entering the phase. For more
+            information, see the billing cycle [documentation](https://stripe.com/docs/billing/subscriptions/billing-cycle).
+          enum:
+          - automatic
+          - phase_start
+          nullable: true
+          type: string
         billing_thresholds:
           anyOf:
           - "$ref": "#/components/schemas/subscription_billing_thresholds"
@@ -22660,6 +22672,7 @@ components:
       required:
       - add_invoice_items
       - application_fee_percent
+      - billing_cycle_anchor
       - billing_thresholds
       - collection_method
       - coupon
@@ -22689,6 +22702,16 @@ components:
     subscription_schedules_resource_default_settings:
       description: ''
       properties:
+        billing_cycle_anchor:
+          description: Possible values are `phase_start` or `automatic`. If `phase_start`
+            then billing cycle anchor of the subscription is set to the start of the
+            phase when entering the phase. If `automatic` then the billing cycle anchor
+            is automatically modified as needed when entering the phase. For more
+            information, see the billing cycle [documentation](https://stripe.com/docs/billing/subscriptions/billing-cycle).
+          enum:
+          - automatic
+          - phase_start
+          type: string
         billing_thresholds:
           anyOf:
           - "$ref": "#/components/schemas/subscription_billing_thresholds"
@@ -22731,6 +22754,7 @@ components:
             to for each of the subscription's invoices.
           nullable: true
       required:
+      - billing_cycle_anchor
       - billing_thresholds
       - collection_method
       - default_payment_method
@@ -23114,9 +23138,10 @@ components:
         Related guide: [Tax Rates](https://stripe.com/docs/billing/taxes/tax-rates).
       properties:
         active:
-          description: Defaults to `true`. When set to `false`, this tax rate cannot
-            be applied to objects in the API, but will still be applied to subscriptions
-            and invoices that already have it set.
+          description: Defaults to `true`. When set to `false`, this tax rate is considered
+            archived and cannot be applied to new applications or Checkout Sessions,
+            but will still be applied to subscriptions and invoices that already have
+            it set.
           type: boolean
         created:
           description: Time at which the object was created. Measured in seconds since
@@ -31311,8 +31336,9 @@ paths:
                         description: The quantity of the line item being purchased.
                         type: integer
                       tax_rates:
-                        description: The tax rates which apply to this line item.
-                          This is only allowed in subscription mode.
+                        description: The [tax rates](https://stripe.com/docs/api/tax_rates)
+                          which apply to this line item. This is only allowed in subscription
+                          mode.
                         items:
                           maxLength: 5000
                           type: string
@@ -31338,6 +31364,7 @@ paths:
                   - el
                   - en
                   - es
+                  - es-419
                   - et
                   - fi
                   - fr
@@ -47019,7 +47046,6 @@ paths:
                             ip_address:
                               description: The IP address from which the Mandate was
                                 accepted by the customer.
-                              maxLength: 5000
                               type: string
                             user_agent:
                               description: The user agent of the browser from which
@@ -48534,7 +48560,6 @@ paths:
                               ip_address:
                                 description: The IP address from which the Mandate
                                   was accepted by the customer.
-                                maxLength: 5000
                                 type: string
                               user_agent:
                                 description: The user agent of the browser from which
@@ -48574,7 +48599,6 @@ paths:
                               ip_address:
                                 description: The IP address from which the Mandate
                                   was accepted by the customer.
-                                maxLength: 5000
                                 type: string
                               user_agent:
                                 description: The user agent of the browser from which
@@ -55041,7 +55065,6 @@ paths:
                             ip_address:
                               description: The IP address from which the Mandate was
                                 accepted by the customer.
-                              maxLength: 5000
                               type: string
                             user_agent:
                               description: The user agent of the browser from which
@@ -55493,7 +55516,6 @@ paths:
                               ip_address:
                                 description: The IP address from which the Mandate
                                   was accepted by the customer.
-                                maxLength: 5000
                                 type: string
                               user_agent:
                                 description: The user agent of the browser from which
@@ -55533,7 +55555,6 @@ paths:
                               ip_address:
                                 description: The IP address from which the Mandate
                                   was accepted by the customer.
-                                maxLength: 5000
                                 type: string
                               user_agent:
                                 description: The user agent of the browser from which
@@ -58335,6 +58356,16 @@ paths:
                   description: Object representing the subscription schedule's default
                     settings.
                   properties:
+                    billing_cycle_anchor:
+                      description: Can be set to `phase_start` to set the anchor to
+                        the start of the phase or `automatic` to automatically change
+                        it if needed. Cannot be set to `phase_start` if this phase
+                        specifies a trial. For more information, see the billing cycle
+                        [documentation](https://stripe.com/docs/billing/subscriptions/billing-cycle).
+                      enum:
+                      - automatic
+                      - phase_start
+                      type: string
                     billing_thresholds:
                       anyOf:
                       - properties:
@@ -58517,6 +58548,16 @@ paths:
                           order to set an application fee percentage. For more information,
                           see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                         type: number
+                      billing_cycle_anchor:
+                        description: Can be set to `phase_start` to set the anchor
+                          to the start of the phase or `automatic` to automatically
+                          change it if needed. Cannot be set to `phase_start` if this
+                          phase specifies a trial. For more information, see the billing
+                          cycle [documentation](https://stripe.com/docs/billing/subscriptions/billing-cycle).
+                        enum:
+                        - automatic
+                        - phase_start
+                        type: string
                       billing_thresholds:
                         anyOf:
                         - properties:
@@ -58880,6 +58921,16 @@ paths:
                   description: Object representing the subscription schedule's default
                     settings.
                   properties:
+                    billing_cycle_anchor:
+                      description: Can be set to `phase_start` to set the anchor to
+                        the start of the phase or `automatic` to automatically change
+                        it if needed. Cannot be set to `phase_start` if this phase
+                        specifies a trial. For more information, see the billing cycle
+                        [documentation](https://stripe.com/docs/billing/subscriptions/billing-cycle).
+                      enum:
+                      - automatic
+                      - phase_start
+                      type: string
                     billing_thresholds:
                       anyOf:
                       - properties:
@@ -59053,6 +59104,16 @@ paths:
                           order to set an application fee percentage. For more information,
                           see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                         type: number
+                      billing_cycle_anchor:
+                        description: Can be set to `phase_start` to set the anchor
+                          to the start of the phase or `automatic` to automatically
+                          change it if needed. Cannot be set to `phase_start` if this
+                          phase specifies a trial. For more information, see the billing
+                          cycle [documentation](https://stripe.com/docs/billing/subscriptions/billing-cycle).
+                        enum:
+                        - automatic
+                        - phase_start
+                        type: string
                       billing_thresholds:
                         anyOf:
                         - properties:
@@ -60829,14 +60890,14 @@ paths:
       operationId: GetTaxRates
       parameters:
       - description: Optional flag to filter by tax rates that are either active or
-          not active (archived)
+          inactive (archived).
         in: query
         name: active
         required: false
         schema:
           type: boolean
         style: form
-      - description: Optional range for filtering created date
+      - description: Optional range for filtering created date.
         explode: true
         in: query
         name: created
@@ -60884,7 +60945,7 @@ paths:
           type: array
         style: deepObject
       - description: Optional flag to filter by tax rates that are inclusive (or those
-          that are not inclusive)
+          that are not inclusive).
         in: query
         name: inclusive
         required: false
@@ -60979,8 +61040,9 @@ paths:
               properties:
                 active:
                   description: Flag determining whether the tax rate is active or
-                    inactive. Inactive tax rates continue to work where they are currently
-                    applied however they cannot be used for new applications.
+                    inactive (archived). Inactive tax rates continue to work where
+                    they are currently applied however they cannot be used for new
+                    applications or Checkout Sessions.
                   type: boolean
                 description:
                   description: An arbitrary string attached to the tax rate for your
@@ -61107,8 +61169,9 @@ paths:
               properties:
                 active:
                   description: Flag determining whether the tax rate is active or
-                    inactive. Inactive tax rates continue to work where they are currently
-                    applied however they cannot be used for new applications.
+                    inactive (archived). Inactive tax rates continue to work where
+                    they are currently applied however they cannot be used for new
+                    applications or Checkout Sessions.
                   type: boolean
                 description:
                   description: An arbitrary string attached to the tax rate for your
