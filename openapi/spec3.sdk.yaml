@@ -3559,6 +3559,14 @@ components:
 
         Related guide: [Checkout Server Quickstart](https://stripe.com/docs/payments/checkout/api).
       properties:
+        amount_subtotal:
+          description: Total of all items before discounts or taxes are applied.
+          nullable: true
+          type: integer
+        amount_total:
+          description: Total of all items after discounts and taxes are applied.
+          nullable: true
+          type: integer
         billing_address_collection:
           description: Describes whether Checkout should collect the customer's billing
             address.
@@ -3578,6 +3586,11 @@ components:
             customer ID, a cart ID, or similar, and can be used to reconcile the
             session with your internal systems.
           maxLength: 5000
+          nullable: true
+          type: string
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
           nullable: true
           type: string
         customer:
@@ -3785,10 +3798,18 @@ components:
             subscription creation is successful.
           maxLength: 5000
           type: string
+        total_details:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_pages_checkout_session_total_details"
+          description: Tax and discount details for the computed total amount.
+          nullable: true
       required:
+      - amount_subtotal
+      - amount_total
       - billing_address_collection
       - cancel_url
       - client_reference_id
+      - currency
       - customer
       - customer_email
       - id
@@ -3805,6 +3826,7 @@ components:
       - submit_type
       - subscription
       - success_url
+      - total_details
       title: Session
       type: object
       x-expandableFields:
@@ -3816,6 +3838,7 @@ components:
       - shipping
       - shipping_address_collection
       - subscription
+      - total_details
       x-resourceId: checkout.session
       x-stripeOperations:
       - method_name: list
@@ -3860,6 +3883,7 @@ components:
         in_package: Checkout
         inner_classes:
         - checkout_session_display_item
+        - payment_pages_checkout_session_total_details
         - payment_pages_payment_page_resources_shipping_address_collection
     checkout_session_custom_display_item_description:
       description: ''
@@ -12410,7 +12434,7 @@ components:
         discounts:
           description: The discounts applied to the line item.
           items:
-            "$ref": "#/components/schemas/line_items_resource_discount"
+            "$ref": "#/components/schemas/line_items_discount_amount"
           type: array
         id:
           description: Unique identifier for the object.
@@ -12431,7 +12455,7 @@ components:
         taxes:
           description: The taxes applied to the line item.
           items:
-            "$ref": "#/components/schemas/line_items_resource_tax"
+            "$ref": "#/components/schemas/line_items_tax_amount"
           type: array
       required:
       - amount_subtotal
@@ -12471,8 +12495,8 @@ components:
         has_collection_class: true
         in_package: ''
         inner_classes:
-        - line_items_resource_discount
-        - line_items_resource_tax
+        - line_items_discount_amount
+        - line_items_tax_amount
     legal_entity_company:
       description: ''
       properties:
@@ -13043,36 +13067,36 @@ components:
         class_name: InvoiceLineItem
         has_collection_class: true
         in_package: ''
-    line_items_resource_discount:
+    line_items_discount_amount:
       description: ''
       properties:
         amount:
-          description: Discount amount for this line item.
+          description: The amount discounted.
           type: integer
         discount:
           "$ref": "#/components/schemas/discount"
       required:
       - amount
       - discount
-      title: LineItemsResourceDiscount
+      title: LineItemsDiscountAmount
       type: object
       x-expandableFields:
       - discount
       x-stripeResource:
         class_name: Discount
         in_class: item
-    line_items_resource_tax:
+    line_items_tax_amount:
       description: ''
       properties:
         amount:
-          description: Amount of tax for this line item.
+          description: Amount of tax applied for this rate.
           type: integer
         rate:
           "$ref": "#/components/schemas/tax_rate"
       required:
       - amount
       - rate
-      title: LineItemsResourceTax
+      title: LineItemsTaxAmount
       type: object
       x-expandableFields:
       - rate
@@ -14206,7 +14230,8 @@ components:
           type: array
         receipt_email:
           description: Email address that the receipt for the resulting payment will
-            be sent to.
+            be sent to. If `receipt_email` is specified for a payment in live mode,
+            a receipt will be sent regardless of your [email settings](https://dashboard.stripe.com/account/emails).
           maxLength: 5000
           nullable: true
           type: string
@@ -16912,6 +16937,53 @@ components:
       x-stripeResource:
         class_name: SepaDebit
         in_class: payment_method
+    payment_pages_checkout_session_total_details:
+      description: ''
+      properties:
+        amount_discount:
+          description: This is the sum of all the line item discounts.
+          type: integer
+        amount_tax:
+          description: This is the sum of all the line item tax amounts.
+          type: integer
+        breakdown:
+          "$ref": "#/components/schemas/payment_pages_checkout_session_total_details_resource_breakdown"
+      required:
+      - amount_discount
+      - amount_tax
+      title: PaymentPagesCheckoutSessionTotalDetails
+      type: object
+      x-expandableFields:
+      - breakdown
+      x-stripeResource:
+        class_name: TotalDetails
+        in_class: checkout.session
+        inner_classes:
+        - payment_pages_checkout_session_total_details_resource_breakdown
+    payment_pages_checkout_session_total_details_resource_breakdown:
+      description: ''
+      properties:
+        discounts:
+          description: The aggregated line item discounts.
+          items:
+            "$ref": "#/components/schemas/line_items_discount_amount"
+          type: array
+        taxes:
+          description: The aggregated line item tax amounts by rate.
+          items:
+            "$ref": "#/components/schemas/line_items_tax_amount"
+          type: array
+      required:
+      - discounts
+      - taxes
+      title: PaymentPagesCheckoutSessionTotalDetailsResourceBreakdown
+      type: object
+      x-expandableFields:
+      - discounts
+      - taxes
+      x-stripeResource:
+        class_name: Breakdown
+        in_class: payment_pages_checkout_session_total_details
     payment_pages_payment_page_resources_shipping_address_collection:
       description: ''
       properties:
@@ -22554,7 +22626,7 @@ components:
           maxLength: 5000
           type: string
         items:
-          description: List of subscription items, each with an attached plan.
+          description: List of subscription items, each with an attached price.
           properties:
             data:
               description: Details about each object.
@@ -24045,10 +24117,9 @@ components:
         Related guide: [Tax Rates](https://stripe.com/docs/billing/taxes/tax-rates).
       properties:
         active:
-          description: Defaults to `true`. When set to `false`, this tax rate is considered
-            archived and cannot be applied to new applications or Checkout Sessions,
-            but will still be applied to subscriptions and invoices that already have
-            it set.
+          description: Defaults to `true`. When set to `false`, this tax rate cannot
+            be used with new applications or Checkout Sessions, but will still work
+            for subscriptions and invoices that already have it set.
           type: boolean
         created:
           description: Time at which the object was created. Measured in seconds since
@@ -25491,7 +25562,7 @@ components:
     usage_record:
       description: |-
         Usage records allow you to report customer usage and metrics to Stripe for
-        metered billing of subscription plans.
+        metered billing of subscription prices.
 
         Related guide: [Metered Billing](https://stripe.com/docs/billing/subscriptions/metered-billing).
       properties:
@@ -32362,7 +32433,9 @@ paths:
                       type: string
                     receipt_email:
                       description: Email address that the receipt for the resulting
-                        payment will be sent to.
+                        payment will be sent to. If `receipt_email` is specified for
+                        a payment in live mode, a receipt will be sent regardless
+                        of your [email settings](https://dashboard.stripe.com/account/emails).
                       maxLength: 5000
                       type: string
                     setup_future_usage:
@@ -35599,7 +35672,6 @@ paths:
         name: transaction
         required: true
         schema:
-          maxLength: 5000
           type: string
         style: simple
       requestBody:
@@ -39438,7 +39510,8 @@ paths:
             - ''
             type: string
         style: deepObject
-      - description: List of subscription items, each with an attached plan.
+      - description: A list of up to 20 subscription items, each with an attached
+          price.
         explode: true
         in: query
         name: subscription_items
@@ -39967,7 +40040,8 @@ paths:
             - ''
             type: string
         style: deepObject
-      - description: List of subscription items, each with an attached plan.
+      - description: A list of up to 20 subscription items, each with an attached
+          price.
         explode: true
         in: query
         name: subscription_items
@@ -48383,7 +48457,9 @@ paths:
                     containee_entity_name: payment_method_type
                 receipt_email:
                   description: Email address that the receipt for the resulting payment
-                    will be sent to.
+                    will be sent to. If `receipt_email` is specified for a payment
+                    in live mode, a receipt will be sent regardless of your [email
+                    settings](https://dashboard.stripe.com/account/emails).
                   type: string
                 return_url:
                   description: The URL to redirect your customer back to after they
@@ -49086,7 +49162,9 @@ paths:
                     - ''
                     type: string
                   description: Email address that the receipt for the resulting payment
-                    will be sent to.
+                    will be sent to. If `receipt_email` is specified for a payment
+                    in live mode, a receipt will be sent regardless of your [email
+                    settings](https://dashboard.stripe.com/account/emails).
                 save_payment_method:
                   description: |-
                     If the PaymentIntent has a `payment_method` and a `customer` or if you're attaching a payment method to the PaymentIntent in this request, you can pass `save_payment_method=true` to save the payment method to the customer immediately.
@@ -49230,7 +49308,7 @@ paths:
   "/v1/payment_intents/{intent}/cancel":
     post:
       description: |-
-        <p>A PaymentIntent object can be canceled when it is in one of these statuses: <code>requires_payment_method</code>, <code>requires_capture</code>, <code>requires_confirmation</code>, <code>requires_action</code>. </p>
+        <p>A PaymentIntent object can be canceled when it is in one of these statuses: <code>requires_payment_method</code>, <code>requires_capture</code>, <code>requires_confirmation</code>, or <code>requires_action</code>. </p>
 
         <p>Once canceled, no additional charges will be made by the PaymentIntent and any operations on the PaymentIntent will fail with an error. For PaymentIntents with <code>status=’requires_capture’</code>, the remaining <code>amount_capturable</code> will automatically be refunded.</p>
       operationId: PostPaymentIntentsIntentCancel
@@ -49916,7 +49994,9 @@ paths:
                     - ''
                     type: string
                   description: Email address that the receipt for the resulting payment
-                    will be sent to.
+                    will be sent to. If `receipt_email` is specified for a payment
+                    in live mode, a receipt will be sent regardless of your [email
+                    settings](https://dashboard.stripe.com/account/emails).
                 return_url:
                   description: |-
                     The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site.
@@ -56312,7 +56392,7 @@ paths:
   "/v1/setup_intents/{intent}/cancel":
     post:
       description: |-
-        <p>A SetupIntent object can be canceled when it is in one of these statuses: <code>requires_payment_method</code>, <code>requires_capture</code>, <code>requires_confirmation</code>, <code>requires_action</code>. </p>
+        <p>A SetupIntent object can be canceled when it is in one of these statuses: <code>requires_payment_method</code>, <code>requires_confirmation</code>, or <code>requires_action</code>. </p>
 
         <p>Once canceled, setup is abandoned and any operations on the SetupIntent will fail with an error.</p>
       operationId: PostSetupIntentsIntentCancel
@@ -58411,7 +58491,7 @@ paths:
 
                     Use `pending_if_incomplete` to update the subscription using [pending updates](https://stripe.com/docs/billing/subscriptions/pending-updates). When you use `pending_if_incomplete` you can only pass the parameters [supported by pending updates](https://stripe.com/docs/billing/pending-updates-reference#supported-attributes).
 
-                    Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's first invoice cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further user action is needed, this parameter does not create a subscription and returns an error instead. This was the default behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
+                    Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's invoice cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further user action is needed, this parameter does not update the subscription and returns an error instead. This was the default behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
                   enum:
                   - allow_incomplete
                   - error_if_incomplete
@@ -58728,7 +58808,7 @@ paths:
 
                     Use `pending_if_incomplete` to update the subscription using [pending updates](https://stripe.com/docs/billing/subscriptions/pending-updates). When you use `pending_if_incomplete` you can only pass the parameters [supported by pending updates](https://stripe.com/docs/billing/pending-updates-reference#supported-attributes).
 
-                    Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's first invoice cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further user action is needed, this parameter does not create a subscription and returns an error instead. This was the default behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
+                    Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's invoice cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further user action is needed, this parameter does not update the subscription and returns an error instead. This was the default behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
                   enum:
                   - allow_incomplete
                   - error_if_incomplete
@@ -58856,7 +58936,7 @@ paths:
   "/v1/subscription_items/{subscription_item}/usage_record_summaries":
     get:
       description: |-
-        <p>For the specified subscription item, returns a list of summary objects. Each object in the list provides usage information that’s been summarized from multiple usage records and over a subscription billing period (e.g., 15 usage records in the billing plan’s month of September).</p>
+        <p>For the specified subscription item, returns a list of summary objects. Each object in the list provides usage information that’s been summarized from multiple usage records and over a subscription billing period (e.g., 15 usage records in the month of September).</p>
 
         <p>The list is sorted in reverse-chronological order (newest first). The first list item represents the most current usage period that hasn’t ended yet. Since new usage records can still be added, the returned summary information for the subscription item’s ID should be seen as unstable until the subscription billing period ends.</p>
       operationId: GetSubscriptionItemsSubscriptionItemUsageRecordSummaries
@@ -60877,7 +60957,7 @@ paths:
                   type: array
                 items:
                   description: A list of up to 20 subscription items, each with an
-                    attached plan.
+                    attached price.
                   items:
                     properties:
                       billing_thresholds:
@@ -61456,7 +61536,8 @@ paths:
                     type: string
                   type: array
                 items:
-                  description: List of subscription items, each with an attached plan.
+                  description: A list of up to 20 subscription items, each with an
+                    attached price.
                   items:
                     properties:
                       billing_thresholds:
@@ -61635,7 +61716,7 @@ paths:
 
                     Use `pending_if_incomplete` to update the subscription using [pending updates](https://stripe.com/docs/billing/subscriptions/pending-updates). When you use `pending_if_incomplete` you can only pass the parameters [supported by pending updates](https://stripe.com/docs/billing/pending-updates-reference#supported-attributes).
 
-                    Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's first invoice cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further user action is needed, this parameter does not create a subscription and returns an error instead. This was the default behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
+                    Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's invoice cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further user action is needed, this parameter does not update the subscription and returns an error instead. This was the default behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
                   enum:
                   - allow_incomplete
                   - error_if_incomplete
@@ -61962,9 +62043,9 @@ paths:
               properties:
                 active:
                   description: Flag determining whether the tax rate is active or
-                    inactive (archived). Inactive tax rates continue to work where
-                    they are currently applied however they cannot be used for new
-                    applications or Checkout Sessions.
+                    inactive (archived). Inactive tax rates cannot be used with new
+                    applications or Checkout Sessions, but will still work for subscriptions
+                    and invoices that already have it set.
                   type: boolean
                 description:
                   description: An arbitrary string attached to the tax rate for your
@@ -62091,9 +62172,9 @@ paths:
               properties:
                 active:
                   description: Flag determining whether the tax rate is active or
-                    inactive (archived). Inactive tax rates continue to work where
-                    they are currently applied however they cannot be used for new
-                    applications or Checkout Sessions.
+                    inactive (archived). Inactive tax rates cannot be used with new
+                    applications or Checkout Sessions, but will still work for subscriptions
+                    and invoices that already have it set.
                   type: boolean
                 description:
                   description: An arbitrary string attached to the tax rate for your
