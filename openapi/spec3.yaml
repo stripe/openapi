@@ -3193,8 +3193,8 @@ components:
             oneOf:
             - "$ref": "#/components/schemas/customer_balance_transaction"
         discount_amount:
-          description: The integer amount in **%s** representing the amount of the
-            discount that was credited.
+          description: The integer amount in **%s** representing the total amount
+            of discount that was credited.
           type: integer
         id:
           description: Unique identifier for the object.
@@ -3305,7 +3305,7 @@ components:
           type: string
         subtotal:
           description: The integer amount in **%s** representing the amount of the
-            credit note, excluding tax and discount.
+            credit note, excluding tax and invoice level discounts.
           type: integer
         tax_amounts:
           description: The aggregate amounts calculated per tax rate for all line
@@ -3315,7 +3315,7 @@ components:
           type: array
         total:
           description: The integer amount in **%s** representing the total amount
-            of the credit note, including tax and discount.
+            of the credit note, including tax and all discount.
           type: integer
         type:
           description: Type of this credit note, one of `pre_payment` or `post_payment`.
@@ -4094,6 +4094,20 @@ components:
     deleted_discount:
       description: ''
       properties:
+        coupon:
+          "$ref": "#/components/schemas/coupon"
+        customer:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/customer"
+          - "$ref": "#/components/schemas/deleted_customer"
+          description: The ID of the customer associated with this discount.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/customer"
+            - "$ref": "#/components/schemas/deleted_customer"
         deleted:
           description: Always true for a deleted object
           enum:
@@ -4105,12 +4119,26 @@ components:
           enum:
           - discount
           type: string
+        start:
+          description: Date that the coupon was applied.
+          format: unix-time
+          type: integer
+        subscription:
+          description: The subscription that this coupon is applied to, if it is applied
+            to a particular subscription.
+          maxLength: 5000
+          nullable: true
+          type: string
       required:
+      - coupon
       - deleted
       - object
+      - start
       title: DeletedDiscount
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - coupon
+      - customer
       x-resourceId: deleted_discount
     deleted_external_account:
       anyOf:
@@ -5959,7 +5987,8 @@ components:
           type: integer
         subtotal:
           description: Total of all subscriptions, invoice items, and prorations on
-            the invoice before any discount or tax is applied.
+            the invoice before any invoice level discount or tax is applied. Item
+            discounts are already incorporated
           type: integer
         tax:
           description: The amount of tax on this invoice. This is the sum of all the
