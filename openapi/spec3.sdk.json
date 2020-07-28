@@ -5585,6 +5585,13 @@
             "description": "The integer amount in **%s** representing the total amount of discount that was credited.",
             "type": "integer"
           },
+          "discount_amounts": {
+            "description": "The aggregate amounts calculated per discount for all line items.",
+            "items": {
+              "$ref": "#/components/schemas/discounts_resource_discount_amount"
+            },
+            "type": "array"
+          },
           "id": {
             "description": "Unique identifier for the object.",
             "maxLength": 5000,
@@ -5788,6 +5795,7 @@
         "x-expandableFields": [
           "customer",
           "customer_balance_transaction",
+          "discount_amounts",
           "invoice",
           "lines",
           "refund",
@@ -5956,6 +5964,13 @@
             "description": "The integer amount in **%s** representing the discount being credited for this line item.",
             "type": "integer"
           },
+          "discount_amounts": {
+            "description": "The amount of discount calculated per discount for this line item",
+            "items": {
+              "$ref": "#/components/schemas/discounts_resource_discount_amount"
+            },
+            "type": "array"
+          },
           "id": {
             "description": "Unique identifier for the object.",
             "maxLength": 5000,
@@ -6033,6 +6048,7 @@
         "title": "CreditNoteLineItem",
         "type": "object",
         "x-expandableFields": [
+          "discount_amounts",
           "tax_amounts",
           "tax_rates"
         ],
@@ -7248,6 +7264,23 @@
             ],
             "type": "boolean"
           },
+          "id": {
+            "description": "The ID of the discount object. Discounts cannot be fetched by ID. Use `expand[]=discounts` in API calls to expand discount IDs in an array.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "invoice": {
+            "description": "The invoice that the discount's coupon was applied to, if it was applied directly to a particular invoice.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "invoice_item": {
+            "description": "The invoice item `id` (or invoice line item `id` for invoice line items of type='subscription') that the discount's coupon was applied to, if it was applied directly to a particular invoice item or invoice line item.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
           "object": {
             "description": "String representing the object's type. Objects of the same type share the same value.",
             "enum": [
@@ -7982,6 +8015,23 @@
             "nullable": true,
             "type": "integer"
           },
+          "id": {
+            "description": "The ID of the discount object. Discounts cannot be fetched by ID. Use `expand[]=discounts` in API calls to expand discount IDs in an array.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "invoice": {
+            "description": "The invoice that the discount's coupon was applied to, if it was applied directly to a particular invoice.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "invoice_item": {
+            "description": "The invoice item `id` (or invoice line item `id` for invoice line items of type='subscription') that the discount's coupon was applied to, if it was applied directly to a particular invoice item or invoice line item.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
           "object": {
             "description": "String representing the object's type. Objects of the same type share the same value.",
             "enum": [
@@ -8017,6 +8067,53 @@
         ],
         "x-stripeResource": {
           "class_name": "Discount",
+          "in_package": ""
+        }
+      },
+      "discounts_resource_discount_amount": {
+        "description": "",
+        "properties": {
+          "amount": {
+            "description": "The amount, in %s, of the discount.",
+            "type": "integer"
+          },
+          "discount": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/discount"
+              },
+              {
+                "$ref": "#/components/schemas/deleted_discount"
+              }
+            ],
+            "description": "The discount that was applied to get this discount amount.",
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/discount"
+                },
+                {
+                  "$ref": "#/components/schemas/deleted_discount"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "amount",
+          "discount"
+        ],
+        "title": "DiscountsResourceDiscountAmount",
+        "type": "object",
+        "x-expandableFields": [
+          "discount"
+        ],
+        "x-stripeResource": {
+          "class_name": "DiscountAmount",
           "in_package": ""
         }
       },
@@ -10105,6 +10202,35 @@
             "description": "Describes the current discount applied to this invoice, if there is one.",
             "nullable": true
           },
+          "discounts": {
+            "description": "The discounts applied to the invoice. Line item discounts are applied before invoice discounts. Use `expand[]=discounts` to expand each discount.",
+            "items": {
+              "anyOf": [
+                {
+                  "maxLength": 5000,
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/components/schemas/discount"
+                },
+                {
+                  "$ref": "#/components/schemas/deleted_discount"
+                }
+              ],
+              "x-expansionResources": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/discount"
+                  },
+                  {
+                    "$ref": "#/components/schemas/deleted_discount"
+                  }
+                ]
+              }
+            },
+            "nullable": true,
+            "type": "array"
+          },
           "due_date": {
             "description": "The date on which payment for this invoice is due. This value will be `null` for invoices where `collection_method=charge_automatically`.",
             "format": "unix-time",
@@ -10329,6 +10455,14 @@
             "description": "Total after discounts and taxes.",
             "type": "integer"
           },
+          "total_discount_amounts": {
+            "description": "The aggregate amounts calculated per discount across all line items.",
+            "items": {
+              "$ref": "#/components/schemas/discounts_resource_discount_amount"
+            },
+            "nullable": true,
+            "type": "array"
+          },
           "total_tax_amounts": {
             "description": "The aggregate amounts calculated per tax rate for all line items.",
             "items": {
@@ -10422,11 +10556,13 @@
           "default_source",
           "default_tax_rates",
           "discount",
+          "discounts",
           "lines",
           "payment_intent",
           "status_transitions",
           "subscription",
           "threshold_reason",
+          "total_discount_amounts",
           "total_tax_amounts",
           "transfer_data"
         ],
@@ -11041,6 +11177,29 @@
             "description": "If true, discounts will apply to this invoice item. Always false for prorations.",
             "type": "boolean"
           },
+          "discounts": {
+            "description": "The discounts which apply to the invoice item. Item discounts are applied before invoice discounts. Use `expand[]=discounts` to expand each discount.",
+            "items": {
+              "anyOf": [
+                {
+                  "maxLength": 5000,
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/components/schemas/discount"
+                }
+              ],
+              "x-expansionResources": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/discount"
+                  }
+                ]
+              }
+            },
+            "nullable": true,
+            "type": "array"
+          },
           "id": {
             "description": "Unique identifier for the object.",
             "maxLength": 5000,
@@ -11189,6 +11348,7 @@
         "type": "object",
         "x-expandableFields": [
           "customer",
+          "discounts",
           "invoice",
           "period",
           "plan",
@@ -12212,7 +12372,7 @@
                 "$ref": "#/components/schemas/issuing_cardholder_authorization_controls"
               }
             ],
-            "description": "Spending rules that give you some control over how this cardholder's cards can be used. Refer to our [authorizations](https://stripe.com/docs/issuing/purchases/authorizations) documentation for more details.",
+            "description": "Rules that control spending across this cardholder's cards. Refer to our [documentation](https://stripe.com/docs/issuing/controls/spending-controls) for more details.",
             "nullable": true
           },
           "status": {
@@ -12996,7 +13156,7 @@
         "description": "",
         "properties": {
           "allowed_categories": {
-            "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations permitted on this card.",
+            "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to allow. All other categories will be blocked. Cannot be set with `blocked_categories`.",
             "items": {
               "enum": [
                 "ac_refrigeration_repair",
@@ -13294,7 +13454,7 @@
             "type": "array"
           },
           "blocked_categories": {
-            "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to always decline on this card.",
+            "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to decline. All other categories will be allowed. Cannot be set with `allowed_categories`.",
             "items": {
               "enum": [
                 "ac_refrigeration_repair",
@@ -13592,7 +13752,7 @@
             "type": "array"
           },
           "spending_limits": {
-            "description": "Limit the spending with rules based on time intervals and categories.",
+            "description": "Limit spending with amount-based rules.",
             "items": {
               "$ref": "#/components/schemas/issuing_card_spending_limit"
             },
@@ -13600,7 +13760,7 @@
             "type": "array"
           },
           "spending_limits_currency": {
-            "description": "Currency for the amounts within spending_limits. Locked to the currency of the card.",
+            "description": "Currency of the amounts within `spending_limits`. Always the same as the currency of the card.",
             "nullable": true,
             "type": "string"
           }
@@ -13719,11 +13879,11 @@
         "description": "",
         "properties": {
           "amount": {
-            "description": "Maximum amount allowed to spend per time interval.",
+            "description": "Maximum amount allowed to spend per interval.",
             "type": "integer"
           },
           "categories": {
-            "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) on which to apply the spending limit. Leave this blank to limit all charges.",
+            "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) this limit applies to. Omitting this field will apply the limit to all categories.",
             "items": {
               "enum": [
                 "ac_refrigeration_repair",
@@ -14021,7 +14181,7 @@
             "type": "array"
           },
           "interval": {
-            "description": "The time interval or event with which to apply this spending limit towards.",
+            "description": "Interval (or event) to which the amount applies.",
             "enum": [
               "all_time",
               "daily",
@@ -14072,7 +14232,7 @@
         "description": "",
         "properties": {
           "allowed_categories": {
-            "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations permitted on this cardholder's cards.",
+            "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to allow. All other categories will be blocked. Cannot be set with `blocked_categories`.",
             "items": {
               "enum": [
                 "ac_refrigeration_repair",
@@ -14370,7 +14530,7 @@
             "type": "array"
           },
           "blocked_categories": {
-            "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to always decline on this cardholder's cards.",
+            "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to decline. All other categories will be allowed. Cannot be set with `allowed_categories`.",
             "items": {
               "enum": [
                 "ac_refrigeration_repair",
@@ -14668,7 +14828,7 @@
             "type": "array"
           },
           "spending_limits": {
-            "description": "Limit the spending with rules based on time intervals and categories.",
+            "description": "Limit spending with amount-based rules that apply across this cardholder's cards.",
             "items": {
               "$ref": "#/components/schemas/issuing_cardholder_spending_limit"
             },
@@ -14676,7 +14836,7 @@
             "type": "array"
           },
           "spending_limits_currency": {
-            "description": "Currency for the amounts within spending_limits.",
+            "description": "Currency of the amounts within `spending_limits`.",
             "nullable": true,
             "type": "string"
           }
@@ -14917,11 +15077,11 @@
         "description": "",
         "properties": {
           "amount": {
-            "description": "Maximum amount allowed to spend per time interval.",
+            "description": "Maximum amount allowed to spend per interval.",
             "type": "integer"
           },
           "categories": {
-            "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) on which to apply the spending limit. Leave this blank to limit all charges.",
+            "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) this limit applies to. Omitting this field will apply the limit to all categories.",
             "items": {
               "enum": [
                 "ac_refrigeration_repair",
@@ -15219,7 +15379,7 @@
             "type": "array"
           },
           "interval": {
-            "description": "The time interval or event with which to apply this spending limit towards.",
+            "description": "Interval (or event) to which the amount applies.",
             "enum": [
               "all_time",
               "daily",
@@ -16228,9 +16388,40 @@
             "nullable": true,
             "type": "string"
           },
+          "discount_amounts": {
+            "description": "The amount of discount calculated per discount for this line item.",
+            "items": {
+              "$ref": "#/components/schemas/discounts_resource_discount_amount"
+            },
+            "nullable": true,
+            "type": "array"
+          },
           "discountable": {
             "description": "If true, discounts will apply to this line item. Always false for prorations.",
             "type": "boolean"
+          },
+          "discounts": {
+            "description": "The discounts applied to the invoice line item. Line item discounts are applied before invoice discounts. Use `expand[]=discounts` to expand each discount.",
+            "items": {
+              "anyOf": [
+                {
+                  "maxLength": 5000,
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/components/schemas/discount"
+                }
+              ],
+              "x-expansionResources": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/discount"
+                  }
+                ]
+              }
+            },
+            "nullable": true,
+            "type": "array"
           },
           "id": {
             "description": "Unique identifier for the object.",
@@ -16351,6 +16542,8 @@
         "title": "InvoiceLineItem",
         "type": "object",
         "x-expandableFields": [
+          "discount_amounts",
+          "discounts",
           "period",
           "plan",
           "price",
@@ -30110,6 +30303,7 @@
               }
             ],
             "description": "ID of the customer.",
+            "nullable": true,
             "x-expansionResources": {
               "oneOf": [
                 {
@@ -30177,7 +30371,13 @@
             "type": "string"
           },
           "verification": {
-            "$ref": "#/components/schemas/tax_id_verification"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/tax_id_verification"
+              }
+            ],
+            "description": "Tax ID verification information.",
+            "nullable": true
           }
         },
         "required": [
@@ -40742,7 +40942,7 @@
                     "type": "array"
                   },
                   "line_items": {
-                    "description": "A list of items the customer is purchasing. Use this parameter to pass one-time or recurring [prices](https://stripe.com/docs/api/prices).\nOne-time prices in `subscription` mode will be on the initial invoice only.\n\nThere is a maximum of 100 line items, however it is recommended to\nconsolidate line items if there are more than a few dozen.",
+                    "description": "A list of items the customer is purchasing. Use this parameter to pass one-time or recurring [Prices](https://stripe.com/docs/api/prices).\nOne-time Prices in `subscription` mode will be on the initial invoice only.\n\nThere is a maximum of 100 line items, however it is recommended to\nconsolidate line items if there are more than a few dozen.",
                     "items": {
                       "properties": {
                         "amount": {
@@ -40775,12 +40975,12 @@
                           "type": "string"
                         },
                         "price": {
-                          "description": "The ID of the price or plan object. One of `price`, `price_data` or `amount` is required.",
+                          "description": "The ID of the [Price](https://stripe.com/docs/api/prices) or [Plan](https://stripe.com/docs/api/plans) object. One of `price`, `price_data` or `amount` is required.",
                           "maxLength": 5000,
                           "type": "string"
                         },
                         "price_data": {
-                          "description": "Data used to generate a new price object inline. One of `price`, `price_data` or `amount` is required.",
+                          "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline. One of `price`, `price_data` or `amount` is required.",
                           "properties": {
                             "currency": {
                               "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -48759,6 +48959,10 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
+                "discounts": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -48804,6 +49008,39 @@
                   "discountable": {
                     "description": "Controls whether discounts apply to this invoice item. Defaults to false for prorations or negative invoice items, and true for all other invoice items.",
                     "type": "boolean"
+                  },
+                  "discounts": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "properties": {
+                            "coupon": {
+                              "description": "ID of the coupon to create a new discount for.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            },
+                            "discount": {
+                              "description": "ID of an existing discount on the object (or one of its ancestors) to reuse.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            }
+                          },
+                          "title": "discounts_data_param",
+                          "type": "object"
+                        },
+                        "type": "array",
+                        "x-stripeParam": {
+                          "containee_entity_name": "discount"
+                        }
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "The coupons to redeem into discounts for the invoice item or invoice line item."
                   },
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -48862,7 +49099,7 @@
                     "type": "string"
                   },
                   "price_data": {
-                    "description": "Data used to generate a new price object inline.",
+                    "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                     "properties": {
                       "currency": {
                         "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -49094,6 +49331,10 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
+                "discounts": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -49130,6 +49371,39 @@
                   "discountable": {
                     "description": "Controls whether discounts apply to this invoice item. Defaults to false for prorations or negative invoice items, and true for all other invoice items. Cannot be set to true for prorations.",
                     "type": "boolean"
+                  },
+                  "discounts": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "properties": {
+                            "coupon": {
+                              "description": "ID of the coupon to create a new discount for.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            },
+                            "discount": {
+                              "description": "ID of an existing discount on the object (or one of its ancestors) to reuse.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            }
+                          },
+                          "title": "discounts_data_param",
+                          "type": "object"
+                        },
+                        "type": "array",
+                        "x-stripeParam": {
+                          "containee_entity_name": "discount"
+                        }
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "The coupons & existing discounts which apply to the invoice item or invoice line item. Item discounts are applied before invoice discounts. Pass an empty string to remove previously-defined discounts."
                   },
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -49183,7 +49457,7 @@
                     "type": "string"
                   },
                   "price_data": {
-                    "description": "Data used to generate a new price object inline.",
+                    "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                     "properties": {
                       "currency": {
                         "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -49544,6 +49818,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "discounts": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -49647,6 +49925,39 @@
                     "description": "An arbitrary string attached to the object. Often useful for displaying to users. Referenced as 'memo' in the Dashboard.",
                     "maxLength": 1500,
                     "type": "string"
+                  },
+                  "discounts": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "properties": {
+                            "coupon": {
+                              "description": "ID of the coupon to create a new discount for.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            },
+                            "discount": {
+                              "description": "ID of an existing discount on the object (or one of its ancestors) to reuse.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            }
+                          },
+                          "title": "discounts_data_param",
+                          "type": "object"
+                        },
+                        "type": "array",
+                        "x-stripeParam": {
+                          "containee_entity_name": "discount"
+                        }
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "The coupons to redeem into discounts for the invoice. If not specified, inherits the discount from the invoice's customer. Pass an empty string to avoid inheriting any discounts."
                   },
                   "due_date": {
                     "description": "The date on which payment for this invoice is due. Valid only for invoices where `collection_method=send_invoice`.",
@@ -49777,6 +50088,45 @@
             "style": "form"
           },
           {
+            "explode": true,
+            "in": "query",
+            "name": "discounts",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "properties": {
+                      "coupon": {
+                        "description": "ID of the coupon to create a new discount for.",
+                        "maxLength": 5000,
+                        "type": "string"
+                      },
+                      "discount": {
+                        "description": "ID of an existing discount on the object (or one of its ancestors) to reuse.",
+                        "maxLength": 5000,
+                        "type": "string"
+                      }
+                    },
+                    "title": "discounts_data_param",
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "x-stripeParam": {
+                    "containee_entity_name": "discount"
+                  }
+                },
+                {
+                  "enum": [
+                    ""
+                  ],
+                  "type": "string"
+                }
+              ]
+            },
+            "style": "deepObject"
+          },
+          {
             "description": "Specifies which fields in the response should be expanded.",
             "explode": true,
             "in": "query",
@@ -49816,6 +50166,39 @@
                   "discountable": {
                     "description": "Explicitly controls whether discounts apply to this invoice item. Defaults to true, except for negative invoice items.",
                     "type": "boolean"
+                  },
+                  "discounts": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "properties": {
+                            "coupon": {
+                              "description": "ID of the coupon to create a new discount for.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            },
+                            "discount": {
+                              "description": "ID of an existing discount on the object (or one of its ancestors) to reuse.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            }
+                          },
+                          "title": "discounts_data_param",
+                          "type": "object"
+                        },
+                        "type": "array",
+                        "x-stripeParam": {
+                          "containee_entity_name": "discount"
+                        }
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "The coupons to redeem into discounts for the invoice item in the preview."
                   },
                   "invoiceitem": {
                     "description": "The ID of the invoice item to update in preview. If not specified, a new invoice item will be added to the preview of the upcoming invoice.",
@@ -49866,7 +50249,7 @@
                     "type": "string"
                   },
                   "price_data": {
-                    "description": "Data used to generate a new price object inline.",
+                    "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                     "properties": {
                       "currency": {
                         "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -50128,7 +50511,7 @@
                     "type": "string"
                   },
                   "price_data": {
-                    "description": "Data used to generate a new price object inline.",
+                    "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                     "properties": {
                       "currency": {
                         "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -50375,6 +50758,45 @@
             "style": "form"
           },
           {
+            "explode": true,
+            "in": "query",
+            "name": "discounts",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "properties": {
+                      "coupon": {
+                        "description": "ID of the coupon to create a new discount for.",
+                        "maxLength": 5000,
+                        "type": "string"
+                      },
+                      "discount": {
+                        "description": "ID of an existing discount on the object (or one of its ancestors) to reuse.",
+                        "maxLength": 5000,
+                        "type": "string"
+                      }
+                    },
+                    "title": "discounts_data_param",
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "x-stripeParam": {
+                    "containee_entity_name": "discount"
+                  }
+                },
+                {
+                  "enum": [
+                    ""
+                  ],
+                  "type": "string"
+                }
+              ]
+            },
+            "style": "deepObject"
+          },
+          {
             "description": "A cursor for use in pagination. `ending_before` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, starting with `obj_bar`, your subsequent call can include `ending_before=obj_bar` in order to fetch the previous page of the list.",
             "in": "query",
             "name": "ending_before",
@@ -50426,6 +50848,39 @@
                     "description": "Explicitly controls whether discounts apply to this invoice item. Defaults to true, except for negative invoice items.",
                     "type": "boolean"
                   },
+                  "discounts": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "properties": {
+                            "coupon": {
+                              "description": "ID of the coupon to create a new discount for.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            },
+                            "discount": {
+                              "description": "ID of an existing discount on the object (or one of its ancestors) to reuse.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            }
+                          },
+                          "title": "discounts_data_param",
+                          "type": "object"
+                        },
+                        "type": "array",
+                        "x-stripeParam": {
+                          "containee_entity_name": "discount"
+                        }
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "The coupons to redeem into discounts for the invoice item in the preview."
+                  },
                   "invoiceitem": {
                     "description": "The ID of the invoice item to update in preview. If not specified, a new invoice item will be added to the preview of the upcoming invoice.",
                     "maxLength": 5000,
@@ -50475,7 +50930,7 @@
                     "type": "string"
                   },
                   "price_data": {
-                    "description": "Data used to generate a new price object inline.",
+                    "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                     "properties": {
                       "currency": {
                         "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -50758,7 +51213,7 @@
                     "type": "string"
                   },
                   "price_data": {
-                    "description": "Data used to generate a new price object inline.",
+                    "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                     "properties": {
                       "currency": {
                         "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -51162,6 +51617,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "discounts": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "expand": {
                   "explode": true,
                   "style": "deepObject"
@@ -51274,6 +51733,39 @@
                     "description": "An arbitrary string attached to the object. Often useful for displaying to users. Referenced as 'memo' in the Dashboard.",
                     "maxLength": 1500,
                     "type": "string"
+                  },
+                  "discounts": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "properties": {
+                            "coupon": {
+                              "description": "ID of the coupon to create a new discount for.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            },
+                            "discount": {
+                              "description": "ID of an existing discount on the object (or one of its ancestors) to reuse.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            }
+                          },
+                          "title": "discounts_data_param",
+                          "type": "object"
+                        },
+                        "type": "array",
+                        "x-stripeParam": {
+                          "containee_entity_name": "discount"
+                        }
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "The discounts that will apply to the invoice. Pass an empty string to remove previously-defined discounts."
                   },
                   "due_date": {
                     "description": "The date on which payment for this invoice is due. Only valid for invoices where `collection_method=send_invoice`. This field can only be updated on `draft` invoices.",
@@ -53044,10 +53536,10 @@
                     "type": "string"
                   },
                   "spending_controls": {
-                    "description": "Spending rules that give you control over how your cardholders can make charges. Refer to our [authorizations](https://stripe.com/docs/issuing/purchases/authorizations) documentation for more details.",
+                    "description": "Rules that control spending across this cardholder's cards. Refer to our [documentation](https://stripe.com/docs/issuing/controls/spending-controls) for more details.",
                     "properties": {
                       "allowed_categories": {
-                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations permitted on this card.",
+                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to allow. All other categories will be blocked. Cannot be set with `blocked_categories`.",
                         "items": {
                           "enum": [
                             "ac_refrigeration_repair",
@@ -53348,7 +53840,7 @@
                         }
                       },
                       "blocked_categories": {
-                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to always decline on this card.",
+                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to decline. All other categories will be allowed. Cannot be set with `allowed_categories`.",
                         "items": {
                           "enum": [
                             "ac_refrigeration_repair",
@@ -53649,15 +54141,15 @@
                         }
                       },
                       "spending_limits": {
-                        "description": "Limit the spending with rules based on time intervals and categories.",
+                        "description": "Limit spending with amount-based rules that apply across this cardholder's cards.",
                         "items": {
                           "properties": {
                             "amount": {
-                              "description": "Maximum amount allowed to spend per time interval.",
+                              "description": "Maximum amount allowed to spend per interval.",
                               "type": "integer"
                             },
                             "categories": {
-                              "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) on which to apply the spending limit. Leave this blank to limit all charges.",
+                              "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) this limit applies to. Omitting this field will apply the limit to all categories.",
                               "items": {
                                 "enum": [
                                   "ac_refrigeration_repair",
@@ -53958,7 +54450,7 @@
                               }
                             },
                             "interval": {
-                              "description": "The time interval with which to apply this spending limit towards.",
+                              "description": "Interval (or event) to which the amount applies.",
                               "enum": [
                                 "all_time",
                                 "daily",
@@ -53983,7 +54475,7 @@
                         }
                       },
                       "spending_limits_currency": {
-                        "description": "Currency for your spending limits. Defaults to your merchant country's currency.",
+                        "description": "Currency of amounts within `spending_limits`. Defaults to your merchant country's currency.",
                         "type": "string"
                       }
                     },
@@ -54317,10 +54809,10 @@
                     "type": "string"
                   },
                   "spending_controls": {
-                    "description": "Spending rules that give you some control over how your cards can be used. Refer to our [authorizations](https://stripe.com/docs/issuing/purchases/authorizations) documentation for more details.",
+                    "description": "Rules that control spending across this cardholder's cards. Refer to our [documentation](https://stripe.com/docs/issuing/controls/spending-controls) for more details.",
                     "properties": {
                       "allowed_categories": {
-                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations permitted on this card.",
+                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to allow. All other categories will be blocked. Cannot be set with `blocked_categories`.",
                         "items": {
                           "enum": [
                             "ac_refrigeration_repair",
@@ -54621,7 +55113,7 @@
                         }
                       },
                       "blocked_categories": {
-                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to always decline on this card.",
+                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to decline. All other categories will be allowed. Cannot be set with `allowed_categories`.",
                         "items": {
                           "enum": [
                             "ac_refrigeration_repair",
@@ -54922,15 +55414,15 @@
                         }
                       },
                       "spending_limits": {
-                        "description": "Limit the spending with rules based on time intervals and categories.",
+                        "description": "Limit spending with amount-based rules that apply across this cardholder's cards.",
                         "items": {
                           "properties": {
                             "amount": {
-                              "description": "Maximum amount allowed to spend per time interval.",
+                              "description": "Maximum amount allowed to spend per interval.",
                               "type": "integer"
                             },
                             "categories": {
-                              "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) on which to apply the spending limit. Leave this blank to limit all charges.",
+                              "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) this limit applies to. Omitting this field will apply the limit to all categories.",
                               "items": {
                                 "enum": [
                                   "ac_refrigeration_repair",
@@ -55231,7 +55723,7 @@
                               }
                             },
                             "interval": {
-                              "description": "The time interval with which to apply this spending limit towards.",
+                              "description": "Interval (or event) to which the amount applies.",
                               "enum": [
                                 "all_time",
                                 "daily",
@@ -55256,7 +55748,7 @@
                         }
                       },
                       "spending_limits_currency": {
-                        "description": "Currency for your spending limits. Defaults to your merchant country's currency.",
+                        "description": "Currency of amounts within `spending_limits`. Defaults to your merchant country's currency.",
                         "type": "string"
                       }
                     },
@@ -55682,10 +56174,10 @@
                     "type": "object"
                   },
                   "spending_controls": {
-                    "description": "Spending rules that give you some control over how your cards can be used. Refer to our [authorizations](https://stripe.com/docs/issuing/purchases/authorizations) documentation for more details.",
+                    "description": "Rules that control spending for this card. Refer to our [documentation](https://stripe.com/docs/issuing/controls/spending-controls) for more details.",
                     "properties": {
                       "allowed_categories": {
-                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations permitted on this card.",
+                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to allow. All other categories will be blocked. Cannot be set with `blocked_categories`.",
                         "items": {
                           "enum": [
                             "ac_refrigeration_repair",
@@ -55986,7 +56478,7 @@
                         }
                       },
                       "blocked_categories": {
-                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to always decline on this card.",
+                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to decline. All other categories will be allowed. Cannot be set with `allowed_categories`.",
                         "items": {
                           "enum": [
                             "ac_refrigeration_repair",
@@ -56287,15 +56779,15 @@
                         }
                       },
                       "spending_limits": {
-                        "description": "Limit the spending with rules based on time intervals and categories.",
+                        "description": "Limit spending with amount-based rules.",
                         "items": {
                           "properties": {
                             "amount": {
-                              "description": "Maximum amount allowed to spend per time interval.",
+                              "description": "Maximum amount allowed to spend per interval.",
                               "type": "integer"
                             },
                             "categories": {
-                              "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) on which to apply the spending limit. Leave this blank to limit all charges.",
+                              "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) this limit applies to. Omitting this field will apply the limit to all categories.",
                               "items": {
                                 "enum": [
                                   "ac_refrigeration_repair",
@@ -56596,7 +57088,7 @@
                               }
                             },
                             "interval": {
-                              "description": "The time interval with which to apply this spending limit towards.",
+                              "description": "Interval (or event) to which the amount applies.",
                               "enum": [
                                 "all_time",
                                 "daily",
@@ -56813,10 +57305,10 @@
                     "description": "Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`."
                   },
                   "spending_controls": {
-                    "description": "Spending rules that give you some control over how your cards can be used. Refer to our [authorizations](https://stripe.com/docs/issuing/purchases/authorizations) documentation for more details.",
+                    "description": "Rules that control spending for this card. Refer to our [documentation](https://stripe.com/docs/issuing/controls/spending-controls) for more details.",
                     "properties": {
                       "allowed_categories": {
-                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations permitted on this card.",
+                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to allow. All other categories will be blocked. Cannot be set with `blocked_categories`.",
                         "items": {
                           "enum": [
                             "ac_refrigeration_repair",
@@ -57117,7 +57609,7 @@
                         }
                       },
                       "blocked_categories": {
-                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to always decline on this card.",
+                        "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) of authorizations to decline. All other categories will be allowed. Cannot be set with `allowed_categories`.",
                         "items": {
                           "enum": [
                             "ac_refrigeration_repair",
@@ -57418,15 +57910,15 @@
                         }
                       },
                       "spending_limits": {
-                        "description": "Limit the spending with rules based on time intervals and categories.",
+                        "description": "Limit spending with amount-based rules.",
                         "items": {
                           "properties": {
                             "amount": {
-                              "description": "Maximum amount allowed to spend per time interval.",
+                              "description": "Maximum amount allowed to spend per interval.",
                               "type": "integer"
                             },
                             "categories": {
-                              "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) on which to apply the spending limit. Leave this blank to limit all charges.",
+                              "description": "Array of strings containing [categories](https://stripe.com/docs/api#issuing_authorization_object-merchant_data-category) this limit applies to. Omitting this field will apply the limit to all categories.",
                               "items": {
                                 "enum": [
                                   "ac_refrigeration_repair",
@@ -57727,7 +58219,7 @@
                               }
                             },
                             "interval": {
-                              "description": "The time interval with which to apply this spending limit towards.",
+                              "description": "Interval (or event) to which the amount applies.",
                               "enum": [
                                 "all_time",
                                 "daily",
@@ -64928,7 +65420,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "active": {
-                    "description": "Whether the price is currently active. Defaults to `true`.",
+                    "description": "Whether the price can be used for new purchases. Defaults to `true`.",
                     "type": "boolean"
                   },
                   "billing_scheme": {
@@ -65292,7 +65784,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "active": {
-                    "description": "Whether the price is currently active. Defaults to `true`.",
+                    "description": "Whether the price can be used for new purchases. Defaults to `true`.",
                     "type": "boolean"
                   },
                   "expand": {
@@ -72927,7 +73419,7 @@
                     "type": "string"
                   },
                   "price_data": {
-                    "description": "Data used to generate a new price object inline.",
+                    "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                     "properties": {
                       "currency": {
                         "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -73323,7 +73815,7 @@
                     "type": "string"
                   },
                   "price_data": {
-                    "description": "Data used to generate a new price object inline.",
+                    "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                     "properties": {
                       "currency": {
                         "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -74148,7 +74640,7 @@
                                 "type": "string"
                               },
                               "price_data": {
-                                "description": "Data used to generate a new price object inline.",
+                                "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                                 "properties": {
                                   "currency": {
                                     "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -74181,7 +74673,7 @@
                                 "type": "integer"
                               }
                             },
-                            "title": "one_time_price_and_quantity",
+                            "title": "add_invoice_item_entry",
                             "type": "object",
                             "x-stripeParam": {
                               "class_name": "AddInvoiceItem"
@@ -74327,7 +74819,7 @@
                                 "type": "string"
                               },
                               "price_data": {
-                                "description": "Data used to generate a new price object inline.",
+                                "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                                 "properties": {
                                   "currency": {
                                     "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -74761,7 +75253,7 @@
                                 "type": "string"
                               },
                               "price_data": {
-                                "description": "Data used to generate a new price object inline.",
+                                "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                                 "properties": {
                                   "currency": {
                                     "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -74794,7 +75286,7 @@
                                 "type": "integer"
                               }
                             },
-                            "title": "one_time_price_and_quantity",
+                            "title": "add_invoice_item_entry",
                             "type": "object",
                             "x-stripeParam": {
                               "class_name": "AddInvoiceItem"
@@ -74950,7 +75442,7 @@
                                 "type": "string"
                               },
                               "price_data": {
-                                "description": "Data used to generate a new price object inline.",
+                                "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                                 "properties": {
                                   "currency": {
                                     "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -75667,7 +76159,7 @@
                           "type": "string"
                         },
                         "price_data": {
-                          "description": "Data used to generate a new price object inline.",
+                          "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                           "properties": {
                             "currency": {
                               "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -75700,7 +76192,7 @@
                           "type": "integer"
                         }
                       },
-                      "title": "one_time_price_and_quantity",
+                      "title": "add_invoice_item_entry",
                       "type": "object",
                       "x-stripeParam": {
                         "class_name": "AddInvoiceItem"
@@ -75867,7 +76359,7 @@
                           "type": "string"
                         },
                         "price_data": {
-                          "description": "Data used to generate a new price object inline.",
+                          "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                           "properties": {
                             "currency": {
                               "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -76345,7 +76837,7 @@
                           "type": "string"
                         },
                         "price_data": {
-                          "description": "Data used to generate a new price object inline.",
+                          "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                           "properties": {
                             "currency": {
                               "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -76378,7 +76870,7 @@
                           "type": "integer"
                         }
                       },
-                      "title": "one_time_price_and_quantity",
+                      "title": "add_invoice_item_entry",
                       "type": "object",
                       "x-stripeParam": {
                         "class_name": "AddInvoiceItem"
@@ -76572,7 +77064,7 @@
                           "type": "string"
                         },
                         "price_data": {
-                          "description": "Data used to generate a new price object inline.",
+                          "description": "Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.",
                           "properties": {
                             "currency": {
                               "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
