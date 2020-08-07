@@ -13333,6 +13333,15 @@ components:
       x-stripeResource:
         class_name: PackageDimensions
         in_package: ''
+    payment_flows_private_payment_methods_alipay:
+      description: ''
+      properties: {}
+      title: PaymentFlowsPrivatePaymentMethodsAlipay
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Alipay
+        in_class: payment_method
     payment_flows_private_payment_methods_alipay_details:
       description: ''
       properties:
@@ -13838,12 +13847,15 @@ components:
         in_package: ''
         inner_classes:
         - payment_intent_next_action
+        - payment_intent_next_action_alipay_handle_redirect
         - payment_intent_next_action_redirect_to_url
         - payment_intent_payment_method_options
         - transfer_data
     payment_intent_next_action:
       description: ''
       properties:
+        alipay_handle_redirect:
+          "$ref": "#/components/schemas/payment_intent_next_action_alipay_handle_redirect"
         redirect_to_url:
           "$ref": "#/components/schemas/payment_intent_next_action_redirect_to_url"
         type:
@@ -13862,9 +13874,48 @@ components:
       title: PaymentIntentNextAction
       type: object
       x-expandableFields:
+      - alipay_handle_redirect
       - redirect_to_url
       x-stripeResource:
         class_name: NextAction
+        in_class: payment_intent
+    payment_intent_next_action_alipay_handle_redirect:
+      description: ''
+      properties:
+        native_data:
+          description: The native data to be used with Alipay SDK you must redirect
+            your customer to in order to authenticate the payment in an Android App.
+          maxLength: 5000
+          nullable: true
+          type: string
+        native_url:
+          description: The native URL you must redirect your customer to in order
+            to authenticate the payment in an iOS App.
+          maxLength: 5000
+          nullable: true
+          type: string
+        return_url:
+          description: If the customer does not exit their browser while authenticating,
+            they will be redirected to this specified URL after completion.
+          maxLength: 5000
+          nullable: true
+          type: string
+        url:
+          description: The URL you must redirect your customer to in order to authenticate
+            the payment.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+      - native_data
+      - native_url
+      - return_url
+      - url
+      title: PaymentIntentNextActionAlipayHandleRedirect
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: NextActionAlipayHandleRedirect
         in_class: payment_intent
     payment_intent_next_action_redirect_to_url:
       description: ''
@@ -13893,6 +13944,8 @@ components:
     payment_intent_payment_method_options:
       description: ''
       properties:
+        alipay:
+          "$ref": "#/components/schemas/payment_method_options_alipay"
         bancontact:
           "$ref": "#/components/schemas/payment_method_options_bancontact"
         card:
@@ -13900,6 +13953,7 @@ components:
       title: PaymentIntentPaymentMethodOptions
       type: object
       x-expandableFields:
+      - alipay
       - bancontact
       - card
       x-stripeResource:
@@ -13907,6 +13961,7 @@ components:
         in_class: payment_intent
         inner_classes:
         - payment_intent_payment_method_options_card
+        - payment_method_options_alipay
         - payment_method_options_bancontact
     payment_intent_payment_method_options_card:
       description: ''
@@ -13973,6 +14028,8 @@ components:
 
         Related guides: [Payment Methods](https://stripe.com/docs/payments/payment-methods) and [More Payment Scenarios](https://stripe.com/docs/payments/more-payment-scenarios).
       properties:
+        alipay:
+          "$ref": "#/components/schemas/payment_flows_private_payment_methods_alipay"
         au_becs_debit:
           "$ref": "#/components/schemas/payment_method_au_becs_debit"
         bacs_debit:
@@ -14042,6 +14099,7 @@ components:
             on the PaymentMethod with a name matching this value. It contains additional
             information specific to the PaymentMethod type.
           enum:
+          - alipay
           - au_becs_debit
           - bacs_debit
           - bancontact
@@ -14067,6 +14125,7 @@ components:
       title: PaymentMethod
       type: object
       x-expandableFields:
+      - alipay
       - au_becs_debit
       - bacs_debit
       - bancontact
@@ -14173,6 +14232,7 @@ components:
         in_package: ''
         inner_classes:
         - billing_details
+        - payment_flows_private_payment_methods_alipay
         - payment_method_au_becs_debit
         - payment_method_bacs_debit
         - payment_method_bancontact
@@ -16201,6 +16261,15 @@ components:
       x-stripeResource:
         class_name: InteracPresent
         in_class: payment_method
+    payment_method_options_alipay:
+      description: ''
+      properties: {}
+      title: payment_method_options_alipay
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Alipay
+        in_class: payment_intent_payment_method_options
     payment_method_options_bancontact:
       description: ''
       properties:
@@ -26190,9 +26259,9 @@ paths:
                     supports in the account's country](https://stripe.com/docs/payouts).
                   type: string
                 email:
-                  description: 'The email address of the account holder. For Custom
-                    accounts, this is only to make the account easier to identify
-                    to you: Stripe will never directly email your users.'
+                  description: The email address of the account holder. This is only
+                    to make the account easier to identify to you. Stripe will never
+                    directly email Custom accounts.
                   type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
@@ -26692,9 +26761,8 @@ paths:
                   title: tos_acceptance_specs
                   type: object
                 type:
-                  description: The type of Stripe account to create. Currently must
-                    be `custom`, as only [Custom accounts](https://stripe.com/docs/connect/custom-accounts)
-                    may be created via the API.
+                  description: The type of Stripe account to create. May be one of
+                    `custom`, `express` or `standard`.
                   enum:
                   - custom
                   - express
@@ -27290,10 +27358,9 @@ paths:
                     supports in the account's country](https://stripe.com/docs/payouts).
                   type: string
                 email:
-                  description: Email address of the account representative. For Standard
-                    accounts, this is used to ask them to claim their Stripe account.
-                    For Custom accounts, this only makes the account easier to identify
-                    to platforms; Stripe does not email the account representative.
+                  description: The email address of the account holder. This is only
+                    to make the account easier to identify to you. Stripe will never
+                    directly email Custom accounts.
                   type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
@@ -32120,12 +32187,14 @@ paths:
                             type: object
                           unit_amount:
                             description: A positive integer in %s representing how
-                              much to charge.
+                              much to charge. One of `unit_amount` or `unit_amount_decimal`
+                              is required.
                             type: integer
                           unit_amount_decimal:
                             description: Same as `unit_amount`, but accepts a decimal
                               value with at most 12 decimal places. Only one of `unit_amount`
-                              and `unit_amount_decimal` can be set.
+                              and `unit_amount_decimal` can be set, but at least one
+                              is required.
                             format: decimal
                             type: string
                         required:
@@ -34862,12 +34931,12 @@ paths:
                   items:
                     properties:
                       type:
-                        description: Type of the tax ID, one of `eu_vat`, `br_cnpj`,
-                          `br_cpf`, `nz_gst`, `au_abn`, `in_gst`, `no_vat`, `za_vat`,
-                          `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`, `ca_bn`, `hk_br`,
-                          `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `li_uid`, `my_itn`,
-                          `us_ein`, `kr_brn`, `ca_qst`, `my_sst`, `sg_gst`, `ae_trn`,
-                          `cl_tin`, `sa_vat`, `id_npwp`, or `my_frp`
+                        description: Type of the tax ID, one of `ae_trn`, `au_abn`,
+                          `br_cnpj`, `br_cpf`, `ca_bn`, `ca_qst`, `ch_vat`, `cl_tin`,
+                          `es_cif`, `eu_vat`, `hk_br`, `id_npwp`, `in_gst`, `jp_cn`,
+                          `kr_brn`, `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`,
+                          `no_vat`, `nz_gst`, `ru_inn`, `sa_vat`, `sg_gst`, `sg_uen`,
+                          `th_vat`, `tw_vat`, `us_ein`, or `za_vat`
                         enum:
                         - ae_trn
                         - au_abn
@@ -36294,11 +36363,11 @@ paths:
                     type: string
                   type: array
                 type:
-                  description: Type of the tax ID, one of `eu_vat`, `br_cnpj`, `br_cpf`,
-                    `nz_gst`, `au_abn`, `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`,
-                    `sg_uen`, `ru_inn`, `ca_bn`, `hk_br`, `es_cif`, `tw_vat`, `th_vat`,
-                    `jp_cn`, `li_uid`, `my_itn`, `us_ein`, `kr_brn`, `ca_qst`, `my_sst`,
-                    `sg_gst`, `ae_trn`, `cl_tin`, `sa_vat`, `id_npwp`, or `my_frp`
+                  description: Type of the tax ID, one of `ae_trn`, `au_abn`, `br_cnpj`,
+                    `br_cpf`, `ca_bn`, `ca_qst`, `ch_vat`, `cl_tin`, `es_cif`, `eu_vat`,
+                    `hk_br`, `id_npwp`, `in_gst`, `jp_cn`, `kr_brn`, `li_uid`, `mx_rfc`,
+                    `my_frp`, `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `ru_inn`, `sa_vat`,
+                    `sg_gst`, `sg_uen`, `th_vat`, `tw_vat`, `us_ein`, or `za_vat`
                   enum:
                   - ae_trn
                   - au_abn
@@ -38431,7 +38500,8 @@ paths:
                     unit_amount_decimal:
                       description: Same as `unit_amount`, but accepts a decimal value
                         with at most 12 decimal places. Only one of `unit_amount`
-                        and `unit_amount_decimal` can be set.
+                        and `unit_amount_decimal` can be set, but at least one is
+                        required.
                       format: decimal
                       type: string
                   required:
@@ -38709,7 +38779,8 @@ paths:
                     unit_amount_decimal:
                       description: Same as `unit_amount`, but accepts a decimal value
                         with at most 12 decimal places. Only one of `unit_amount`
-                        and `unit_amount_decimal` can be set.
+                        and `unit_amount_decimal` can be set, but at least one is
+                        required.
                       format: decimal
                       type: string
                   required:
@@ -39358,7 +39429,7 @@ paths:
                   unit_amount_decimal:
                     description: Same as `unit_amount`, but accepts a decimal value
                       with at most 12 decimal places. Only one of `unit_amount` and
-                      `unit_amount_decimal` can be set.
+                      `unit_amount_decimal` can be set, but at least one is required.
                     format: decimal
                     type: string
                 required:
@@ -39592,7 +39663,7 @@ paths:
                   unit_amount_decimal:
                     description: Same as `unit_amount`, but accepts a decimal value
                       with at most 12 decimal places. Only one of `unit_amount` and
-                      `unit_amount_decimal` can be set.
+                      `unit_amount_decimal` can be set, but at least one is required.
                     format: decimal
                     type: string
                 required:
@@ -39919,7 +39990,7 @@ paths:
                   unit_amount_decimal:
                     description: Same as `unit_amount`, but accepts a decimal value
                       with at most 12 decimal places. Only one of `unit_amount` and
-                      `unit_amount_decimal` can be set.
+                      `unit_amount_decimal` can be set, but at least one is required.
                     format: decimal
                     type: string
                 required:
@@ -40173,7 +40244,7 @@ paths:
                   unit_amount_decimal:
                     description: Same as `unit_amount`, but accepts a decimal value
                       with at most 12 decimal places. Only one of `unit_amount` and
-                      `unit_amount_decimal` can be set.
+                      `unit_amount_decimal` can be set, but at least one is required.
                     format: decimal
                     type: string
                 required:
@@ -48159,6 +48230,12 @@ paths:
                     in the [payment_method](https://stripe.com/docs/api/payment_intents/object#payment_intent_object-payment_method)
                     property on the PaymentIntent.
                   properties:
+                    alipay:
+                      description: If this is an `Alipay` PaymentMethod, this hash
+                        contains details about the Alipay payment method.
+                      properties: {}
+                      title: param
+                      type: object
                     au_becs_debit:
                       description: If this is an `au_becs_debit` PaymentMethod, this
                         hash contains details about the bank account.
@@ -48362,6 +48439,7 @@ paths:
                         value. It contains additional information specific to the
                         PaymentMethod type.
                       enum:
+                      - alipay
                       - au_becs_debit
                       - bacs_debit
                       - bancontact
@@ -48381,6 +48459,16 @@ paths:
                 payment_method_options:
                   description: Payment-method-specific configuration for this PaymentIntent.
                   properties:
+                    alipay:
+                      anyOf:
+                      - properties: {}
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `alipay` PaymentMethod, this sub-hash
+                        contains details about the Alipay payment method options.
                     bancontact:
                       anyOf:
                       - properties:
@@ -48860,6 +48948,12 @@ paths:
                     in the [payment_method](https://stripe.com/docs/api/payment_intents/object#payment_intent_object-payment_method)
                     property on the PaymentIntent.
                   properties:
+                    alipay:
+                      description: If this is an `Alipay` PaymentMethod, this hash
+                        contains details about the Alipay payment method.
+                      properties: {}
+                      title: param
+                      type: object
                     au_becs_debit:
                       description: If this is an `au_becs_debit` PaymentMethod, this
                         hash contains details about the bank account.
@@ -49063,6 +49157,7 @@ paths:
                         value. It contains additional information specific to the
                         PaymentMethod type.
                       enum:
+                      - alipay
                       - au_becs_debit
                       - bacs_debit
                       - bancontact
@@ -49082,6 +49177,16 @@ paths:
                 payment_method_options:
                   description: Payment-method-specific configuration for this PaymentIntent.
                   properties:
+                    alipay:
+                      anyOf:
+                      - properties: {}
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `alipay` PaymentMethod, this sub-hash
+                        contains details about the Alipay payment method options.
                     bancontact:
                       anyOf:
                       - properties:
@@ -49701,6 +49806,12 @@ paths:
                     in the [payment_method](https://stripe.com/docs/api/payment_intents/object#payment_intent_object-payment_method)
                     property on the PaymentIntent.
                   properties:
+                    alipay:
+                      description: If this is an `Alipay` PaymentMethod, this hash
+                        contains details about the Alipay payment method.
+                      properties: {}
+                      title: param
+                      type: object
                     au_becs_debit:
                       description: If this is an `au_becs_debit` PaymentMethod, this
                         hash contains details about the bank account.
@@ -49904,6 +50015,7 @@ paths:
                         value. It contains additional information specific to the
                         PaymentMethod type.
                       enum:
+                      - alipay
                       - au_becs_debit
                       - bacs_debit
                       - bancontact
@@ -49923,6 +50035,16 @@ paths:
                 payment_method_options:
                   description: Payment-method-specific configuration for this PaymentIntent.
                   properties:
+                    alipay:
+                      anyOf:
+                      - properties: {}
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `alipay` PaymentMethod, this sub-hash
+                        contains details about the Alipay payment method options.
                     bancontact:
                       anyOf:
                       - properties:
@@ -50305,6 +50427,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              alipay:
+                explode: true
+                style: deepObject
               au_becs_debit:
                 explode: true
                 style: deepObject
@@ -50350,6 +50475,12 @@ paths:
             schema:
               additionalProperties: false
               properties:
+                alipay:
+                  description: If this is an `Alipay` PaymentMethod, this hash contains
+                    details about the Alipay payment method.
+                  properties: {}
+                  title: param
+                  type: object
                 au_becs_debit:
                   description: If this is an `au_becs_debit` PaymentMethod, this hash
                     contains details about the bank account.
@@ -50613,6 +50744,7 @@ paths:
                     It contains additional information specific to the PaymentMethod
                     type.
                   enum:
+                  - alipay
                   - au_becs_debit
                   - bacs_debit
                   - bancontact
@@ -58967,7 +59099,8 @@ paths:
                     unit_amount_decimal:
                       description: Same as `unit_amount`, but accepts a decimal value
                         with at most 12 decimal places. Only one of `unit_amount`
-                        and `unit_amount_decimal` can be set.
+                        and `unit_amount_decimal` can be set, but at least one is
+                        required.
                       format: decimal
                       type: string
                   required:
@@ -59287,7 +59420,8 @@ paths:
                     unit_amount_decimal:
                       description: Same as `unit_amount`, but accepts a decimal value
                         with at most 12 decimal places. Only one of `unit_amount`
-                        and `unit_amount_decimal` can be set.
+                        and `unit_amount_decimal` can be set, but at least one is
+                        required.
                       format: decimal
                       type: string
                   required:
@@ -59945,7 +60079,7 @@ paths:
                                   description: Same as `unit_amount`, but accepts
                                     a decimal value with at most 12 decimal places.
                                     Only one of `unit_amount` and `unit_amount_decimal`
-                                    can be set.
+                                    can be set, but at least one is required.
                                   format: decimal
                                   type: string
                               required:
@@ -60145,7 +60279,7 @@ paths:
                                   description: Same as `unit_amount`, but accepts
                                     a decimal value with at most 12 decimal places.
                                     Only one of `unit_amount` and `unit_amount_decimal`
-                                    can be set.
+                                    can be set, but at least one is required.
                                   format: decimal
                                   type: string
                               required:
@@ -60501,7 +60635,7 @@ paths:
                                   description: Same as `unit_amount`, but accepts
                                     a decimal value with at most 12 decimal places.
                                     Only one of `unit_amount` and `unit_amount_decimal`
-                                    can be set.
+                                    can be set, but at least one is required.
                                   format: decimal
                                   type: string
                               required:
@@ -60705,7 +60839,7 @@ paths:
                                   description: Same as `unit_amount`, but accepts
                                     a decimal value with at most 12 decimal places.
                                     Only one of `unit_amount` and `unit_amount_decimal`
-                                    can be set.
+                                    can be set, but at least one is required.
                                   format: decimal
                                   type: string
                               required:
@@ -61243,7 +61377,8 @@ paths:
                           unit_amount_decimal:
                             description: Same as `unit_amount`, but accepts a decimal
                               value with at most 12 decimal places. Only one of `unit_amount`
-                              and `unit_amount_decimal` can be set.
+                              and `unit_amount_decimal` can be set, but at least one
+                              is required.
                             format: decimal
                             type: string
                         required:
@@ -61462,7 +61597,8 @@ paths:
                           unit_amount_decimal:
                             description: Same as `unit_amount`, but accepts a decimal
                               value with at most 12 decimal places. Only one of `unit_amount`
-                              and `unit_amount_decimal` can be set.
+                              and `unit_amount_decimal` can be set, but at least one
+                              is required.
                             format: decimal
                             type: string
                         required:
@@ -61838,7 +61974,8 @@ paths:
                           unit_amount_decimal:
                             description: Same as `unit_amount`, but accepts a decimal
                               value with at most 12 decimal places. Only one of `unit_amount`
-                              and `unit_amount_decimal` can be set.
+                              and `unit_amount_decimal` can be set, but at least one
+                              is required.
                             format: decimal
                             type: string
                         required:
@@ -62068,7 +62205,8 @@ paths:
                           unit_amount_decimal:
                             description: Same as `unit_amount`, but accepts a decimal
                               value with at most 12 decimal places. Only one of `unit_amount`
-                              and `unit_amount_decimal` can be set.
+                              and `unit_amount_decimal` can be set, but at least one
+                              is required.
                             format: decimal
                             type: string
                         required:
