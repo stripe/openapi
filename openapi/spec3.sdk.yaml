@@ -4961,6 +4961,7 @@ components:
           nullable: true
         sources:
           description: The customer's payment sources, if any.
+          nullable: true
           properties:
             data:
               description: Details about each object.
@@ -9180,6 +9181,12 @@ components:
           description: The total amount that was authorized or rejected. This amount
             is in the card's currency and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
           type: integer
+        amount_details:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_authorization_amount_details"
+          description: Detailed breakdown of amount components. These amounts are
+            denominated in `currency` and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
+          nullable: true
         approved:
           description: Whether the authorization has been approved.
           type: boolean
@@ -9289,6 +9296,7 @@ components:
           type: string
       required:
       - amount
+      - amount_details
       - approved
       - authorization_method
       - balance_transactions
@@ -9312,6 +9320,7 @@ components:
       title: IssuingAuthorization
       type: object
       x-expandableFields:
+      - amount_details
       - balance_transactions
       - card
       - cardholder
@@ -9401,6 +9410,7 @@ components:
         has_collection_class: true
         in_package: Issuing
         inner_classes:
+        - issuing_authorization_amount_details
         - issuing_authorization_merchant_data
         - issuing_authorization_pending_request
         - issuing_authorization_request
@@ -9909,6 +9919,12 @@ components:
           description: The transaction amount, which will be reflected in your balance.
             This amount is in your currency and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
           type: integer
+        amount_details:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_transaction_amount_details"
+          description: Detailed breakdown of amount components. These amounts are
+            denominated in `currency` and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
+          nullable: true
         authorization:
           anyOf:
           - maxLength: 5000
@@ -10006,6 +10022,7 @@ components:
           x-stripeBypassValidation: true
       required:
       - amount
+      - amount_details
       - authorization
       - balance_transaction
       - card
@@ -10024,6 +10041,7 @@ components:
       title: IssuingTransaction
       type: object
       x-expandableFields:
+      - amount_details
       - authorization
       - balance_transaction
       - card
@@ -10079,9 +10097,25 @@ components:
         has_collection_class: true
         in_package: Issuing
         inner_classes:
+        - issuing_transaction_amount_details
         - issuing_transaction_purchase_details
         polymorphic_groups:
         - balance_transaction_source
+    issuing_authorization_amount_details:
+      description: ''
+      properties:
+        atm_fee:
+          description: The fee charged by the ATM for the cash withdrawal.
+          nullable: true
+          type: integer
+      required:
+      - atm_fee
+      title: IssuingAuthorizationAmountDetails
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: AmountDetails
+        in_class: issuing.authorization
     issuing_authorization_merchant_data:
       description: ''
       properties:
@@ -10142,6 +10176,12 @@ components:
             is approved, in the card's [currency](https://stripe.com/docs/api#issuing_authorization_object-pending-request-currency)
             and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
           type: integer
+        amount_details:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_authorization_amount_details"
+          description: Detailed breakdown of amount components. These amounts are
+            denominated in `currency` and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
+          nullable: true
         currency:
           description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
             in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
@@ -10159,13 +10199,15 @@ components:
           type: string
       required:
       - amount
+      - amount_details
       - currency
       - is_amount_controllable
       - merchant_amount
       - merchant_currency
       title: IssuingAuthorizationPendingRequest
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - amount_details
       x-stripeResource:
         class_name: PendingRequest
         in_class: issuing.authorization
@@ -10178,6 +10220,12 @@ components:
             Stripe held this amount from your account to fund the authorization if
             the request was approved.
           type: integer
+        amount_details:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_authorization_amount_details"
+          description: Detailed breakdown of amount components. These amounts are
+            denominated in `currency` and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
+          nullable: true
         approved:
           description: Whether this request was approved.
           type: boolean
@@ -10222,6 +10270,7 @@ components:
           x-stripeBypassValidation: true
       required:
       - amount
+      - amount_details
       - approved
       - created
       - currency
@@ -10230,7 +10279,8 @@ components:
       - reason
       title: IssuingAuthorizationRequest
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - amount_details
       x-stripeResource:
         class_name: RequestHistory
         in_class: issuing.authorization
@@ -12427,6 +12477,21 @@ components:
         in_class: issuing_cardholder_individual
         inner_classes:
         - issuing_cardholder_id_document
+    issuing_transaction_amount_details:
+      description: ''
+      properties:
+        atm_fee:
+          description: The fee charged by the ATM for the cash withdrawal.
+          nullable: true
+          type: integer
+      required:
+      - atm_fee
+      title: IssuingTransactionAmountDetails
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: AmountDetails
+        in_class: issuing.transaction
     issuing_transaction_flight_data:
       description: ''
       properties:
@@ -24139,10 +24204,11 @@ components:
           - "$ref": "#/components/schemas/invoice_setting_subscription_schedule_setting"
           description: The subscription schedule's default invoice settings.
           nullable: true
-        plans:
-          description: Plans to subscribe during this phase of the subscription schedule.
+        items:
+          description: Prices to subscribe during this phase of the subscription schedule.
           items:
             "$ref": "#/components/schemas/subscription_schedule_configuration_item"
+          nullable: true
           type: array
         proration_behavior:
           description: If the subscription schedule will prorate when transitioning
@@ -24185,7 +24251,7 @@ components:
       - default_payment_method
       - end_date
       - invoice_settings
-      - plans
+      - items
       - proration_behavior
       - start_date
       - tax_percent
@@ -24200,7 +24266,7 @@ components:
       - default_payment_method
       - default_tax_rates
       - invoice_settings
-      - plans
+      - items
       - transfer_data
       x-stripeResource:
         class_name: Phase
