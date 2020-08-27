@@ -1191,11 +1191,6 @@
             "type": "string"
           }
         },
-        "required": [
-          "date",
-          "ip",
-          "user_agent"
-        ],
         "title": "AccountTOSAcceptance",
         "type": "object",
         "x-expandableFields": [
@@ -4608,6 +4603,9 @@
               },
               {
                 "$ref": "#/components/schemas/customer"
+              },
+              {
+                "$ref": "#/components/schemas/deleted_customer"
               }
             ],
             "description": "The ID of the customer for this session.\nFor Checkout Sessions in `payment` or `subscription` mode, Checkout\nwill create a new customer object based on information provided\nduring the session unless an existing customer was provided when\nthe session was created.",
@@ -4616,6 +4614,9 @@
               "oneOf": [
                 {
                   "$ref": "#/components/schemas/customer"
+                },
+                {
+                  "$ref": "#/components/schemas/deleted_customer"
                 }
               ]
             }
@@ -4625,13 +4626,6 @@
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
-          },
-          "display_items": {
-            "description": "The line items, plans, or SKUs purchased by the customer. Prefer using `line_items`.",
-            "items": {
-              "$ref": "#/components/schemas/checkout_session_display_item"
-            },
-            "type": "array"
           },
           "id": {
             "description": "Unique identifier for the object. Used to pass to `redirectToCheckout`\nin Stripe.js.",
@@ -4893,7 +4887,6 @@
         "type": "object",
         "x-expandableFields": [
           "customer",
-          "display_items",
           "line_items",
           "payment_intent",
           "setup_intent",
@@ -4964,93 +4957,8 @@
           "has_collection_class": true,
           "in_package": "Checkout",
           "inner_classes": [
-            "checkout_session_display_item",
             "payment_pages_checkout_session_total_details",
             "payment_pages_payment_page_resources_shipping_address_collection"
-          ]
-        }
-      },
-      "checkout_session_custom_display_item_description": {
-        "description": "",
-        "properties": {
-          "description": {
-            "description": "The description of the line item.",
-            "maxLength": 5000,
-            "nullable": true,
-            "type": "string"
-          },
-          "images": {
-            "description": "The images of the line item.",
-            "items": {
-              "maxLength": 5000,
-              "type": "string"
-            },
-            "nullable": true,
-            "type": "array"
-          },
-          "name": {
-            "description": "The name of the line item.",
-            "maxLength": 5000,
-            "type": "string"
-          }
-        },
-        "required": [
-          "description",
-          "images",
-          "name"
-        ],
-        "title": "checkout_session_custom_display_item_description",
-        "type": "object",
-        "x-expandableFields": [
-
-        ],
-        "x-stripeResource": {
-          "class_name": "Custom",
-          "in_class": "checkout_session_display_item"
-        }
-      },
-      "checkout_session_display_item": {
-        "description": "",
-        "properties": {
-          "amount": {
-            "description": "Amount for the display item.",
-            "type": "integer"
-          },
-          "currency": {
-            "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
-            "type": "string"
-          },
-          "custom": {
-            "$ref": "#/components/schemas/checkout_session_custom_display_item_description"
-          },
-          "plan": {
-            "$ref": "#/components/schemas/plan"
-          },
-          "quantity": {
-            "description": "Quantity of the display item being purchased.",
-            "type": "integer"
-          },
-          "sku": {
-            "$ref": "#/components/schemas/sku"
-          },
-          "type": {
-            "description": "The type of display item. One of `custom`, `plan` or `sku`",
-            "maxLength": 5000,
-            "type": "string"
-          }
-        },
-        "title": "checkout_session_display_item",
-        "type": "object",
-        "x-expandableFields": [
-          "custom",
-          "plan",
-          "sku"
-        ],
-        "x-stripeResource": {
-          "class_name": "DisplayItem",
-          "in_class": "checkout.session",
-          "inner_classes": [
-            "checkout_session_custom_display_item_description"
           ]
         }
       },
@@ -6320,7 +6228,6 @@
           },
           "sources": {
             "description": "The customer's payment sources, if any.",
-            "nullable": true,
             "properties": {
               "data": {
                 "description": "Details about each object.",
@@ -6360,7 +6267,6 @@
           },
           "subscriptions": {
             "description": "The customer's current subscriptions, if any.",
-            "nullable": true,
             "properties": {
               "data": {
                 "description": "Details about each object.",
@@ -6410,7 +6316,6 @@
           },
           "tax_ids": {
             "description": "The customer's tax IDs.",
-            "nullable": true,
             "properties": {
               "data": {
                 "description": "Details about each object.",
@@ -6457,10 +6362,7 @@
           "id",
           "livemode",
           "object",
-          "shipping",
-          "sources",
-          "subscriptions",
-          "tax_ids"
+          "shipping"
         ],
         "title": "Customer",
         "type": "object",
@@ -10542,11 +10444,6 @@
             "nullable": true,
             "type": "integer"
           },
-          "tax_percent": {
-            "description": "This percentage of the subtotal has been added to the total amount of the invoice, including invoice line items and discounts. This field is inherited from the subscription's `tax_percent` field, but can be changed before the invoice is paid. This field defaults to null.",
-            "nullable": true,
-            "type": "number"
-          },
           "threshold_reason": {
             "$ref": "#/components/schemas/invoice_threshold_reason"
           },
@@ -10636,7 +10533,6 @@
           "subscription",
           "subtotal",
           "tax",
-          "tax_percent",
           "total",
           "total_tax_amounts",
           "transfer_data",
@@ -12628,7 +12524,7 @@
         }
       },
       "issuing.dispute": {
-        "description": "As a [card issuer](https://stripe.com/docs/issuing), you can [dispute](https://stripe.com/docs/issuing/purchases/disputes) transactions that you do not recognize, suspect to be fraudulent, or have some other issue.\n\nRelated guide: [Disputing Transactions](https://stripe.com/docs/issuing/purchases/disputes)",
+        "description": "As a [card issuer](https://stripe.com/docs/issuing), you can dispute transactions that the cardholder does not recognize, suspects to be fraudulent, or has other issues with.\n\nRelated guide: [Disputing Transactions](https://stripe.com/docs/issuing/purchases/disputes)",
         "properties": {
           "balance_transactions": {
             "description": "List of balance transactions associated with this dispute.",
@@ -20412,8 +20308,14 @@
             "type": "string"
           },
           "read_method": {
-            "description": "How were card details read in this transaction. Can be contact_emv, contactless_emv, magnetic_stripe_fallback, magnetic_stripe_track2, or contactless_magstripe_mode",
-            "maxLength": 5000,
+            "description": "How card details were read in this transaction.",
+            "enum": [
+              "contact_emv",
+              "contactless_emv",
+              "contactless_magstripe_mode",
+              "magnetic_stripe_fallback",
+              "magnetic_stripe_track2"
+            ],
             "nullable": true,
             "type": "string"
           },
@@ -21026,8 +20928,14 @@
             "type": "string"
           },
           "read_method": {
-            "description": "How were card details read in this transaction. Can be contact_emv, contactless_emv, magnetic_stripe_fallback, magnetic_stripe_track2, or contactless_magstripe_mode",
-            "maxLength": 5000,
+            "description": "How card details were read in this transaction.",
+            "enum": [
+              "contact_emv",
+              "contactless_emv",
+              "contactless_magstripe_mode",
+              "magnetic_stripe_fallback",
+              "magnetic_stripe_track2"
+            ],
             "nullable": true,
             "type": "string"
           },
@@ -23061,7 +22969,6 @@
             "items": {
               "$ref": "#/components/schemas/plan_tier"
             },
-            "nullable": true,
             "type": "array"
           },
           "tiers_mode": {
@@ -23112,7 +23019,6 @@
           "nickname",
           "object",
           "product",
-          "tiers",
           "tiers_mode",
           "transform_usage",
           "trial_period_days",
@@ -29334,11 +29240,6 @@
             ],
             "type": "string"
           },
-          "tax_percent": {
-            "description": "If provided, each invoice created by this subscription will apply the tax rate, increasing the amount billed to the customer.",
-            "nullable": true,
-            "type": "number"
-          },
           "transfer_data": {
             "anyOf": [
               {
@@ -29394,7 +29295,6 @@
           "schedule",
           "start_date",
           "status",
-          "tax_percent",
           "transfer_data",
           "trial_end",
           "trial_start"
@@ -30302,7 +30202,6 @@
           },
           "quantity": {
             "description": "Quantity of the plan to which the customer should be subscribed.",
-            "nullable": true,
             "type": "integer"
           },
           "tax_rates": {
@@ -30317,8 +30216,7 @@
         "required": [
           "billing_thresholds",
           "plan",
-          "price",
-          "quantity"
+          "price"
         ],
         "title": "SubscriptionScheduleConfigurationItem",
         "type": "object",
@@ -30471,8 +30369,8 @@
             "description": "The subscription schedule's default invoice settings.",
             "nullable": true
           },
-          "plans": {
-            "description": "Plans to subscribe during this phase of the subscription schedule.",
+          "items": {
+            "description": "Subscription items to configure the subscription to during this phase of the subscription schedule.",
             "items": {
               "$ref": "#/components/schemas/subscription_schedule_configuration_item"
             },
@@ -30485,7 +30383,6 @@
               "create_prorations",
               "none"
             ],
-            "nullable": true,
             "type": "string"
           },
           "start_date": {
@@ -30493,18 +30390,13 @@
             "format": "unix-time",
             "type": "integer"
           },
-          "tax_percent": {
-            "description": "If provided, each invoice created during this phase of the subscription schedule will apply the tax rate, increasing the amount billed to the customer.",
-            "nullable": true,
-            "type": "number"
-          },
           "transfer_data": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/subscription_transfer_data"
               }
             ],
-            "description": "The account (if any) the subscription's payments will be attributed to for tax reporting, and where funds from each payment will be transferred to for each of the subscription's invoices.",
+            "description": "The account (if any) the associated subscription's payments will be attributed to for tax reporting, and where funds from each payment will be transferred to for each of the subscription's invoices.",
             "nullable": true
           },
           "trial_end": {
@@ -30524,10 +30416,9 @@
           "default_payment_method",
           "end_date",
           "invoice_settings",
-          "plans",
+          "items",
           "proration_behavior",
           "start_date",
-          "tax_percent",
           "transfer_data",
           "trial_end"
         ],
@@ -30540,7 +30431,7 @@
           "default_payment_method",
           "default_tax_rates",
           "invoice_settings",
-          "plans",
+          "items",
           "transfer_data"
         ],
         "x-stripeResource": {
@@ -30612,7 +30503,7 @@
                 "$ref": "#/components/schemas/subscription_transfer_data"
               }
             ],
-            "description": "The account (if any) the subscription's payments will be attributed to for tax reporting, and where funds from each payment will be transferred to for each of the subscription's invoices.",
+            "description": "The account (if any) the associated subscription's payments will be attributed to for tax reporting, and where funds from each payment will be transferred to for each of the subscription's invoices.",
             "nullable": true
           }
         },
@@ -31814,10 +31705,6 @@
       "three_d_secure_details": {
         "description": "",
         "properties": {
-          "authenticated": {
-            "description": "Whether or not authentication was performed. 3D Secure will succeed\nwithout authentication when the card is not enrolled.",
-            "type": "boolean"
-          },
           "authentication_flow": {
             "description": "For authenticated transactions: how the customer was authenticated by\nthe issuing bank.",
             "enum": [
@@ -31851,10 +31738,6 @@
             ],
             "nullable": true,
             "type": "string"
-          },
-          "succeeded": {
-            "description": "Whether or not 3D Secure succeeded.",
-            "type": "boolean"
           },
           "version": {
             "description": "The version of 3D Secure that was used.",
@@ -33375,7 +33258,7 @@
     "description": "The Stripe REST API. Please see https://stripe.com/docs/api for more details.",
     "termsOfService": "https://stripe.com/us/terms/",
     "title": "Stripe API",
-    "version": "2020-03-02",
+    "version": "2020-08-27",
     "x-stripeSpecFilename": "spec3.sdk"
   },
   "openapi": "3.0.0",
@@ -34120,7 +34003,7 @@
                     "type": "object"
                   },
                   "company": {
-                    "description": "Information about the company or business. This field is null unless `business_type` is set to `company`, `government_entity`, or `non_profit`.",
+                    "description": "Information about the company or business. This field is available for any `business_type`.",
                     "properties": {
                       "address": {
                         "description": "The company's primary address.",
@@ -35311,7 +35194,7 @@
                     "type": "object"
                   },
                   "company": {
-                    "description": "Information about the company or business. This field is null unless `business_type` is set to `company`, `government_entity`, or `non_profit`.",
+                    "description": "Information about the company or business. This field is available for any `business_type`.",
                     "properties": {
                       "address": {
                         "description": "The company's primary address.",
@@ -49531,7 +49414,7 @@
         }
       },
       "post": {
-        "description": "<p>Creates an item to be added to a draft invoice. If no invoice is specified, the item will be on the next invoice created for the customer specified.</p>",
+        "description": "<p>Creates an item to be added to a draft invoice (up to 250 items per invoice). If no invoice is specified, the item will be on the next invoice created for the customer specified.</p>",
         "operationId": "PostInvoiceitems",
         "requestBody": {
           "content": {
@@ -49629,7 +49512,7 @@
                     "type": "array"
                   },
                   "invoice": {
-                    "description": "The ID of an existing invoice to add this invoice item to. When left blank, the invoice item will be added to the next upcoming scheduled invoice. This is useful when adding invoice items in response to an invoice.created webhook. You can only add invoice items to draft invoices.",
+                    "description": "The ID of an existing invoice to add this invoice item to. When left blank, the invoice item will be added to the next upcoming scheduled invoice. This is useful when adding invoice items in response to an invoice.created webhook. You can only add invoice items to draft invoices and there is a maximum of 250 items per invoice.",
                     "maxLength": 5000,
                     "type": "string"
                   },
@@ -50582,10 +50465,6 @@
                     "maxLength": 5000,
                     "type": "string"
                   },
-                  "tax_percent": {
-                    "description": "The percent tax rate applied to the invoice, represented as a decimal number. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`.",
-                    "type": "number"
-                  },
                   "transfer_data": {
                     "description": "If specified, the funds from the invoice will be transferred to the destination and the ID of the resulting transfer will be found on the invoice's charge.",
                     "properties": {
@@ -51177,16 +51056,6 @@
               }
             },
             "style": "deepObject"
-          },
-          {
-            "description": "This field has been renamed to `subscription_proration_behavior`. `subscription_prorate=true` can be replaced with `subscription_proration_behavior=create_prorations` and `subscription_prorate=false` can be replaced with `subscription_proration_behavior=none`.",
-            "in": "query",
-            "name": "subscription_prorate",
-            "required": false,
-            "schema": {
-              "type": "boolean"
-            },
-            "style": "form"
           },
           {
             "description": "Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. Valid values are `create_prorations`, `none`, or `always_invoice`.\n\nPassing `create_prorations` will cause proration invoice items to be created when applicable. These proration items will only be invoiced immediately under [certain conditions](https://stripe.com/docs/subscriptions/upgrading-downgrading#immediate-payment). In order to always invoice immediately for prorations, pass `always_invoice`.\n\nProrations can be disabled by passing `none`.",
@@ -51881,16 +51750,6 @@
             "style": "deepObject"
           },
           {
-            "description": "This field has been renamed to `subscription_proration_behavior`. `subscription_prorate=true` can be replaced with `subscription_proration_behavior=create_prorations` and `subscription_prorate=false` can be replaced with `subscription_proration_behavior=none`.",
-            "in": "query",
-            "name": "subscription_prorate",
-            "required": false,
-            "schema": {
-              "type": "boolean"
-            },
-            "style": "form"
-          },
-          {
             "description": "Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. Valid values are `create_prorations`, `none`, or `always_invoice`.\n\nPassing `create_prorations` will cause proration invoice items to be created when applicable. These proration items will only be invoiced immediately under [certain conditions](https://stripe.com/docs/subscriptions/upgrading-downgrading#immediate-payment). In order to always invoice immediately for prorations, pass `always_invoice`.\n\nProrations can be disabled by passing `none`.",
             "in": "query",
             "name": "subscription_proration_behavior",
@@ -52207,10 +52066,6 @@
                   "explode": true,
                   "style": "deepObject"
                 },
-                "tax_percent": {
-                  "explode": true,
-                  "style": "deepObject"
-                },
                 "transfer_data": {
                   "explode": true,
                   "style": "deepObject"
@@ -52384,20 +52239,6 @@
                     "description": "Extra information about a charge for the customer's credit card statement. It must contain at least one letter. If not specified and this invoice is part of a subscription, the default `statement_descriptor` will be set to the first subscription item's product's `statement_descriptor`.",
                     "maxLength": 22,
                     "type": "string"
-                  },
-                  "tax_percent": {
-                    "anyOf": [
-                      {
-                        "type": "number"
-                      },
-                      {
-                        "enum": [
-                          ""
-                        ],
-                        "type": "string"
-                      }
-                    ],
-                    "description": "The percent tax rate applied to the invoice, represented as a non-negative decimal number (with at most four decimal places) between 0 and 100. To unset a previously-set value, pass an empty string. This field can be updated only on `draft` invoices. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`."
                   },
                   "transfer_data": {
                     "anyOf": [
@@ -52771,15 +52612,15 @@
                     "type": "array"
                   },
                   "forgive": {
-                    "description": "In cases where the source used to pay the invoice has insufficient funds, passing `forgive=true` controls whether a charge should be attempted for the full amount available on the source, up to the amount to fully pay the invoice. This effectively forgives the difference between the amount available on the source and the amount due. \n\nPassing `forgive=false` will fail the charge if the source hasn't been pre-funded with the right amount. An example for this case is with ACH Credit Transfers and wires: if the amount wired is less than the amount due by a small amount, you might want to forgive the difference.",
+                    "description": "In cases where the source used to pay the invoice has insufficient funds, passing `forgive=true` controls whether a charge should be attempted for the full amount available on the source, up to the amount to fully pay the invoice. This effectively forgives the difference between the amount available on the source and the amount due. \n\nPassing `forgive=false` will fail the charge if the source hasn't been pre-funded with the right amount. An example for this case is with ACH Credit Transfers and wires: if the amount wired is less than the amount due by a small amount, you might want to forgive the difference. Defaults to `false`.",
                     "type": "boolean"
                   },
                   "off_session": {
-                    "description": "Indicates if a customer is on or off-session while an invoice payment is attempted.",
+                    "description": "Indicates if a customer is on or off-session while an invoice payment is attempted. Defaults to `true` (off-session).",
                     "type": "boolean"
                   },
                   "paid_out_of_band": {
-                    "description": "Boolean representing whether an invoice is paid outside of Stripe. This will result in no charge being made.",
+                    "description": "Boolean representing whether an invoice is paid outside of Stripe. This will result in no charge being made. Defaults to `false`.",
                     "type": "boolean"
                   },
                   "payment_method": {
@@ -59128,7 +58969,7 @@
         }
       },
       "post": {
-        "description": "<p>Updates the specified Issuing <code>Dispute</code> object by setting the values of the parameters passed. Any parameters not provided will be left unchanged.</p>",
+        "description": "<p>Updates the specified Issuing <code>Dispute</code> object by setting the values of the parameters passed. Any parameters not provided will be left unchanged. Properties on the <code>evidence</code> object can be unset by passing in an empty string.</p>",
         "operationId": "PostIssuingDisputesDispute",
         "parameters": [
           {
@@ -61279,41 +61120,51 @@
                         "description": "Billing information associated with the PaymentMethod that may be used or required by particular types of payment methods.",
                         "properties": {
                           "address": {
-                            "description": "Billing address.",
-                            "properties": {
-                              "city": {
-                                "description": "City, district, suburb, town, or village.",
-                                "maxLength": 5000,
-                                "type": "string"
+                            "anyOf": [
+                              {
+                                "properties": {
+                                  "city": {
+                                    "description": "City, district, suburb, town, or village.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "country": {
+                                    "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "line1": {
+                                    "description": "Address line 1 (e.g., street, PO Box, or company name).",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "line2": {
+                                    "description": "Address line 2 (e.g., apartment, suite, unit, or building).",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "postal_code": {
+                                    "description": "ZIP or postal code.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "state": {
+                                    "description": "State, county, province, or region.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  }
+                                },
+                                "title": "billing_details_address",
+                                "type": "object"
                               },
-                              "country": {
-                                "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
-                                "maxLength": 5000,
-                                "type": "string"
-                              },
-                              "line1": {
-                                "description": "Address line 1 (e.g., street, PO Box, or company name).",
-                                "maxLength": 5000,
-                                "type": "string"
-                              },
-                              "line2": {
-                                "description": "Address line 2 (e.g., apartment, suite, unit, or building).",
-                                "maxLength": 5000,
-                                "type": "string"
-                              },
-                              "postal_code": {
-                                "description": "ZIP or postal code.",
-                                "maxLength": 5000,
-                                "type": "string"
-                              },
-                              "state": {
-                                "description": "State, county, province, or region.",
-                                "maxLength": 5000,
+                              {
+                                "enum": [
+                                  ""
+                                ],
                                 "type": "string"
                               }
-                            },
-                            "title": "billing_details_address",
-                            "type": "object"
+                            ],
+                            "description": "Billing address."
                           },
                           "email": {
                             "description": "Email address.",
@@ -62068,41 +61919,51 @@
                         "description": "Billing information associated with the PaymentMethod that may be used or required by particular types of payment methods.",
                         "properties": {
                           "address": {
-                            "description": "Billing address.",
-                            "properties": {
-                              "city": {
-                                "description": "City, district, suburb, town, or village.",
-                                "maxLength": 5000,
-                                "type": "string"
+                            "anyOf": [
+                              {
+                                "properties": {
+                                  "city": {
+                                    "description": "City, district, suburb, town, or village.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "country": {
+                                    "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "line1": {
+                                    "description": "Address line 1 (e.g., street, PO Box, or company name).",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "line2": {
+                                    "description": "Address line 2 (e.g., apartment, suite, unit, or building).",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "postal_code": {
+                                    "description": "ZIP or postal code.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "state": {
+                                    "description": "State, county, province, or region.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  }
+                                },
+                                "title": "billing_details_address",
+                                "type": "object"
                               },
-                              "country": {
-                                "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
-                                "maxLength": 5000,
-                                "type": "string"
-                              },
-                              "line1": {
-                                "description": "Address line 1 (e.g., street, PO Box, or company name).",
-                                "maxLength": 5000,
-                                "type": "string"
-                              },
-                              "line2": {
-                                "description": "Address line 2 (e.g., apartment, suite, unit, or building).",
-                                "maxLength": 5000,
-                                "type": "string"
-                              },
-                              "postal_code": {
-                                "description": "ZIP or postal code.",
-                                "maxLength": 5000,
-                                "type": "string"
-                              },
-                              "state": {
-                                "description": "State, county, province, or region.",
-                                "maxLength": 5000,
+                              {
+                                "enum": [
+                                  ""
+                                ],
                                 "type": "string"
                               }
-                            },
-                            "title": "billing_details_address",
-                            "type": "object"
+                            ],
+                            "description": "Billing address."
                           },
                           "email": {
                             "description": "Email address.",
@@ -63040,41 +62901,51 @@
                         "description": "Billing information associated with the PaymentMethod that may be used or required by particular types of payment methods.",
                         "properties": {
                           "address": {
-                            "description": "Billing address.",
-                            "properties": {
-                              "city": {
-                                "description": "City, district, suburb, town, or village.",
-                                "maxLength": 5000,
-                                "type": "string"
+                            "anyOf": [
+                              {
+                                "properties": {
+                                  "city": {
+                                    "description": "City, district, suburb, town, or village.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "country": {
+                                    "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "line1": {
+                                    "description": "Address line 1 (e.g., street, PO Box, or company name).",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "line2": {
+                                    "description": "Address line 2 (e.g., apartment, suite, unit, or building).",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "postal_code": {
+                                    "description": "ZIP or postal code.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "state": {
+                                    "description": "State, county, province, or region.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  }
+                                },
+                                "title": "billing_details_address",
+                                "type": "object"
                               },
-                              "country": {
-                                "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
-                                "maxLength": 5000,
-                                "type": "string"
-                              },
-                              "line1": {
-                                "description": "Address line 1 (e.g., street, PO Box, or company name).",
-                                "maxLength": 5000,
-                                "type": "string"
-                              },
-                              "line2": {
-                                "description": "Address line 2 (e.g., apartment, suite, unit, or building).",
-                                "maxLength": 5000,
-                                "type": "string"
-                              },
-                              "postal_code": {
-                                "description": "ZIP or postal code.",
-                                "maxLength": 5000,
-                                "type": "string"
-                              },
-                              "state": {
-                                "description": "State, county, province, or region.",
-                                "maxLength": 5000,
+                              {
+                                "enum": [
+                                  ""
+                                ],
                                 "type": "string"
                               }
-                            },
-                            "title": "billing_details_address",
-                            "type": "object"
+                            ],
+                            "description": "Billing address."
                           },
                           "email": {
                             "description": "Email address.",
@@ -63833,41 +63704,51 @@
                     "description": "Billing information associated with the PaymentMethod that may be used or required by particular types of payment methods.",
                     "properties": {
                       "address": {
-                        "description": "Billing address.",
-                        "properties": {
-                          "city": {
-                            "description": "City, district, suburb, town, or village.",
-                            "maxLength": 5000,
-                            "type": "string"
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "city": {
+                                "description": "City, district, suburb, town, or village.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "country": {
+                                "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line1": {
+                                "description": "Address line 1 (e.g., street, PO Box, or company name).",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line2": {
+                                "description": "Address line 2 (e.g., apartment, suite, unit, or building).",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "description": "ZIP or postal code.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "state": {
+                                "description": "State, county, province, or region.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "title": "billing_details_address",
+                            "type": "object"
                           },
-                          "country": {
-                            "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
-                            "maxLength": 5000,
-                            "type": "string"
-                          },
-                          "line1": {
-                            "description": "Address line 1 (e.g., street, PO Box, or company name).",
-                            "maxLength": 5000,
-                            "type": "string"
-                          },
-                          "line2": {
-                            "description": "Address line 2 (e.g., apartment, suite, unit, or building).",
-                            "maxLength": 5000,
-                            "type": "string"
-                          },
-                          "postal_code": {
-                            "description": "ZIP or postal code.",
-                            "maxLength": 5000,
-                            "type": "string"
-                          },
-                          "state": {
-                            "description": "State, county, province, or region.",
-                            "maxLength": 5000,
+                          {
+                            "enum": [
+                              ""
+                            ],
                             "type": "string"
                           }
-                        },
-                        "title": "billing_details_address",
-                        "type": "object"
+                        ],
+                        "description": "Billing address."
                       },
                       "email": {
                         "description": "Email address.",
@@ -64259,41 +64140,51 @@
                     "description": "Billing information associated with the PaymentMethod that may be used or required by particular types of payment methods.",
                     "properties": {
                       "address": {
-                        "description": "Billing address.",
-                        "properties": {
-                          "city": {
-                            "description": "City, district, suburb, town, or village.",
-                            "maxLength": 5000,
-                            "type": "string"
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "city": {
+                                "description": "City, district, suburb, town, or village.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "country": {
+                                "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line1": {
+                                "description": "Address line 1 (e.g., street, PO Box, or company name).",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "line2": {
+                                "description": "Address line 2 (e.g., apartment, suite, unit, or building).",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "postal_code": {
+                                "description": "ZIP or postal code.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              },
+                              "state": {
+                                "description": "State, county, province, or region.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "title": "billing_details_address",
+                            "type": "object"
                           },
-                          "country": {
-                            "description": "Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).",
-                            "maxLength": 5000,
-                            "type": "string"
-                          },
-                          "line1": {
-                            "description": "Address line 1 (e.g., street, PO Box, or company name).",
-                            "maxLength": 5000,
-                            "type": "string"
-                          },
-                          "line2": {
-                            "description": "Address line 2 (e.g., apartment, suite, unit, or building).",
-                            "maxLength": 5000,
-                            "type": "string"
-                          },
-                          "postal_code": {
-                            "description": "ZIP or postal code.",
-                            "maxLength": 5000,
-                            "type": "string"
-                          },
-                          "state": {
-                            "description": "State, county, province, or region.",
-                            "maxLength": 5000,
+                          {
+                            "enum": [
+                              ""
+                            ],
                             "type": "string"
                           }
-                        },
-                        "title": "billing_details_address",
-                        "type": "object"
+                        ],
+                        "description": "Billing address."
                       },
                       "email": {
                         "description": "Email address.",
@@ -74623,10 +74514,6 @@
                     "title": "recurring_price_data",
                     "type": "object"
                   },
-                  "prorate": {
-                    "description": "This field has been renamed to `proration_behavior`. `prorate=true` can be replaced with `proration_behavior=create_prorations` and `prorate=false` can be replaced with `proration_behavior=none`.",
-                    "type": "boolean"
-                  },
                   "proration_behavior": {
                     "description": "Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. Valid values are `create_prorations`, `none`, or `always_invoice`.\n\nPassing `create_prorations` will cause proration invoice items to be created when applicable. These proration items will only be invoiced immediately under [certain conditions](https://stripe.com/docs/subscriptions/upgrading-downgrading#immediate-payment). In order to always invoice immediately for prorations, pass `always_invoice`.\n\nProrations can be disabled by passing `none`.",
                     "enum": [
@@ -74734,7 +74621,7 @@
                     "type": "boolean"
                   },
                   "prorate": {
-                    "description": "This field has been renamed to `proration_behavior`. `prorate=true` can be replaced with `proration_behavior=create_prorations` and `prorate=false` can be replaced with `proration_behavior=none`.",
+                    "description": "Flag indicating whether to [prorate](https://stripe.com/docs/billing/subscriptions/prorations) switching plans during a billing cycle. This field has been deprecated and will be removed in a future API version. Use `proration_behavior=create_prorations` as a replacement for `prorate=true` and `proration_behavior=none` for `prorate=false`.",
                     "type": "boolean"
                   },
                   "proration_behavior": {
@@ -75018,10 +74905,6 @@
                     ],
                     "title": "recurring_price_data",
                     "type": "object"
-                  },
-                  "prorate": {
-                    "description": "This field has been renamed to `proration_behavior`. `prorate=true` can be replaced with `proration_behavior=create_prorations` and `prorate=false` can be replaced with `proration_behavior=none`.",
-                    "type": "boolean"
                   },
                   "proration_behavior": {
                     "description": "Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. Valid values are `create_prorations`, `none`, or `always_invoice`.\n\nPassing `create_prorations` will cause proration invoice items to be created when applicable. These proration items will only be invoiced immediately under [certain conditions](https://stripe.com/docs/subscriptions/upgrading-downgrading#immediate-payment). In order to always invoice immediately for prorations, pass `always_invoice`.\n\nProrations can be disabled by passing `none`.",
@@ -75731,7 +75614,7 @@
                             "type": "string"
                           }
                         ],
-                        "description": "The data with which to automatically create a Transfer for each of the subscription's invoices."
+                        "description": "The data with which to automatically create a Transfer for each of the associated subscription's invoices."
                       }
                     },
                     "title": "default_settings_params",
@@ -75927,11 +75810,7 @@
                           "title": "subscription_schedules_param",
                           "type": "object"
                         },
-                        "iterations": {
-                          "description": "Integer representing the multiplier applied to the price interval. For example, `iterations=2` applied to a price with `interval=month` and `interval_count=3` results in a phase of duration `2 * 3 months = 6 months`. If set, `end_date` must not be set.",
-                          "type": "integer"
-                        },
-                        "plans": {
+                        "items": {
                           "description": "List of configuration items, each with an attached price, to apply during this phase of the subscription schedule.",
                           "items": {
                             "properties": {
@@ -76054,8 +75933,12 @@
                           },
                           "type": "array",
                           "x-stripeParam": {
-                            "containee_entity_name": "plan"
+                            "containee_entity_name": "item"
                           }
+                        },
+                        "iterations": {
+                          "description": "Integer representing the multiplier applied to the price interval. For example, `iterations=2` applied to a price with `interval=month` and `interval_count=3` results in a phase of duration `2 * 3 months = 6 months`. If set, `end_date` must not be set.",
+                          "type": "integer"
                         },
                         "proration_behavior": {
                           "description": "If a subscription schedule will create prorations when transitioning to this phase. Possible values are `create_prorations` or `none`, and the default value is `create_prorations`. See [Prorations](https://stripe.com/docs/billing/subscriptions/prorations).",
@@ -76066,12 +75949,8 @@
                           ],
                           "type": "string"
                         },
-                        "tax_percent": {
-                          "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period during thise phase of the schedule. For example, a price which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`.",
-                          "type": "number"
-                        },
                         "transfer_data": {
-                          "description": "The data with which to automatically create a Transfer for each of the subscription's invoices.",
+                          "description": "The data with which to automatically create a Transfer for each of the associated subscription's invoices.",
                           "properties": {
                             "amount_percent": {
                               "description": "A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the destination account. By default, the entire amount is transferred to the destination.",
@@ -76099,7 +75978,7 @@
                         }
                       },
                       "required": [
-                        "plans"
+                        "items"
                       ],
                       "title": "phase_configuration_params",
                       "type": "object"
@@ -76349,7 +76228,7 @@
                             "type": "string"
                           }
                         ],
-                        "description": "The data with which to automatically create a Transfer for each of the subscription's invoices."
+                        "description": "The data with which to automatically create a Transfer for each of the associated subscription's invoices."
                       }
                     },
                     "title": "default_settings_params",
@@ -76550,11 +76429,7 @@
                           "title": "subscription_schedules_param",
                           "type": "object"
                         },
-                        "iterations": {
-                          "description": "Integer representing the multiplier applied to the price interval. For example, `iterations=2` applied to a price with `interval=month` and `interval_count=3` results in a phase of duration `2 * 3 months = 6 months`. If set, `end_date` must not be set.",
-                          "type": "integer"
-                        },
-                        "plans": {
+                        "items": {
                           "description": "List of configuration items, each with an attached price, to apply during this phase of the subscription schedule.",
                           "items": {
                             "properties": {
@@ -76677,8 +76552,12 @@
                           },
                           "type": "array",
                           "x-stripeParam": {
-                            "containee_entity_name": "plan"
+                            "containee_entity_name": "item"
                           }
+                        },
+                        "iterations": {
+                          "description": "Integer representing the multiplier applied to the price interval. For example, `iterations=2` applied to a price with `interval=month` and `interval_count=3` results in a phase of duration `2 * 3 months = 6 months`. If set, `end_date` must not be set.",
+                          "type": "integer"
                         },
                         "proration_behavior": {
                           "description": "If a subscription schedule will create prorations when transitioning to this phase. Possible values are `create_prorations` or `none`, and the default value is `create_prorations`. See [Prorations](https://stripe.com/docs/billing/subscriptions/prorations).",
@@ -76704,12 +76583,8 @@
                           ],
                           "description": "The date at which this phase of the subscription schedule starts or `now`. Must be set on the first phase."
                         },
-                        "tax_percent": {
-                          "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period during thise phase of the schedule. For example, a price which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`.",
-                          "type": "number"
-                        },
                         "transfer_data": {
-                          "description": "The data with which to automatically create a Transfer for each of the subscription's invoices.",
+                          "description": "The data with which to automatically create a Transfer for each of the associated subscription's invoices.",
                           "properties": {
                             "amount_percent": {
                               "description": "A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the destination account. By default, the entire amount is transferred to the destination.",
@@ -76747,7 +76622,7 @@
                         }
                       },
                       "required": [
-                        "plans"
+                        "items"
                       ],
                       "title": "phase_configuration_params",
                       "type": "object"
@@ -76756,10 +76631,6 @@
                     "x-stripeParam": {
                       "containee_entity_name": "phase"
                     }
-                  },
-                  "prorate": {
-                    "description": "This field has been renamed to `proration_behavior`. `prorate=true` can be replaced with `proration_behavior=create_prorations` and `prorate=false` can be replaced with `proration_behavior=none`.",
-                    "type": "boolean"
                   },
                   "proration_behavior": {
                     "description": "If the update changes the current phase, indicates if the changes should be prorated. Possible values are `create_prorations` or `none`, and the default value is `create_prorations`.",
@@ -77284,10 +77155,6 @@
                   "explode": true,
                   "style": "deepObject"
                 },
-                "tax_percent": {
-                  "explode": true,
-                  "style": "deepObject"
-                },
                 "transfer_data": {
                   "explode": true,
                   "style": "deepObject"
@@ -77667,10 +77534,6 @@
                     "maxLength": 5000,
                     "type": "string"
                   },
-                  "prorate": {
-                    "description": "This field has been renamed to `proration_behavior`. `prorate=true` can be replaced with `proration_behavior=create_prorations` and `prorate=false` can be replaced with `proration_behavior=none`.",
-                    "type": "boolean"
-                  },
                   "proration_behavior": {
                     "description": "Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) resulting from the `billing_cycle_anchor`. Valid values are `create_prorations` or `none`.\n\nPassing `create_prorations` will cause proration invoice items to be created when applicable. Prorations can be disabled by passing `none`. If no value is passed, the default is `create_prorations`.",
                     "enum": [
@@ -77679,20 +77542,6 @@
                       "none"
                     ],
                     "type": "string"
-                  },
-                  "tax_percent": {
-                    "anyOf": [
-                      {
-                        "type": "number"
-                      },
-                      {
-                        "enum": [
-                          ""
-                        ],
-                        "type": "string"
-                      }
-                    ],
-                    "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`."
                   },
                   "transfer_data": {
                     "description": "If specified, the funds from the subscription's invoices will be transferred to the destination and the ID of the resulting transfers will be found on the resulting charges.",
@@ -77964,10 +77813,6 @@
                   "style": "deepObject"
                 },
                 "pending_invoice_item_interval": {
-                  "explode": true,
-                  "style": "deepObject"
-                },
-                "tax_percent": {
                   "explode": true,
                   "style": "deepObject"
                 },
@@ -78411,10 +78256,6 @@
                     "maxLength": 5000,
                     "type": "string"
                   },
-                  "prorate": {
-                    "description": "This field has been renamed to `proration_behavior`. `prorate=true` can be replaced with `proration_behavior=create_prorations` and `prorate=false` can be replaced with `proration_behavior=none`.",
-                    "type": "boolean"
-                  },
                   "proration_behavior": {
                     "description": "Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. Valid values are `create_prorations`, `none`, or `always_invoice`.\n\nPassing `create_prorations` will cause proration invoice items to be created when applicable. These proration items will only be invoiced immediately under [certain conditions](https://stripe.com/docs/subscriptions/upgrading-downgrading#immediate-payment). In order to always invoice immediately for prorations, pass `always_invoice`.\n\nProrations can be disabled by passing `none`.",
                     "enum": [
@@ -78428,20 +78269,6 @@
                     "description": "If set, the proration will be calculated as though the subscription was updated at the given time. This can be used to apply exactly the same proration that was previewed with [upcoming invoice](https://stripe.com/docs/api#retrieve_customer_invoice) endpoint. It can also be used to implement custom proration logic, such as prorating by day instead of by second, by providing the time that you wish to use for proration calculations.",
                     "format": "unix-time",
                     "type": "integer"
-                  },
-                  "tax_percent": {
-                    "anyOf": [
-                      {
-                        "type": "number"
-                      },
-                      {
-                        "enum": [
-                          ""
-                        ],
-                        "type": "string"
-                      }
-                    ],
-                    "description": "A non-negative decimal (with at most four decimal places) between 0 and 100. This represents the percentage of the subscription invoice subtotal that will be calculated and added as tax to the final amount in each billing period. For example, a plan which charges $10/month with a `tax_percent` of `20.0` will charge $12 per invoice. To unset a previously-set value, pass an empty string. This field has been deprecated and will be removed in a future API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`."
                   },
                   "transfer_data": {
                     "anyOf": [
@@ -82874,7 +82701,8 @@
                       "2019-10-17",
                       "2019-11-05",
                       "2019-12-03",
-                      "2020-03-02"
+                      "2020-03-02",
+                      "2020-08-27"
                     ],
                     "maxLength": 5000,
                     "type": "string",

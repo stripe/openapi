@@ -2626,6 +2626,7 @@ components:
           - maxLength: 5000
             type: string
           - "$ref": "#/components/schemas/customer"
+          - "$ref": "#/components/schemas/deleted_customer"
           description: |-
             The ID of the customer for this session.
             For Checkout Sessions in `payment` or `subscription` mode, Checkout
@@ -2636,6 +2637,7 @@ components:
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/customer"
+            - "$ref": "#/components/schemas/deleted_customer"
         customer_email:
           description: |-
             If provided, this value will be used when the Customer object is created.
@@ -2646,12 +2648,6 @@ components:
           maxLength: 5000
           nullable: true
           type: string
-        display_items:
-          description: The line items, plans, or SKUs purchased by the customer. Prefer
-            using `line_items`.
-          items:
-            "$ref": "#/components/schemas/checkout_session_display_item"
-          type: array
         id:
           description: |-
             Unique identifier for the object. Used to pass to `redirectToCheckout`
@@ -2847,7 +2843,6 @@ components:
       type: object
       x-expandableFields:
       - customer
-      - display_items
       - line_items
       - payment_intent
       - setup_intent
@@ -2856,59 +2851,6 @@ components:
       - subscription
       - total_details
       x-resourceId: checkout.session
-    checkout_session_custom_display_item_description:
-      description: ''
-      properties:
-        description:
-          description: The description of the line item.
-          maxLength: 5000
-          nullable: true
-          type: string
-        images:
-          description: The images of the line item.
-          items:
-            maxLength: 5000
-            type: string
-          nullable: true
-          type: array
-        name:
-          description: The name of the line item.
-          maxLength: 5000
-          type: string
-      required:
-      - name
-      title: checkout_session_custom_display_item_description
-      type: object
-      x-expandableFields: []
-    checkout_session_display_item:
-      description: ''
-      properties:
-        amount:
-          description: Amount for the display item.
-          type: integer
-        currency:
-          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
-            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
-          type: string
-        custom:
-          "$ref": "#/components/schemas/checkout_session_custom_display_item_description"
-        plan:
-          "$ref": "#/components/schemas/plan"
-        quantity:
-          description: Quantity of the display item being purchased.
-          type: integer
-        sku:
-          "$ref": "#/components/schemas/sku"
-        type:
-          description: The type of display item. One of `custom`, `plan` or `sku`
-          maxLength: 5000
-          type: string
-      title: checkout_session_display_item
-      type: object
-      x-expandableFields:
-      - custom
-      - plan
-      - sku
     connect_collection_transfer:
       description: ''
       properties:
@@ -3643,7 +3585,6 @@ components:
           nullable: true
         sources:
           description: The customer's payment sources, if any.
-          nullable: true
           properties:
             data:
               description: Details about each object.
@@ -3681,7 +3622,6 @@ components:
           - data
         subscriptions:
           description: The customer's current subscriptions, if any.
-          nullable: true
           properties:
             data:
               description: Details about each object.
@@ -3723,7 +3663,6 @@ components:
           type: string
         tax_ids:
           description: The customer's tax IDs.
-          nullable: true
           properties:
             data:
               description: Details about each object.
@@ -6143,13 +6082,6 @@ components:
             tax amounts on this invoice.
           nullable: true
           type: integer
-        tax_percent:
-          description: This percentage of the subtotal has been added to the total
-            amount of the invoice, including invoice line items and discounts. This
-            field is inherited from the subscription's `tax_percent` field, but can
-            be changed before the invoice is paid. This field defaults to null.
-          nullable: true
-          type: number
         threshold_reason:
           "$ref": "#/components/schemas/invoice_threshold_reason"
         total:
@@ -7116,7 +7048,7 @@ components:
       x-resourceId: issuing.cardholder
     issuing.dispute:
       description: |-
-        As a [card issuer](https://stripe.com/docs/issuing), you can [dispute](https://stripe.com/docs/issuing/purchases/disputes) transactions that you do not recognize, suspect to be fraudulent, or have some other issue.
+        As a [card issuer](https://stripe.com/docs/issuing), you can dispute transactions that the cardholder does not recognize, suspects to be fraudulent, or has other issues with.
 
         Related guide: [Disputing Transactions](https://stripe.com/docs/issuing/purchases/disputes)
       properties:
@@ -12406,10 +12338,13 @@ components:
           nullable: true
           type: string
         read_method:
-          description: How were card details read in this transaction. Can be contact_emv,
-            contactless_emv, magnetic_stripe_fallback, magnetic_stripe_track2, or
-            contactless_magstripe_mode
-          maxLength: 5000
+          description: How card details were read in this transaction.
+          enum:
+          - contact_emv
+          - contactless_emv
+          - contactless_magstripe_mode
+          - magnetic_stripe_fallback
+          - magnetic_stripe_track2
           nullable: true
           type: string
         receipt:
@@ -12832,10 +12767,13 @@ components:
           nullable: true
           type: string
         read_method:
-          description: How were card details read in this transaction. Can be contact_emv,
-            contactless_emv, magnetic_stripe_fallback, magnetic_stripe_track2, or
-            contactless_magstripe_mode
-          maxLength: 5000
+          description: How card details were read in this transaction.
+          enum:
+          - contact_emv
+          - contactless_emv
+          - contactless_magstripe_mode
+          - magnetic_stripe_fallback
+          - magnetic_stripe_track2
           nullable: true
           type: string
         receipt:
@@ -14039,7 +13977,6 @@ components:
             `billing_scheme`.
           items:
             "$ref": "#/components/schemas/plan_tier"
-          nullable: true
           type: array
         tiers_mode:
           description: Defines if the tiering price should be `graduated` or `volume`
@@ -17525,11 +17462,6 @@ components:
           - trialing
           - unpaid
           type: string
-        tax_percent:
-          description: If provided, each invoice created by this subscription will
-            apply the tax rate, increasing the amount billed to the customer.
-          nullable: true
-          type: number
         transfer_data:
           anyOf:
           - "$ref": "#/components/schemas/subscription_transfer_data"
@@ -17875,7 +17807,6 @@ components:
             - "$ref": "#/components/schemas/deleted_price"
         quantity:
           description: Quantity of the plan to which the customer should be subscribed.
-          nullable: true
           type: integer
         tax_rates:
           description: The tax rates which apply to this `phase_item`. When set, the
@@ -17996,8 +17927,9 @@ components:
           - "$ref": "#/components/schemas/invoice_setting_subscription_schedule_setting"
           description: The subscription schedule's default invoice settings.
           nullable: true
-        plans:
-          description: Plans to subscribe during this phase of the subscription schedule.
+        items:
+          description: Subscription items to configure the subscription to during
+            this phase of the subscription schedule.
           items:
             "$ref": "#/components/schemas/subscription_schedule_configuration_item"
           type: array
@@ -18008,24 +17940,17 @@ components:
           - always_invoice
           - create_prorations
           - none
-          nullable: true
           type: string
         start_date:
           description: The start of this phase of the subscription schedule.
           format: unix-time
           type: integer
-        tax_percent:
-          description: If provided, each invoice created during this phase of the
-            subscription schedule will apply the tax rate, increasing the amount billed
-            to the customer.
-          nullable: true
-          type: number
         transfer_data:
           anyOf:
           - "$ref": "#/components/schemas/subscription_transfer_data"
-          description: The account (if any) the subscription's payments will be attributed
-            to for tax reporting, and where funds from each payment will be transferred
-            to for each of the subscription's invoices.
+          description: The account (if any) the associated subscription's payments
+            will be attributed to for tax reporting, and where funds from each payment
+            will be transferred to for each of the subscription's invoices.
           nullable: true
         trial_end:
           description: When the trial ends within the phase.
@@ -18035,7 +17960,8 @@ components:
       required:
       - add_invoice_items
       - end_date
-      - plans
+      - items
+      - proration_behavior
       - start_date
       title: SubscriptionSchedulePhaseConfiguration
       type: object
@@ -18046,7 +17972,7 @@ components:
       - default_payment_method
       - default_tax_rates
       - invoice_settings
-      - plans
+      - items
       - transfer_data
     subscription_schedules_resource_default_settings:
       description: ''
@@ -18098,9 +18024,9 @@ components:
         transfer_data:
           anyOf:
           - "$ref": "#/components/schemas/subscription_transfer_data"
-          description: The account (if any) the subscription's payments will be attributed
-            to for tax reporting, and where funds from each payment will be transferred
-            to for each of the subscription's invoices.
+          description: The account (if any) the associated subscription's payments
+            will be attributed to for tax reporting, and where funds from each payment
+            will be transferred to for each of the subscription's invoices.
           nullable: true
       required:
       - billing_cycle_anchor
@@ -18669,11 +18595,6 @@ components:
     three_d_secure_details:
       description: ''
       properties:
-        authenticated:
-          description: |-
-            Whether or not authentication was performed. 3D Secure will succeed
-            without authentication when the card is not enrolled.
-          type: boolean
         authentication_flow:
           description: |-
             For authenticated transactions: how the customer was authenticated by
@@ -18706,9 +18627,6 @@ components:
           - rejected
           nullable: true
           type: string
-        succeeded:
-          description: Whether or not 3D Secure succeeded.
-          type: boolean
         version:
           description: The version of 3D Secure that was used.
           enum:
@@ -19480,7 +19398,7 @@ info:
     details.
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
-  version: '2020-03-02'
+  version: '2020-08-27'
   x-stripeSpecFilename: spec3
 openapi: 3.0.0
 paths:
@@ -19875,8 +19793,7 @@ paths:
                   type: object
                 company:
                   description: Information about the company or business. This field
-                    is null unless `business_type` is set to `company`, `government_entity`,
-                    or `non_profit`.
+                    is available for any `business_type`.
                   properties:
                     address:
                       properties:
@@ -23215,8 +23132,7 @@ paths:
                   type: object
                 company:
                   description: Information about the company or business. This field
-                    is null unless `business_type` is set to `company`, `government_entity`,
-                    or `non_profit`.
+                    is available for any `business_type`.
                   properties:
                     address:
                       properties:
@@ -24008,8 +23924,7 @@ paths:
                   type: object
                 company:
                   description: Information about the company or business. This field
-                    is null unless `business_type` is set to `company`, `government_entity`,
-                    or `non_profit`.
+                    is available for any `business_type`.
                   properties:
                     address:
                       properties:
@@ -35706,9 +35621,6 @@ paths:
               pending_invoice_item_interval:
                 explode: true
                 style: deepObject
-              tax_percent:
-                explode: true
-                style: deepObject
               transfer_data:
                 explode: true
                 style: deepObject
@@ -35983,11 +35895,6 @@ paths:
                     created for that particular subscription.
                   maxLength: 5000
                   type: string
-                prorate:
-                  description: This field has been renamed to `proration_behavior`.
-                    `prorate=true` can be replaced with `proration_behavior=create_prorations`
-                    and `prorate=false` can be replaced with `proration_behavior=none`.
-                  type: boolean
                 proration_behavior:
                   description: |-
                     Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) resulting from the `billing_cycle_anchor`. Valid values are `create_prorations` or `none`.
@@ -35998,21 +35905,6 @@ paths:
                   - create_prorations
                   - none
                   type: string
-                tax_percent:
-                  anyOf:
-                  - type: number
-                  - enum:
-                    - ''
-                    type: string
-                  description: A non-negative decimal (with at most four decimal places)
-                    between 0 and 100. This represents the percentage of the subscription
-                    invoice subtotal that will be calculated and added as tax to the
-                    final amount in each billing period. For example, a plan which
-                    charges $10/month with a `tax_percent` of `20.0` will charge $12
-                    per invoice. To unset a previously-set value, pass an empty string.
-                    This field has been deprecated and will be removed in a future
-                    API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes)
-                    for `tax_rates`.
                 transfer_data:
                   description: If specified, the funds from the subscription's invoices
                     will be transferred to the destination and the ID of the resulting
@@ -36234,9 +36126,6 @@ paths:
                 explode: true
                 style: deepObject
               pending_invoice_item_interval:
-                explode: true
-                style: deepObject
-              tax_percent:
                 explode: true
                 style: deepObject
               transfer_data:
@@ -36543,11 +36432,6 @@ paths:
                     created for that particular subscription.
                   maxLength: 5000
                   type: string
-                prorate:
-                  description: This field has been renamed to `proration_behavior`.
-                    `prorate=true` can be replaced with `proration_behavior=create_prorations`
-                    and `prorate=false` can be replaced with `proration_behavior=none`.
-                  type: boolean
                 proration_behavior:
                   description: |-
                     Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. Valid values are `create_prorations`, `none`, or `always_invoice`.
@@ -36570,21 +36454,6 @@ paths:
                     time that you wish to use for proration calculations.
                   format: unix-time
                   type: integer
-                tax_percent:
-                  anyOf:
-                  - type: number
-                  - enum:
-                    - ''
-                    type: string
-                  description: A non-negative decimal (with at most four decimal places)
-                    between 0 and 100. This represents the percentage of the subscription
-                    invoice subtotal that will be calculated and added as tax to the
-                    final amount in each billing period. For example, a plan which
-                    charges $10/month with a `tax_percent` of `20.0` will charge $12
-                    per invoice. To unset a previously-set value, pass an empty string.
-                    This field has been deprecated and will be removed in a future
-                    API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes)
-                    for `tax_rates`.
                 transfer_data:
                   anyOf:
                   - properties:
@@ -38561,9 +38430,9 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: "<p>Creates an item to be added to a draft invoice. If no invoice
-        is specified, the item will be on the next invoice created for the customer
-        specified.</p>"
+      description: "<p>Creates an item to be added to a draft invoice (up to 250 items
+        per invoice). If no invoice is specified, the item will be on the next invoice
+        created for the customer specified.</p>"
       operationId: PostInvoiceitems
       requestBody:
         content:
@@ -38643,7 +38512,8 @@ paths:
                     to. When left blank, the invoice item will be added to the next
                     upcoming scheduled invoice. This is useful when adding invoice
                     items in response to an invoice.created webhook. You can only
-                    add invoice items to draft invoices.
+                    add invoice items to draft invoices and there is a maximum of
+                    250 items per invoice.
                   maxLength: 5000
                   type: string
                 metadata:
@@ -39354,13 +39224,6 @@ paths:
                     billing cycle and regular subscription events won't be affected.
                   maxLength: 5000
                   type: string
-                tax_percent:
-                  description: The percent tax rate applied to the invoice, represented
-                    as a decimal number. This field has been deprecated and will be
-                    removed in a future API version, for further information view
-                    the [migration docs](https://stripe.com/docs/billing/migration/taxes)
-                    for `tax_rates`.
-                  type: number
                 transfer_data:
                   description: If specified, the funds from the invoice will be transferred
                     to the destination and the ID of the resulting transfer will be
@@ -39728,15 +39591,6 @@ paths:
             type: object
           type: array
         style: deepObject
-      - description: This field has been renamed to `subscription_proration_behavior`.
-          `subscription_prorate=true` can be replaced with `subscription_proration_behavior=create_prorations`
-          and `subscription_prorate=false` can be replaced with `subscription_proration_behavior=none`.
-        in: query
-        name: subscription_prorate
-        required: false
-        schema:
-          type: boolean
-        style: form
       - description: |-
           Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. Valid values are `create_prorations`, `none`, or `always_invoice`.
 
@@ -40201,15 +40055,6 @@ paths:
             type: object
           type: array
         style: deepObject
-      - description: This field has been renamed to `subscription_proration_behavior`.
-          `subscription_prorate=true` can be replaced with `subscription_proration_behavior=create_prorations`
-          and `subscription_prorate=false` can be replaced with `subscription_proration_behavior=none`.
-        in: query
-        name: subscription_prorate
-        required: false
-        schema:
-          type: boolean
-        style: form
       - description: |-
           Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. Valid values are `create_prorations`, `none`, or `always_invoice`.
 
@@ -40453,9 +40298,6 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
-              tax_percent:
-                explode: true
-                style: deepObject
               transfer_data:
                 explode: true
                 style: deepObject
@@ -40596,19 +40438,6 @@ paths:
                     item's product's `statement_descriptor`.
                   maxLength: 22
                   type: string
-                tax_percent:
-                  anyOf:
-                  - type: number
-                  - enum:
-                    - ''
-                    type: string
-                  description: The percent tax rate applied to the invoice, represented
-                    as a non-negative decimal number (with at most four decimal places)
-                    between 0 and 100. To unset a previously-set value, pass an empty
-                    string. This field can be updated only on `draft` invoices. This
-                    field has been deprecated and will be removed in a future API
-                    version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes)
-                    for `tax_rates`.
                 transfer_data:
                   anyOf:
                   - properties:
@@ -40886,15 +40715,16 @@ paths:
                     charge if the source hasn't been pre-funded with the right amount.
                     An example for this case is with ACH Credit Transfers and wires:
                     if the amount wired is less than the amount due by a small amount,
-                    you might want to forgive the difference."
+                    you might want to forgive the difference. Defaults to `false`."
                   type: boolean
                 off_session:
                   description: Indicates if a customer is on or off-session while
-                    an invoice payment is attempted.
+                    an invoice payment is attempted. Defaults to `true` (off-session).
                   type: boolean
                 paid_out_of_band:
                   description: Boolean representing whether an invoice is paid outside
-                    of Stripe. This will result in no charge being made.
+                    of Stripe. This will result in no charge being made. Defaults
+                    to `false`.
                   type: boolean
                 payment_method:
                   description: A PaymentMethod to be charged. The PaymentMethod must
@@ -46372,7 +46202,8 @@ paths:
     post:
       description: "<p>Updates the specified Issuing <code>Dispute</code> object by
         setting the values of the parameters passed. Any parameters not provided will
-        be left unchanged.</p>"
+        be left unchanged. Properties on the <code>evidence</code> object can be unset
+        by passing in an empty string.</p>"
       operationId: PostIssuingDisputesDispute
       parameters:
       - in: path
@@ -48149,27 +47980,31 @@ paths:
                     billing_details:
                       properties:
                         address:
-                          properties:
-                            city:
-                              maxLength: 5000
-                              type: string
-                            country:
-                              maxLength: 5000
-                              type: string
-                            line1:
-                              maxLength: 5000
-                              type: string
-                            line2:
-                              maxLength: 5000
-                              type: string
-                            postal_code:
-                              maxLength: 5000
-                              type: string
-                            state:
-                              maxLength: 5000
-                              type: string
-                          title: billing_details_address
-                          type: object
+                          anyOf:
+                          - properties:
+                              city:
+                                maxLength: 5000
+                                type: string
+                              country:
+                                maxLength: 5000
+                                type: string
+                              line1:
+                                maxLength: 5000
+                                type: string
+                              line2:
+                                maxLength: 5000
+                                type: string
+                              postal_code:
+                                maxLength: 5000
+                                type: string
+                              state:
+                                maxLength: 5000
+                                type: string
+                            title: billing_details_address
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
                         email:
                           type: string
                         name:
@@ -48707,27 +48542,31 @@ paths:
                     billing_details:
                       properties:
                         address:
-                          properties:
-                            city:
-                              maxLength: 5000
-                              type: string
-                            country:
-                              maxLength: 5000
-                              type: string
-                            line1:
-                              maxLength: 5000
-                              type: string
-                            line2:
-                              maxLength: 5000
-                              type: string
-                            postal_code:
-                              maxLength: 5000
-                              type: string
-                            state:
-                              maxLength: 5000
-                              type: string
-                          title: billing_details_address
-                          type: object
+                          anyOf:
+                          - properties:
+                              city:
+                                maxLength: 5000
+                                type: string
+                              country:
+                                maxLength: 5000
+                                type: string
+                              line1:
+                                maxLength: 5000
+                                type: string
+                              line2:
+                                maxLength: 5000
+                                type: string
+                              postal_code:
+                                maxLength: 5000
+                                type: string
+                              state:
+                                maxLength: 5000
+                                type: string
+                            title: billing_details_address
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
                         email:
                           type: string
                         name:
@@ -49398,27 +49237,31 @@ paths:
                     billing_details:
                       properties:
                         address:
-                          properties:
-                            city:
-                              maxLength: 5000
-                              type: string
-                            country:
-                              maxLength: 5000
-                              type: string
-                            line1:
-                              maxLength: 5000
-                              type: string
-                            line2:
-                              maxLength: 5000
-                              type: string
-                            postal_code:
-                              maxLength: 5000
-                              type: string
-                            state:
-                              maxLength: 5000
-                              type: string
-                          title: billing_details_address
-                          type: object
+                          anyOf:
+                          - properties:
+                              city:
+                                maxLength: 5000
+                                type: string
+                              country:
+                                maxLength: 5000
+                                type: string
+                              line1:
+                                maxLength: 5000
+                                type: string
+                              line2:
+                                maxLength: 5000
+                                type: string
+                              postal_code:
+                                maxLength: 5000
+                                type: string
+                              state:
+                                maxLength: 5000
+                                type: string
+                            title: billing_details_address
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
                         email:
                           type: string
                         name:
@@ -49944,27 +49787,31 @@ paths:
                     that may be used or required by particular types of payment methods.
                   properties:
                     address:
-                      properties:
-                        city:
-                          maxLength: 5000
-                          type: string
-                        country:
-                          maxLength: 5000
-                          type: string
-                        line1:
-                          maxLength: 5000
-                          type: string
-                        line2:
-                          maxLength: 5000
-                          type: string
-                        postal_code:
-                          maxLength: 5000
-                          type: string
-                        state:
-                          maxLength: 5000
-                          type: string
-                      title: billing_details_address
-                      type: object
+                      anyOf:
+                      - properties:
+                          city:
+                            maxLength: 5000
+                            type: string
+                          country:
+                            maxLength: 5000
+                            type: string
+                          line1:
+                            maxLength: 5000
+                            type: string
+                          line2:
+                            maxLength: 5000
+                            type: string
+                          postal_code:
+                            maxLength: 5000
+                            type: string
+                          state:
+                            maxLength: 5000
+                            type: string
+                        title: billing_details_address
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
                     email:
                       type: string
                     name:
@@ -50240,27 +50087,31 @@ paths:
                     that may be used or required by particular types of payment methods.
                   properties:
                     address:
-                      properties:
-                        city:
-                          maxLength: 5000
-                          type: string
-                        country:
-                          maxLength: 5000
-                          type: string
-                        line1:
-                          maxLength: 5000
-                          type: string
-                        line2:
-                          maxLength: 5000
-                          type: string
-                        postal_code:
-                          maxLength: 5000
-                          type: string
-                        state:
-                          maxLength: 5000
-                          type: string
-                      title: billing_details_address
-                      type: object
+                      anyOf:
+                      - properties:
+                          city:
+                            maxLength: 5000
+                            type: string
+                          country:
+                            maxLength: 5000
+                            type: string
+                          line1:
+                            maxLength: 5000
+                            type: string
+                          line2:
+                            maxLength: 5000
+                            type: string
+                          postal_code:
+                            maxLength: 5000
+                            type: string
+                          state:
+                            maxLength: 5000
+                            type: string
+                        title: billing_details_address
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
                     email:
                       type: string
                     name:
@@ -57996,11 +57847,6 @@ paths:
                   - recurring
                   title: recurring_price_data
                   type: object
-                prorate:
-                  description: This field has been renamed to `proration_behavior`.
-                    `prorate=true` can be replaced with `proration_behavior=create_prorations`
-                    and `prorate=false` can be replaced with `proration_behavior=none`.
-                  type: boolean
                 proration_behavior:
                   description: |-
                     Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. Valid values are `create_prorations`, `none`, or `always_invoice`.
@@ -58084,9 +57930,11 @@ paths:
                     only when the current plan's `usage_type` is `metered`.
                   type: boolean
                 prorate:
-                  description: This field has been renamed to `proration_behavior`.
-                    `prorate=true` can be replaced with `proration_behavior=create_prorations`
-                    and `prorate=false` can be replaced with `proration_behavior=none`.
+                  description: Flag indicating whether to [prorate](https://stripe.com/docs/billing/subscriptions/prorations)
+                    switching plans during a billing cycle. This field has been deprecated
+                    and will be removed in a future API version. Use `proration_behavior=create_prorations`
+                    as a replacement for `prorate=true` and `proration_behavior=none`
+                    for `prorate=false`.
                   type: boolean
                 proration_behavior:
                   description: |-
@@ -58290,11 +58138,6 @@ paths:
                   - recurring
                   title: recurring_price_data
                   type: object
-                prorate:
-                  description: This field has been renamed to `proration_behavior`.
-                    `prorate=true` can be replaced with `proration_behavior=create_prorations`
-                    and `prorate=false` can be replaced with `proration_behavior=none`.
-                  type: boolean
                 proration_behavior:
                   description: |-
                     Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. Valid values are `create_prorations`, `none`, or `always_invoice`.
@@ -58927,9 +58770,7 @@ paths:
                             type: integer
                         title: subscription_schedules_param
                         type: object
-                      iterations:
-                        type: integer
-                      plans:
+                      items:
                         items:
                           properties:
                             billing_thresholds:
@@ -58994,14 +58835,14 @@ paths:
                           title: configuration_item_params
                           type: object
                         type: array
+                      iterations:
+                        type: integer
                       proration_behavior:
                         enum:
                         - always_invoice
                         - create_prorations
                         - none
                         type: string
-                      tax_percent:
-                        type: number
                       transfer_data:
                         properties:
                           amount_percent:
@@ -59018,7 +58859,7 @@ paths:
                         format: unix-time
                         type: integer
                     required:
-                    - plans
+                    - items
                     title: phase_configuration_params
                     type: object
                   type: array
@@ -59296,9 +59137,7 @@ paths:
                             type: integer
                         title: subscription_schedules_param
                         type: object
-                      iterations:
-                        type: integer
-                      plans:
+                      items:
                         items:
                           properties:
                             billing_thresholds:
@@ -59363,6 +59202,8 @@ paths:
                           title: configuration_item_params
                           type: object
                         type: array
+                      iterations:
+                        type: integer
                       proration_behavior:
                         enum:
                         - always_invoice
@@ -59376,8 +59217,6 @@ paths:
                           - now
                           maxLength: 5000
                           type: string
-                      tax_percent:
-                        type: number
                       transfer_data:
                         properties:
                           amount_percent:
@@ -59398,15 +59237,10 @@ paths:
                           maxLength: 5000
                           type: string
                     required:
-                    - plans
+                    - items
                     title: phase_configuration_params
                     type: object
                   type: array
-                prorate:
-                  description: This field has been renamed to `proration_behavior`.
-                    `prorate=true` can be replaced with `proration_behavior=create_prorations`
-                    and `prorate=false` can be replaced with `proration_behavior=none`.
-                  type: boolean
                 proration_behavior:
                   description: If the update changes the current phase, indicates
                     if the changes should be prorated. Possible values are `create_prorations`
@@ -59773,9 +59607,6 @@ paths:
               pending_invoice_item_interval:
                 explode: true
                 style: deepObject
-              tax_percent:
-                explode: true
-                style: deepObject
               transfer_data:
                 explode: true
                 style: deepObject
@@ -60054,11 +59885,6 @@ paths:
                     created for that particular subscription.
                   maxLength: 5000
                   type: string
-                prorate:
-                  description: This field has been renamed to `proration_behavior`.
-                    `prorate=true` can be replaced with `proration_behavior=create_prorations`
-                    and `prorate=false` can be replaced with `proration_behavior=none`.
-                  type: boolean
                 proration_behavior:
                   description: |-
                     Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) resulting from the `billing_cycle_anchor`. Valid values are `create_prorations` or `none`.
@@ -60069,21 +59895,6 @@ paths:
                   - create_prorations
                   - none
                   type: string
-                tax_percent:
-                  anyOf:
-                  - type: number
-                  - enum:
-                    - ''
-                    type: string
-                  description: A non-negative decimal (with at most four decimal places)
-                    between 0 and 100. This represents the percentage of the subscription
-                    invoice subtotal that will be calculated and added as tax to the
-                    final amount in each billing period. For example, a plan which
-                    charges $10/month with a `tax_percent` of `20.0` will charge $12
-                    per invoice. To unset a previously-set value, pass an empty string.
-                    This field has been deprecated and will be removed in a future
-                    API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes)
-                    for `tax_rates`.
                 transfer_data:
                   description: If specified, the funds from the subscription's invoices
                     will be transferred to the destination and the ID of the resulting
@@ -60284,9 +60095,6 @@ paths:
                 explode: true
                 style: deepObject
               pending_invoice_item_interval:
-                explode: true
-                style: deepObject
-              tax_percent:
                 explode: true
                 style: deepObject
               transfer_data:
@@ -60593,11 +60401,6 @@ paths:
                     created for that particular subscription.
                   maxLength: 5000
                   type: string
-                prorate:
-                  description: This field has been renamed to `proration_behavior`.
-                    `prorate=true` can be replaced with `proration_behavior=create_prorations`
-                    and `prorate=false` can be replaced with `proration_behavior=none`.
-                  type: boolean
                 proration_behavior:
                   description: |-
                     Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. Valid values are `create_prorations`, `none`, or `always_invoice`.
@@ -60620,21 +60423,6 @@ paths:
                     time that you wish to use for proration calculations.
                   format: unix-time
                   type: integer
-                tax_percent:
-                  anyOf:
-                  - type: number
-                  - enum:
-                    - ''
-                    type: string
-                  description: A non-negative decimal (with at most four decimal places)
-                    between 0 and 100. This represents the percentage of the subscription
-                    invoice subtotal that will be calculated and added as tax to the
-                    final amount in each billing period. For example, a plan which
-                    charges $10/month with a `tax_percent` of `20.0` will charge $12
-                    per invoice. To unset a previously-set value, pass an empty string.
-                    This field has been deprecated and will be removed in a future
-                    API version, for further information view the [migration docs](https://stripe.com/docs/billing/migration/taxes)
-                    for `tax_rates`.
                 transfer_data:
                   anyOf:
                   - properties:
@@ -63752,6 +63540,7 @@ paths:
                   - '2019-11-05'
                   - '2019-12-03'
                   - '2020-03-02'
+                  - '2020-08-27'
                   maxLength: 5000
                   type: string
                   x-stripeBypassValidation: true
