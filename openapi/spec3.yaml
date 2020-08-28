@@ -646,6 +646,7 @@ components:
           - verification_document_id_number_missing
           - verification_document_incomplete
           - verification_document_invalid
+          - verification_document_issue_or_expiry_date_missing
           - verification_document_manipulated
           - verification_document_missing_back
           - verification_document_missing_front
@@ -653,6 +654,7 @@ components:
           - verification_document_name_missing
           - verification_document_nationality_mismatch
           - verification_document_not_readable
+          - verification_document_not_signed
           - verification_document_not_uploaded
           - verification_document_photo_mismatch
           - verification_document_too_large
@@ -665,6 +667,8 @@ components:
           - verification_failed_keyed_match
           - verification_failed_name_match
           - verification_failed_other
+          - verification_failed_tax_id_match
+          - verification_failed_tax_id_not_issued
           type: string
           x-stripeBypassValidation: true
         reason:
@@ -7053,7 +7057,7 @@ components:
         Related guide: [Disputing Transactions](https://stripe.com/docs/issuing/purchases/disputes)
       properties:
         balance_transactions:
-          description: List of balance transactions associated with this dispute.
+          description: List of balance transactions associated with the dispute.
           items:
             "$ref": "#/components/schemas/balance_transaction"
           nullable: true
@@ -17411,13 +17415,6 @@ components:
             that will be applied to the subscription once the `latest_invoice` has
             been paid.
           nullable: true
-        quantity:
-          description: The quantity of the plan to which the customer is subscribed.
-            For example, if your plan is $10/user/month, and your customer has 5 users,
-            you could pass 5 as the quantity to have the customer charged $50 (5 x
-            $10) monthly. Only set if the subscription contains a single plan.
-          nullable: true
-          type: integer
         schedule:
           anyOf:
           - maxLength: 5000
@@ -39612,8 +39609,8 @@ paths:
           the update was done at the specified time. The time given must be within
           the current subscription period, and cannot be before the subscription was
           on its current plan. If set, `subscription`, and one of `subscription_items`,
-          or `subscription_trial_end` are required. Also, `subscription_proration`
-          cannot be set to false.
+          or `subscription_trial_end` are required. Also, `subscription_proration_behavior`
+          cannot be set to 'none'.
         in: query
         name: subscription_proration_date
         required: false
@@ -39628,17 +39625,6 @@ paths:
         schema:
           format: unix-time
           type: integer
-        style: form
-      - description: If provided, the invoice returned will preview updating or creating
-          a subscription with that tax percent. If set, one of `subscription_items`
-          or `subscription` is required. This field has been deprecated and will be
-          removed in a future API version, for further information view the [migration
-          docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`.
-        in: query
-        name: subscription_tax_percent
-        required: false
-        schema:
-          type: number
         style: form
       - description: If provided, the invoice returned will preview updating or creating
           a subscription with that trial end. If set, one of `subscription_items`
@@ -40076,8 +40062,8 @@ paths:
           the update was done at the specified time. The time given must be within
           the current subscription period, and cannot be before the subscription was
           on its current plan. If set, `subscription`, and one of `subscription_items`,
-          or `subscription_trial_end` are required. Also, `subscription_proration`
-          cannot be set to false.
+          or `subscription_trial_end` are required. Also, `subscription_proration_behavior`
+          cannot be set to 'none'.
         in: query
         name: subscription_proration_date
         required: false
@@ -40092,17 +40078,6 @@ paths:
         schema:
           format: unix-time
           type: integer
-        style: form
-      - description: If provided, the invoice returned will preview updating or creating
-          a subscription with that tax percent. If set, one of `subscription_items`
-          or `subscription` is required. This field has been deprecated and will be
-          removed in a future API version, for further information view the [migration
-          docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`.
-        in: query
-        name: subscription_tax_percent
-        required: false
-        schema:
-          type: number
         style: form
       - description: If provided, the invoice returned will preview updating or creating
           a subscription with that trial end. If set, one of `subscription_items`
@@ -46109,7 +46084,11 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: "<p>Creates an Issuing <code>Dispute</code> object.</p>"
+      description: <p>Creates an Issuing <code>Dispute</code> object. Individual pieces
+        of evidence within the <code>evidence</code> object are optional at this point.
+        Stripe only validates that required evidence is present during submission.
+        Refer to <a href="/docs/issuing/purchases/disputes#dispute-reasons-and-evidence">Dispute
+        reasons and evidence</a> for more details about evidence requirements.</p>
       operationId: PostIssuingDisputes
       requestBody:
         content:
@@ -57929,13 +57908,6 @@ paths:
                   description: Delete all usage for the given subscription item. Allowed
                     only when the current plan's `usage_type` is `metered`.
                   type: boolean
-                prorate:
-                  description: Flag indicating whether to [prorate](https://stripe.com/docs/billing/subscriptions/prorations)
-                    switching plans during a billing cycle. This field has been deprecated
-                    and will be removed in a future API version. Use `proration_behavior=create_prorations`
-                    as a replacement for `prorate=true` and `proration_behavior=none`
-                    for `prorate=false`.
-                  type: boolean
                 proration_behavior:
                   description: |-
                     Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. Valid values are `create_prorations`, `none`, or `always_invoice`.
@@ -63621,7 +63593,6 @@ paths:
                     - invoice.paid
                     - invoice.payment_action_required
                     - invoice.payment_failed
-                    - invoice.payment_succeeded
                     - invoice.sent
                     - invoice.upcoming
                     - invoice.updated
@@ -63655,7 +63626,6 @@ paths:
                     - payment_intent.requires_action
                     - payment_intent.succeeded
                     - payment_method.attached
-                    - payment_method.card_automatically_updated
                     - payment_method.detached
                     - payment_method.updated
                     - payout.canceled
@@ -63944,7 +63914,6 @@ paths:
                     - invoice.paid
                     - invoice.payment_action_required
                     - invoice.payment_failed
-                    - invoice.payment_succeeded
                     - invoice.sent
                     - invoice.upcoming
                     - invoice.updated
@@ -63978,7 +63947,6 @@ paths:
                     - payment_intent.requires_action
                     - payment_intent.succeeded
                     - payment_method.attached
-                    - payment_method.card_automatically_updated
                     - payment_method.detached
                     - payment_method.updated
                     - payout.canceled

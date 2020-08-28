@@ -865,6 +865,7 @@ components:
           - verification_document_id_number_missing
           - verification_document_incomplete
           - verification_document_invalid
+          - verification_document_issue_or_expiry_date_missing
           - verification_document_manipulated
           - verification_document_missing_back
           - verification_document_missing_front
@@ -872,6 +873,7 @@ components:
           - verification_document_name_missing
           - verification_document_nationality_mismatch
           - verification_document_not_readable
+          - verification_document_not_signed
           - verification_document_not_uploaded
           - verification_document_photo_mismatch
           - verification_document_too_large
@@ -884,6 +886,8 @@ components:
           - verification_failed_keyed_match
           - verification_failed_name_match
           - verification_failed_other
+          - verification_failed_tax_id_match
+          - verification_failed_tax_id_not_issued
           type: string
           x-stripeBypassValidation: true
         reason:
@@ -8781,11 +8785,6 @@ components:
             "$ref": "#/components/schemas/tax_rate"
           nullable: true
           type: array
-        unified_proration:
-          description: For prorations this indicates whether Stripe automatically
-            grouped multiple related debit and credit line items into a single combined
-            line item.
-          type: boolean
         unit_amount:
           description: Unit Amount (in the `currency` specified) of the invoice item.
           nullable: true
@@ -9732,7 +9731,7 @@ components:
         Related guide: [Disputing Transactions](https://stripe.com/docs/issuing/purchases/disputes)
       properties:
         balance_transactions:
-          description: List of balance transactions associated with this dispute.
+          description: List of balance transactions associated with the dispute.
           items:
             "$ref": "#/components/schemas/balance_transaction"
           nullable: true
@@ -13264,11 +13263,6 @@ components:
           - invoiceitem
           - subscription
           type: string
-        unified_proration:
-          description: For prorations this indicates whether Stripe automatically
-            grouped multiple related debit and credit line items into a single combined
-            line item.
-          type: boolean
       required:
       - amount
       - currency
@@ -14995,7 +14989,6 @@ components:
           - bacs_debit
           - bancontact
           - card
-          - card_present
           - eps
           - fpx
           - giropay
@@ -15548,8 +15541,6 @@ components:
           "$ref": "#/components/schemas/payment_method_details_bacs_debit"
         bancontact:
           "$ref": "#/components/schemas/payment_method_details_bancontact"
-        bitcoin:
-          "$ref": "#/components/schemas/payment_method_details_bitcoin"
         card:
           "$ref": "#/components/schemas/payment_method_details_card"
         card_present:
@@ -15599,7 +15590,6 @@ components:
       - au_becs_debit
       - bacs_debit
       - bancontact
-      - bitcoin
       - card
       - card_present
       - eps
@@ -15626,7 +15616,6 @@ components:
         - payment_method_details_au_becs_debit
         - payment_method_details_bacs_debit
         - payment_method_details_bancontact
-        - payment_method_details_bitcoin
         - payment_method_details_card
         - payment_method_details_card_present
         - payment_method_details_eps
@@ -15894,42 +15883,6 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: Bancontact
-        in_class: payment_method_details
-    payment_method_details_bitcoin:
-      description: ''
-      properties:
-        address:
-          maxLength: 5000
-          nullable: true
-          type: string
-        amount:
-          nullable: true
-          type: integer
-        amount_charged:
-          nullable: true
-          type: integer
-        amount_received:
-          nullable: true
-          type: integer
-        amount_returned:
-          nullable: true
-          type: integer
-        refund_address:
-          maxLength: 5000
-          nullable: true
-          type: string
-      required:
-      - address
-      - amount
-      - amount_charged
-      - amount_received
-      - amount_returned
-      - refund_address
-      title: payment_method_details_bitcoin
-      type: object
-      x-expandableFields: []
-      x-stripeResource:
-        class_name: Bitcoin
         in_class: payment_method_details
     payment_method_details_card:
       description: ''
@@ -23244,19 +23197,6 @@ components:
             that will be applied to the subscription once the `latest_invoice` has
             been paid.
           nullable: true
-        plan:
-          anyOf:
-          - "$ref": "#/components/schemas/plan"
-          description: Hash describing the plan the customer is subscribed to. Only
-            set if the subscription contains a single plan.
-          nullable: true
-        quantity:
-          description: The quantity of the plan to which the customer is subscribed.
-            For example, if your plan is $10/user/month, and your customer has 5 users,
-            you could pass 5 as the quantity to have the customer charged $50 (5 x
-            $10) monthly. Only set if the subscription contains a single plan.
-          nullable: true
-          type: integer
         schedule:
           anyOf:
           - maxLength: 5000
@@ -23346,8 +23286,6 @@ components:
       - pending_invoice_item_interval
       - pending_setup_intent
       - pending_update
-      - plan
-      - quantity
       - schedule
       - start_date
       - status
@@ -23369,7 +23307,6 @@ components:
       - pending_invoice_item_interval
       - pending_setup_intent
       - pending_update
-      - plan
       - schedule
       - transfer_data
       x-resourceId: subscription
@@ -26556,10 +26493,6 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
-                failure_url:
-                  description: Alternate name for refresh_url to ensure backwards
-                    compatibility
-                  type: string
                 refresh_url:
                   description: The URL that the user will be redirected to if the
                     account link is no longer valid. Your `refresh_url` should trigger
@@ -26570,9 +26503,6 @@ paths:
                 return_url:
                   description: The URL that the user will be redirected to upon leaving
                     or completing the linked flow.
-                  type: string
-                success_url:
-                  description: Alternate name for return_url to ensure backwards compatibility
                   type: string
                 type:
                   description: The type of account link the user is requesting. Possible
@@ -26747,9 +26677,6 @@ paths:
                 explode: true
                 style: deepObject
               metadata:
-                explode: true
-                style: deepObject
-              requested_capabilities:
                 explode: true
                 style: deepObject
               settings:
@@ -27508,31 +27435,6 @@ paths:
                     additional information about the object in a structured format.
                     Individual keys can be unset by posting an empty value to them.
                     All keys can be unset by posting an empty value to `metadata`.
-                requested_capabilities:
-                  description: "(Deprecated) Alternative to `capabilities`. The set
-                    of capabilities you want to unlock for this account. Each capability
-                    will be inactive until you have provided its specific requirements
-                    and Stripe has verified them. An account may have some of its
-                    requested capabilities be active and some be inactive."
-                  items:
-                    enum:
-                    - au_becs_debit_payments
-                    - bacs_debit_payments
-                    - card_issuing
-                    - card_payments
-                    - cartes_bancaires_payments
-                    - fpx_payments
-                    - jcb_payments
-                    - legacy_payments
-                    - tax_reporting_us_1099_k
-                    - tax_reporting_us_1099_misc
-                    - transfers
-                    maxLength: 5000
-                    type: string
-                    x-stripeBypassValidation: true
-                  type: array
-                  x-stripeParam:
-                    containee_entity_name: requested_capability
                 settings:
                   description: Options for customizing how the account functions within
                     Stripe.
@@ -27854,9 +27756,6 @@ paths:
                 explode: true
                 style: deepObject
               metadata:
-                explode: true
-                style: deepObject
-              requested_capabilities:
                 explode: true
                 style: deepObject
               settings:
@@ -28606,31 +28505,6 @@ paths:
                     additional information about the object in a structured format.
                     Individual keys can be unset by posting an empty value to them.
                     All keys can be unset by posting an empty value to `metadata`.
-                requested_capabilities:
-                  description: "(Deprecated) Alternative to `capabilities`. The set
-                    of capabilities you want to unlock for this account. Each capability
-                    will be inactive until you have provided its specific requirements
-                    and Stripe has verified them. An account may have some of its
-                    requested capabilities be active and some be inactive."
-                  items:
-                    enum:
-                    - au_becs_debit_payments
-                    - bacs_debit_payments
-                    - card_issuing
-                    - card_payments
-                    - cartes_bancaires_payments
-                    - fpx_payments
-                    - jcb_payments
-                    - legacy_payments
-                    - tax_reporting_us_1099_k
-                    - tax_reporting_us_1099_misc
-                    - transfers
-                    maxLength: 5000
-                    type: string
-                    x-stripeBypassValidation: true
-                  type: array
-                  x-stripeParam:
-                    containee_entity_name: requested_capability
                 settings:
                   description: Options for customizing how the account functions within
                     Stripe.
@@ -40669,8 +40543,8 @@ paths:
           the update was done at the specified time. The time given must be within
           the current subscription period, and cannot be before the subscription was
           on its current plan. If set, `subscription`, and one of `subscription_items`,
-          or `subscription_trial_end` are required. Also, `subscription_proration`
-          cannot be set to false.
+          or `subscription_trial_end` are required. Also, `subscription_proration_behavior`
+          cannot be set to 'none'.
         in: query
         name: subscription_proration_date
         required: false
@@ -40685,17 +40559,6 @@ paths:
         schema:
           format: unix-time
           type: integer
-        style: form
-      - description: If provided, the invoice returned will preview updating or creating
-          a subscription with that tax percent. If set, one of `subscription_items`
-          or `subscription` is required. This field has been deprecated and will be
-          removed in a future API version, for further information view the [migration
-          docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`.
-        in: query
-        name: subscription_tax_percent
-        required: false
-        schema:
-          type: number
         style: form
       - description: If provided, the invoice returned will preview updating or creating
           a subscription with that trial end. If set, one of `subscription_items`
@@ -41241,8 +41104,8 @@ paths:
           the update was done at the specified time. The time given must be within
           the current subscription period, and cannot be before the subscription was
           on its current plan. If set, `subscription`, and one of `subscription_items`,
-          or `subscription_trial_end` are required. Also, `subscription_proration`
-          cannot be set to false.
+          or `subscription_trial_end` are required. Also, `subscription_proration_behavior`
+          cannot be set to 'none'.
         in: query
         name: subscription_proration_date
         required: false
@@ -41257,17 +41120,6 @@ paths:
         schema:
           format: unix-time
           type: integer
-        style: form
-      - description: If provided, the invoice returned will preview updating or creating
-          a subscription with that tax percent. If set, one of `subscription_items`
-          or `subscription` is required. This field has been deprecated and will be
-          removed in a future API version, for further information view the [migration
-          docs](https://stripe.com/docs/billing/migration/taxes) for `tax_rates`.
-        in: query
-        name: subscription_tax_percent
-        required: false
-        schema:
-          type: number
         style: form
       - description: If provided, the invoice returned will preview updating or creating
           a subscription with that trial end. If set, one of `subscription_items`
@@ -47450,7 +47302,11 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: "<p>Creates an Issuing <code>Dispute</code> object.</p>"
+      description: <p>Creates an Issuing <code>Dispute</code> object. Individual pieces
+        of evidence within the <code>evidence</code> object are optional at this point.
+        Stripe only validates that required evidence is present during submission.
+        Refer to <a href="/docs/issuing/purchases/disputes#dispute-reasons-and-evidence">Dispute
+        reasons and evidence</a> for more details about evidence requirements.</p>
       operationId: PostIssuingDisputes
       requestBody:
         content:
@@ -49368,7 +49224,6 @@ paths:
                       - au_becs_debit
                       - bacs_debit
                       - bancontact
-                      - card_present
                       - eps
                       - fpx
                       - giropay
@@ -49536,14 +49391,6 @@ paths:
                     you can alternatively supply an application URI scheme. This parameter
                     can only be used with [`confirm=true`](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-confirm).
                   type: string
-                save_payment_method:
-                  description: |-
-                    If the PaymentIntent has a `payment_method` and a `customer` or if you're attaching a payment method to the PaymentIntent in this request, you can pass `save_payment_method=true` to save the payment method to the customer immediately.
-
-                    If the payment method is already saved to a customer, this parameter does nothing. If this type of payment method cannot be saved to a customer, the request will error.
-
-                    Saving a payment method using this parameter is _not recommended_ because it will save the payment method even if it cannot be charged (e.g. the user made a typo). To ensure that only payment methods which are likely to be chargeable are saved to a customer, use the (setup_future_usage)[#payment_intents/object#payment_intent_object-setup_future_usage] property, which saves the payment method after the PaymentIntent has been confirmed and all required actions by the customer are complete.
-                  type: boolean
                 setup_future_usage:
                   description: |-
                     Indicates that you intend to make future payments with this PaymentIntent's payment method.
@@ -49615,18 +49462,6 @@ paths:
                   - name
                   title: shipping
                   type: object
-                source:
-                  description: This is a legacy field that will be removed in the
-                    future. It is the ID of the Source object to attach to this PaymentIntent.
-                    Please use the `payment_method` field instead, which also supports
-                    Cards and [compatible Source](https://stripe.com/docs/payments/payment-methods#compatibility)
-                    objects.If neither the `payment_method` parameter nor the `source`
-                    parameter are provided with `confirm=true`, this field will be
-                    automatically populated with `customer.default_source` to improve
-                    the migration experience for users of the Charges API. We recommend
-                    that you explicitly provide the `source` or `payment_method` parameter
-                    going forward.
-                  type: string
                 statement_descriptor:
                   description: For non-card charges, you can use this value as the
                     complete description that appears on your customers’ statements.
@@ -50091,7 +49926,6 @@ paths:
                       - au_becs_debit
                       - bacs_debit
                       - bancontact
-                      - card_present
                       - eps
                       - fpx
                       - giropay
@@ -50255,14 +50089,6 @@ paths:
                     will be sent to. If `receipt_email` is specified for a payment
                     in live mode, a receipt will be sent regardless of your [email
                     settings](https://dashboard.stripe.com/account/emails).
-                save_payment_method:
-                  description: |-
-                    If the PaymentIntent has a `payment_method` and a `customer` or if you're attaching a payment method to the PaymentIntent in this request, you can pass `save_payment_method=true` to save the payment method to the customer immediately.
-
-                    If the payment method is already saved to a customer, this parameter does nothing. If this type of payment method cannot be saved to a customer, the request will error.
-
-                    Saving a payment method using this parameter is _not recommended_ because it will save the payment method even if it cannot be charged (e.g. the user made a typo). To ensure that only payment methods which are likely to be chargeable are saved to a customer, use the (setup_future_usage)[#payment_intents/object#payment_intent_object-setup_future_usage] property, which saves the payment method after the PaymentIntent has been confirmed and all required actions by the customer are complete.
-                  type: boolean
                 setup_future_usage:
                   description: |-
                     Indicates that you intend to make future payments with this PaymentIntent's payment method.
@@ -50342,13 +50168,6 @@ paths:
                     - ''
                     type: string
                   description: Shipping information for this PaymentIntent.
-                source:
-                  description: This is a legacy field that will be removed in the
-                    future. It is the ID of the Source object to attach to this PaymentIntent.
-                    Please use the `payment_method` field instead, which also supports
-                    Cards and [compatible Source](https://stripe.com/docs/payments/payment-methods#compatibility)
-                    objects.
-                  type: string
                 statement_descriptor:
                   description: For non-card charges, you can use this value as the
                     complete description that appears on your customers’ statements.
@@ -50954,7 +50773,6 @@ paths:
                       - au_becs_debit
                       - bacs_debit
                       - bancontact
-                      - card_present
                       - eps
                       - fpx
                       - giropay
@@ -51115,14 +50933,6 @@ paths:
                     If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.
                     This parameter is only used for cards and other redirect-based payment methods.
                   type: string
-                save_payment_method:
-                  description: |-
-                    If the PaymentIntent has a `payment_method` and a `customer` or if you're attaching a payment method to the PaymentIntent in this request, you can pass `save_payment_method=true` to save the payment method to the customer immediately.
-
-                    If the payment method is already saved to a customer, this parameter does nothing. If this type of payment method cannot be saved to a customer, the request will error.
-
-                    Saving a payment method using this parameter is _not recommended_ because it will save the payment method even if it cannot be charged (e.g. the user made a typo). To ensure that only payment methods which are likely to be chargeable are saved to a customer, use the (setup_future_usage)[#payment_intents/object#payment_intent_object-setup_future_usage] property, which saves the payment method after the PaymentIntent has been confirmed and all required actions by the customer are complete.
-                  type: boolean
                 setup_future_usage:
                   description: |-
                     Indicates that you intend to make future payments with this PaymentIntent's payment method.
@@ -51202,13 +51012,6 @@ paths:
                     - ''
                     type: string
                   description: Shipping information for this PaymentIntent.
-                source:
-                  description: This is a legacy field that will be removed in the
-                    future. It is the ID of the Source object to attach to this PaymentIntent.
-                    Please use the `payment_method` field instead, which also supports
-                    Cards and [compatible Source](https://stripe.com/docs/payments/payment-methods#compatibility)
-                    objects.
-                  type: string
                 use_stripe_sdk:
                   description: Set to `true` only when using manual confirmation and
                     the iOS or Android SDKs to handle additional authentication steps.
@@ -51689,7 +51492,6 @@ paths:
                   - bacs_debit
                   - bancontact
                   - card
-                  - card_present
                   - eps
                   - fpx
                   - giropay
@@ -60141,13 +59943,6 @@ paths:
                   description: Delete all usage for the given subscription item. Allowed
                     only when the current plan's `usage_type` is `metered`.
                   type: boolean
-                prorate:
-                  description: Flag indicating whether to [prorate](https://stripe.com/docs/billing/subscriptions/prorations)
-                    switching plans during a billing cycle. This field has been deprecated
-                    and will be removed in a future API version. Use `proration_behavior=create_prorations`
-                    as a replacement for `prorate=true` and `proration_behavior=none`
-                    for `prorate=false`.
-                  type: boolean
                 proration_behavior:
                   description: |-
                     Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. Valid values are `create_prorations`, `none`, or `always_invoice`.
@@ -66772,7 +66567,6 @@ paths:
                     - invoice.paid
                     - invoice.payment_action_required
                     - invoice.payment_failed
-                    - invoice.payment_succeeded
                     - invoice.sent
                     - invoice.upcoming
                     - invoice.updated
@@ -66806,7 +66600,6 @@ paths:
                     - payment_intent.requires_action
                     - payment_intent.succeeded
                     - payment_method.attached
-                    - payment_method.card_automatically_updated
                     - payment_method.detached
                     - payment_method.updated
                     - payout.canceled
@@ -67097,7 +66890,6 @@ paths:
                     - invoice.paid
                     - invoice.payment_action_required
                     - invoice.payment_failed
-                    - invoice.payment_succeeded
                     - invoice.sent
                     - invoice.upcoming
                     - invoice.updated
@@ -67131,7 +66923,6 @@ paths:
                     - payment_intent.requires_action
                     - payment_intent.succeeded
                     - payment_method.attached
-                    - payment_method.card_automatically_updated
                     - payment_method.detached
                     - payment_method.updated
                     - payout.canceled
