@@ -2692,7 +2692,10 @@ components:
             - "$ref": "#/components/schemas/deleted_customer"
         cvc_check:
           description: 'If a CVC was provided, results of the check: `pass`, `fail`,
-            `unavailable`, or `unchecked`.'
+            `unavailable`, or `unchecked`. A result of unchecked indicates that CVC
+            was provided but hasn''t been checked yet. Checks are typically performed
+            when attaching a card to a Customer object, or when creating a charge.
+            For more details, see [Check if a card is valid without a charge](https://support.stripe.com/questions/check-if-a-card-is-valid-without-a-charge).'
           maxLength: 5000
           nullable: true
           type: string
@@ -2972,8 +2975,8 @@ components:
             oneOf:
             - "$ref": "#/components/schemas/application_fee"
         application_fee_amount:
-          description: The amount of the application fee (if any) for the charge.
-            [See the Connect documentation](https://stripe.com/docs/connect/direct-charges#collecting-fees)
+          description: The amount of the application fee (if any) requested for the
+            charge. [See the Connect documentation](https://stripe.com/docs/connect/direct-charges#collecting-fees)
             for details.
           nullable: true
           type: integer
@@ -3751,7 +3754,6 @@ components:
           - payment
           - setup
           - subscription
-          nullable: true
           type: string
         object:
           description: String representing the object's type. Objects of the same
@@ -14802,8 +14804,8 @@ components:
             oneOf:
             - "$ref": "#/components/schemas/application"
         application_fee_amount:
-          description: The amount of the application fee (if any) for the resulting
-            payment. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts)
+          description: The amount of the application fee (if any) requested for the
+            resulting payment. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts)
             for details.
           nullable: true
           type: integer
@@ -15352,12 +15354,15 @@ components:
           "$ref": "#/components/schemas/payment_method_options_bancontact"
         card:
           "$ref": "#/components/schemas/payment_intent_payment_method_options_card"
+        sofort:
+          "$ref": "#/components/schemas/payment_method_options_sofort"
       title: PaymentIntentPaymentMethodOptions
       type: object
       x-expandableFields:
       - alipay
       - bancontact
       - card
+      - sofort
       x-stripeResource:
         class_name: PaymentMethodOptions
         in_class: payment_intent
@@ -15365,6 +15370,7 @@ components:
         - payment_intent_payment_method_options_card
         - payment_method_options_alipay
         - payment_method_options_bancontact
+        - payment_method_options_sofort
     payment_intent_payment_method_options_card:
       description: ''
       properties:
@@ -15496,6 +15502,8 @@ components:
           "$ref": "#/components/schemas/payment_method_p24"
         sepa_debit:
           "$ref": "#/components/schemas/payment_method_sepa_debit"
+        sofort:
+          "$ref": "#/components/schemas/payment_method_sofort"
         type:
           description: The type of the PaymentMethod. An additional hash is included
             on the PaymentMethod with a name matching this value. It contains additional
@@ -15512,6 +15520,7 @@ components:
           - ideal
           - p24
           - sepa_debit
+          - sofort
           type: string
           x-stripeBypassValidation: true
       required:
@@ -15541,6 +15550,7 @@ components:
       - interac_present
       - p24
       - sepa_debit
+      - sofort
       x-resourceId: payment_method
       x-stripeOperations:
       - method_name: create
@@ -15646,6 +15656,7 @@ components:
         - payment_method_interac_present
         - payment_method_p24
         - payment_method_sepa_debit
+        - payment_method_sofort
     payment_method_au_becs_debit:
       description: ''
       properties:
@@ -17472,6 +17483,20 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        preferred_language:
+          description: |-
+            Preferred language of the SOFORT authorization page that the customer is redirected to.
+            Can be one of `de`, `en`, `es`, `fr`, `it`, `nl`, or `pl`
+          enum:
+          - de
+          - en
+          - es
+          - fr
+          - it
+          - nl
+          - pl
+          nullable: true
+          type: string
         verified_name:
           description: |-
             Owner's verified full name. Values are verified or provided by SOFORT directly
@@ -17694,6 +17719,30 @@ components:
         in_class: payment_intent_payment_method_options_card
         inner_classes:
         - payment_method_details_card_installments_plan
+    payment_method_options_sofort:
+      description: ''
+      properties:
+        preferred_language:
+          description: Preferred language of the SOFORT authorization page that the
+            customer is redirected to.
+          enum:
+          - de
+          - en
+          - es
+          - fr
+          - it
+          - nl
+          - pl
+          nullable: true
+          type: string
+      required:
+      - preferred_language
+      title: payment_method_options_sofort
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Sofort
+        in_class: payment_intent_payment_method_options
     payment_method_p24:
       description: ''
       properties: {}
@@ -17744,6 +17793,23 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: SepaDebit
+        in_class: payment_method
+    payment_method_sofort:
+      description: ''
+      properties:
+        country:
+          description: Two-letter ISO code representing the country the bank account
+            is located in.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+      - country
+      title: payment_method_sofort
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Sofort
         in_class: payment_method
     payment_pages_checkout_session_total_details:
       description: ''
@@ -33632,10 +33698,11 @@ paths:
                   properties:
                     application_fee_amount:
                       description: |-
-                        The amount of the application fee (if any) that will be applied to the payment and transferred to the
-                        application owner's Stripe account. To use an application fee, the request must be made on
-                        behalf of another account, using the `Stripe-Account` header or an OAuth key. For more
-                        information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).
+                        The amount of the application fee (if any) that will be requested to be applied to the payment and
+                        transferred to the application owner's Stripe account. The amount of the application fee collected
+                        will be capped at the total payment amount. To use an application fee, the request must be made on
+                        behalf of another account, using the `Stripe-Account` header or an OAuth key. For more information,
+                        see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).
                       type: integer
                     capture_method:
                       description: Controls when the funds will be captured from the
@@ -33810,6 +33877,7 @@ paths:
                     - giropay
                     - ideal
                     - p24
+                    - sofort
                     type: string
                     x-stripeBypassValidation: true
                   type: array
@@ -50194,9 +50262,11 @@ paths:
                   type: integer
                 application_fee_amount:
                   description: The amount of the application fee (if any) that will
-                    be applied to the payment and transferred to the application owner's
-                    Stripe account. Must be greater than zero when provided. For more
-                    information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).
+                    be requested to be applied to the payment and transferred to the
+                    application owner's Stripe account. The amount of the application
+                    fee collected will be capped at the total payment amount. Must
+                    be greater than zero when provided. For more information, see
+                    the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).
                   type: integer
                 capture_method:
                   description: Controls when the funds will be captured from the customer's
@@ -50553,6 +50623,25 @@ paths:
                       - iban
                       title: param
                       type: object
+                    sofort:
+                      description: If this is a `sofort` PaymentMethod, this hash
+                        contains details about the SOFORT payment method.
+                      properties:
+                        country:
+                          description: Two-letter ISO code representing the country
+                            the bank account is located in.
+                          enum:
+                          - AT
+                          - BE
+                          - DE
+                          - ES
+                          - IT
+                          - NL
+                          type: string
+                      required:
+                      - country
+                      title: param
+                      type: object
                     type:
                       description: The type of the PaymentMethod. An additional hash
                         is included on the PaymentMethod with a name matching this
@@ -50569,6 +50658,7 @@ paths:
                       - ideal
                       - p24
                       - sepa_debit
+                      - sofort
                       type: string
                       x-stripeBypassValidation: true
                   required:
@@ -50705,6 +50795,26 @@ paths:
                         type: string
                       description: Configuration for any card payments attempted on
                         this PaymentIntent.
+                    sofort:
+                      anyOf:
+                      - properties:
+                          preferred_language:
+                            enum:
+                            - de
+                            - en
+                            - es
+                            - fr
+                            - it
+                            - nl
+                            - pl
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `sofort` PaymentMethod, this sub-hash
+                        contains details about the SOFORT payment method options.
                   title: payment_method_options_param
                   type: object
                 payment_method_types:
@@ -50884,6 +50994,7 @@ paths:
         name: client_secret
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.
@@ -50995,9 +51106,11 @@ paths:
                     - ''
                     type: string
                   description: The amount of the application fee (if any) that will
-                    be applied to the payment and transferred to the application owner's
-                    Stripe account. Must be greater than zero when provided. For more
-                    information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).
+                    be requested to be applied to the payment and transferred to the
+                    application owner's Stripe account. The amount of the application
+                    fee collected will be capped at the total payment amount. Must
+                    be greater than zero when provided. For more information, see
+                    the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).
                 currency:
                   description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
                     in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
@@ -51255,6 +51368,25 @@ paths:
                       - iban
                       title: param
                       type: object
+                    sofort:
+                      description: If this is a `sofort` PaymentMethod, this hash
+                        contains details about the SOFORT payment method.
+                      properties:
+                        country:
+                          description: Two-letter ISO code representing the country
+                            the bank account is located in.
+                          enum:
+                          - AT
+                          - BE
+                          - DE
+                          - ES
+                          - IT
+                          - NL
+                          type: string
+                      required:
+                      - country
+                      title: param
+                      type: object
                     type:
                       description: The type of the PaymentMethod. An additional hash
                         is included on the PaymentMethod with a name matching this
@@ -51271,6 +51403,7 @@ paths:
                       - ideal
                       - p24
                       - sepa_debit
+                      - sofort
                       type: string
                       x-stripeBypassValidation: true
                   required:
@@ -51407,6 +51540,26 @@ paths:
                         type: string
                       description: Configuration for any card payments attempted on
                         this PaymentIntent.
+                    sofort:
+                      anyOf:
+                      - properties:
+                          preferred_language:
+                            enum:
+                            - de
+                            - en
+                            - es
+                            - fr
+                            - it
+                            - nl
+                            - pl
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `sofort` PaymentMethod, this sub-hash
+                        contains details about the SOFORT payment method options.
                   title: payment_method_options_param
                   type: object
                 payment_method_types:
@@ -51648,9 +51801,11 @@ paths:
                   type: integer
                 application_fee_amount:
                   description: The amount of the application fee (if any) that will
-                    be applied to the payment and transferred to the application owner's
-                    Stripe account. Must be greater than zero when provided. For more
-                    information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).
+                    be requested to be applied to the payment and transferred to the
+                    application owner's Stripe account. The amount of the application
+                    fee collected will be capped at the total payment amount. Must
+                    be greater than zero when provided. For more information, see
+                    the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).
                   type: integer
                 expand:
                   description: Specifies which fields in the response should be expanded.
@@ -52102,6 +52257,25 @@ paths:
                       - iban
                       title: param
                       type: object
+                    sofort:
+                      description: If this is a `sofort` PaymentMethod, this hash
+                        contains details about the SOFORT payment method.
+                      properties:
+                        country:
+                          description: Two-letter ISO code representing the country
+                            the bank account is located in.
+                          enum:
+                          - AT
+                          - BE
+                          - DE
+                          - ES
+                          - IT
+                          - NL
+                          type: string
+                      required:
+                      - country
+                      title: param
+                      type: object
                     type:
                       description: The type of the PaymentMethod. An additional hash
                         is included on the PaymentMethod with a name matching this
@@ -52118,6 +52292,7 @@ paths:
                       - ideal
                       - p24
                       - sepa_debit
+                      - sofort
                       type: string
                       x-stripeBypassValidation: true
                   required:
@@ -52254,6 +52429,26 @@ paths:
                         type: string
                       description: Configuration for any card payments attempted on
                         this PaymentIntent.
+                    sofort:
+                      anyOf:
+                      - properties:
+                          preferred_language:
+                            enum:
+                            - de
+                            - en
+                            - es
+                            - fr
+                            - it
+                            - nl
+                            - pl
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `sofort` PaymentMethod, this sub-hash
+                        contains details about the SOFORT payment method options.
                   title: payment_method_options_param
                   type: object
                 receipt_email:
@@ -52550,6 +52745,9 @@ paths:
               sepa_debit:
                 explode: true
                 style: deepObject
+              sofort:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -52820,6 +53018,25 @@ paths:
                   - iban
                   title: param
                   type: object
+                sofort:
+                  description: If this is a `sofort` PaymentMethod, this hash contains
+                    details about the SOFORT payment method.
+                  properties:
+                    country:
+                      description: Two-letter ISO code representing the country the
+                        bank account is located in.
+                      enum:
+                      - AT
+                      - BE
+                      - DE
+                      - ES
+                      - IT
+                      - NL
+                      type: string
+                  required:
+                  - country
+                  title: param
+                  type: object
                 type:
                   description: The type of the PaymentMethod. An additional hash is
                     included on the PaymentMethod with a name matching this value.
@@ -52837,6 +53054,7 @@ paths:
                   - ideal
                   - p24
                   - sepa_debit
+                  - sofort
                   type: string
                   x-stripeBypassValidation: true
               type: object
@@ -58865,6 +59083,7 @@ paths:
         name: client_secret
         required: false
         schema:
+          maxLength: 5000
           type: string
         style: form
       - description: Specifies which fields in the response should be expanded.

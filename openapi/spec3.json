@@ -2413,7 +2413,7 @@
             }
           },
           "cvc_check": {
-            "description": "If a CVC was provided, results of the check: `pass`, `fail`, `unavailable`, or `unchecked`.",
+            "description": "If a CVC was provided, results of the check: `pass`, `fail`, `unavailable`, or `unchecked`. A result of unchecked indicates that CVC was provided but hasn't been checked yet. Checks are typically performed when attaching a card to a Customer object, or when creating a charge. For more details, see [Check if a card is valid without a charge](https://support.stripe.com/questions/check-if-a-card-is-valid-without-a-charge).",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
@@ -2587,7 +2587,7 @@
             }
           },
           "application_fee_amount": {
-            "description": "The amount of the application fee (if any) for the charge. [See the Connect documentation](https://stripe.com/docs/connect/direct-charges#collecting-fees) for details.",
+            "description": "The amount of the application fee (if any) requested for the charge. [See the Connect documentation](https://stripe.com/docs/connect/direct-charges#collecting-fees) for details.",
             "nullable": true,
             "type": "integer"
           },
@@ -3329,7 +3329,6 @@
               "setup",
               "subscription"
             ],
-            "nullable": true,
             "type": "string"
           },
           "object": {
@@ -3464,6 +3463,7 @@
           "cancel_url",
           "id",
           "livemode",
+          "mode",
           "object",
           "payment_method_types",
           "payment_status",
@@ -13775,7 +13775,7 @@
             }
           },
           "application_fee_amount": {
-            "description": "The amount of the application fee (if any) for the resulting payment. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts) for details.",
+            "description": "The amount of the application fee (if any) requested for the resulting payment. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts) for details.",
             "nullable": true,
             "type": "integer"
           },
@@ -14230,6 +14230,9 @@
           },
           "card": {
             "$ref": "#/components/schemas/payment_intent_payment_method_options_card"
+          },
+          "sofort": {
+            "$ref": "#/components/schemas/payment_method_options_sofort"
           }
         },
         "title": "PaymentIntentPaymentMethodOptions",
@@ -14237,7 +14240,8 @@
         "x-expandableFields": [
           "alipay",
           "bancontact",
-          "card"
+          "card",
+          "sofort"
         ]
       },
       "payment_intent_payment_method_options_card": {
@@ -14380,6 +14384,9 @@
           "sepa_debit": {
             "$ref": "#/components/schemas/payment_method_sepa_debit"
           },
+          "sofort": {
+            "$ref": "#/components/schemas/payment_method_sofort"
+          },
           "type": {
             "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
             "enum": [
@@ -14393,7 +14400,8 @@
               "giropay",
               "ideal",
               "p24",
-              "sepa_debit"
+              "sepa_debit",
+              "sofort"
             ],
             "type": "string",
             "x-stripeBypassValidation": true
@@ -14424,7 +14432,8 @@
           "ideal",
           "interac_present",
           "p24",
-          "sepa_debit"
+          "sepa_debit",
+          "sofort"
         ],
         "x-resourceId": "payment_method"
       },
@@ -16104,6 +16113,20 @@
             "nullable": true,
             "type": "string"
           },
+          "preferred_language": {
+            "description": "Preferred language of the SOFORT authorization page that the customer is redirected to.\nCan be one of `de`, `en`, `es`, `fr`, `it`, `nl`, or `pl`",
+            "enum": [
+              "de",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
           "verified_name": {
             "description": "Owner's verified full name. Values are verified or provided by SOFORT directly\n(if supported) at the time of authorization or settlement. They cannot be set or mutated.",
             "maxLength": 5000,
@@ -16322,6 +16345,30 @@
           "plan"
         ]
       },
+      "payment_method_options_sofort": {
+        "description": "",
+        "properties": {
+          "preferred_language": {
+            "description": "Preferred language of the SOFORT authorization page that the customer is redirected to.",
+            "enum": [
+              "de",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl"
+            ],
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "title": "payment_method_options_sofort",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
       "payment_method_p24": {
         "description": "",
         "properties": {
@@ -16367,6 +16414,22 @@
           }
         },
         "title": "payment_method_sepa_debit",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
+      "payment_method_sofort": {
+        "description": "",
+        "properties": {
+          "country": {
+            "description": "Two-letter ISO code representing the country the bank account is located in.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "title": "payment_method_sofort",
         "type": "object",
         "x-expandableFields": [
 
@@ -38828,7 +38891,8 @@
                         "fpx",
                         "giropay",
                         "ideal",
-                        "p24"
+                        "p24",
+                        "sofort"
                       ],
                       "type": "string",
                       "x-stripeBypassValidation": true
@@ -61946,7 +62010,7 @@
                     "type": "integer"
                   },
                   "application_fee_amount": {
-                    "description": "The amount of the application fee (if any) that will be applied to the payment and transferred to the application owner's Stripe account. Must be greater than zero when provided. For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
+                    "description": "The amount of the application fee (if any) that will be requested to be applied to the payment and transferred to the application owner's Stripe account. The amount of the application fee collected will be capped at the total payment amount. Must be greater than zero when provided. For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
                     "type": "integer"
                   },
                   "capture_method": {
@@ -62292,6 +62356,26 @@
                         "title": "param",
                         "type": "object"
                       },
+                      "sofort": {
+                        "properties": {
+                          "country": {
+                            "enum": [
+                              "AT",
+                              "BE",
+                              "DE",
+                              "ES",
+                              "IT",
+                              "NL"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "country"
+                        ],
+                        "title": "param",
+                        "type": "object"
+                      },
                       "type": {
                         "enum": [
                           "alipay",
@@ -62303,7 +62387,8 @@
                           "giropay",
                           "ideal",
                           "p24",
-                          "sepa_debit"
+                          "sepa_debit",
+                          "sofort"
                         ],
                         "type": "string",
                         "x-stripeBypassValidation": true
@@ -62436,6 +62521,34 @@
                               }
                             },
                             "title": "payment_intent_param",
+                            "type": "object"
+                          },
+                          {
+                            "enum": [
+                              ""
+                            ],
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "sofort": {
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "preferred_language": {
+                                "enum": [
+                                  "de",
+                                  "en",
+                                  "es",
+                                  "fr",
+                                  "it",
+                                  "nl",
+                                  "pl"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "title": "payment_method_options_param",
                             "type": "object"
                           },
                           {
@@ -62614,6 +62727,7 @@
             "name": "client_secret",
             "required": false,
             "schema": {
+              "maxLength": 5000,
               "type": "string"
             },
             "style": "form"
@@ -62757,7 +62871,7 @@
                         "type": "string"
                       }
                     ],
-                    "description": "The amount of the application fee (if any) that will be applied to the payment and transferred to the application owner's Stripe account. Must be greater than zero when provided. For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts)."
+                    "description": "The amount of the application fee (if any) that will be requested to be applied to the payment and transferred to the application owner's Stripe account. The amount of the application fee collected will be capped at the total payment amount. Must be greater than zero when provided. For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts)."
                   },
                   "currency": {
                     "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -63010,6 +63124,26 @@
                         "title": "param",
                         "type": "object"
                       },
+                      "sofort": {
+                        "properties": {
+                          "country": {
+                            "enum": [
+                              "AT",
+                              "BE",
+                              "DE",
+                              "ES",
+                              "IT",
+                              "NL"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "country"
+                        ],
+                        "title": "param",
+                        "type": "object"
+                      },
                       "type": {
                         "enum": [
                           "alipay",
@@ -63021,7 +63155,8 @@
                           "giropay",
                           "ideal",
                           "p24",
-                          "sepa_debit"
+                          "sepa_debit",
+                          "sofort"
                         ],
                         "type": "string",
                         "x-stripeBypassValidation": true
@@ -63154,6 +63289,34 @@
                               }
                             },
                             "title": "payment_intent_param",
+                            "type": "object"
+                          },
+                          {
+                            "enum": [
+                              ""
+                            ],
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "sofort": {
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "preferred_language": {
+                                "enum": [
+                                  "de",
+                                  "en",
+                                  "es",
+                                  "fr",
+                                  "it",
+                                  "nl",
+                                  "pl"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "title": "payment_method_options_param",
                             "type": "object"
                           },
                           {
@@ -63440,7 +63603,7 @@
                     "type": "integer"
                   },
                   "application_fee_amount": {
-                    "description": "The amount of the application fee (if any) that will be applied to the payment and transferred to the application owner's Stripe account. Must be greater than zero when provided. For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
+                    "description": "The amount of the application fee (if any) that will be requested to be applied to the payment and transferred to the application owner's Stripe account. The amount of the application fee collected will be capped at the total payment amount. Must be greater than zero when provided. For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
                     "type": "integer"
                   },
                   "expand": {
@@ -63560,6 +63723,7 @@
                 "properties": {
                   "client_secret": {
                     "description": "The client secret of the PaymentIntent.",
+                    "maxLength": 5000,
                     "type": "string"
                   },
                   "error_on_requires_action": {
@@ -63904,6 +64068,26 @@
                         "title": "param",
                         "type": "object"
                       },
+                      "sofort": {
+                        "properties": {
+                          "country": {
+                            "enum": [
+                              "AT",
+                              "BE",
+                              "DE",
+                              "ES",
+                              "IT",
+                              "NL"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "country"
+                        ],
+                        "title": "param",
+                        "type": "object"
+                      },
                       "type": {
                         "enum": [
                           "alipay",
@@ -63915,7 +64099,8 @@
                           "giropay",
                           "ideal",
                           "p24",
-                          "sepa_debit"
+                          "sepa_debit",
+                          "sofort"
                         ],
                         "type": "string",
                         "x-stripeBypassValidation": true
@@ -64048,6 +64233,34 @@
                               }
                             },
                             "title": "payment_intent_param",
+                            "type": "object"
+                          },
+                          {
+                            "enum": [
+                              ""
+                            ],
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "sofort": {
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "preferred_language": {
+                                "enum": [
+                                  "de",
+                                  "en",
+                                  "es",
+                                  "fr",
+                                  "it",
+                                  "nl",
+                                  "pl"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "title": "payment_method_options_param",
                             "type": "object"
                           },
                           {
@@ -64430,6 +64643,10 @@
                 "sepa_debit": {
                   "explode": true,
                   "style": "deepObject"
+                },
+                "sofort": {
+                  "explode": true,
+                  "style": "deepObject"
                 }
               },
               "schema": {
@@ -64714,6 +64931,27 @@
                     "title": "param",
                     "type": "object"
                   },
+                  "sofort": {
+                    "description": "If this is a `sofort` PaymentMethod, this hash contains details about the SOFORT payment method.",
+                    "properties": {
+                      "country": {
+                        "enum": [
+                          "AT",
+                          "BE",
+                          "DE",
+                          "ES",
+                          "IT",
+                          "NL"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "country"
+                    ],
+                    "title": "param",
+                    "type": "object"
+                  },
                   "type": {
                     "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
                     "enum": [
@@ -64727,7 +64965,8 @@
                       "giropay",
                       "ideal",
                       "p24",
-                      "sepa_debit"
+                      "sepa_debit",
+                      "sofort"
                     ],
                     "type": "string",
                     "x-stripeBypassValidation": true
@@ -72172,6 +72411,7 @@
             "name": "client_secret",
             "required": false,
             "schema": {
+              "maxLength": 5000,
               "type": "string"
             },
             "style": "form"
@@ -72495,6 +72735,7 @@
                 "properties": {
                   "client_secret": {
                     "description": "The client secret of the SetupIntent.",
+                    "maxLength": 5000,
                     "type": "string"
                   },
                   "expand": {
