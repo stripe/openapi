@@ -23352,6 +23352,46 @@
             ],
             "type": "string"
           },
+          "original_payout": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/payout"
+              }
+            ],
+            "description": "If the payout reverses another, this is the ID of the original payout.",
+            "nullable": true,
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/payout"
+                }
+              ]
+            }
+          },
+          "reversed_by": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/payout"
+              }
+            ],
+            "description": "If the payout was reversed, this is the ID of the payout that reverses this payout.",
+            "nullable": true,
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/payout"
+                }
+              ]
+            }
+          },
           "source_type": {
             "description": "The source balance this payout came from. One of `card`, `fpx`, or `bank_account`.",
             "maxLength": 5000,
@@ -23404,7 +23444,9 @@
         "x-expandableFields": [
           "balance_transaction",
           "destination",
-          "failure_balance_transaction"
+          "failure_balance_transaction",
+          "original_payout",
+          "reversed_by"
         ],
         "x-resourceId": "payout",
         "x-stripeOperations": [
@@ -23507,6 +23549,32 @@
             "method_type": "custom",
             "operation": "post",
             "path": "/v1/payouts/{payout}/cancel",
+            "path_resource_variables": [
+              {
+                "method_parameter": "payout",
+                "name": "payout"
+              }
+            ]
+          },
+          {
+            "method_name": "reverse",
+            "method_on": "instance",
+            "method_type": "custom",
+            "operation": "post",
+            "path": "/v1/payouts/{payout}/reverse",
+            "path_resource_variables": [
+              {
+                "name": "payout",
+                "object_property": "id"
+              }
+            ]
+          },
+          {
+            "method_name": "reverse",
+            "method_on": "service",
+            "method_type": "custom",
+            "operation": "post",
+            "path": "/v1/payouts/{payout}/reverse",
             "path_resource_variables": [
               {
                 "method_parameter": "payout",
@@ -68330,6 +68398,73 @@
       "post": {
         "description": "<p>A previously created payout can be canceled if it has not yet been paid out. Funds will be refunded to your available balance. You may not cancel automatic Stripe payouts.</p>",
         "operationId": "PostPayoutsPayoutCancel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "payout",
+            "required": true,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {
+                "expand": {
+                  "explode": true,
+                  "style": "deepObject"
+                }
+              },
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "expand": {
+                    "description": "Specifies which fields in the response should be expanded.",
+                    "items": {
+                      "maxLength": 5000,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payout"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        }
+      }
+    },
+    "/v1/payouts/{payout}/reverse": {
+      "post": {
+        "description": "<p>Reverses a payout by debiting the destination bank account. Only payouts for connected accounts to US bank accounts may be reversed at this time. If the payout is in the <code>pending</code> status, <code>/v1/payouts/:id/cancel</code> should be used instead.</p>\n\n<p>By requesting a reversal via <code>/v1/payouts/:id/reverse</code>, you confirm that the authorized signatory of the selected bank account has authorized the debit on the bank account and that no other authorization is required.</p>",
+        "operationId": "PostPayoutsPayoutReverse",
         "parameters": [
           {
             "in": "path",
