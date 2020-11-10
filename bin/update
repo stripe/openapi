@@ -3,6 +3,9 @@
 require "fileutils"
 require "json"
 require "yaml"
+require "net/http"
+require "json"
+require "uri"
 
 # This exists so that we can stub out various calls to system commands (e.g.
 # copying files, running Git operations) which would otherwise be difficult or
@@ -51,12 +54,50 @@ class SystemUtils
     `cd #{dir} && git rev-parse --abbrev-ref HEAD`.strip
   end
 
+  def get_github_token(username)
+    `fetch-password --quiet --raw bindings/gh-tokens/#{username}`.strip
+  end
+
+  def create_github_release(repo_org, repo_name, github_token, version)
+    uri = URI.parse("https://api.github.com/repos/#{repo_org}/#{repo_name}/releases")
+
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    request = Net::HTTP::Post.new(uri.request_uri)
+    request['Accept'] = "application/vnd.github.v3+json"
+    request['Authorization'] = "token #{github_token}"
+    request.body = {'tag_name': "#{version}"}.to_json
+    response = http.request(request)
+    JSON.parse(response.body)
+  end
+
+  def get_latest_github_release(repo_org, repo_name, github_token)
+    uri = URI.parse("https://api.github.com/repos/#{repo_org}/#{repo_name}/releases/latest")
+
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    request = Net::HTTP::Get.new(uri.request_uri)
+    request['Accept'] = "application/vnd.github.v3+json"
+    request['Authorization'] = "token #{github_token}"
+    response = http.request(request)
+    if response.code == "404" 
+      return "v0"  
+    else
+      JSON.parse(response.body)["tag_name"]
+    end
+  end
+
+  def increment_version(version)
+    version = version[1..-1].to_i
+    "v#{version + 1}"
+  end
+
   def git_pull_origin_master
-    `git pull origin master`
+    execute_subshell(%{git pull origin master})
   end
 
   def git_push_origin_master
-    `git push origin master`
+    execute_subshell(%{git push origin master})
   end
 
   def write_file(file, data)
@@ -75,11 +116,20 @@ end
 class Updater
   SOURCE_DIR = File.expand_path("~/stripe/pay-server/")
   TARGET_DIR = File.expand_path("../../", __FILE__)
+  REPO_NAME = "openapi"
+  REPO_ORG = "ctrudeau-stripe"
 
   def initialize(dry_run: false, out: nil, utils: nil)
     self.dry_run = dry_run
     self.out = out || $stdout
     self.utils = utils || SystemUtils.new
+  end
+
+  def publish_new_version(user, repo_org, repo_name) 
+    github_token = utils.get_github_token(user)
+    tag_name = utils.get_latest_github_release(repo_org, repo_name, github_token)
+    github_release_response = utils.create_github_release(REPO_ORG, REPO_NAME, github_token, utils.increment_version(tag_name))
+    github_release_response['html_url']
   end
 
   def run
@@ -125,11 +175,13 @@ class Updater
     else
       out.puts "--> No fixture changes to commit"
     end
-
+    
+    committed = false 
     out.puts "--> Commiting specification"
     out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/openapi/spec*"))
     if utils.git_any_files_staged?
       out.puts utils.git_commit("Update OpenAPI specification")
+      committed = true
     else
       out.puts "--> No OpenAPI specification changes to commit"
     end
@@ -140,6 +192,18 @@ class Updater
       out.puts "--> Pushing to origin"
       out.puts utils.git_push_origin_master
     end
+
+    if dry_run
+      out.puts "--> Not publishing new version because DRY_RUN=true"
+    else
+      if committed
+        out.puts "--> Publishing new version to github"
+        out.puts publish_new_version(ENV['USER'], REPO_ORG, REPO_NAME)
+      else 
+        out.puts "--> We did not commit so we did not create a release"
+      end
+    end
+
   end
 
   private
@@ -206,6 +270,14 @@ else
         ["Update OpenAPI specification"])
 
       utils.expect(:git_push_origin_master, "")
+
+      utils.expect(:get_github_token, "TOKEN",[ENV["USER"]])
+
+      utils.expect(:get_latest_github_release, "v4",[Updater::REPO_ORG, Updater::REPO_NAME, "TOKEN"])
+
+      utils.expect(:increment_version, "v5",["v4"])
+
+      utils.expect(:create_github_release, "example.com",[Updater::REPO_ORG, Updater::REPO_NAME, "TOKEN", "v5"])
 
       updater.run
       utils.verify
