@@ -6028,7 +6028,6 @@ components:
           description: The tax rates applied to this invoice, if any.
           items:
             "$ref": "#/components/schemas/tax_rate"
-          nullable: true
           type: array
         description:
           description: An arbitrary string attached to the object. Often useful for
@@ -6271,7 +6270,6 @@ components:
             items.
           items:
             "$ref": "#/components/schemas/invoice_tax_amount"
-          nullable: true
           type: array
         transfer_data:
           anyOf:
@@ -6298,6 +6296,7 @@ components:
       - created
       - currency
       - customer
+      - default_tax_rates
       - lines
       - livemode
       - object
@@ -6310,6 +6309,7 @@ components:
       - status_transitions
       - subtotal
       - total
+      - total_tax_amounts
       title: Invoice
       type: object
       x-expandableFields:
@@ -10827,13 +10827,11 @@ components:
           description: The amount of tax calculated per tax rate for this line item
           items:
             "$ref": "#/components/schemas/invoice_tax_amount"
-          nullable: true
           type: array
         tax_rates:
           description: The tax rates which apply to the line item.
           items:
             "$ref": "#/components/schemas/tax_rate"
-          nullable: true
           type: array
         type:
           description: A string identifying the type of the source of this line item,
@@ -11587,9 +11585,11 @@ components:
             oneOf:
             - "$ref": "#/components/schemas/application"
         application_fee_amount:
-          description: The amount of the application fee (if any) requested for the
-            resulting payment. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts)
-            for details.
+          description: The amount of the application fee (if any) that will be requested
+            to be applied to the payment and transferred to the application owner's
+            Stripe account. The amount of the application fee collected will be capped
+            at the total payment amount. For more information, see the PaymentIntents
+            [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).
           nullable: true
           type: integer
         canceled_at:
@@ -11660,7 +11660,7 @@ components:
             complete a payment from your frontend. It should not be stored, logged,
             embedded in URLs, or exposed to anyone other than the customer. Make sure
             that you have TLS enabled on any page that includes the client secret.\n\nRefer
-            to our docs to [accept a payment](https://stripe.com/docs/payments/accept-a-payment)
+            to our docs to [accept a payment](https://stripe.com/docs/payments/accept-a-payment?integration=elements)
             and learn about how `client_secret` should be handled."
           maxLength: 5000
           nullable: true
@@ -33966,8 +33966,8 @@ paths:
             type: object
           - type: integer
         style: deepObject
-      - description: A filter on the list based on the customer's `email` field. The
-          value must be a string.
+      - description: A case-sensitive filter on the list based on the customer's `email`
+          field. The value must be a string.
         in: query
         name: email
         required: false
