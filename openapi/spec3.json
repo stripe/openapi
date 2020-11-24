@@ -4428,7 +4428,7 @@
             }
           },
           "delinquent": {
-            "description": "When the customer's latest invoice is billed by charging automatically, delinquent is true if the invoice's latest charge is failed. When the customer's latest invoice is billed by sending an invoice, delinquent is true if the invoice is not paid by its due date.",
+            "description": "When the customer's latest invoice is billed by charging automatically, `delinquent` is `true` if the invoice's latest charge failed. When the customer's latest invoice is billed by sending an invoice, `delinquent` is `true` if the invoice isn't paid by its due date.\n\nIf an invoice is marked uncollectible by [dunning](https://stripe.com/docs/billing/automatic-collection), `delinquent` doesn't get reset to `false`.",
             "nullable": true,
             "type": "boolean"
           },
@@ -7116,6 +7116,35 @@
             "nullable": true,
             "type": "string"
           },
+          "account_tax_ids": {
+            "description": "The account tax IDs associated with the invoice. Only editable when the invoice is a draft.",
+            "items": {
+              "anyOf": [
+                {
+                  "maxLength": 5000,
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/components/schemas/tax_id"
+                },
+                {
+                  "$ref": "#/components/schemas/deleted_tax_id"
+                }
+              ],
+              "x-expansionResources": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/tax_id"
+                  },
+                  {
+                    "$ref": "#/components/schemas/deleted_tax_id"
+                  }
+                ]
+              }
+            },
+            "nullable": true,
+            "type": "array"
+          },
           "amount_due": {
             "description": "Final amount due at this time for this invoice. If the invoice's total is smaller than the minimum charge amount, for example, or if there is account credit that can be applied to the invoice, the `amount_due` may be 0. If there is a positive `starting_balance` for the invoice (the customer owes money), the `amount_due` will also take that into account. The charge that gets generated for the invoice will be for the amount specified in `amount_due`.",
             "type": "integer"
@@ -7686,6 +7715,7 @@
         "title": "Invoice",
         "type": "object",
         "x-expandableFields": [
+          "account_tax_ids",
           "charge",
           "custom_fields",
           "customer",
@@ -14430,6 +14460,9 @@
           "p24": {
             "$ref": "#/components/schemas/payment_method_options_p24"
           },
+          "sepa_debit": {
+            "$ref": "#/components/schemas/payment_intent_payment_method_options_sepa_debit"
+          },
           "sofort": {
             "$ref": "#/components/schemas/payment_method_options_sofort"
           }
@@ -14442,6 +14475,7 @@
           "card",
           "oxxo",
           "p24",
+          "sepa_debit",
           "sofort"
         ]
       },
@@ -14489,6 +14523,29 @@
         "type": "object",
         "x-expandableFields": [
           "installments"
+        ]
+      },
+      "payment_intent_payment_method_options_mandate_options_sepa_debit": {
+        "description": "",
+        "properties": {
+        },
+        "title": "payment_intent_payment_method_options_mandate_options_sepa_debit",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
+      "payment_intent_payment_method_options_sepa_debit": {
+        "description": "",
+        "properties": {
+          "mandate_options": {
+            "$ref": "#/components/schemas/payment_intent_payment_method_options_mandate_options_sepa_debit"
+          }
+        },
+        "title": "payment_intent_payment_method_options_sepa_debit",
+        "type": "object",
+        "x-expandableFields": [
+          "mandate_options"
         ]
       },
       "payment_method": {
@@ -47879,7 +47936,8 @@
                       "unchanged"
                     ],
                     "maxLength": 5000,
-                    "type": "string"
+                    "type": "string",
+                    "x-stripeBypassValidation": true
                   },
                   "billing_thresholds": {
                     "anyOf": [
@@ -51772,6 +51830,10 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
+                "account_tax_ids": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "custom_fields": {
                   "explode": true,
                   "style": "deepObject"
@@ -51800,6 +51862,24 @@
               "schema": {
                 "additionalProperties": false,
                 "properties": {
+                  "account_tax_ids": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "maxLength": 5000,
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "The account tax IDs associated with the invoice. Only editable when the invoice is a draft."
+                  },
                   "application_fee_amount": {
                     "description": "A fee in %s that will be applied to the invoice and transferred to the application owner's Stripe account. The request must be made with an OAuth key or the Stripe-Account header in order to take an application fee. For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#invoices).",
                     "type": "integer"
@@ -53382,6 +53462,10 @@
           "content": {
             "application/x-www-form-urlencoded": {
               "encoding": {
+                "account_tax_ids": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "custom_fields": {
                   "explode": true,
                   "style": "deepObject"
@@ -53410,6 +53494,24 @@
               "schema": {
                 "additionalProperties": false,
                 "properties": {
+                  "account_tax_ids": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "maxLength": 5000,
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "enum": [
+                          ""
+                        ],
+                        "type": "string"
+                      }
+                    ],
+                    "description": "The account tax IDs associated with the invoice. Only editable when the invoice is a draft."
+                  },
                   "application_fee_amount": {
                     "description": "A fee in %s that will be applied to the invoice and transferred to the application owner's Stripe account. The request must be made with an OAuth key or the Stripe-Account header in order to take an application fee. For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#invoices).",
                     "type": "integer"
@@ -64081,6 +64183,28 @@
                           }
                         ]
                       },
+                      "sepa_debit": {
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "mandate_options": {
+                                "properties": {
+                                },
+                                "title": "payment_method_options_mandate_options_param",
+                                "type": "object"
+                              }
+                            },
+                            "title": "payment_intent_payment_method_options_param",
+                            "type": "object"
+                          },
+                          {
+                            "enum": [
+                              ""
+                            ],
+                            "type": "string"
+                          }
+                        ]
+                      },
                       "sofort": {
                         "anyOf": [
                           {
@@ -64923,6 +65047,28 @@
                             "properties": {
                             },
                             "title": "payment_method_options_param",
+                            "type": "object"
+                          },
+                          {
+                            "enum": [
+                              ""
+                            ],
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "sepa_debit": {
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "mandate_options": {
+                                "properties": {
+                                },
+                                "title": "payment_method_options_mandate_options_param",
+                                "type": "object"
+                              }
+                            },
+                            "title": "payment_intent_payment_method_options_param",
                             "type": "object"
                           },
                           {
@@ -65951,6 +66097,28 @@
                             "properties": {
                             },
                             "title": "payment_method_options_param",
+                            "type": "object"
+                          },
+                          {
+                            "enum": [
+                              ""
+                            ],
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "sepa_debit": {
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "mandate_options": {
+                                "properties": {
+                                },
+                                "title": "payment_method_options_mandate_options_param",
+                                "type": "object"
+                              }
+                            },
+                            "title": "payment_intent_payment_method_options_param",
                             "type": "object"
                           },
                           {
@@ -80506,7 +80674,8 @@
                       "unchanged"
                     ],
                     "maxLength": 5000,
-                    "type": "string"
+                    "type": "string",
+                    "x-stripeBypassValidation": true
                   },
                   "billing_thresholds": {
                     "anyOf": [

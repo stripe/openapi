@@ -4893,10 +4893,10 @@ components:
           - true
           type: boolean
         delinquent:
-          description: When the customer's latest invoice is billed by charging automatically,
-            delinquent is true if the invoice's latest charge is failed. When the
-            customer's latest invoice is billed by sending an invoice, delinquent
-            is true if the invoice is not paid by its due date.
+          description: |-
+            When the customer's latest invoice is billed by charging automatically, `delinquent` is `true` if the invoice's latest charge failed. When the customer's latest invoice is billed by sending an invoice, `delinquent` is `true` if the invoice isn't paid by its due date.
+
+            If an invoice is marked uncollectible by [dunning](https://stripe.com/docs/billing/automatic-collection), `delinquent` doesn't get reset to `false`.
           nullable: true
           type: boolean
         description:
@@ -7059,6 +7059,19 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        account_tax_ids:
+          description: The account tax IDs associated with the invoice. Only editable
+            when the invoice is a draft.
+          items:
+            anyOf:
+            - maxLength: 5000
+              type: string
+            - "$ref": "#/components/schemas/tax_id"
+            x-expansionResources:
+              oneOf:
+              - "$ref": "#/components/schemas/tax_id"
+          nullable: true
+          type: array
         amount_due:
           description: Final amount due at this time for this invoice. If the invoice's
             total is smaller than the minimum charge amount, for example, or if there
@@ -7513,6 +7526,7 @@ components:
       title: Invoice
       type: object
       x-expandableFields:
+      - account_tax_ids
       - charge
       - custom_fields
       - customer
@@ -14620,6 +14634,8 @@ components:
           "$ref": "#/components/schemas/payment_method_options_oxxo"
         p24:
           "$ref": "#/components/schemas/payment_method_options_p24"
+        sepa_debit:
+          "$ref": "#/components/schemas/payment_intent_payment_method_options_sepa_debit"
         sofort:
           "$ref": "#/components/schemas/payment_method_options_sofort"
       title: PaymentIntentPaymentMethodOptions
@@ -14630,12 +14646,15 @@ components:
       - card
       - oxxo
       - p24
+      - sepa_debit
       - sofort
       x-stripeResource:
         class_name: PaymentMethodOptions
         in_class: payment_intent
         inner_classes:
         - payment_intent_payment_method_options_card
+        - payment_intent_payment_method_options_mandate_options_sepa_debit
+        - payment_intent_payment_method_options_sepa_debit
         - payment_method_options_alipay
         - payment_method_options_bancontact
         - payment_method_options_oxxo
@@ -14698,6 +14717,27 @@ components:
         in_class: payment_intent_payment_method_options
         inner_classes:
         - payment_method_options_card_installments
+    payment_intent_payment_method_options_mandate_options_sepa_debit:
+      description: ''
+      properties: {}
+      title: payment_intent_payment_method_options_mandate_options_sepa_debit
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: SepaDebitMandateOptions
+        in_class: payment_intent_payment_method_options
+    payment_intent_payment_method_options_sepa_debit:
+      description: ''
+      properties:
+        mandate_options:
+          "$ref": "#/components/schemas/payment_intent_payment_method_options_mandate_options_sepa_debit"
+      title: payment_intent_payment_method_options_sepa_debit
+      type: object
+      x-expandableFields:
+      - mandate_options
+      x-stripeResource:
+        class_name: SepaDebit
+        in_class: payment_intent_payment_method_options
     payment_method:
       description: |-
         PaymentMethod objects represent your customer's payment instruments.
@@ -40748,6 +40788,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              account_tax_ids:
+                explode: true
+                style: deepObject
               custom_fields:
                 explode: true
                 style: deepObject
@@ -40769,6 +40812,19 @@ paths:
             schema:
               additionalProperties: false
               properties:
+                account_tax_ids:
+                  anyOf:
+                  - items:
+                      maxLength: 5000
+                      type: string
+                    type: array
+                    x-stripeParam:
+                      containee_entity_name: account_tax_id
+                  - enum:
+                    - ''
+                    type: string
+                  description: The account tax IDs associated with the invoice. Only
+                    editable when the invoice is a draft.
                 application_fee_amount:
                   description: A fee in %s that will be applied to the invoice and
                     transferred to the application owner's Stripe account. The request
@@ -42187,6 +42243,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              account_tax_ids:
+                explode: true
+                style: deepObject
               custom_fields:
                 explode: true
                 style: deepObject
@@ -42208,6 +42267,19 @@ paths:
             schema:
               additionalProperties: false
               properties:
+                account_tax_ids:
+                  anyOf:
+                  - items:
+                      maxLength: 5000
+                      type: string
+                    type: array
+                    x-stripeParam:
+                      containee_entity_name: account_tax_id
+                  - enum:
+                    - ''
+                    type: string
+                  description: The account tax IDs associated with the invoice. Only
+                    editable when the invoice is a draft.
                 application_fee_amount:
                   description: A fee in %s that will be applied to the invoice and
                     transferred to the application owner's Stripe account. The request
@@ -51175,6 +51247,21 @@ paths:
                         type: string
                       description: If this is a `p24` PaymentMethod, this sub-hash
                         contains details about the Przelewy24 payment method options.
+                    sepa_debit:
+                      anyOf:
+                      - properties:
+                          mandate_options:
+                            description: Additional fields for Mandate creation
+                            properties: {}
+                            title: payment_method_options_mandate_options_param
+                            type: object
+                        title: payment_intent_payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `sepa_debit` PaymentIntent, this sub-hash
+                        contains details about the SEPA Debit payment method options.
                     sofort:
                       anyOf:
                       - properties:
@@ -51999,6 +52086,21 @@ paths:
                         type: string
                       description: If this is a `p24` PaymentMethod, this sub-hash
                         contains details about the Przelewy24 payment method options.
+                    sepa_debit:
+                      anyOf:
+                      - properties:
+                          mandate_options:
+                            description: Additional fields for Mandate creation
+                            properties: {}
+                            title: payment_method_options_mandate_options_param
+                            type: object
+                        title: payment_intent_payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `sepa_debit` PaymentIntent, this sub-hash
+                        contains details about the SEPA Debit payment method options.
                     sofort:
                       anyOf:
                       - properties:
@@ -52967,6 +53069,21 @@ paths:
                         type: string
                       description: If this is a `p24` PaymentMethod, this sub-hash
                         contains details about the Przelewy24 payment method options.
+                    sepa_debit:
+                      anyOf:
+                      - properties:
+                          mandate_options:
+                            description: Additional fields for Mandate creation
+                            properties: {}
+                            title: payment_method_options_mandate_options_param
+                            type: object
+                        title: payment_intent_payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `sepa_debit` PaymentIntent, this sub-hash
+                        contains details about the SEPA Debit payment method options.
                     sofort:
                       anyOf:
                       - properties:
@@ -59790,7 +59907,7 @@ paths:
                       type: object
                     sepa_debit:
                       description: If this is a `sepa_debit` SetupIntent, this sub-hash
-                        contains details about the Sepa Debit payment method options.
+                        contains details about the SEPA Debit payment method options.
                       properties:
                         mandate_options:
                           description: Additional fields for Mandate creation
@@ -60022,7 +60139,7 @@ paths:
                       type: object
                     sepa_debit:
                       description: If this is a `sepa_debit` SetupIntent, this sub-hash
-                        contains details about the Sepa Debit payment method options.
+                        contains details about the SEPA Debit payment method options.
                       properties:
                         mandate_options:
                           description: Additional fields for Mandate creation
@@ -60290,7 +60407,7 @@ paths:
                       type: object
                     sepa_debit:
                       description: If this is a `sepa_debit` SetupIntent, this sub-hash
-                        contains details about the Sepa Debit payment method options.
+                        contains details about the SEPA Debit payment method options.
                       properties:
                         mandate_options:
                           description: Additional fields for Mandate creation
@@ -65116,6 +65233,7 @@ paths:
                   - unchanged
                   maxLength: 5000
                   type: string
+                  x-stripeBypassValidation: true
                 billing_thresholds:
                   anyOf:
                   - properties:
