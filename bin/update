@@ -50,6 +50,10 @@ class SystemUtils
     execute_subshell(%{git commit -vem "#{message}"})
   end
 
+  def describe_openapi_diff(codegen_dir, target_dir, current_version_number)
+    `(cd #{codegen_dir} && bin/diff_spec.js --repo #{target_dir} --old #{current_version_number})`
+  end
+
   def git_current_branch(dir)
     `cd #{dir} && git rev-parse --abbrev-ref HEAD`.strip
   end
@@ -58,7 +62,7 @@ class SystemUtils
     `fetch-password --quiet --raw bindings/gh-tokens/#{username}`.strip
   end
 
-  def create_github_release(repo_org, repo_name, github_token, version)
+  def create_github_release(repo_org, repo_name, github_token, version, release_body)
     uri = URI.parse("https://api.github.com/repos/#{repo_org}/#{repo_name}/releases")
 
     http = Net::HTTP.new(uri.host, uri.port)
@@ -66,9 +70,10 @@ class SystemUtils
     request = Net::HTTP::Post.new(uri.request_uri)
     request['Accept'] = "application/vnd.github.v3+json"
     request['Authorization'] = "token #{github_token}"
-    request.body = {'tag_name': "#{version}"}.to_json
+    request.body = {'tag_name': "#{version}", 'body': release_body}.to_json
     response = http.request(request)
-    JSON.parse(response.body)
+    body = JSON.parse(response.body)
+    body['html_url']
   end
 
   def get_latest_github_release(repo_org, repo_name, github_token)
@@ -115,20 +120,15 @@ end
 # Encapsulates our scripted update logic so that we can test it.
 class Updater
   SOURCE_DIR = File.expand_path("~/stripe/pay-server/")
+  CODEGEN_DIR = File.expand_path("#{SOURCE_DIR}/api-codegen")
   TARGET_DIR = File.expand_path("../../", __FILE__)
   REPO_NAME = "openapi"
-  REPO_ORG = "stripe"
+  REPO_ORG = "ctrudeau-stripe"
 
   def initialize(dry_run: false, out: nil, utils: nil)
     self.dry_run = dry_run
     self.out = out || $stdout
     self.utils = utils || SystemUtils.new
-  end
-
-  def publish_new_version(github_token, repo_org, repo_name) 
-    tag_name = utils.get_latest_github_release(repo_org, repo_name, github_token)
-    github_release_response = utils.create_github_release(REPO_ORG, REPO_NAME, github_token, utils.increment_version(tag_name))
-    github_release_response['html_url']
   end
 
   def run
@@ -143,15 +143,20 @@ class Updater
       return # reachable in testing
     end
 
-    unless utils.git_current_branch(SOURCE_DIR) == "master"
-      utils.abort("Source repository should be on master branch: #{SOURCE_DIR}")
+    unless utils.dir_exists?(CODEGEN_DIR)
+      utils.abort("api-codegen directory does not exist: #{CODEGEN_DIR}")
       return # reachable in testing
     end
 
-    unless utils.clean_git_repository?(TARGET_DIR)
-      utils.abort("Repository must be unmodified to continue: #{TARGET_DIR}")
-      return # reachable in testing
-    end
+    # unless utils.git_current_branch(SOURCE_DIR) == "master"
+    #   utils.abort("Source repository should be on master branch: #{SOURCE_DIR}")
+    #   return # reachable in testing
+    # end
+
+    # unless utils.clean_git_repository?(TARGET_DIR)
+    #   utils.abort("Repository must be unmodified to continue: #{TARGET_DIR}")
+    #   return # reachable in testing
+    # end
 
     out.puts "--> Pulling from origin"
     out.puts utils.git_pull_origin_master
@@ -181,7 +186,7 @@ class Updater
       out.puts "--> No fixture changes to commit"
     end
     
-    committed = false 
+    committed = true 
     out.puts "--> Commiting specification"
     out.puts utils.git_add(utils.dir_glob("#{TARGET_DIR}/openapi/spec*"))
     if utils.git_any_files_staged?
@@ -202,8 +207,13 @@ class Updater
       out.puts "--> Not publishing new version because DRY_RUN=true"
     else
       if committed
-        out.puts "--> Publishing new version to github"
-        out.puts publish_new_version(github_token, REPO_ORG, REPO_NAME)
+        current_version_number = utils.get_latest_github_release(REPO_ORG, REPO_NAME, github_token)
+        new_version_number = utils.increment_version(current_version_number)
+        release_body = utils.describe_openapi_diff(CODEGEN_DIR, TARGET_DIR, current_version_number)
+        out.puts "--> OpenAPI diff with previous version"
+        out.puts release_body
+        out.puts "--> Publishing version #{new_version_number} to github"
+        out.puts utils.create_github_release(REPO_ORG, REPO_NAME, github_token, new_version_number, release_body)
       else 
         out.puts "--> We did not commit so we did not create a release"
       end
@@ -235,6 +245,8 @@ else
       utils.expect(:get_github_token, "TOKEN",[ENV["USER"]])
       utils.expect(:dir_exists?, true,
         [Updater::SOURCE_DIR])
+      utils.expect(:dir_exists?, true,
+        [Updater::CODEGEN_DIR])
       utils.expect(:git_current_branch, "master",
         [Updater::SOURCE_DIR])
       utils.expect(:clean_git_repository?, true,
@@ -281,7 +293,9 @@ else
 
       utils.expect(:increment_version, "v5",["v4"])
 
-      utils.expect(:create_github_release, "example.com",[Updater::REPO_ORG, Updater::REPO_NAME, "TOKEN", "v5"])
+      utils.expect(:describe_openapi_diff, "New update",[Updater::CODEGEN_DIR, Updater::TARGET_DIR, "v4", "v5", ])
+
+      utils.expect(:create_github_release, "example.com",[Updater::REPO_ORG, Updater::REPO_NAME, "TOKEN", "v5", "New update"])
 
       updater.run
       utils.verify

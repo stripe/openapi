@@ -2,6 +2,9 @@
 
 This repository contains [OpenAPI specifications][openapi] for Stripe's API.
 
+[Changelog](https://github.com/stripe/openapi/releases/)
+
+
 Files can be found in the `openapi/` directory:
 
 * `spec3.{json,yaml}:` OpenAPI 3.0 spec matching the public Stripe API.
