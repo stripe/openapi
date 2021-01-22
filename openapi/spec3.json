@@ -7113,7 +7113,7 @@
         ]
       },
       "invoice": {
-        "description": "Invoices are statements of amounts owed by a customer, and are either\ngenerated one-off, or generated periodically from a subscription.\n\nThey contain [invoice items](https://stripe.com/docs/api#invoiceitems), and proration adjustments\nthat may be caused by subscription upgrades/downgrades (if necessary).\n\nIf your invoice is configured to be billed through automatic charges,\nStripe automatically finalizes your invoice and attempts payment. Note\nthat finalizing the invoice,\n[when automatic](https://stripe.com/docs/billing/invoices/workflow/#auto_advance), does\nnot happen immediately as the invoice is created. Stripe waits\nuntil one hour after the last webhook was successfully sent (or the last\nwebhook timed out after failing). If you (and the platforms you may have\nconnected to) have no webhooks configured, Stripe waits one hour after\ncreation to finalize the invoice.\n\nIf your invoice is configured to be billed by sending an email, then based on your\n[email settings](https://dashboard.stripe.com/account/billing/automatic'),\nStripe will email the invoice to your customer and await payment. These\nemails can contain a link to a hosted page to pay the invoice.\n\nStripe applies any customer credit on the account before determining the\namount due for the invoice (i.e., the amount that will be actually\ncharged). If the amount due for the invoice is less than Stripe's [minimum allowed charge\nper currency](/docs/currencies#minimum-and-maximum-charge-amounts), the\ninvoice is automatically marked paid, and we add the amount due to the\ncustomer's running account balance which is applied to the next invoice.\n\nMore details on the customer's account balance are\n[here](https://stripe.com/docs/api/customers/object#customer_object-account_balance).\n\nRelated guide: [Send Invoices to Customers](https://stripe.com/docs/billing/invoices/sending).",
+        "description": "Invoices are statements of amounts owed by a customer, and are either\ngenerated one-off, or generated periodically from a subscription.\n\nThey contain [invoice items](https://stripe.com/docs/api#invoiceitems), and proration adjustments\nthat may be caused by subscription upgrades/downgrades (if necessary).\n\nIf your invoice is configured to be billed through automatic charges,\nStripe automatically finalizes your invoice and attempts payment. Note\nthat finalizing the invoice,\n[when automatic](https://stripe.com/docs/billing/invoices/workflow/#auto_advance), does\nnot happen immediately as the invoice is created. Stripe waits\nuntil one hour after the last webhook was successfully sent (or the last\nwebhook timed out after failing). If you (and the platforms you may have\nconnected to) have no webhooks configured, Stripe waits one hour after\ncreation to finalize the invoice.\n\nIf your invoice is configured to be billed by sending an email, then based on your\n[email settings](https://dashboard.stripe.com/account/billing/automatic'),\nStripe will email the invoice to your customer and await payment. These\nemails can contain a link to a hosted page to pay the invoice.\n\nStripe applies any customer credit on the account before determining the\namount due for the invoice (i.e., the amount that will be actually\ncharged). If the amount due for the invoice is less than Stripe's [minimum allowed charge\nper currency](/docs/currencies#minimum-and-maximum-charge-amounts), the\ninvoice is automatically marked paid, and we add the amount due to the\ncustomer's credit balance which is applied to the next invoice.\n\nMore details on the customer's credit balance are\n[here](https://stripe.com/docs/billing/customer/balance).\n\nRelated guide: [Send Invoices to Customers](https://stripe.com/docs/billing/invoices/sending).",
         "properties": {
           "account_country": {
             "description": "The country of the business associated with this invoice, most often the business creating the invoice.",
@@ -8945,9 +8945,15 @@
           }
         },
         "required": [
+          "amount",
+          "created",
+          "currency",
+          "evidence",
           "id",
           "livemode",
+          "metadata",
           "object",
+          "status",
           "transaction"
         ],
         "title": "IssuingDispute",
@@ -9239,7 +9245,6 @@
             "description": "The nature of the transaction.",
             "enum": [
               "capture",
-              "dispute",
               "refund"
             ],
             "type": "string",
@@ -10148,7 +10153,8 @@
               "usps"
             ],
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-stripeBypassValidation": true
           },
           "eta": {
             "description": "A unix timestamp representing a best estimate of when the card will be delivered.",
@@ -12455,7 +12461,7 @@
         "description": "A line item.",
         "properties": {
           "amount_subtotal": {
-            "description": "Total before any discounts or taxes is applied.",
+            "description": "Total before any discounts or taxes are applied.",
             "nullable": true,
             "type": "integer"
           },
@@ -12493,7 +12499,13 @@
             "type": "string"
           },
           "price": {
-            "$ref": "#/components/schemas/price"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/price"
+              }
+            ],
+            "description": "The price used to generate the line item.",
+            "nullable": true
           },
           "quantity": {
             "description": "The quantity of products being purchased.",
@@ -12512,8 +12524,7 @@
           "currency",
           "description",
           "id",
-          "object",
-          "price"
+          "object"
         ],
         "title": "LineItem",
         "type": "object",
@@ -40724,9 +40735,6 @@
                           "type": "array"
                         }
                       },
-                      "required": [
-                        "quantity"
-                      ],
                       "title": "line_item_params",
                       "type": "object"
                     },
