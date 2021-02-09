@@ -420,6 +420,14 @@ components:
     account_capabilities:
       description: ''
       properties:
+        afterpay_clearpay_payments:
+          description: The status of the Afterpay Clearpay capability of the account,
+            or whether the account can directly process Afterpay Clearpay charges.
+          enum:
+          - active
+          - inactive
+          - pending
+          type: string
         au_becs_debit_payments:
           description: The status of the BECS Direct Debit (AU) payments capability
             of the account, or whether the account can directly process BECS Direct
@@ -7424,6 +7432,8 @@ components:
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/payment_intent"
+        payment_settings:
+          "$ref": "#/components/schemas/invoices_payment_settings"
         period_end:
           description: End of the usage period during which invoice items were added
             to this invoice.
@@ -7551,6 +7561,7 @@ components:
       - last_finalization_error
       - lines
       - payment_intent
+      - payment_settings
       - status_transitions
       - subscription
       - threshold_reason
@@ -7737,6 +7748,8 @@ components:
         - invoice_tax_amount
         - invoice_threshold_reason
         - invoice_transfer_data
+        - invoices_payment_method_options
+        - invoices_payment_settings
         - invoices_resource_invoice_tax_id
         - invoices_status_transitions
     invoice_item_threshold_reason:
@@ -7781,6 +7794,51 @@ components:
       x-stripeResource:
         class_name: InvoiceLineItemPeriod
         in_package: ''
+    invoice_payment_method_options_bancontact:
+      description: ''
+      properties:
+        preferred_language:
+          description: Preferred language of the Bancontact authorization page that
+            the customer is redirected to.
+          enum:
+          - de
+          - en
+          - fr
+          - nl
+          type: string
+      required:
+      - preferred_language
+      title: invoice_payment_method_options_bancontact
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Bancontact
+        in_class: invoices_payment_method_options
+    invoice_payment_method_options_card:
+      description: ''
+      properties:
+        request_three_d_secure:
+          description: We strongly recommend that you rely on our SCA Engine to automatically
+            prompt your customers for authentication based on risk level and [other
+            requirements](https://stripe.com/docs/strong-customer-authentication).
+            However, if you wish to request 3D Secure based on logic from your own
+            fraud engine, provide this option. Read our guide on [manually requesting
+            3D Secure](https://stripe.com/docs/payments/3d-secure#manual-three-ds)
+            for more information on how this configuration interacts with Radar and
+            our SCA Engine.
+          enum:
+          - any
+          - automatic
+          nullable: true
+          type: string
+      required:
+      - request_three_d_secure
+      title: invoice_payment_method_options_card
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Card
+        in_class: invoices_payment_method_options
     invoice_setting_custom_field:
       description: ''
       properties:
@@ -8176,6 +8234,78 @@ components:
         class_name: InvoiceItem
         has_collection_class: true
         in_package: ''
+    invoices_payment_method_options:
+      description: ''
+      properties:
+        bancontact:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_payment_method_options_bancontact"
+          description: If paying by `bancontact`, this sub-hash contains details about
+            the Bancontact payment method options to pass to the invoice’s PaymentIntent.
+          nullable: true
+        card:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_payment_method_options_card"
+          description: If paying by `card`, this sub-hash contains details about the
+            Card payment method options to pass to the invoice’s PaymentIntent.
+          nullable: true
+      required:
+      - bancontact
+      - card
+      title: InvoicesPaymentMethodOptions
+      type: object
+      x-expandableFields:
+      - bancontact
+      - card
+      x-stripeResource:
+        class_name: PaymentMethodOptions
+        in_class: invoice
+        inner_classes:
+        - invoice_payment_method_options_bancontact
+        - invoice_payment_method_options_card
+    invoices_payment_settings:
+      description: ''
+      properties:
+        payment_method_options:
+          anyOf:
+          - "$ref": "#/components/schemas/invoices_payment_method_options"
+          description: Payment-method-specific configuration to provide to the invoice’s
+            PaymentIntent.
+          nullable: true
+        payment_method_types:
+          description: The list of payment method types (e.g. card) to provide to
+            the invoice’s PaymentIntent. If not set, Stripe attempts to automatically
+            determine the types to use by looking at the invoice’s default payment
+            method, the subscription’s default payment method, the customer’s default
+            payment method, and your [invoice template settings](https://dashboard.stripe.com/settings/billing/invoice).
+          items:
+            enum:
+            - ach_credit_transfer
+            - ach_debit
+            - au_becs_debit
+            - bacs_debit
+            - bancontact
+            - card
+            - fpx
+            - giropay
+            - ideal
+            - sepa_credit_transfer
+            - sepa_debit
+            - sofort
+            type: string
+            x-stripeBypassValidation: true
+          nullable: true
+          type: array
+      required:
+      - payment_method_options
+      - payment_method_types
+      title: InvoicesPaymentSettings
+      type: object
+      x-expandableFields:
+      - payment_method_options
+      x-stripeResource:
+        class_name: PaymentSettings
+        in_class: invoice
     invoices_resource_invoice_tax_id:
       description: ''
       properties:
@@ -27735,6 +27865,18 @@ paths:
                     them. An account may have some of its requested capabilities be
                     active and some be inactive.
                   properties:
+                    afterpay_clearpay_payments:
+                      description: The afterpay_clearpay_payments capability.
+                      properties:
+                        requested:
+                          description: Passing true requests the capability for the
+                            account, if it is not already requested. A requested capability
+                            may not immediately become active. Any requirements to
+                            activate the capability are returned in the `requirements`
+                            arrays.
+                          type: boolean
+                      title: capability_param
+                      type: object
                     au_becs_debit_payments:
                       description: The au_becs_debit_payments capability.
                       properties:
@@ -29041,6 +29183,18 @@ paths:
                     them. An account may have some of its requested capabilities be
                     active and some be inactive.
                   properties:
+                    afterpay_clearpay_payments:
+                      description: The afterpay_clearpay_payments capability.
+                      properties:
+                        requested:
+                          description: Passing true requests the capability for the
+                            account, if it is not already requested. A requested capability
+                            may not immediately become active. Any requirements to
+                            activate the capability are returned in the `requirements`
+                            arrays.
+                          type: boolean
+                      title: capability_param
+                      type: object
                     au_becs_debit_payments:
                       description: The au_becs_debit_payments capability.
                       properties:
@@ -41340,6 +41494,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              payment_settings:
+                explode: true
+                style: deepObject
               transfer_data:
                 explode: true
                 style: deepObject
@@ -41497,6 +41654,95 @@ paths:
                     additional information about the object in a structured format.
                     Individual keys can be unset by posting an empty value to them.
                     All keys can be unset by posting an empty value to `metadata`.
+                payment_settings:
+                  description: Configuration settings for the PaymentIntent that is
+                    generated when the invoice is finalized.
+                  properties:
+                    payment_method_options:
+                      description: Payment-method-specific configuration to provide
+                        to the invoice’s PaymentIntent.
+                      properties:
+                        bancontact:
+                          anyOf:
+                          - properties:
+                              preferred_language:
+                                description: Preferred language of the Bancontact
+                                  authorization page that the customer is redirected
+                                  to.
+                                enum:
+                                - de
+                                - en
+                                - fr
+                                - nl
+                                type: string
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: If paying by `bancontact`, this sub-hash contains
+                            details about the Bancontact payment method options to
+                            pass to the invoice’s PaymentIntent.
+                        card:
+                          anyOf:
+                          - properties:
+                              request_three_d_secure:
+                                description: We strongly recommend that you rely on
+                                  our SCA Engine to automatically prompt your customers
+                                  for authentication based on risk level and [other
+                                  requirements](https://stripe.com/docs/strong-customer-authentication).
+                                  However, if you wish to request 3D Secure based
+                                  on logic from your own fraud engine, provide this
+                                  option. Read our guide on [manually requesting 3D
+                                  Secure](https://stripe.com/docs/payments/3d-secure#manual-three-ds)
+                                  for more information on how this configuration interacts
+                                  with Radar and our SCA Engine.
+                                enum:
+                                - any
+                                - automatic
+                                type: string
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: If paying by `card`, this sub-hash contains
+                            details about the Card payment method options to pass
+                            to the invoice’s PaymentIntent.
+                      title: payment_method_options
+                      type: object
+                    payment_method_types:
+                      anyOf:
+                      - items:
+                          enum:
+                          - ach_credit_transfer
+                          - ach_debit
+                          - au_becs_debit
+                          - bacs_debit
+                          - bancontact
+                          - card
+                          - fpx
+                          - giropay
+                          - ideal
+                          - sepa_credit_transfer
+                          - sepa_debit
+                          - sofort
+                          type: string
+                          x-stripeBypassValidation: true
+                        type: array
+                        x-stripeParam:
+                          containee_entity_name: payment_method_type
+                      - enum:
+                        - ''
+                        type: string
+                      description: The list of payment method types (e.g. card) to
+                        provide to the invoice’s PaymentIntent. If not set, Stripe
+                        attempts to automatically determine the types to use by looking
+                        at the invoice’s default payment method, the subscription’s
+                        default payment method, the customer’s default payment method,
+                        and your [invoice template settings](https://dashboard.stripe.com/settings/billing/invoice).
+                  title: payment_settings
+                  type: object
                 statement_descriptor:
                   description: Extra information about a charge for the customer's
                     credit card statement. It must contain at least one letter. If
@@ -42799,6 +43045,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              payment_settings:
+                explode: true
+                style: deepObject
               transfer_data:
                 explode: true
                 style: deepObject
@@ -42957,6 +43206,95 @@ paths:
                     additional information about the object in a structured format.
                     Individual keys can be unset by posting an empty value to them.
                     All keys can be unset by posting an empty value to `metadata`.
+                payment_settings:
+                  description: Configuration settings for the PaymentIntent that is
+                    generated when the invoice is finalized.
+                  properties:
+                    payment_method_options:
+                      description: Payment-method-specific configuration to provide
+                        to the invoice’s PaymentIntent.
+                      properties:
+                        bancontact:
+                          anyOf:
+                          - properties:
+                              preferred_language:
+                                description: Preferred language of the Bancontact
+                                  authorization page that the customer is redirected
+                                  to.
+                                enum:
+                                - de
+                                - en
+                                - fr
+                                - nl
+                                type: string
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: If paying by `bancontact`, this sub-hash contains
+                            details about the Bancontact payment method options to
+                            pass to the invoice’s PaymentIntent.
+                        card:
+                          anyOf:
+                          - properties:
+                              request_three_d_secure:
+                                description: We strongly recommend that you rely on
+                                  our SCA Engine to automatically prompt your customers
+                                  for authentication based on risk level and [other
+                                  requirements](https://stripe.com/docs/strong-customer-authentication).
+                                  However, if you wish to request 3D Secure based
+                                  on logic from your own fraud engine, provide this
+                                  option. Read our guide on [manually requesting 3D
+                                  Secure](https://stripe.com/docs/payments/3d-secure#manual-three-ds)
+                                  for more information on how this configuration interacts
+                                  with Radar and our SCA Engine.
+                                enum:
+                                - any
+                                - automatic
+                                type: string
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: If paying by `card`, this sub-hash contains
+                            details about the Card payment method options to pass
+                            to the invoice’s PaymentIntent.
+                      title: payment_method_options
+                      type: object
+                    payment_method_types:
+                      anyOf:
+                      - items:
+                          enum:
+                          - ach_credit_transfer
+                          - ach_debit
+                          - au_becs_debit
+                          - bacs_debit
+                          - bancontact
+                          - card
+                          - fpx
+                          - giropay
+                          - ideal
+                          - sepa_credit_transfer
+                          - sepa_debit
+                          - sofort
+                          type: string
+                          x-stripeBypassValidation: true
+                        type: array
+                        x-stripeParam:
+                          containee_entity_name: payment_method_type
+                      - enum:
+                        - ''
+                        type: string
+                      description: The list of payment method types (e.g. card) to
+                        provide to the invoice’s PaymentIntent. If not set, Stripe
+                        attempts to automatically determine the types to use by looking
+                        at the invoice’s default payment method, the subscription’s
+                        default payment method, the customer’s default payment method,
+                        and your [invoice template settings](https://dashboard.stripe.com/settings/billing/invoice).
+                  title: payment_settings
+                  type: object
                 statement_descriptor:
                   description: Extra information about a charge for the customer's
                     credit card statement. It must contain at least one letter. If
@@ -52206,7 +52544,7 @@ paths:
                     All keys can be unset by posting an empty value to `metadata`.
                 payment_method:
                   description: ID of the payment method (a PaymentMethod, Card, or
-                    [compatible Source](https://stripe.com/docs/payments/payment-methods#compatibility)
+                    [compatible Source](https://stripe.com/docs/payments/payment-methods/transitioning#compatibility)
                     object) to attach to this PaymentIntent.
                   maxLength: 5000
                   type: string
@@ -53225,7 +53563,7 @@ paths:
                     where you collect card details and [charge them later](https://stripe.com/docs/payments/cards/charging-saved-cards).
                 payment_method:
                   description: ID of the payment method (a PaymentMethod, Card, or
-                    [compatible Source](https://stripe.com/docs/payments/payment-methods#compatibility)
+                    [compatible Source](https://stripe.com/docs/payments/payment-methods/transitioning#compatibility)
                     object) to attach to this PaymentIntent.
                   maxLength: 5000
                   type: string
