@@ -4076,7 +4076,7 @@ components:
             - "$ref": "#/components/schemas/payment_intent"
         payment_method_options:
           anyOf:
-          - "$ref": "#/components/schemas/checkout_session_payment_method_options_for_payment"
+          - "$ref": "#/components/schemas/checkout_session_payment_method_options"
           description: Payment-method-specific configuration for the PaymentIntent
             or SetupIntent of this CheckoutSession.
           nullable: true
@@ -4238,22 +4238,91 @@ components:
         has_collection_class: true
         in_package: Checkout
         inner_classes:
-        - checkout_session_payment_method_options_for_payment
+        - checkout_session_payment_method_options
         - payment_pages_checkout_session_customer_details
         - payment_pages_checkout_session_total_details
         - payment_pages_payment_page_resources_shipping_address_collection
-    checkout_session_payment_method_options_for_payment:
+    checkout_acss_debit_mandate_options:
+      description: ''
+      properties:
+        custom_mandate_url:
+          description: A URL for custom mandate text
+          maxLength: 5000
+          type: string
+        interval_description:
+          description: Description of the interval. Only required if 'payment_schedule'
+            parmeter is 'interval' or 'combined'.
+          maxLength: 5000
+          nullable: true
+          type: string
+        payment_schedule:
+          description: Payment schedule for the mandate.
+          enum:
+          - combined
+          - interval
+          - sporadic
+          nullable: true
+          type: string
+        transaction_type:
+          description: Transaction type of the mandate.
+          enum:
+          - business
+          - personal
+          nullable: true
+          type: string
+      required:
+      - interval_description
+      - payment_schedule
+      - transaction_type
+      title: CheckoutAcssDebitMandateOptions
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: MandateOptions
+        in_class: checkout_acss_debit_payment_method_options
+    checkout_acss_debit_payment_method_options:
+      description: ''
+      properties:
+        currency:
+          description: Currency supported by the bank account. Returned when the Session
+            is in `setup` mode.
+          enum:
+          - cad
+          - usd
+          type: string
+        mandate_options:
+          "$ref": "#/components/schemas/checkout_acss_debit_mandate_options"
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          - microdeposits
+          type: string
+          x-stripeBypassValidation: true
+      title: CheckoutAcssDebitPaymentMethodOptions
+      type: object
+      x-expandableFields:
+      - mandate_options
+      x-stripeResource:
+        class_name: CheckoutAcssDebitPaymentMethodOptions
+        in_class: checkout_session_payment_method_options
+        inner_classes:
+        - checkout_acss_debit_mandate_options
+    checkout_session_payment_method_options:
       description: ''
       properties:
         acss_debit:
-          "$ref": "#/components/schemas/payment_intent_payment_method_options_acss_debit"
-      title: CheckoutSessionPaymentMethodOptionsForPayment
+          "$ref": "#/components/schemas/checkout_acss_debit_payment_method_options"
+      title: CheckoutSessionPaymentMethodOptions
       type: object
       x-expandableFields:
       - acss_debit
       x-stripeResource:
         class_name: PaymentMethodOptions
         in_class: checkout.session
+        inner_classes:
+        - checkout_acss_debit_payment_method_options
     connect_collection_transfer:
       description: ''
       properties:
@@ -15110,6 +15179,8 @@ components:
           "$ref": "#/components/schemas/payment_method_options_bancontact"
         card:
           "$ref": "#/components/schemas/payment_intent_payment_method_options_card"
+        card_present:
+          "$ref": "#/components/schemas/payment_method_options_card_present"
         oxxo:
           "$ref": "#/components/schemas/payment_method_options_oxxo"
         p24:
@@ -15125,6 +15196,7 @@ components:
       - alipay
       - bancontact
       - card
+      - card_present
       - oxxo
       - p24
       - sepa_debit
@@ -15139,6 +15211,7 @@ components:
         - payment_intent_payment_method_options_sepa_debit
         - payment_method_options_alipay
         - payment_method_options_bancontact
+        - payment_method_options_card_present
         - payment_method_options_oxxo
         - payment_method_options_p24
         - payment_method_options_sofort
@@ -15176,9 +15249,9 @@ components:
             For more information, see the [installments integration guide](https://stripe.com/docs/payments/installments).
           nullable: true
         network:
-          description: Selected network to process this PaymentIntent on. Depends
-            on the available networks of the card attached to the PaymentIntent. Can
-            be only set confirm-time.
+          description: Selected network to process this payment intent on. Depends
+            on the available networks of the card attached to the payment intent.
+            Can be only set confirm-time.
           enum:
           - amex
           - cartes_bancaires
@@ -17953,6 +18026,15 @@ components:
         in_class: payment_intent_payment_method_options_card
         inner_classes:
         - payment_method_details_card_installments_plan
+    payment_method_options_card_present:
+      description: ''
+      properties: {}
+      title: payment_method_options_card_present
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: CardPresent
+        in_class: payment_intent_payment_method_options
     payment_method_options_oxxo:
       description: ''
       properties:
@@ -53957,6 +54039,17 @@ paths:
                         type: string
                       description: Configuration for any card payments attempted on
                         this PaymentIntent.
+                    card_present:
+                      anyOf:
+                      - properties: {}
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `card_present` PaymentMethod, this
+                        sub-hash contains details about the Card Present payment method
+                        options.
                     oxxo:
                       anyOf:
                       - properties:
@@ -54916,6 +55009,17 @@ paths:
                         type: string
                       description: Configuration for any card payments attempted on
                         this PaymentIntent.
+                    card_present:
+                      anyOf:
+                      - properties: {}
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `card_present` PaymentMethod, this
+                        sub-hash contains details about the Card Present payment method
+                        options.
                     oxxo:
                       anyOf:
                       - properties:
@@ -56019,6 +56123,17 @@ paths:
                         type: string
                       description: Configuration for any card payments attempted on
                         this PaymentIntent.
+                    card_present:
+                      anyOf:
+                      - properties: {}
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `card_present` PaymentMethod, this
+                        sub-hash contains details about the Card Present payment method
+                        options.
                     oxxo:
                       anyOf:
                       - properties:
@@ -65499,15 +65614,17 @@ paths:
                   description: |-
                     Use `allow_incomplete` to transition the subscription to `status=past_due` if a payment is required but cannot be paid. This allows you to manage scenarios where additional user actions are needed to pay a subscription's invoice. For example, SCA regulation may require 3DS authentication to complete payment. See the [SCA Migration Guide](https://stripe.com/docs/billing/migration/strong-customer-authentication) for Billing to learn more. This is the default behavior.
 
+                    Use `default_incomplete` to transition the subscription to `status=past_due` when payment is required and await explicit confirmation of the invoice's payment intent. This allows simpler management of scenarios where additional user actions are needed to pay a subscription’s invoice. Such as failed payments, [SCA regulation](https://stripe.com/docs/billing/migration/strong-customer-authentication), or collecting a mandate for a bank debit payment method.
+
                     Use `pending_if_incomplete` to update the subscription using [pending updates](https://stripe.com/docs/billing/subscriptions/pending-updates). When you use `pending_if_incomplete` you can only pass the parameters [supported by pending updates](https://stripe.com/docs/billing/pending-updates-reference#supported-attributes).
 
                     Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's invoice cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further user action is needed, this parameter does not update the subscription and returns an error instead. This was the default behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
                   enum:
                   - allow_incomplete
+                  - default_incomplete
                   - error_if_incomplete
                   - pending_if_incomplete
                   type: string
-                  x-stripeBypassValidation: true
                 plan:
                   description: The identifier of the plan to add to the subscription.
                   maxLength: 5000
@@ -65808,15 +65925,17 @@ paths:
                   description: |-
                     Use `allow_incomplete` to transition the subscription to `status=past_due` if a payment is required but cannot be paid. This allows you to manage scenarios where additional user actions are needed to pay a subscription's invoice. For example, SCA regulation may require 3DS authentication to complete payment. See the [SCA Migration Guide](https://stripe.com/docs/billing/migration/strong-customer-authentication) for Billing to learn more. This is the default behavior.
 
+                    Use `default_incomplete` to transition the subscription to `status=past_due` when payment is required and await explicit confirmation of the invoice's payment intent. This allows simpler management of scenarios where additional user actions are needed to pay a subscription’s invoice. Such as failed payments, [SCA regulation](https://stripe.com/docs/billing/migration/strong-customer-authentication), or collecting a mandate for a bank debit payment method.
+
                     Use `pending_if_incomplete` to update the subscription using [pending updates](https://stripe.com/docs/billing/subscriptions/pending-updates). When you use `pending_if_incomplete` you can only pass the parameters [supported by pending updates](https://stripe.com/docs/billing/pending-updates-reference#supported-attributes).
 
                     Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's invoice cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further user action is needed, this parameter does not update the subscription and returns an error instead. This was the default behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
                   enum:
                   - allow_incomplete
+                  - default_incomplete
                   - error_if_incomplete
                   - pending_if_incomplete
                   type: string
-                  x-stripeBypassValidation: true
                 plan:
                   description: The identifier of the new plan for this subscription
                     item.
@@ -67697,7 +67816,9 @@ paths:
           of `canceled` will return all canceled subscriptions, including those belonging
           to deleted customers. Pass `ended` to find subscriptions that are canceled
           and subscriptions that are expired due to [incomplete payment](https://stripe.com/docs/billing/subscriptions/overview#subscription-statuses).
-          Passing in a value of `all` will return subscriptions of all statuses.
+          Passing in a value of `all` will return subscriptions of all statuses. If
+          no value is supplied, all subscriptions that have not been canceled are
+          returned.
         in: query
         name: status
         required: false
@@ -68120,15 +68241,17 @@ paths:
                   description: |-
                     Use `allow_incomplete` to create subscriptions with `status=incomplete` if the first invoice cannot be paid. Creating subscriptions with this status allows you to manage scenarios where additional user actions are needed to pay a subscription's invoice. For example, SCA regulation may require 3DS authentication to complete payment. See the [SCA Migration Guide](https://stripe.com/docs/billing/migration/strong-customer-authentication) for Billing to learn more. This is the default behavior.
 
+                    Use `default_incomplete` to create Subscriptions with `status=incomplete` when the first invoice requires payment, otherwise start as active. Subscriptions transition to `status=active` when successfully confirming the payment intent on the first invoice. This allows simpler management of scenarios where additional user actions are needed to pay a subscription’s invoice. Such as failed payments, [SCA regulation](https://stripe.com/docs/billing/migration/strong-customer-authentication), or collecting a mandate for a bank debit payment method. If the payment intent is not confirmed within 23 hours subscriptions transition to `status=expired_incomplete`, which is a terminal state.
+
                     Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's first invoice cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further user action is needed, this parameter does not create a subscription and returns an error instead. This was the default behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
 
                     `pending_if_incomplete` is only used with updates and cannot be passed when creating a subscription.
                   enum:
                   - allow_incomplete
+                  - default_incomplete
                   - error_if_incomplete
                   - pending_if_incomplete
                   type: string
-                  x-stripeBypassValidation: true
                 pending_invoice_item_interval:
                   anyOf:
                   - properties:
@@ -68745,15 +68868,17 @@ paths:
                   description: |-
                     Use `allow_incomplete` to transition the subscription to `status=past_due` if a payment is required but cannot be paid. This allows you to manage scenarios where additional user actions are needed to pay a subscription's invoice. For example, SCA regulation may require 3DS authentication to complete payment. See the [SCA Migration Guide](https://stripe.com/docs/billing/migration/strong-customer-authentication) for Billing to learn more. This is the default behavior.
 
+                    Use `default_incomplete` to transition the subscription to `status=past_due` when payment is required and await explicit confirmation of the invoice's payment intent. This allows simpler management of scenarios where additional user actions are needed to pay a subscription’s invoice. Such as failed payments, [SCA regulation](https://stripe.com/docs/billing/migration/strong-customer-authentication), or collecting a mandate for a bank debit payment method.
+
                     Use `pending_if_incomplete` to update the subscription using [pending updates](https://stripe.com/docs/billing/subscriptions/pending-updates). When you use `pending_if_incomplete` you can only pass the parameters [supported by pending updates](https://stripe.com/docs/billing/pending-updates-reference#supported-attributes).
 
                     Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's invoice cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further user action is needed, this parameter does not update the subscription and returns an error instead. This was the default behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
                   enum:
                   - allow_incomplete
+                  - default_incomplete
                   - error_if_incomplete
                   - pending_if_incomplete
                   type: string
-                  x-stripeBypassValidation: true
                 pending_invoice_item_interval:
                   anyOf:
                   - properties:
