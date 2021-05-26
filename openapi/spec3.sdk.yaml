@@ -8512,7 +8512,9 @@ components:
       description: ''
       properties:
         allowed_types:
-          description: Restrict the list of allowed document type to these types.
+          description: Array of strings of allowed identity document types. If the
+            provided identity document isn’t one of the allowed types, the verification
+            check will fail with a document_type_not_allowed error code.
           items:
             enum:
             - driving_license
@@ -8521,15 +8523,16 @@ components:
             type: string
           type: array
         require_id_number:
-          description: Require that the user provide an id number which will be verified.
+          description: Collect an ID number and perform an [ID number check](https://stripe.com/docs/identity/verification-checks?type=id-number)
+            with the document’s extracted name and date of birth.
           type: boolean
         require_live_capture:
-          description: Require that the user capture documents live with their webcam
-            or phone camera.
+          description: Disable image uploads, identity document images have to be
+            captured using the device’s camera.
           type: boolean
         require_matching_selfie:
-          description: Require that the user provide a selfie to compare against the
-            document photo.
+          description: Capture a face image and perform a [selfie check](https://stripe.com/docs/identity/verification-checks?type=selfie)
+            comparing a photo ID and a picture of your user’s face. [Learn more](https://stripe.com/docs/identity/selfie).
           type: boolean
       title: GelatoReportDocumentOptions
       type: object
@@ -8619,7 +8622,9 @@ components:
       description: ''
       properties:
         allowed_types:
-          description: Restrict the list of allowed document type to these types.
+          description: Array of strings of allowed identity document types. If the
+            provided identity document isn’t one of the allowed types, the verification
+            check will fail with a document_type_not_allowed error code.
           items:
             enum:
             - driving_license
@@ -8628,15 +8633,16 @@ components:
             type: string
           type: array
         require_id_number:
-          description: Require that the user provide an id number which will be verified.
+          description: Collect an ID number and perform an [ID number check](https://stripe.com/docs/identity/verification-checks?type=id-number)
+            with the document’s extracted name and date of birth.
           type: boolean
         require_live_capture:
-          description: Require that the user capture documents live with their webcam
-            or phone camera.
+          description: Disable image uploads, identity document images have to be
+            captured using the device’s camera.
           type: boolean
         require_matching_selfie:
-          description: Require that the user provide a selfie to compare against the
-            document photo.
+          description: Capture a face image and perform a [selfie check](https://stripe.com/docs/identity/verification-checks?type=selfie)
+            comparing a photo ID and a picture of your user’s face. [Learn more](https://stripe.com/docs/identity/selfie).
           type: boolean
       title: GelatoSessionDocumentOptions
       type: object
@@ -8678,8 +8684,8 @@ components:
           nullable: true
           type: string
         reason:
-          description: A human-readable message giving the reason for the failure.
-            These messages can be shown to your users.
+          description: A message that explains the reason for verification or user-session
+            failure.
           maxLength: 5000
           nullable: true
           type: string
@@ -8734,25 +8740,25 @@ components:
         address:
           anyOf:
           - "$ref": "#/components/schemas/address"
-          description: Verified address of the user.
+          description: The user's verified address.
           nullable: true
         dob:
           anyOf:
           - "$ref": "#/components/schemas/gelato_data_verified_outputs_date"
-          description: Verified date of birth of the user.
+          description: The user’s verified date of birth.
           nullable: true
         first_name:
-          description: Verified first name of the user.
+          description: The user's verified first name.
           maxLength: 5000
           nullable: true
           type: string
         id_number:
-          description: Verified national id number of the user.
+          description: The user's verified id number.
           maxLength: 5000
           nullable: true
           type: string
         id_number_type:
-          description: Country / type of verified national id number.
+          description: The user's veriifed id number type.
           enum:
           - br_cpf
           - sg_nric
@@ -8760,7 +8766,7 @@ components:
           nullable: true
           type: string
         last_name:
-          description: Verified last name of the user.
+          description: The user's verified last name.
           maxLength: 5000
           nullable: true
           type: string
@@ -8888,14 +8894,27 @@ components:
         - gelato_verification_report_options
     identity.verification_session:
       description: |-
-        A VerificationSession is the starting-point for a verification flow that will collect and verify data on your users.
-        Each VerificationSesssion has a URL which provides access to Stripe’s hosted identity verification UI. When you direct your users
-        to the link, Stripe will collect personal information and verify it. You can retrieve the VerificationSession later to
-        see the status of the checks performed and access any data collected from your users.
+        A VerificationSession guides you through the process of collecting and verifying the identities
+        of your users. It contains details about the type of verification, such as what [verification
+        check](/docs/identity/verification-checks) to perform. Only create one VerificationSession for
+        each verification in your system.
+
+        A VerificationSession transitions through [multiple
+        statuses](/docs/identity/how-sessions-work) throughout its lifetime as it progresses through
+        the verification flow. The VerificationSession contains the user’s verified data after
+        verification checks are complete.
+
+        Related guide: [The Verification Sessions API](docs/identity/verification-sessions)
       properties:
         client_secret:
-          description: This string value can be passed to stripe.js to embed a verification
-            flow directly into your app.
+          description: The short-lived client secret used by Stripe.js to [show a
+            verification modal](https://stripe.com/docs/js/identity/modal) inside
+            your app. This client secret expires after 24 hours and can only be used
+            once. Don’t store it, log it, embed it in a URL, or expose it to anyone
+            other than the user. Make sure that you have TLS enabled on any page that
+            includes the client secret. Refer to our docs on [passing the client secret
+            to the frontend](https://stripe.com/docs/identity/verification-sessions#client-secret)
+            to learn more.
           maxLength: 5000
           nullable: true
           type: string
@@ -8911,16 +8930,16 @@ components:
         last_error:
           anyOf:
           - "$ref": "#/components/schemas/gelato_session_last_error"
-          description: Hash of details on the last error encountered in the verification
-            process.
+          description: If present, this property tells you the last error encountered
+            when processing the verification.
           nullable: true
         last_verification_report:
           anyOf:
           - maxLength: 5000
             type: string
           - "$ref": "#/components/schemas/identity.verification_report"
-          description: Link to the most recent completed VerificationReport for this
-            Session.
+          description: ID of the most recent VerificationReport. [Learn more about
+            accessing detailed verification results.](https://stripe.com/docs/identity/verification-checks)
           nullable: true
           x-expansionResources:
             oneOf:
@@ -8952,8 +8971,8 @@ components:
             is not redacted, this field will be null.
           nullable: true
         status:
-          description: Status of this VerificationSession. Read more about each [VerificationSession
-            status](https://stripe.com/docs/identity/how-sessions-work).
+          description: Status of this VerificationSession. [Learn more about the lifecycle
+            of sessions](https://stripe.com/docs/identity/how-sessions-work).
           enum:
           - canceled
           - processing
@@ -8961,23 +8980,27 @@ components:
           - verified
           type: string
         type:
-          description: Type of report requested.
+          description: The type of [verification check](https://stripe.com/docs/identity/verification-checks)
+            to be performed.
           enum:
           - document
           - id_number
           type: string
           x-stripeBypassValidation: true
         url:
-          description: Link to the Stripe-hosted identity verification portal that
-            you can send a user to for verification.
+          description: The short-lived URL that you use to redirect a user to Stripe
+            to submit their identity information. This URL expires after 24 hours
+            and can only be used once. Don’t store it, log it, send it in emails or
+            expose it to anyone other than the user. Refer to our docs on [verifying
+            identity documents](https://stripe.com/docs/identity/verify-identity-documents?platform=web&type=redirect)
+            to learn how to redirect users to Stripe.
           maxLength: 5000
           nullable: true
           type: string
         verified_outputs:
           anyOf:
           - "$ref": "#/components/schemas/gelato_verified_outputs"
-          description: Hash of verified data about this person that results from a
-            successful verification report.
+          description: The user’s verified data.
           nullable: true
       required:
       - client_secret
@@ -34061,6 +34084,9 @@ paths:
               dob:
                 explode: true
                 style: deepObject
+              documents:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -34196,6 +34222,60 @@ paths:
                     - ''
                     type: string
                   description: The person's date of birth.
+                documents:
+                  description: Documents that may be submitted to satisfy various
+                    informational requests.
+                  properties:
+                    company_authorization:
+                      description: One or more documents that demonstrate proof that
+                        this person is authorized to represent the company.
+                      properties:
+                        files:
+                          description: One or more document ids returned by a [file
+                            upload](https://stripe.com/docs/api#create_file) with
+                            a `purpose` value of `account_requirement`.
+                          items:
+                            maxLength: 500
+                            type: string
+                          type: array
+                          x-stripeParam:
+                            containee_entity_name: file
+                      title: documents_param
+                      type: object
+                    passport:
+                      description: One or more documents showing the person's passport
+                        page with photo and personal data.
+                      properties:
+                        files:
+                          description: One or more document ids returned by a [file
+                            upload](https://stripe.com/docs/api#create_file) with
+                            a `purpose` value of `account_requirement`.
+                          items:
+                            maxLength: 500
+                            type: string
+                          type: array
+                          x-stripeParam:
+                            containee_entity_name: file
+                      title: documents_param
+                      type: object
+                    visa:
+                      description: One or more documents showing the person's visa
+                        required for living in the country where they are residing.
+                      properties:
+                        files:
+                          description: One or more document ids returned by a [file
+                            upload](https://stripe.com/docs/api#create_file) with
+                            a `purpose` value of `account_requirement`.
+                          items:
+                            maxLength: 500
+                            type: string
+                          type: array
+                          x-stripeParam:
+                            containee_entity_name: file
+                      title: documents_param
+                      type: object
+                  title: person_documents_specs
+                  type: object
                 email:
                   description: The person's email address.
                   type: string
@@ -34522,6 +34602,9 @@ paths:
               dob:
                 explode: true
                 style: deepObject
+              documents:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -34657,6 +34740,60 @@ paths:
                     - ''
                     type: string
                   description: The person's date of birth.
+                documents:
+                  description: Documents that may be submitted to satisfy various
+                    informational requests.
+                  properties:
+                    company_authorization:
+                      description: One or more documents that demonstrate proof that
+                        this person is authorized to represent the company.
+                      properties:
+                        files:
+                          description: One or more document ids returned by a [file
+                            upload](https://stripe.com/docs/api#create_file) with
+                            a `purpose` value of `account_requirement`.
+                          items:
+                            maxLength: 500
+                            type: string
+                          type: array
+                          x-stripeParam:
+                            containee_entity_name: file
+                      title: documents_param
+                      type: object
+                    passport:
+                      description: One or more documents showing the person's passport
+                        page with photo and personal data.
+                      properties:
+                        files:
+                          description: One or more document ids returned by a [file
+                            upload](https://stripe.com/docs/api#create_file) with
+                            a `purpose` value of `account_requirement`.
+                          items:
+                            maxLength: 500
+                            type: string
+                          type: array
+                          x-stripeParam:
+                            containee_entity_name: file
+                      title: documents_param
+                      type: object
+                    visa:
+                      description: One or more documents showing the person's visa
+                        required for living in the country where they are residing.
+                      properties:
+                        files:
+                          description: One or more document ids returned by a [file
+                            upload](https://stripe.com/docs/api#create_file) with
+                            a `purpose` value of `account_requirement`.
+                          items:
+                            maxLength: 500
+                            type: string
+                          type: array
+                          x-stripeParam:
+                            containee_entity_name: file
+                      title: documents_param
+                      type: object
+                  title: person_documents_specs
+                  type: object
                 email:
                   description: The person's email address.
                   type: string
@@ -44633,9 +44770,7 @@ paths:
           description: Error response.
   "/v1/identity/verification_sessions":
     get:
-      description: "<p>List all verification sessions. Can optionally provide a status
-        to return only VerificationSessions with that status. Can optionally specify
-        a query filter on created timestamp.</p>"
+      description: "<p>Returns a list of VerificationSessions</p>"
       operationId: GetIdentityVerificationSessions
       parameters:
       - explode: true
@@ -44704,7 +44839,8 @@ paths:
           maxLength: 5000
           type: string
         style: form
-      - description: Only return VerificationSessions with this status.
+      - description: Only return VerificationSessions with this status. [Learn more
+          about the lifecycle of sessions](https://stripe.com/docs/identity/how-sessions-work).
         in: query
         name: status
         required: false
@@ -44767,8 +44903,14 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: "<p>Create a new VerificationSession to begin the verification
-        process.</p>"
+      description: |-
+        <p>Creates a VerificationSession object.</p>
+
+        <p>After the VerificationSession is created, display a verification modal using the session <code>client_secret</code> or send your users to the session’s <code>url</code>.</p>
+
+        <p>If your API key is in test mode, verification checks won’t actually process, though everything else will occur as if in live mode.</p>
+
+        <p>Related guide: <a href="/docs/identity/verify-identity-documents">Verify your users’ identity documents</a>.</p>
       operationId: PostIdentityVerificationSessions
       requestBody:
         content:
@@ -44802,15 +44944,16 @@ paths:
                     All keys can be unset by posting an empty value to `metadata`.
                   type: object
                 options:
-                  description: An optional hash of configuration options for each
-                    verification rule that is requested
+                  description: A set of options for the session’s verification checks.
                   properties:
                     document:
                       anyOf:
                       - properties:
                           allowed_types:
-                            description: Restrict the list of allowed document type
-                              to these types.
+                            description: Array of strings of allowed identity document
+                              types. If the provided identity document isn’t one of
+                              the allowed types, the verification check will fail
+                              with a document_type_not_allowed error code.
                             items:
                               enum:
                               - driving_license
@@ -44821,33 +44964,35 @@ paths:
                             x-stripeParam:
                               containee_entity_name: allowed_type
                           require_id_number:
-                            description: Require that the user provide an id number
-                              which will be verified.
+                            description: Collect an ID number and perform an [ID number
+                              check](https://stripe.com/docs/identity/verification-checks?type=id-number)
+                              with the document’s extracted name and date of birth.
                             type: boolean
                           require_live_capture:
-                            description: Require that the user capture documents live
-                              with their webcam or phone camera.
+                            description: Disable image uploads, identity document
+                              images have to be captured using the device’s camera.
                             type: boolean
                           require_matching_selfie:
-                            description: Require that the user provide a selfie to
-                              compare against the document photo.
+                            description: Capture a face image and perform a [selfie
+                              check](https://stripe.com/docs/identity/verification-checks?type=selfie)
+                              comparing a photo ID and a picture of your user’s face.
+                              [Learn more](https://stripe.com/docs/identity/selfie).
                             type: boolean
                         title: document_options
                         type: object
                       - enum:
                         - ''
                         type: string
-                      description: Verification configuration options for the `document`
-                        record_type.
+                      description: Options that apply to the [document check](https://stripe.com/docs/identity/verification-checks?type=document).
                   title: session_options_param
                   type: object
                 return_url:
-                  description: The URL the user will be redirected to after Stripe
-                    collects the required identity information.
+                  description: The URL that the user will be redirected to upon completing
+                    the verification flow.
                   type: string
                 type:
-                  description: The primary type of verification being performed with
-                    this Session.
+                  description: The type of [verification check](https://stripe.com/docs/identity/verification-checks)
+                    to be performed.
                   enum:
                   - document
                   - id_number
@@ -44873,10 +45018,10 @@ paths:
   "/v1/identity/verification_sessions/{session}":
     get:
       description: |-
-        <p>Retrieves an existing VerificationSession. When the session <code>status</code> is <code>requires_input</code>, this method guarantees
-        that the redirect <code>url</code> is fresh: if your user has previously visited this session, a new <code>url</code> will be returned.
-        Before redirecting your user to Stripe, ensure that you have just Created or Retrieved the VerificationSession;
-        never cache or store the <code>url</code>.</p>
+        <p>Retrieves the details of a VerificationSession that was previously created.</p>
+
+        <p>When the session status is <code>requires_input</code>, you can use this method to retrieve a valid
+        <code>client_secret</code> or <code>url</code> to allow re-submission.</p>
       operationId: GetIdentityVerificationSessionsSession
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -44920,7 +45065,11 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     post:
-      description: "<p>Update properties on a VerificationSession</p>"
+      description: |-
+        <p>Updates a VerificationSession object.</p>
+
+        <p>When the session status is <code>requires_input</code>, you can use this method to update the
+        verification check and options.</p>
       operationId: PostIdentityVerificationSessionsSession
       parameters:
       - in: path
@@ -44962,14 +45111,16 @@ paths:
                     All keys can be unset by posting an empty value to `metadata`.
                   type: object
                 options:
-                  description: New configuration options.
+                  description: A set of options for the session’s verification checks.
                   properties:
                     document:
                       anyOf:
                       - properties:
                           allowed_types:
-                            description: Restrict the list of allowed document type
-                              to these types.
+                            description: Array of strings of allowed identity document
+                              types. If the provided identity document isn’t one of
+                              the allowed types, the verification check will fail
+                              with a document_type_not_allowed error code.
                             items:
                               enum:
                               - driving_license
@@ -44980,28 +45131,31 @@ paths:
                             x-stripeParam:
                               containee_entity_name: allowed_type
                           require_id_number:
-                            description: Require that the user provide an id number
-                              which will be verified.
+                            description: Collect an ID number and perform an [ID number
+                              check](https://stripe.com/docs/identity/verification-checks?type=id-number)
+                              with the document’s extracted name and date of birth.
                             type: boolean
                           require_live_capture:
-                            description: Require that the user capture documents live
-                              with their webcam or phone camera.
+                            description: Disable image uploads, identity document
+                              images have to be captured using the device’s camera.
                             type: boolean
                           require_matching_selfie:
-                            description: Require that the user provide a selfie to
-                              compare against the document photo.
+                            description: Capture a face image and perform a [selfie
+                              check](https://stripe.com/docs/identity/verification-checks?type=selfie)
+                              comparing a photo ID and a picture of your user’s face.
+                              [Learn more](https://stripe.com/docs/identity/selfie).
                             type: boolean
                         title: document_options
                         type: object
                       - enum:
                         - ''
                         type: string
-                      description: Verification configuration options for the `document`
-                        record_type.
+                      description: Options that apply to the [document check](https://stripe.com/docs/identity/verification-checks?type=document).
                   title: session_options_param
                   type: object
                 type:
-                  description: New verification type.
+                  description: The type of [verification check](https://stripe.com/docs/identity/verification-checks)
+                    to be performed.
                   enum:
                   - document
                   - id_number
@@ -45025,10 +45179,9 @@ paths:
   "/v1/identity/verification_sessions/{session}/cancel":
     post:
       description: |-
-        <p>Mark a VerificationSession as canceled.</p>
+        <p>A VerificationSession object can be canceled when it is in <code>requires_input</code> <a href="/docs/identity/how-sessions-work">status</a>.</p>
 
-        <p>If the VerificationSession is in the <code>processing</code> state, you must wait until it
-        finishes before cancelling it.</p>
+        <p>Once canceled, future submission attempts are disabled. This cannot be undone. <a href="/docs/identity/verification-sessions#cancel">Learn more</a>.</p>
       operationId: PostIdentityVerificationSessionsSessionCancel
       parameters:
       - in: path
@@ -45072,24 +45225,25 @@ paths:
   "/v1/identity/verification_sessions/{session}/redact":
     post:
       description: |-
-        <p>Redact a VerificationSession to delete all collected information from Stripe.
-        This will redact the VerificationSession and all objects related to it, including
-        VerificationReports, Events, Files, request logs, etc. This redaction process may
-        take up to four days. When the redaction process is in progress, the
-        VerificationSession’s <code>redaction.status</code> field will be set to <code>processing</code>; when
-        the process is finished, it will change to <code>redacted</code>.</p>
+        <p>Redact a VerificationSession to remove all collected information from Stripe. This will redact
+        the VerificationSession and all objects related to it, including VerificationReports, Events,
+        request logs, etc.</p>
 
-        <p>Redaction is irreversible. Redacted objects are still accessible in the Stripe API,
-        but all the fields that contain personal data will be replaced by the string
-        <code>[redacted]</code> or a similar placeholder. The <code>metadata</code> field will also be erased.
-        Redacted objects cannot be updated or used for any purpose.</p>
+        <p>A VerificationSession object can be redacted when it is in <code>requires_input</code> or <code>verified</code>
+        <a href="/docs/identity/how-sessions-work">status</a>. Redacting a VerificationSession in <code>requires_action</code>
+        state will automatically cancel it.</p>
 
-        <p>If the VerificationSession is in the <code>processing</code> state, you must wait until it
-        finishes before redacting it. Redacting a VerificationSession in <code>requires_action</code>
-        state will automatically <a href="/docs/api/verification_sessions/cancel">cancel</a> it.</p>
+        <p>The redaction process may take up to four days. When the redaction process is in progress, the
+        VerificationSession’s <code>redaction.status</code> field will be set to <code>processing</code>; when the process is
+        finished, it will change to <code>redacted</code> and an <code>identity.verification_session.redacted</code> event
+        will be emitted.</p>
 
-        <p>An <a href="/docs/api/events/types#event_types-identity.verification_session.redacted"><code>identity.verification_session.redacted</code></a>
-        webhook will be sent when a VerificationSession is redacted.</p>
+        <p>Redaction is irreversible. Redacted objects are still accessible in the Stripe API, but all the
+        fields that contain personal data will be replaced by the string <code>[redacted]</code> or a similar
+        placeholder. The <code>metadata</code> field will also be erased. Redacted objects cannot be updated or
+        used for any purpose.</p>
+
+        <p><a href="/docs/identity/verification-sessions#redact">Learn more</a>.</p>
       operationId: PostIdentityVerificationSessionsSessionRedact
       parameters:
       - in: path
@@ -73688,6 +73842,61 @@ paths:
                         - ''
                         type: string
                       description: The person's date of birth.
+                    documents:
+                      description: Documents that may be submitted to satisfy various
+                        informational requests.
+                      properties:
+                        company_authorization:
+                          description: One or more documents that demonstrate proof
+                            that this person is authorized to represent the company.
+                          properties:
+                            files:
+                              description: One or more document ids returned by a
+                                [file upload](https://stripe.com/docs/api#create_file)
+                                with a `purpose` value of `account_requirement`.
+                              items:
+                                maxLength: 500
+                                type: string
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: file
+                          title: documents_param
+                          type: object
+                        passport:
+                          description: One or more documents showing the person's
+                            passport page with photo and personal data.
+                          properties:
+                            files:
+                              description: One or more document ids returned by a
+                                [file upload](https://stripe.com/docs/api#create_file)
+                                with a `purpose` value of `account_requirement`.
+                              items:
+                                maxLength: 500
+                                type: string
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: file
+                          title: documents_param
+                          type: object
+                        visa:
+                          description: One or more documents showing the person's
+                            visa required for living in the country where they are
+                            residing.
+                          properties:
+                            files:
+                              description: One or more document ids returned by a
+                                [file upload](https://stripe.com/docs/api#create_file)
+                                with a `purpose` value of `account_requirement`.
+                              items:
+                                maxLength: 500
+                                type: string
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: file
+                          title: documents_param
+                          type: object
+                      title: person_documents_specs
+                      type: object
                     email:
                       description: The person's email address.
                       type: string
@@ -75289,6 +75498,12 @@ paths:
                     - customer.tax_id.updated
                     - customer.updated
                     - file.created
+                    - identity.verification_session.canceled
+                    - identity.verification_session.created
+                    - identity.verification_session.processing
+                    - identity.verification_session.redacted
+                    - identity.verification_session.requires_input
+                    - identity.verification_session.verified
                     - invoice.created
                     - invoice.deleted
                     - invoice.finalization_failed
@@ -75622,6 +75837,12 @@ paths:
                     - customer.tax_id.updated
                     - customer.updated
                     - file.created
+                    - identity.verification_session.canceled
+                    - identity.verification_session.created
+                    - identity.verification_session.processing
+                    - identity.verification_session.redacted
+                    - identity.verification_session.requires_input
+                    - identity.verification_session.verified
                     - invoice.created
                     - invoice.deleted
                     - invoice.finalization_failed
