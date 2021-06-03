@@ -1636,6 +1636,30 @@ components:
         in_package: ''
         polymorphic_groups:
         - balance_transaction_source
+    automatic_tax:
+      description: ''
+      properties:
+        enabled:
+          description: Whether Stripe automatically computes tax on this invoice.
+          type: boolean
+        status:
+          description: The status of the most recent automated tax calculation for
+            this invoice.
+          enum:
+          - complete
+          - failed
+          - requires_location_inputs
+          nullable: true
+          type: string
+      required:
+      - enabled
+      - status
+      title: AutomaticTax
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: AutomaticTax
+        in_class: invoice
     balance:
       description: |-
         This is an object representing your Stripe balance. You can retrieve it to see
@@ -3940,6 +3964,8 @@ components:
           description: Total of all items after discounts and taxes are applied.
           nullable: true
           type: integer
+        automatic_tax:
+          "$ref": "#/components/schemas/payment_pages_checkout_session_automatic_tax"
         billing_address_collection:
           description: Describes whether Checkout should collect the customer's billing
             address.
@@ -4229,6 +4255,7 @@ components:
       title: Session
       type: object
       x-expandableFields:
+      - automatic_tax
       - customer
       - customer_details
       - line_items
@@ -4283,6 +4310,7 @@ components:
         in_package: Checkout
         inner_classes:
         - checkout_session_payment_method_options
+        - payment_pages_checkout_session_automatic_tax
         - payment_pages_checkout_session_customer_details
         - payment_pages_checkout_session_total_details
         - payment_pages_payment_page_resources_shipping_address_collection
@@ -5417,6 +5445,8 @@ components:
           type: object
           x-expandableFields:
           - data
+        tax:
+          "$ref": "#/components/schemas/customer_tax"
         tax_exempt:
           description: Describes the customer's tax exemption status. One of `none`,
             `exempt`, or `reverse`. When set to `reverse`, invoice and receipt PDFs
@@ -5477,6 +5507,7 @@ components:
       - shipping
       - sources
       - subscriptions
+      - tax
       - tax_ids
       x-resourceId: customer
       x-stripeOperations:
@@ -5577,6 +5608,7 @@ components:
         has_collection_class: true
         in_package: ''
         inner_classes:
+        - customer_tax
         - invoice_setting_customer_setting
     customer_acceptance:
       description: ''
@@ -5811,6 +5843,73 @@ components:
         class_name: CustomerBalanceTransaction
         has_collection_class: true
         in_package: ''
+    customer_tax:
+      description: ''
+      properties:
+        automatic_tax:
+          description: Surfaces if automatic tax computation is possible given the
+            current customer location information.
+          enum:
+          - failed
+          - not_collecting
+          - supported
+          - unrecognized_location
+          type: string
+        ip_address:
+          description: A recent IP address of the customer used for tax reporting
+            and tax location inference.
+          maxLength: 5000
+          nullable: true
+          type: string
+        location:
+          anyOf:
+          - "$ref": "#/components/schemas/customer_tax_location"
+          description: The customer's location as identified by Stripe Tax.
+          nullable: true
+      required:
+      - automatic_tax
+      - ip_address
+      - location
+      title: CustomerTax
+      type: object
+      x-expandableFields:
+      - location
+      x-stripeResource:
+        class_name: Tax
+        in_class: customer
+        inner_classes:
+        - customer_tax_location
+    customer_tax_location:
+      description: ''
+      properties:
+        country:
+          description: The customer's country as identified by Stripe Tax.
+          maxLength: 5000
+          type: string
+        source:
+          description: The data source used to infer the customer's location.
+          enum:
+          - billing_address
+          - ip_address
+          - payment_method
+          - shipping_destination
+          type: string
+        state:
+          description: The customer's state, county, province, or region as identified
+            by Stripe Tax.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+      - country
+      - source
+      - state
+      title: CustomerTaxLocation
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Location
+        in_class: customer_tax
     deleted_account:
       description: ''
       properties:
@@ -9250,6 +9349,8 @@ components:
             of the invoice. When `false`, the invoice's state will not automatically
             advance without an explicit action.
           type: boolean
+        automatic_tax:
+          "$ref": "#/components/schemas/automatic_tax"
         billing_reason:
           description: 'Indicates the reason why the invoice was created. `subscription_cycle`
             indicates an invoice created by a subscription advancing into a new period.
@@ -9741,6 +9842,7 @@ components:
       type: object
       x-expandableFields:
       - account_tax_ids
+      - automatic_tax
       - charge
       - custom_fields
       - customer
@@ -9938,6 +10040,7 @@ components:
         has_collection_class: true
         in_package: ''
         inner_classes:
+        - automatic_tax
         - invoice_item_threshold_reason
         - invoice_setting_custom_field
         - invoice_tax_amount
@@ -20122,6 +20225,30 @@ components:
       x-stripeResource:
         class_name: Sofort
         in_class: payment_method
+    payment_pages_checkout_session_automatic_tax:
+      description: ''
+      properties:
+        enabled:
+          description: Indicates whether automatic tax is enabled for the session
+          type: boolean
+        status:
+          description: The status of the most recent automated tax calculation for
+            this session.
+          enum:
+          - complete
+          - failed
+          - requires_location_inputs
+          nullable: true
+          type: string
+      required:
+      - enabled
+      - status
+      title: PaymentPagesCheckoutSessionAutomaticTax
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: AutomaticTax
+        in_class: checkout.session
     payment_pages_checkout_session_customer_details:
       description: ''
       properties:
@@ -21907,6 +22034,16 @@ components:
           description: The recurring components of a price such as `interval` and
             `usage_type`.
           nullable: true
+        tax_behavior:
+          description: Specifies whether the price is considered inclusive of taxes
+            or exclusive of taxes. One of `inclusive`, `exclusive`, or `unspecified`.
+            Once specified as either `inclusive` or `exclusive`, it cannot be changed.
+          enum:
+          - exclusive
+          - inclusive
+          - unspecified
+          nullable: true
+          type: string
         tiers:
           description: Each element represents a pricing tier. This parameter requires
             `billing_scheme` to be set to `tiered`. See also the documentation for
@@ -22170,6 +22307,16 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        tax_code:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/tax_code"
+          description: A [tax code](https://stripe.com/docs/tax/tax-codes) ID.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/tax_code"
         type:
           description: The type of the product. The product is either of type `good`,
             which is eligible for use with Orders and SKUs, or `service`, which is
@@ -22218,6 +22365,7 @@ components:
       type: object
       x-expandableFields:
       - package_dimensions
+      - tax_code
       x-resourceId: product
       x-stripeOperations:
       - method_name: create
@@ -24011,6 +24159,21 @@ components:
         in_package: Sigma
         inner_classes:
         - sigma_scheduled_query_run_error
+    schedules_phase_automatic_tax:
+      description: ''
+      properties:
+        enabled:
+          description: Whether Stripe automatically computes tax on invoices created
+            during this phase.
+          type: boolean
+      required:
+      - enabled
+      title: SchedulesPhaseAutomaticTax
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: AutomaticTax
+        in_class: subscription_schedule_phase_configuration
     sepa_debit_generated_from:
       description: ''
       properties:
@@ -26959,6 +27122,8 @@ components:
             subtotal that will be transferred to the application owner's Stripe account.
           nullable: true
           type: number
+        automatic_tax:
+          "$ref": "#/components/schemas/subscription_automatic_tax"
         billing_cycle_anchor:
           description: Determines the date of the first full invoice, and, for plans
             with `month` or `year` intervals, the day of the month for subsequent
@@ -27283,6 +27448,7 @@ components:
       title: Subscription
       type: object
       x-expandableFields:
+      - automatic_tax
       - billing_thresholds
       - customer
       - default_payment_method
@@ -27388,11 +27554,26 @@ components:
         has_collection_class: true
         in_package: ''
         inner_classes:
+        - subscription_automatic_tax
         - subscription_billing_thresholds
         - subscription_pending_invoice_item_interval
         - subscription_transfer_data
         - subscriptions_resource_pause_collection
         - subscriptions_resource_pending_update
+    subscription_automatic_tax:
+      description: ''
+      properties:
+        enabled:
+          description: Whether Stripe automatically computes tax on this subscription.
+          type: boolean
+      required:
+      - enabled
+      title: SubscriptionAutomaticTax
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: AutomaticTax
+        in_class: subscription
     subscription_billing_thresholds:
       description: ''
       properties:
@@ -27985,6 +28166,8 @@ components:
             during this phase of the schedule.
           nullable: true
           type: number
+        automatic_tax:
+          "$ref": "#/components/schemas/schedules_phase_automatic_tax"
         billing_cycle_anchor:
           description: Possible values are `phase_start` or `automatic`. If `phase_start`
             then billing cycle anchor of the subscription is set to the start of the
@@ -28104,6 +28287,7 @@ components:
       type: object
       x-expandableFields:
       - add_invoice_items
+      - automatic_tax
       - billing_thresholds
       - coupon
       - default_payment_method
@@ -28114,6 +28298,8 @@ components:
       x-stripeResource:
         class_name: Phase
         in_class: subscription_schedule
+        inner_classes:
+        - schedules_phase_automatic_tax
     subscription_schedules_resource_default_settings:
       description: ''
       properties:
@@ -28124,6 +28310,8 @@ components:
             during this phase of the schedule.
           nullable: true
           type: number
+        automatic_tax:
+          "$ref": "#/components/schemas/subscription_schedules_resource_default_settings_automatic_tax"
         billing_cycle_anchor:
           description: Possible values are `phase_start` or `automatic`. If `phase_start`
             then billing cycle anchor of the subscription is set to the start of the
@@ -28186,6 +28374,7 @@ components:
       title: SubscriptionSchedulesResourceDefaultSettings
       type: object
       x-expandableFields:
+      - automatic_tax
       - billing_thresholds
       - default_payment_method
       - invoice_settings
@@ -28193,6 +28382,23 @@ components:
       x-stripeResource:
         class_name: DefaultSettings
         in_class: subscription_schedule
+        inner_classes:
+        - subscription_schedules_resource_default_settings_automatic_tax
+    subscription_schedules_resource_default_settings_automatic_tax:
+      description: ''
+      properties:
+        enabled:
+          description: Whether Stripe automatically computes tax on invoices created
+            during this phase.
+          type: boolean
+      required:
+      - enabled
+      title: SubscriptionSchedulesResourceDefaultSettingsAutomaticTax
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: AutomaticTax
+        in_class: subscription_schedules_resource_default_settings
     subscription_transfer_data:
       description: ''
       properties:
@@ -28302,6 +28508,69 @@ components:
       x-stripeResource:
         class_name: PendingUpdate
         in_class: subscription
+    tax_code:
+      description: "[Tax codes](https://stripe.com/docs/tax/tax-codes) classify goods
+        and services for tax purposes."
+      properties:
+        description:
+          description: A detailed description of which types of products the tax code
+            represents.
+          maxLength: 5000
+          type: string
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        name:
+          description: A short name for the tax code.
+          maxLength: 5000
+          type: string
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - tax_code
+          type: string
+      required:
+      - description
+      - id
+      - name
+      - object
+      title: TaxProductResourceTaxCode
+      type: object
+      x-expandableFields: []
+      x-resourceId: tax_code
+      x-stripeOperations:
+      - method_name: list
+        method_on: class
+        method_type: list
+        operation: get
+        path: "/v1/tax_codes"
+      - method_name: list
+        method_on: service
+        method_type: list
+        operation: get
+        path: "/v1/tax_codes"
+      - method_name: retrieve
+        method_on: class
+        method_type: retrieve
+        operation: get
+        path: "/v1/tax_codes/{id}"
+        path_resource_variables:
+        - method_parameter: id
+          name: id
+      - method_name: retrieve
+        method_on: service
+        method_type: retrieve
+        operation: get
+        path: "/v1/tax_codes/{id}"
+        path_resource_variables:
+        - method_parameter: id
+          name: id
+      x-stripeResource:
+        class_name: TaxCode
+        has_collection_class: true
+        in_package: ''
     tax_deducted_at_source:
       description: ''
       properties:
@@ -28634,6 +28903,17 @@ components:
           description: '[ISO 3166-2 subdivision code](https://en.wikipedia.org/wiki/ISO_3166-2:US),
             without country prefix. For example, "NY" for New York, United States.'
           maxLength: 5000
+          nullable: true
+          type: string
+        tax_type:
+          description: The high-level tax type, such as `vat` or `sales_tax`.
+          enum:
+          - gst
+          - hst
+          - pst
+          - qst
+          - sales_tax
+          - vat
           nullable: true
           type: string
       required:
@@ -38209,6 +38489,12 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              automatic_tax:
+                explode: true
+                style: deepObject
+              customer_update:
+                explode: true
+                style: deepObject
               discounts:
                 explode: true
                 style: deepObject
@@ -38248,6 +38534,15 @@ paths:
                 allow_promotion_codes:
                   description: Enables user redeemable promotion codes.
                   type: boolean
+                automatic_tax:
+                  properties:
+                    enabled:
+                      description: Set to true to enable automatic taxes.
+                      type: boolean
+                  required:
+                  - enabled
+                  title: automatic_tax_params
+                  type: object
                 billing_address_collection:
                   description: Specify whether Checkout should collect the customer's
                     billing address.
@@ -38289,6 +38584,39 @@ paths:
                     on file. To access information about the customer once a session is
                     complete, use the `customer` field.
                   type: string
+                customer_update:
+                  description: Controls what fields on Customer can be updated by
+                    the Checkout Session. Can only be provided when `customer` is
+                    provided.
+                  properties:
+                    address:
+                      description: |-
+                        Describes whether Checkout saves the billing address onto `customer.address`.
+                        To always collect a full billing address, use `billing_address_collection`. Defaults to `never`.
+                      enum:
+                      - auto
+                      - never
+                      type: string
+                      x-stripeBypassValidation: true
+                    name:
+                      description: Describes whether Checkout saves the name onto
+                        `customer.name`. Defaults to `never`.
+                      enum:
+                      - auto
+                      - never
+                      type: string
+                      x-stripeBypassValidation: true
+                    shipping:
+                      description: |-
+                        Describes whether Checkout saves shipping information onto `customer.shipping`.
+                        To collect shipping information, use `shipping_address_collection`. Defaults to `never`.
+                      enum:
+                      - auto
+                      - never
+                      type: string
+                      x-stripeBypassValidation: true
+                  title: customer_update_params
+                  type: object
                 discounts:
                   description: The coupon or promotion code to apply to this Session.
                     Currently, only up to one may be specified.
@@ -38444,6 +38772,11 @@ paths:
                                   invoice line item descriptions.
                                 maxLength: 5000
                                 type: string
+                              tax_code:
+                                description: A [tax code](https://stripe.com/docs/tax/tax-codes)
+                                  ID.
+                                maxLength: 5000
+                                type: string
                             required:
                             - name
                             title: product_data
@@ -38471,6 +38804,16 @@ paths:
                             - interval
                             title: recurring_adhoc
                             type: object
+                          tax_behavior:
+                            description: Specifies whether the price is considered
+                              inclusive of taxes or exclusive of taxes. One of `inclusive`,
+                              `exclusive`, or `unspecified`. Once specified as either
+                              `inclusive` or `exclusive`, it cannot be changed.
+                            enum:
+                            - exclusive
+                            - inclusive
+                            - unspecified
+                            type: string
                           unit_amount:
                             description: A non-negative integer in %s representing
                               how much to charge. One of `unit_amount` or `unit_amount_decimal`
@@ -41077,6 +41420,9 @@ paths:
               shipping:
                 explode: true
                 style: deepObject
+              tax:
+                explode: true
+                style: deepObject
               tax_id_data:
                 explode: true
                 style: deepObject
@@ -41294,6 +41640,23 @@ paths:
                   maxLength: 5000
                   type: string
                   x-stripeBypassValidation: true
+                tax:
+                  description: Tax details about the customer.
+                  properties:
+                    ip_address:
+                      anyOf:
+                      - type: string
+                      - enum:
+                        - ''
+                        type: string
+                      description: A recent IP address of the customer used for tax
+                        reporting and tax location inference. Stripe recommends updating
+                        the IP address when a new PaymentMethod is attached or the
+                        address field on the customer is updated. We recommend against
+                        updating this field more frequently since it could result
+                        in unexpected tax location/reporting outcomes.
+                  title: tax_param
+                  type: object
                 tax_exempt:
                   description: The customer's tax exemption. One of `none`, `exempt`,
                     or `reverse`.
@@ -41494,6 +41857,9 @@ paths:
                 explode: true
                 style: deepObject
               shipping:
+                explode: true
+                style: deepObject
+              tax:
                 explode: true
                 style: deepObject
               trial_end:
@@ -41719,6 +42085,23 @@ paths:
                   maxLength: 5000
                   type: string
                   x-stripeBypassValidation: true
+                tax:
+                  description: Tax details about the customer.
+                  properties:
+                    ip_address:
+                      anyOf:
+                      - type: string
+                      - enum:
+                        - ''
+                        type: string
+                      description: A recent IP address of the customer used for tax
+                        reporting and tax location inference. Stripe recommends updating
+                        the IP address when a new PaymentMethod is attached or the
+                        address field on the customer is updated. We recommend against
+                        updating this field more frequently since it could result
+                        in unexpected tax location/reporting outcomes.
+                  title: tax_param
+                  type: object
                 tax_exempt:
                   description: The customer's tax exemption. One of `none`, `exempt`,
                     or `reverse`.
@@ -45586,6 +45969,16 @@ paths:
                         to.
                       maxLength: 5000
                       type: string
+                    tax_behavior:
+                      description: Specifies whether the price is considered inclusive
+                        of taxes or exclusive of taxes. One of `inclusive`, `exclusive`,
+                        or `unspecified`. Once specified as either `inclusive` or
+                        `exclusive`, it cannot be changed.
+                      enum:
+                      - exclusive
+                      - inclusive
+                      - unspecified
+                      type: string
                     unit_amount:
                       description: A positive integer in %s (or 0 for a free price)
                         representing how much to charge.
@@ -45864,6 +46257,16 @@ paths:
                         to.
                       maxLength: 5000
                       type: string
+                    tax_behavior:
+                      description: Specifies whether the price is considered inclusive
+                        of taxes or exclusive of taxes. One of `inclusive`, `exclusive`,
+                        or `unspecified`. Once specified as either `inclusive` or
+                        `exclusive`, it cannot be changed.
+                      enum:
+                      - exclusive
+                      - inclusive
+                      - unspecified
+                      type: string
                     unit_amount:
                       description: A positive integer in %s (or 0 for a free price)
                         representing how much to charge.
@@ -46130,6 +46533,9 @@ paths:
               account_tax_ids:
                 explode: true
                 style: deepObject
+              automatic_tax:
+                explode: true
+                style: deepObject
               custom_fields:
                 explode: true
                 style: deepObject
@@ -46179,6 +46585,17 @@ paths:
                     of the invoice. When `false`, the invoice's state will not automatically
                     advance without an explicit action.
                   type: boolean
+                automatic_tax:
+                  description: Settings for automatic tax lookup for this invoice.
+                  properties:
+                    enabled:
+                      description: Controls whether Stripe will automatically compute
+                        tax on this invoice.
+                      type: boolean
+                  required:
+                  - enabled
+                  title: automatic_tax_param
+                  type: object
                 collection_method:
                   description: Either `charge_automatically`, or `send_invoice`. When
                     charging automatically, Stripe will attempt to pay this invoice
@@ -46462,6 +46879,22 @@ paths:
         <p>You can preview the effects of updating a subscription, including a preview of what proration will take place. To ensure that the actual proration is calculated exactly the same as the previewed proration, you should pass a <code>proration_date</code> parameter when doing the actual subscription update. The value passed in should be the same as the <code>subscription_proration_date</code> returned on the upcoming invoice resource. The recommended way to get only the prorations being previewed is to consider only proration line items where <code>period[start]</code> is equal to the <code>subscription_proration_date</code> on the upcoming invoice resource.</p>
       operationId: GetInvoicesUpcoming
       parameters:
+      - description: Settings for automatic tax lookup for this invoice preview.
+        explode: true
+        in: query
+        name: automatic_tax
+        required: false
+        schema:
+          properties:
+            enabled:
+              description: Controls whether Stripe will automatically compute tax
+                on this invoice.
+              type: boolean
+          required:
+          - enabled
+          title: automatic_tax_param
+          type: object
+        style: deepObject
       - description: The code of the coupon to apply. If `subscription` or `subscription_items`
           is provided, the invoice returned will preview updating or creating a subscription
           with that coupon. Otherwise, it will preview applying that coupon to the
@@ -46484,6 +46917,190 @@ paths:
           maxLength: 5000
           type: string
         style: form
+      - description: Details about the customer you want to invoice
+        explode: true
+        in: query
+        name: customer_details
+        required: false
+        schema:
+          properties:
+            address:
+              anyOf:
+              - properties:
+                  city:
+                    description: City, district, suburb, town, or village.
+                    maxLength: 5000
+                    type: string
+                  country:
+                    description: Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).
+                    maxLength: 5000
+                    type: string
+                  line1:
+                    description: Address line 1 (e.g., street, PO Box, or company
+                      name).
+                    maxLength: 5000
+                    type: string
+                  line2:
+                    description: Address line 2 (e.g., apartment, suite, unit, or
+                      building).
+                    maxLength: 5000
+                    type: string
+                  postal_code:
+                    description: ZIP or postal code.
+                    maxLength: 5000
+                    type: string
+                  state:
+                    description: State, county, province, or region.
+                    maxLength: 5000
+                    type: string
+                title: optional_fields_address
+                type: object
+              - enum:
+                - ''
+                type: string
+              description: The customer's address.
+            shipping:
+              anyOf:
+              - properties:
+                  address:
+                    description: Customer shipping address.
+                    properties:
+                      city:
+                        description: City, district, suburb, town, or village.
+                        maxLength: 5000
+                        type: string
+                      country:
+                        description: Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).
+                        maxLength: 5000
+                        type: string
+                      line1:
+                        description: Address line 1 (e.g., street, PO Box, or company
+                          name).
+                        maxLength: 5000
+                        type: string
+                      line2:
+                        description: Address line 2 (e.g., apartment, suite, unit,
+                          or building).
+                        maxLength: 5000
+                        type: string
+                      postal_code:
+                        description: ZIP or postal code.
+                        maxLength: 5000
+                        type: string
+                      state:
+                        description: State, county, province, or region.
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - line1
+                    title: address
+                    type: object
+                  name:
+                    description: Customer name.
+                    maxLength: 5000
+                    type: string
+                  phone:
+                    description: Customer phone (including extension).
+                    maxLength: 5000
+                    type: string
+                required:
+                - address
+                - name
+                title: customer_shipping
+                type: object
+              - enum:
+                - ''
+                type: string
+              description: The customer's shipping information. Appears on invoices
+                emailed to this customer.
+            tax:
+              description: Tax details about the customer.
+              properties:
+                ip_address:
+                  anyOf:
+                  - type: string
+                  - enum:
+                    - ''
+                    type: string
+                  description: A recent IP address of the customer used for tax reporting
+                    and tax location inference. Stripe recommends updating the IP
+                    address when a new PaymentMethod is attached or the address field
+                    on the customer is updated. We recommend against updating this
+                    field more frequently since it could result in unexpected tax
+                    location/reporting outcomes.
+              title: tax_param
+              type: object
+            tax_exempt:
+              description: The customer's tax exemption. One of `none`, `exempt`,
+                or `reverse`.
+              enum:
+              - ''
+              - exempt
+              - none
+              - reverse
+              type: string
+            tax_ids:
+              description: The customer's tax IDs.
+              items:
+                properties:
+                  type:
+                    description: Type of the tax ID, one of `ae_trn`, `au_abn`, `br_cnpj`,
+                      `br_cpf`, `ca_bn`, `ca_qst`, `ch_vat`, `cl_tin`, `es_cif`, `eu_vat`,
+                      `gb_vat`, `hk_br`, `id_npwp`, `in_gst`, `jp_cn`, `jp_rn`, `kr_brn`,
+                      `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `no_vat`,
+                      `nz_gst`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`,
+                      `th_vat`, `tw_vat`, `us_ein`, or `za_vat`
+                    enum:
+                    - ae_trn
+                    - au_abn
+                    - br_cnpj
+                    - br_cpf
+                    - ca_bn
+                    - ca_qst
+                    - ch_vat
+                    - cl_tin
+                    - es_cif
+                    - eu_vat
+                    - gb_vat
+                    - hk_br
+                    - id_npwp
+                    - in_gst
+                    - jp_cn
+                    - jp_rn
+                    - kr_brn
+                    - li_uid
+                    - mx_rfc
+                    - my_frp
+                    - my_itn
+                    - my_sst
+                    - no_vat
+                    - nz_gst
+                    - ru_inn
+                    - ru_kpp
+                    - sa_vat
+                    - sg_gst
+                    - sg_uen
+                    - th_vat
+                    - tw_vat
+                    - us_ein
+                    - za_vat
+                    maxLength: 5000
+                    type: string
+                    x-stripeBypassValidation: true
+                  value:
+                    description: Value of the tax ID.
+                    type: string
+                required:
+                - type
+                - value
+                title: data_params
+                type: object
+              type: array
+              x-stripeParam:
+                containee_entity_name: tax_id
+          title: customer_details_param
+          type: object
+        style: deepObject
       - description: The coupons to redeem into discounts for the invoice preview.
           If not specified, inherits the discount from the customer or subscription.
           Pass an empty string to avoid inheriting any discounts. To preview the upcoming
@@ -46626,6 +47243,16 @@ paths:
                     description: The ID of the product that this price will belong
                       to.
                     maxLength: 5000
+                    type: string
+                  tax_behavior:
+                    description: Specifies whether the price is considered inclusive
+                      of taxes or exclusive of taxes. One of `inclusive`, `exclusive`,
+                      or `unspecified`. Once specified as either `inclusive` or `exclusive`,
+                      it cannot be changed.
+                    enum:
+                    - exclusive
+                    - inclusive
+                    - unspecified
                     type: string
                   unit_amount:
                     description: A positive integer in %s (or 0 for a free price)
@@ -46863,6 +47490,16 @@ paths:
                     - interval
                     title: recurring_adhoc
                     type: object
+                  tax_behavior:
+                    description: Specifies whether the price is considered inclusive
+                      of taxes or exclusive of taxes. One of `inclusive`, `exclusive`,
+                      or `unspecified`. Once specified as either `inclusive` or `exclusive`,
+                      it cannot be changed.
+                    enum:
+                    - exclusive
+                    - inclusive
+                    - unspecified
+                    type: string
                   unit_amount:
                     description: A positive integer in %s (or 0 for a free price)
                       representing how much to charge.
@@ -46997,6 +47634,22 @@ paths:
         list of line items.</p>"
       operationId: GetInvoicesUpcomingLines
       parameters:
+      - description: Settings for automatic tax lookup for this invoice preview.
+        explode: true
+        in: query
+        name: automatic_tax
+        required: false
+        schema:
+          properties:
+            enabled:
+              description: Controls whether Stripe will automatically compute tax
+                on this invoice.
+              type: boolean
+          required:
+          - enabled
+          title: automatic_tax_param
+          type: object
+        style: deepObject
       - description: The code of the coupon to apply. If `subscription` or `subscription_items`
           is provided, the invoice returned will preview updating or creating a subscription
           with that coupon. Otherwise, it will preview applying that coupon to the
@@ -47019,6 +47672,190 @@ paths:
           maxLength: 5000
           type: string
         style: form
+      - description: Details about the customer you want to invoice
+        explode: true
+        in: query
+        name: customer_details
+        required: false
+        schema:
+          properties:
+            address:
+              anyOf:
+              - properties:
+                  city:
+                    description: City, district, suburb, town, or village.
+                    maxLength: 5000
+                    type: string
+                  country:
+                    description: Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).
+                    maxLength: 5000
+                    type: string
+                  line1:
+                    description: Address line 1 (e.g., street, PO Box, or company
+                      name).
+                    maxLength: 5000
+                    type: string
+                  line2:
+                    description: Address line 2 (e.g., apartment, suite, unit, or
+                      building).
+                    maxLength: 5000
+                    type: string
+                  postal_code:
+                    description: ZIP or postal code.
+                    maxLength: 5000
+                    type: string
+                  state:
+                    description: State, county, province, or region.
+                    maxLength: 5000
+                    type: string
+                title: optional_fields_address
+                type: object
+              - enum:
+                - ''
+                type: string
+              description: The customer's address.
+            shipping:
+              anyOf:
+              - properties:
+                  address:
+                    description: Customer shipping address.
+                    properties:
+                      city:
+                        description: City, district, suburb, town, or village.
+                        maxLength: 5000
+                        type: string
+                      country:
+                        description: Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).
+                        maxLength: 5000
+                        type: string
+                      line1:
+                        description: Address line 1 (e.g., street, PO Box, or company
+                          name).
+                        maxLength: 5000
+                        type: string
+                      line2:
+                        description: Address line 2 (e.g., apartment, suite, unit,
+                          or building).
+                        maxLength: 5000
+                        type: string
+                      postal_code:
+                        description: ZIP or postal code.
+                        maxLength: 5000
+                        type: string
+                      state:
+                        description: State, county, province, or region.
+                        maxLength: 5000
+                        type: string
+                    required:
+                    - line1
+                    title: address
+                    type: object
+                  name:
+                    description: Customer name.
+                    maxLength: 5000
+                    type: string
+                  phone:
+                    description: Customer phone (including extension).
+                    maxLength: 5000
+                    type: string
+                required:
+                - address
+                - name
+                title: customer_shipping
+                type: object
+              - enum:
+                - ''
+                type: string
+              description: The customer's shipping information. Appears on invoices
+                emailed to this customer.
+            tax:
+              description: Tax details about the customer.
+              properties:
+                ip_address:
+                  anyOf:
+                  - type: string
+                  - enum:
+                    - ''
+                    type: string
+                  description: A recent IP address of the customer used for tax reporting
+                    and tax location inference. Stripe recommends updating the IP
+                    address when a new PaymentMethod is attached or the address field
+                    on the customer is updated. We recommend against updating this
+                    field more frequently since it could result in unexpected tax
+                    location/reporting outcomes.
+              title: tax_param
+              type: object
+            tax_exempt:
+              description: The customer's tax exemption. One of `none`, `exempt`,
+                or `reverse`.
+              enum:
+              - ''
+              - exempt
+              - none
+              - reverse
+              type: string
+            tax_ids:
+              description: The customer's tax IDs.
+              items:
+                properties:
+                  type:
+                    description: Type of the tax ID, one of `ae_trn`, `au_abn`, `br_cnpj`,
+                      `br_cpf`, `ca_bn`, `ca_qst`, `ch_vat`, `cl_tin`, `es_cif`, `eu_vat`,
+                      `gb_vat`, `hk_br`, `id_npwp`, `in_gst`, `jp_cn`, `jp_rn`, `kr_brn`,
+                      `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `no_vat`,
+                      `nz_gst`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`,
+                      `th_vat`, `tw_vat`, `us_ein`, or `za_vat`
+                    enum:
+                    - ae_trn
+                    - au_abn
+                    - br_cnpj
+                    - br_cpf
+                    - ca_bn
+                    - ca_qst
+                    - ch_vat
+                    - cl_tin
+                    - es_cif
+                    - eu_vat
+                    - gb_vat
+                    - hk_br
+                    - id_npwp
+                    - in_gst
+                    - jp_cn
+                    - jp_rn
+                    - kr_brn
+                    - li_uid
+                    - mx_rfc
+                    - my_frp
+                    - my_itn
+                    - my_sst
+                    - no_vat
+                    - nz_gst
+                    - ru_inn
+                    - ru_kpp
+                    - sa_vat
+                    - sg_gst
+                    - sg_uen
+                    - th_vat
+                    - tw_vat
+                    - us_ein
+                    - za_vat
+                    maxLength: 5000
+                    type: string
+                    x-stripeBypassValidation: true
+                  value:
+                    description: Value of the tax ID.
+                    type: string
+                required:
+                - type
+                - value
+                title: data_params
+                type: object
+              type: array
+              x-stripeParam:
+                containee_entity_name: tax_id
+          title: customer_details_param
+          type: object
+        style: deepObject
       - description: The coupons to redeem into discounts for the invoice preview.
           If not specified, inherits the discount from the customer or subscription.
           Pass an empty string to avoid inheriting any discounts. To preview the upcoming
@@ -47173,6 +48010,16 @@ paths:
                     description: The ID of the product that this price will belong
                       to.
                     maxLength: 5000
+                    type: string
+                  tax_behavior:
+                    description: Specifies whether the price is considered inclusive
+                      of taxes or exclusive of taxes. One of `inclusive`, `exclusive`,
+                      or `unspecified`. Once specified as either `inclusive` or `exclusive`,
+                      it cannot be changed.
+                    enum:
+                    - exclusive
+                    - inclusive
+                    - unspecified
                     type: string
                   unit_amount:
                     description: A positive integer in %s (or 0 for a free price)
@@ -47430,6 +48277,16 @@ paths:
                     - interval
                     title: recurring_adhoc
                     type: object
+                  tax_behavior:
+                    description: Specifies whether the price is considered inclusive
+                      of taxes or exclusive of taxes. One of `inclusive`, `exclusive`,
+                      or `unspecified`. Once specified as either `inclusive` or `exclusive`,
+                      it cannot be changed.
+                    enum:
+                    - exclusive
+                    - inclusive
+                    - unspecified
+                    type: string
                   unit_amount:
                     description: A positive integer in %s (or 0 for a free price)
                       representing how much to charge.
@@ -47690,6 +48547,9 @@ paths:
               account_tax_ids:
                 explode: true
                 style: deepObject
+              automatic_tax:
+                explode: true
+                style: deepObject
               custom_fields:
                 explode: true
                 style: deepObject
@@ -47741,6 +48601,17 @@ paths:
                   description: Controls whether Stripe will perform [automatic collection](https://stripe.com/docs/billing/invoices/workflow/#auto_advance)
                     of the invoice.
                   type: boolean
+                automatic_tax:
+                  description: Settings for automatic tax lookup for this invoice.
+                  properties:
+                    enabled:
+                      description: Controls whether Stripe will automatically compute
+                        tax on this invoice.
+                      type: boolean
+                  required:
+                  - enabled
+                  title: automatic_tax_param
+                  type: object
                 collection_method:
                   description: Either `charge_automatically` or `send_invoice`. This
                     field can be updated only on `draft` invoices.
@@ -60948,6 +61819,11 @@ paths:
                           This may be up to 22 characters. The statement description may not include `<`, `>`, `\`, `"`, `'` characters, and will appear on your customer's statement in capital letters. Non-ASCII characters are automatically stripped.
                         maxLength: 22
                         type: string
+                      tax_code:
+                        description: A [tax code](https://stripe.com/docs/tax/tax-codes)
+                          ID.
+                        maxLength: 5000
+                        type: string
                       unit_label:
                         description: A label that represents units of this product
                           in Stripe and on customers’ receipts and invoices. When
@@ -61534,6 +62410,11 @@ paths:
                         This may be up to 22 characters. The statement description may not include `<`, `>`, `\`, `"`, `'` characters, and will appear on your customer's statement in capital letters. Non-ASCII characters are automatically stripped.
                       maxLength: 22
                       type: string
+                    tax_code:
+                      description: A [tax code](https://stripe.com/docs/tax/tax-codes)
+                        ID.
+                      maxLength: 5000
+                      type: string
                     unit_label:
                       description: A label that represents units of this product in
                         Stripe and on customers’ receipts and invoices. When set,
@@ -61595,6 +62476,16 @@ paths:
                   - interval
                   title: recurring
                   type: object
+                tax_behavior:
+                  description: Specifies whether the price is considered inclusive
+                    of taxes or exclusive of taxes. One of `inclusive`, `exclusive`,
+                    or `unspecified`. Once specified as either `inclusive` or `exclusive`,
+                    it cannot be changed.
+                  enum:
+                  - exclusive
+                  - inclusive
+                  - unspecified
+                  type: string
                 tiers:
                   description: Each element represents a pricing tier. This parameter
                     requires `billing_scheme` to be set to `tiered`. See also the
@@ -61818,6 +62709,16 @@ paths:
                     type: string
                   description: The recurring components of a price such as `interval`
                     and `usage_type`.
+                tax_behavior:
+                  description: Specifies whether the price is considered inclusive
+                    of taxes or exclusive of taxes. One of `inclusive`, `exclusive`,
+                    or `unspecified`. Once specified as either `inclusive` or `exclusive`,
+                    it cannot be changed.
+                  enum:
+                  - exclusive
+                  - inclusive
+                  - unspecified
+                  type: string
                 transfer_lookup_key:
                   description: If set to true, will atomically remove the lookup key
                     from the existing price, and assign it to this price.
@@ -62143,6 +63044,10 @@ paths:
                      It must contain at least one letter.
                   maxLength: 22
                   type: string
+                tax_code:
+                  description: A [tax code](https://stripe.com/docs/tax/tax-codes)
+                    ID.
+                  type: string
                 type:
                   description: The type of the product. Defaults to `service` if not
                     explicitly specified, enabling use of this product with Subscriptions
@@ -62296,6 +63201,9 @@ paths:
               package_dimensions:
                 explode: true
                 style: deepObject
+              tax_code:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -62418,6 +63326,14 @@ paths:
                      It must contain at least one letter. May only be set if `type=service`.
                   maxLength: 22
                   type: string
+                tax_code:
+                  anyOf:
+                  - type: string
+                  - enum:
+                    - ''
+                    type: string
+                  description: A [tax code](https://stripe.com/docs/tax/tax-codes)
+                    ID.
                 unit_label:
                   description: A label that represents units of this product in Stripe
                     and on customers’ receipts and invoices. When set, this will be
@@ -68603,6 +69519,16 @@ paths:
                       - interval
                       title: recurring_adhoc
                       type: object
+                    tax_behavior:
+                      description: Specifies whether the price is considered inclusive
+                        of taxes or exclusive of taxes. One of `inclusive`, `exclusive`,
+                        or `unspecified`. Once specified as either `inclusive` or
+                        `exclusive`, it cannot be changed.
+                      enum:
+                      - exclusive
+                      - inclusive
+                      - unspecified
+                      type: string
                     unit_amount:
                       description: A positive integer in %s (or 0 for a free price)
                         representing how much to charge.
@@ -68915,6 +69841,16 @@ paths:
                       - interval
                       title: recurring_adhoc
                       type: object
+                    tax_behavior:
+                      description: Specifies whether the price is considered inclusive
+                        of taxes or exclusive of taxes. One of `inclusive`, `exclusive`,
+                        or `unspecified`. Once specified as either `inclusive` or
+                        `exclusive`, it cannot be changed.
+                      enum:
+                      - exclusive
+                      - inclusive
+                      - unspecified
+                      type: string
                     unit_amount:
                       description: A positive integer in %s (or 0 for a free price)
                         representing how much to charge.
@@ -69419,6 +70355,18 @@ paths:
                         to set an application fee percentage. For more information,
                         see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                       type: number
+                    automatic_tax:
+                      description: Default settings for automatic tax computation.
+                      properties:
+                        enabled:
+                          description: Enabled automatic tax calculation which will
+                            automatically compute tax rates on all invoices generated
+                            by the subscription.
+                          type: boolean
+                      required:
+                      - enabled
+                      title: automatic_tax_config
+                      type: object
                     billing_cycle_anchor:
                       description: Can be set to `phase_start` to set the anchor to
                         the start of the phase or `automatic` to automatically change
@@ -69576,6 +70524,17 @@ paths:
                                     will belong to.
                                   maxLength: 5000
                                   type: string
+                                tax_behavior:
+                                  description: Specifies whether the price is considered
+                                    inclusive of taxes or exclusive of taxes. One
+                                    of `inclusive`, `exclusive`, or `unspecified`.
+                                    Once specified as either `inclusive` or `exclusive`,
+                                    it cannot be changed.
+                                  enum:
+                                  - exclusive
+                                  - inclusive
+                                  - unspecified
+                                  type: string
                                 unit_amount:
                                   description: A positive integer in %s (or 0 for
                                     a free price) representing how much to charge.
@@ -69625,6 +70584,18 @@ paths:
                           order to set an application fee percentage. For more information,
                           see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                         type: number
+                      automatic_tax:
+                        description: Automatic tax settings for this phase.
+                        properties:
+                          enabled:
+                            description: Enabled automatic tax calculation which will
+                              automatically compute tax rates on all invoices generated
+                              by the subscription.
+                            type: boolean
+                        required:
+                        - enabled
+                        title: automatic_tax_config
+                        type: object
                       billing_cycle_anchor:
                         description: Can be set to `phase_start` to set the anchor
                           to the start of the phase or `automatic` to automatically
@@ -69783,6 +70754,17 @@ paths:
                                   - interval
                                   title: recurring_adhoc
                                   type: object
+                                tax_behavior:
+                                  description: Specifies whether the price is considered
+                                    inclusive of taxes or exclusive of taxes. One
+                                    of `inclusive`, `exclusive`, or `unspecified`.
+                                    Once specified as either `inclusive` or `exclusive`,
+                                    it cannot be changed.
+                                  enum:
+                                  - exclusive
+                                  - inclusive
+                                  - unspecified
+                                  type: string
                                 unit_amount:
                                   description: A positive integer in %s (or 0 for
                                     a free price) representing how much to charge.
@@ -69994,6 +70976,18 @@ paths:
                         to set an application fee percentage. For more information,
                         see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                       type: number
+                    automatic_tax:
+                      description: Default settings for automatic tax computation.
+                      properties:
+                        enabled:
+                          description: Enabled automatic tax calculation which will
+                            automatically compute tax rates on all invoices generated
+                            by the subscription.
+                          type: boolean
+                      required:
+                      - enabled
+                      title: automatic_tax_config
+                      type: object
                     billing_cycle_anchor:
                       description: Can be set to `phase_start` to set the anchor to
                         the start of the phase or `automatic` to automatically change
@@ -70142,6 +71136,17 @@ paths:
                                     will belong to.
                                   maxLength: 5000
                                   type: string
+                                tax_behavior:
+                                  description: Specifies whether the price is considered
+                                    inclusive of taxes or exclusive of taxes. One
+                                    of `inclusive`, `exclusive`, or `unspecified`.
+                                    Once specified as either `inclusive` or `exclusive`,
+                                    it cannot be changed.
+                                  enum:
+                                  - exclusive
+                                  - inclusive
+                                  - unspecified
+                                  type: string
                                 unit_amount:
                                   description: A positive integer in %s (or 0 for
                                     a free price) representing how much to charge.
@@ -70191,6 +71196,18 @@ paths:
                           order to set an application fee percentage. For more information,
                           see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                         type: number
+                      automatic_tax:
+                        description: Automatic tax settings for this phase.
+                        properties:
+                          enabled:
+                            description: Enabled automatic tax calculation which will
+                              automatically compute tax rates on all invoices generated
+                              by the subscription.
+                            type: boolean
+                        required:
+                        - enabled
+                        title: automatic_tax_config
+                        type: object
                       billing_cycle_anchor:
                         description: Can be set to `phase_start` to set the anchor
                           to the start of the phase or `automatic` to automatically
@@ -70353,6 +71370,17 @@ paths:
                                   - interval
                                   title: recurring_adhoc
                                   type: object
+                                tax_behavior:
+                                  description: Specifies whether the price is considered
+                                    inclusive of taxes or exclusive of taxes. One
+                                    of `inclusive`, `exclusive`, or `unspecified`.
+                                    Once specified as either `inclusive` or `exclusive`,
+                                    it cannot be changed.
+                                  enum:
+                                  - exclusive
+                                  - inclusive
+                                  - unspecified
+                                  type: string
                                 unit_amount:
                                   description: A positive integer in %s (or 0 for
                                     a free price) representing how much to charge.
@@ -70830,6 +71858,9 @@ paths:
               add_invoice_items:
                 explode: true
                 style: deepObject
+              automatic_tax:
+                explode: true
+                style: deepObject
               billing_thresholds:
                 explode: true
                 style: deepObject
@@ -70880,6 +71911,16 @@ paths:
                               belong to.
                             maxLength: 5000
                             type: string
+                          tax_behavior:
+                            description: Specifies whether the price is considered
+                              inclusive of taxes or exclusive of taxes. One of `inclusive`,
+                              `exclusive`, or `unspecified`. Once specified as either
+                              `inclusive` or `exclusive`, it cannot be changed.
+                            enum:
+                            - exclusive
+                            - inclusive
+                            - unspecified
+                            type: string
                           unit_amount:
                             description: A positive integer in %s (or 0 for a free
                               price) representing how much to charge.
@@ -70926,6 +71967,17 @@ paths:
                     on a connected account in order to set an application fee percentage.
                     For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                   type: number
+                automatic_tax:
+                  description: Automatic tax settings for this subscription.
+                  properties:
+                    enabled:
+                      description: Enabled automatic tax calculation which will automatically
+                        compute tax rates on all invoices generated by the subscription.
+                      type: boolean
+                  required:
+                  - enabled
+                  title: automatic_tax_config
+                  type: object
                 backdate_start_date:
                   description: For new subscriptions, a past timestamp to backdate
                     the subscription's start date to. If set, the first invoice will
@@ -71115,6 +72167,16 @@ paths:
                             - interval
                             title: recurring_adhoc
                             type: object
+                          tax_behavior:
+                            description: Specifies whether the price is considered
+                              inclusive of taxes or exclusive of taxes. One of `inclusive`,
+                              `exclusive`, or `unspecified`. Once specified as either
+                              `inclusive` or `exclusive`, it cannot be changed.
+                            enum:
+                            - exclusive
+                            - inclusive
+                            - unspecified
+                            type: string
                           unit_amount:
                             description: A positive integer in %s (or 0 for a free
                               price) representing how much to charge.
@@ -71414,6 +72476,9 @@ paths:
               add_invoice_items:
                 explode: true
                 style: deepObject
+              automatic_tax:
+                explode: true
+                style: deepObject
               billing_thresholds:
                 explode: true
                 style: deepObject
@@ -71470,6 +72535,16 @@ paths:
                               belong to.
                             maxLength: 5000
                             type: string
+                          tax_behavior:
+                            description: Specifies whether the price is considered
+                              inclusive of taxes or exclusive of taxes. One of `inclusive`,
+                              `exclusive`, or `unspecified`. Once specified as either
+                              `inclusive` or `exclusive`, it cannot be changed.
+                            enum:
+                            - exclusive
+                            - inclusive
+                            - unspecified
+                            type: string
                           unit_amount:
                             description: A positive integer in %s (or 0 for a free
                               price) representing how much to charge.
@@ -71516,6 +72591,17 @@ paths:
                     on a connected account in order to set an application fee percentage.
                     For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
                   type: number
+                automatic_tax:
+                  description: Automatic tax settings for this subscription.
+                  properties:
+                    enabled:
+                      description: Enabled automatic tax calculation which will automatically
+                        compute tax rates on all invoices generated by the subscription.
+                      type: boolean
+                  required:
+                  - enabled
+                  title: automatic_tax_config
+                  type: object
                 billing_cycle_anchor:
                   description: Either `now` or `unchanged`. Setting the value to `now`
                     resets the subscription's billing cycle anchor to the current
@@ -71716,6 +72802,16 @@ paths:
                             - interval
                             title: recurring_adhoc
                             type: object
+                          tax_behavior:
+                            description: Specifies whether the price is considered
+                              inclusive of taxes or exclusive of taxes. One of `inclusive`,
+                              `exclusive`, or `unspecified`. Once specified as either
+                              `inclusive` or `exclusive`, it cannot be changed.
+                            enum:
+                            - exclusive
+                            - inclusive
+                            - unspecified
+                            type: string
                           unit_amount:
                             description: A positive integer in %s (or 0 for a free
                               price) representing how much to charge.
@@ -71963,6 +73059,150 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
+  "/v1/tax_codes":
+    get:
+      description: <p>A list of <a href="https://stripe.com/docs/tax/tax-codes">all
+        tax codes available</a> to add to Products in order to allow specific tax
+        calculations.</p>
+      operationId: GetTaxCodes
+      parameters:
+      - description: A cursor for use in pagination. `ending_before` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, starting with `obj_bar`, your subsequent
+          call can include `ending_before=obj_bar` in order to fetch the previous
+          page of the list.
+        in: query
+        name: ending_before
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - description: A limit on the number of objects to be returned. Limit can range
+          between 1 and 100, and the default is 10.
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: A cursor for use in pagination. `starting_after` is an object
+          ID that defines your place in the list. For instance, if you make a list
+          request and receive 100 objects, ending with `obj_foo`, your subsequent
+          call can include `starting_after=obj_foo` in order to fetch the next page
+          of the list.
+        in: query
+        name: starting_after
+        required: false
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: ''
+                properties:
+                  data:
+                    items:
+                      "$ref": "#/components/schemas/tax_code"
+                    type: array
+                  has_more:
+                    description: True if this list has another page of items after
+                      this one that can be fetched.
+                    type: boolean
+                  object:
+                    description: String representing the object's type. Objects of
+                      the same type share the same value. Always has the value `list`.
+                    enum:
+                    - list
+                    type: string
+                  url:
+                    description: The URL where this list can be accessed.
+                    maxLength: 5000
+                    type: string
+                required:
+                - data
+                - has_more
+                - object
+                - url
+                title: TaxProductResourceTaxCodeList
+                type: object
+                x-expandableFields:
+                - data
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/tax_codes/{id}":
+    get:
+      description: "<p>Retrieves the details of an existing tax code. Supply the unique
+        tax code ID and Stripe will return the corresponding tax code information.</p>"
+      operationId: GetTaxCodesId
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - in: path
+        name: id
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/tax_code"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
   "/v1/tax_rates":
     get:
       description: "<p>Returns a list of your tax rates. Tax rates are returned sorted
@@ -72171,6 +73411,16 @@ paths:
                     States.'
                   maxLength: 2
                   type: string
+                tax_type:
+                  description: The high-level tax type, such as `vat` or `sales_tax`.
+                  enum:
+                  - gst
+                  - hst
+                  - pst
+                  - qst
+                  - sales_tax
+                  - vat
+                  type: string
               required:
               - display_name
               - inclusive
@@ -72309,6 +73559,16 @@ paths:
                     without country prefix. For example, "NY" for New York, United
                     States.'
                   maxLength: 2
+                  type: string
+                tax_type:
+                  description: The high-level tax type, such as `vat` or `sales_tax`.
+                  enum:
+                  - gst
+                  - hst
+                  - pst
+                  - qst
+                  - sales_tax
+                  - vat
                   type: string
               type: object
         required: false
