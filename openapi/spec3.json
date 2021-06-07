@@ -3822,6 +3822,9 @@
             "maxLength": 5000,
             "type": "string"
           },
+          "tax_id_collection": {
+            "$ref": "#/components/schemas/payment_pages_checkout_session_tax_id_collection"
+          },
           "total_details": {
             "anyOf": [
               {
@@ -3855,6 +3858,7 @@
           "shipping",
           "shipping_address_collection",
           "subscription",
+          "tax_id_collection",
           "total_details"
         ],
         "x-resourceId": "checkout.session"
@@ -8333,35 +8337,6 @@
           "verified_outputs"
         ],
         "x-resourceId": "identity.verification_session"
-      },
-      "inventory": {
-        "description": "",
-        "properties": {
-          "quantity": {
-            "description": "The count of inventory available. Will be present if and only if `type` is `finite`.",
-            "nullable": true,
-            "type": "integer"
-          },
-          "type": {
-            "description": "Inventory type. Possible values are `finite`, `bucket` (not quantified), and `infinite`.",
-            "maxLength": 5000,
-            "type": "string"
-          },
-          "value": {
-            "description": "An indicator of the inventory available. Possible values are `in_stock`, `limited`, and `out_of_stock`. Will be present if and only if `type` is `bucket`.",
-            "maxLength": 5000,
-            "nullable": true,
-            "type": "string"
-          }
-        },
-        "required": [
-          "type"
-        ],
-        "title": "Inventory",
-        "type": "object",
-        "x-expandableFields": [
-
-        ]
       },
       "invoice": {
         "description": "Invoices are statements of amounts owed by a customer, and are either\ngenerated one-off, or generated periodically from a subscription.\n\nThey contain [invoice items](https://stripe.com/docs/api#invoiceitems), and proration adjustments\nthat may be caused by subscription upgrades/downgrades (if necessary).\n\nIf your invoice is configured to be billed through automatic charges,\nStripe automatically finalizes your invoice and attempts payment. Note\nthat finalizing the invoice,\n[when automatic](https://stripe.com/docs/billing/invoices/workflow/#auto_advance), does\nnot happen immediately as the invoice is created. Stripe waits\nuntil one hour after the last webhook was successfully sent (or the last\nwebhook timed out after failing). If you (and the platforms you may have\nconnected to) have no webhooks configured, Stripe waits one hour after\ncreation to finalize the invoice.\n\nIf your invoice is configured to be billed by sending an email, then based on your\n[email settings](https://dashboard.stripe.com/account/billing/automatic'),\nStripe will email the invoice to your customer and await payment. These\nemails can contain a link to a hosted page to pay the invoice.\n\nStripe applies any customer credit on the account before determining the\namount due for the invoice (i.e., the amount that will be actually\ncharged). If the amount due for the invoice is less than Stripe's [minimum allowed charge\nper currency](/docs/currencies#minimum-and-maximum-charge-amounts), the\ninvoice is automatically marked paid, and we add the amount due to the\ncustomer's credit balance which is applied to the next invoice.\n\nMore details on the customer's credit balance are\n[here](https://stripe.com/docs/billing/customer/balance).\n\nRelated guide: [Send Invoices to Customers](https://stripe.com/docs/billing/invoices/sending).",
@@ -18920,6 +18895,23 @@
 
         ]
       },
+      "payment_pages_checkout_session_tax_id_collection": {
+        "description": "",
+        "properties": {
+          "enabled": {
+            "description": "Indicates whether tax ID collection is enabled for the session",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "title": "PaymentPagesCheckoutSessionTaxIDCollection",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
       "payment_pages_checkout_session_total_details": {
         "description": "",
         "properties": {
@@ -23291,7 +23283,7 @@
             "type": "string"
           },
           "inventory": {
-            "$ref": "#/components/schemas/inventory"
+            "$ref": "#/components/schemas/sku_inventory"
           },
           "livemode": {
             "description": "Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
@@ -23372,6 +23364,35 @@
           "product"
         ],
         "x-resourceId": "sku"
+      },
+      "sku_inventory": {
+        "description": "",
+        "properties": {
+          "quantity": {
+            "description": "The count of inventory available. Will be present if and only if `type` is `finite`.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "type": {
+            "description": "Inventory type. Possible values are `finite`, `bucket` (not quantified), and `infinite`.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "value": {
+            "description": "An indicator of the inventory available. Possible values are `in_stock`, `limited`, and `out_of_stock`. Will be present if and only if `type` is `bucket`.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "title": "SKUInventory",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
       },
       "source": {
         "description": "`Source` objects allow you to accept a variety of payment methods. They\nrepresent a customer's payment instrument, and can be used with the Stripe API\njust like a `Card` object: once chargeable, they can be charged, or can be\nattached to customers.\n\nRelated guides: [Sources API](https://stripe.com/docs/sources) and [Sources & Customers](https://stripe.com/docs/sources/customers).",
@@ -26629,10 +26650,24 @@
             "type": "boolean"
           },
           "location": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/terminal.location"
+              }
+            ],
             "description": "The location identifier of the reader.",
-            "maxLength": 5000,
             "nullable": true,
-            "type": "string"
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/terminal.location"
+                }
+              ]
+            }
           },
           "metadata": {
             "additionalProperties": {
@@ -26673,7 +26708,7 @@
         "title": "TerminalReaderReader",
         "type": "object",
         "x-expandableFields": [
-
+          "location"
         ],
         "x-resourceId": "terminal.reader"
       },
@@ -44198,6 +44233,10 @@
                 "subscription_data": {
                   "explode": true,
                   "style": "deepObject"
+                },
+                "tax_id_collection": {
+                  "explode": true,
+                  "style": "deepObject"
                 }
               },
               "schema": {
@@ -45102,6 +45141,18 @@
                     "description": "The URL to which Stripe should send customers when payment or setup\nis complete.\nIf you’d like access to the Checkout Session for the successful\npayment, read more about it in the guide on [fulfilling orders](https://stripe.com/docs/payments/checkout/fulfill-orders).",
                     "maxLength": 5000,
                     "type": "string"
+                  },
+                  "tax_id_collection": {
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "enabled"
+                    ],
+                    "title": "tax_id_collection_params",
+                    "type": "object"
                   }
                 },
                 "required": [

@@ -4244,6 +4244,8 @@ components:
             subscription creation is successful.
           maxLength: 5000
           type: string
+        tax_id_collection:
+          "$ref": "#/components/schemas/payment_pages_checkout_session_tax_id_collection"
         total_details:
           anyOf:
           - "$ref": "#/components/schemas/payment_pages_checkout_session_total_details"
@@ -4290,6 +4292,7 @@ components:
       - shipping
       - shipping_address_collection
       - subscription
+      - tax_id_collection
       - total_details
       x-resourceId: checkout.session
       x-stripeOperations:
@@ -4337,6 +4340,7 @@ components:
         - checkout_session_payment_method_options
         - payment_pages_checkout_session_automatic_tax
         - payment_pages_checkout_session_customer_details
+        - payment_pages_checkout_session_tax_id_collection
         - payment_pages_checkout_session_total_details
         - payment_pages_payment_page_resources_shipping_address_collection
     checkout_acss_debit_mandate_options:
@@ -9244,36 +9248,6 @@ components:
         - gelato_verification_session_options
         - gelato_verified_outputs
         - verification_session_redaction
-    inventory:
-      description: ''
-      properties:
-        quantity:
-          description: The count of inventory available. Will be present if and only
-            if `type` is `finite`.
-          nullable: true
-          type: integer
-        type:
-          description: Inventory type. Possible values are `finite`, `bucket` (not
-            quantified), and `infinite`.
-          maxLength: 5000
-          type: string
-        value:
-          description: An indicator of the inventory available. Possible values are
-            `in_stock`, `limited`, and `out_of_stock`. Will be present if and only
-            if `type` is `bucket`.
-          maxLength: 5000
-          nullable: true
-          type: string
-      required:
-      - quantity
-      - type
-      - value
-      title: Inventory
-      type: object
-      x-expandableFields: []
-      x-stripeResource:
-        class_name: Inventory
-        in_class: sku
     invoice:
       description: |-
         Invoices are statements of amounts owed by a customer, and are either
@@ -20369,6 +20343,20 @@ components:
       x-stripeResource:
         class_name: TaxID
         in_class: payment_pages_checkout_session_customer_details
+    payment_pages_checkout_session_tax_id_collection:
+      description: ''
+      properties:
+        enabled:
+          description: Indicates whether tax ID collection is enabled for the session
+          type: boolean
+      required:
+      - enabled
+      title: PaymentPagesCheckoutSessionTaxIDCollection
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: TaxIDCollection
+        in_class: checkout.session
     payment_pages_checkout_session_total_details:
       description: ''
       properties:
@@ -25427,7 +25415,7 @@ components:
           nullable: true
           type: string
         inventory:
-          "$ref": "#/components/schemas/inventory"
+          "$ref": "#/components/schemas/sku_inventory"
         livemode:
           description: Has the value `true` if the object exists in live mode or the
             value `false` if the object exists in test mode.
@@ -25567,7 +25555,37 @@ components:
         has_collection_class: true
         in_package: ''
         inner_classes:
-        - inventory
+        - sku_inventory
+    sku_inventory:
+      description: ''
+      properties:
+        quantity:
+          description: The count of inventory available. Will be present if and only
+            if `type` is `finite`.
+          nullable: true
+          type: integer
+        type:
+          description: Inventory type. Possible values are `finite`, `bucket` (not
+            quantified), and `infinite`.
+          maxLength: 5000
+          type: string
+        value:
+          description: An indicator of the inventory available. Possible values are
+            `in_stock`, `limited`, and `out_of_stock`. Will be present if and only
+            if `type` is `bucket`.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+      - quantity
+      - type
+      - value
+      title: SKUInventory
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Inventory
+        in_class: sku
     source:
       description: |-
         `Source` objects allow you to accept a variety of payment methods. They
@@ -29214,10 +29232,15 @@ components:
             value `false` if the object exists in test mode.
           type: boolean
         location:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/terminal.location"
           description: The location identifier of the reader.
-          maxLength: 5000
           nullable: true
-          type: string
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/terminal.location"
         metadata:
           additionalProperties:
             maxLength: 500
@@ -29255,7 +29278,8 @@ components:
       - status
       title: TerminalReaderReader
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - location
       x-resourceId: terminal.reader
       x-stripeOperations:
       - method_name: update
@@ -38553,6 +38577,9 @@ paths:
               subscription_data:
                 explode: true
                 style: deepObject
+              tax_id_collection:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -39609,6 +39636,15 @@ paths:
                     payment, read more about it in the guide on [fulfilling orders](https://stripe.com/docs/payments/checkout/fulfill-orders).
                   maxLength: 5000
                   type: string
+                tax_id_collection:
+                  properties:
+                    enabled:
+                      description: Set to true to enable Tax ID collection.
+                      type: boolean
+                  required:
+                  - enabled
+                  title: tax_id_collection_params
+                  type: object
               required:
               - cancel_url
               - success_url
