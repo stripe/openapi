@@ -1348,17 +1348,13 @@ components:
         source:
           "$ref": "#/components/schemas/payment_source"
         type:
-          description: The type of error returned. One of `api_connection_error`,
-            `api_error`, `authentication_error`, `card_error`, `idempotency_error`,
-            `invalid_request_error`, or `rate_limit_error`
+          description: The type of error returned. One of `api_error`, `card_error`,
+            `idempotency_error`, or `invalid_request_error`
           enum:
-          - api_connection_error
           - api_error
-          - authentication_error
           - card_error
           - idempotency_error
           - invalid_request_error
-          - rate_limit_error
           type: string
       required:
       - type
@@ -10870,6 +10866,15 @@ components:
           - refund
           type: string
           x-stripeBypassValidation: true
+        wallet:
+          description: The digital wallet used for this transaction. One of `apple_pay`,
+            `google_pay`, or `samsung_pay`.
+          enum:
+          - apple_pay
+          - google_pay
+          - samsung_pay
+          nullable: true
+          type: string
       required:
       - amount
       - amount_details
@@ -10889,6 +10894,7 @@ components:
       - object
       - purchase_details
       - type
+      - wallet
       title: IssuingTransaction
       type: object
       x-expandableFields:
@@ -16439,6 +16445,8 @@ components:
           "$ref": "#/components/schemas/payment_intent_payment_method_options_card"
         card_present:
           "$ref": "#/components/schemas/payment_method_options_card_present"
+        ideal:
+          "$ref": "#/components/schemas/payment_method_options_ideal"
         oxxo:
           "$ref": "#/components/schemas/payment_method_options_oxxo"
         p24:
@@ -16459,6 +16467,7 @@ components:
       - boleto
       - card
       - card_present
+      - ideal
       - oxxo
       - p24
       - sepa_debit
@@ -16477,6 +16486,7 @@ components:
         - payment_method_options_bancontact
         - payment_method_options_boleto
         - payment_method_options_card_present
+        - payment_method_options_ideal
         - payment_method_options_oxxo
         - payment_method_options_p24
         - payment_method_options_sofort
@@ -19414,6 +19424,15 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: CardPresent
+        in_class: payment_intent_payment_method_options
+    payment_method_options_ideal:
+      description: ''
+      properties: {}
+      title: payment_method_options_ideal
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Ideal
         in_class: payment_intent_payment_method_options
     payment_method_options_oxxo:
       description: ''
@@ -31894,7 +31913,7 @@ paths:
                   description: A card or bank account to attach to the account for
                     receiving [payouts](https://stripe.com/docs/connect/bank-debit-card-payouts)
                     (you won’t be able to use it for top-ups). You can provide either
-                    a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
+                    a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js),
                     or a dictionary, as documented in the `external_account` parameter
                     for [bank account](https://stripe.com/docs/api#account_create_bank_account)
                     creation. <br><br>By default, providing an external account sets
@@ -32056,7 +32075,7 @@ paths:
                         as appropriate for the representative’s country. (Examples
                         are a Social Security Number in the U.S., or a Social Insurance
                         Number in Canada). Instead of the number itself, you can also
-                        provide a [PII token created with Stripe.js](https://stripe.com/docs/stripe.js#collecting-pii-data).
+                        provide a [PII token created with Stripe.js](https://stripe.com/docs/js/tokens_sources/create_token?type=pii).
                       maxLength: 5000
                       type: string
                     last_name:
@@ -33262,7 +33281,7 @@ paths:
                   description: A card or bank account to attach to the account for
                     receiving [payouts](https://stripe.com/docs/connect/bank-debit-card-payouts)
                     (you won’t be able to use it for top-ups). You can provide either
-                    a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe.js),
+                    a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js),
                     or a dictionary, as documented in the `external_account` parameter
                     for [bank account](https://stripe.com/docs/api#account_create_bank_account)
                     creation. <br><br>By default, providing an external account sets
@@ -33424,7 +33443,7 @@ paths:
                         as appropriate for the representative’s country. (Examples
                         are a Social Security Number in the U.S., or a Social Insurance
                         Number in Canada). Instead of the number itself, you can also
-                        provide a [PII token created with Stripe.js](https://stripe.com/docs/stripe.js#collecting-pii-data).
+                        provide a [PII token created with Stripe.js](https://stripe.com/docs/js/tokens_sources/create_token?type=pii).
                       maxLength: 5000
                       type: string
                     last_name:
@@ -34768,7 +34787,7 @@ paths:
                   description: The person's ID number, as appropriate for their country.
                     For example, a social security number in the U.S., social insurance
                     number in Canada, etc. Instead of the number itself, you can also
-                    provide a [PII token provided by Stripe.js](https://stripe.com/docs/stripe.js#collecting-pii-data).
+                    provide a [PII token provided by Stripe.js](https://stripe.com/docs/js/tokens_sources/create_token?type=pii).
                   maxLength: 5000
                   type: string
                 last_name:
@@ -35286,7 +35305,7 @@ paths:
                   description: The person's ID number, as appropriate for their country.
                     For example, a social security number in the U.S., social insurance
                     number in Canada, etc. Instead of the number itself, you can also
-                    provide a [PII token provided by Stripe.js](https://stripe.com/docs/stripe.js#collecting-pii-data).
+                    provide a [PII token provided by Stripe.js](https://stripe.com/docs/js/tokens_sources/create_token?type=pii).
                   maxLength: 5000
                   type: string
                 last_name:
@@ -40702,8 +40721,7 @@ paths:
                     properties:
                       amount:
                         description: The line item amount to credit. Only valid when
-                          `type` is `invoice_line_item` and the referenced invoice
-                          line item does not have a quantity, only an amount.
+                          `type` is `invoice_line_item`.
                         type: integer
                       description:
                         description: The description of the credit note line item.
@@ -40858,8 +40876,7 @@ paths:
             properties:
               amount:
                 description: The line item amount to credit. Only valid when `type`
-                  is `invoice_line_item` and the referenced invoice line item does
-                  not have a quantity, only an amount.
+                  is `invoice_line_item`.
                 type: integer
               description:
                 description: The description of the credit note line item. Only valid
@@ -41066,8 +41083,7 @@ paths:
             properties:
               amount:
                 description: The line item amount to credit. Only valid when `type`
-                  is `invoice_line_item` and the referenced invoice line item does
-                  not have a quantity, only an amount.
+                  is `invoice_line_item`.
                 type: integer
               description:
                 description: The description of the credit note line item. Only valid
@@ -58095,6 +58111,16 @@ paths:
                       description: If this is a `card_present` PaymentMethod, this
                         sub-hash contains details about the Card Present payment method
                         options.
+                    ideal:
+                      anyOf:
+                      - properties: {}
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `ideal` PaymentMethod, this sub-hash
+                        contains details about the Ideal payment method options.
                     oxxo:
                       anyOf:
                       - properties:
@@ -59146,6 +59172,16 @@ paths:
                       description: If this is a `card_present` PaymentMethod, this
                         sub-hash contains details about the Card Present payment method
                         options.
+                    ideal:
+                      anyOf:
+                      - properties: {}
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `ideal` PaymentMethod, this sub-hash
+                        contains details about the Ideal payment method options.
                     oxxo:
                       anyOf:
                       - properties:
@@ -60341,6 +60377,16 @@ paths:
                       description: If this is a `card_present` PaymentMethod, this
                         sub-hash contains details about the Card Present payment method
                         options.
+                    ideal:
+                      anyOf:
+                      - properties: {}
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `ideal` PaymentMethod, this sub-hash
+                        contains details about the Ideal payment method options.
                     oxxo:
                       anyOf:
                       - properties:
@@ -76553,7 +76599,7 @@ paths:
                             as appropriate for the representative’s country. (Examples
                             are a Social Security Number in the U.S., or a Social
                             Insurance Number in Canada). Instead of the number itself,
-                            you can also provide a [PII token created with Stripe.js](https://stripe.com/docs/stripe.js#collecting-pii-data).
+                            you can also provide a [PII token created with Stripe.js](https://stripe.com/docs/js/tokens_sources/create_token?type=pii).
                           maxLength: 5000
                           type: string
                         last_name:
@@ -76993,7 +77039,7 @@ paths:
                       description: The person's ID number, as appropriate for their
                         country. For example, a social security number in the U.S.,
                         social insurance number in Canada, etc. Instead of the number
-                        itself, you can also provide a [PII token provided by Stripe.js](https://stripe.com/docs/stripe.js#collecting-pii-data).
+                        itself, you can also provide a [PII token provided by Stripe.js](https://stripe.com/docs/js/tokens_sources/create_token?type=pii).
                       maxLength: 5000
                       type: string
                     last_name:
