@@ -2984,6 +2984,12 @@ components:
 
         Related guide: [Checkout Server Quickstart](https://stripe.com/docs/payments/checkout/api).
       properties:
+        after_expiration:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_pages_checkout_session_after_expiration"
+          description: When set, provides configuration for actions to take if this
+            Checkout Session expires.
+          nullable: true
         allow_promotion_codes:
           description: Enables user redeemable promotion codes.
           nullable: true
@@ -3019,6 +3025,17 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        consent:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_pages_checkout_session_consent"
+          description: Results of `consent_collection` for this session.
+          nullable: true
+        consent_collection:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_pages_checkout_session_consent_collection"
+          description: When set, provides configuration for the Checkout Session to
+            gather active consent from customers.
+          nullable: true
         currency:
           description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
             in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
@@ -3058,6 +3075,10 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        expires_at:
+          description: The timestamp at which the Checkout Session will expire.
+          format: unix-time
+          type: integer
         id:
           description: |-
             Unique identifier for the object. Used to pass to `redirectToCheckout`
@@ -3203,6 +3224,12 @@ components:
           - paid
           - unpaid
           type: string
+        recovered_from:
+          description: The ID of the original expired Checkout Session that triggered
+            the recovery flow.
+          maxLength: 5000
+          nullable: true
+          type: string
         setup_intent:
           anyOf:
           - maxLength: 5000
@@ -3280,7 +3307,10 @@ components:
       title: Session
       type: object
       x-expandableFields:
+      - after_expiration
       - automatic_tax
+      - consent
+      - consent_collection
       - customer
       - customer_details
       - line_items
@@ -15878,6 +15908,48 @@ components:
       title: payment_method_wechat_pay
       type: object
       x-expandableFields: []
+    payment_pages_checkout_session_after_expiration:
+      description: ''
+      properties:
+        recovery:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_pages_checkout_session_after_expiration_recovery"
+          description: When set, configuration used to recover the Checkout Session
+            on expiry.
+          nullable: true
+      title: PaymentPagesCheckoutSessionAfterExpiration
+      type: object
+      x-expandableFields:
+      - recovery
+    payment_pages_checkout_session_after_expiration_recovery:
+      description: ''
+      properties:
+        allow_promotion_codes:
+          description: Enables user redeemable promotion codes on the recovered Checkout
+            Sessions. Defaults to `false`
+          nullable: true
+          type: boolean
+        enabled:
+          description: |-
+            If `true`, a recovery url will be generated to recover this Checkout Session if it
+            expires before a transaction is completed. It will be attached to the
+            Checkout Session object upon expiration.
+          nullable: true
+          type: boolean
+        expires_at:
+          description: The timestamp at which the recovery URL will expire.
+          format: unix-time
+          nullable: true
+          type: integer
+        url:
+          description: URL that creates a new Checkout Session when clicked that is
+            a copy of this expired Checkout Session
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: PaymentPagesCheckoutSessionAfterExpirationRecovery
+      type: object
+      x-expandableFields: []
     payment_pages_checkout_session_automatic_tax:
       description: ''
       properties:
@@ -15896,6 +15968,36 @@ components:
       required:
       - enabled
       title: PaymentPagesCheckoutSessionAutomaticTax
+      type: object
+      x-expandableFields: []
+    payment_pages_checkout_session_consent:
+      description: ''
+      properties:
+        promotions:
+          description: |-
+            If `opt_in`, the customer consents to receiving promotional communications
+            from the merchant about this Checkout Session.
+          enum:
+          - opt_in
+          - opt_out
+          nullable: true
+          type: string
+      title: PaymentPagesCheckoutSessionConsent
+      type: object
+      x-expandableFields: []
+    payment_pages_checkout_session_consent_collection:
+      description: ''
+      properties:
+        promotions:
+          description: |-
+            If set to `auto`, enables the collection of customer consent for promotional communications. The Checkout
+            Session will determine whether to display an option to opt into promotional communication
+            from the merchant depending on the customer's locale. Only available to US merchants.
+          enum:
+          - auto
+          nullable: true
+          type: string
+      title: PaymentPagesCheckoutSessionConsentCollection
       type: object
       x-expandableFields: []
     payment_pages_checkout_session_customer_details:
@@ -36205,7 +36307,13 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              after_expiration:
+                explode: true
+                style: deepObject
               automatic_tax:
+                explode: true
+                style: deepObject
+              consent_collection:
                 explode: true
                 style: deepObject
               customer_update:
@@ -36250,6 +36358,21 @@ paths:
             schema:
               additionalProperties: false
               properties:
+                after_expiration:
+                  description: Configure actions after a Checkout Session has expired.
+                  properties:
+                    recovery:
+                      properties:
+                        allow_promotion_codes:
+                          type: boolean
+                        enabled:
+                          type: boolean
+                      required:
+                      - enabled
+                      title: recovery_params
+                      type: object
+                  title: after_expiration_params
+                  type: object
                 allow_promotion_codes:
                   description: Enables user redeemable promotion codes.
                   type: boolean
@@ -36282,6 +36405,16 @@ paths:
                     session with your internal systems.
                   maxLength: 200
                   type: string
+                consent_collection:
+                  description: Configure fields for the Checkout Session to gather
+                    active consent from customers.
+                  properties:
+                    promotions:
+                      enum:
+                      - auto
+                      type: string
+                  title: consent_collection_params
+                  type: object
                 customer:
                   description: |-
                     ID of an existing Customer, if one exists. In `payment` mode, the customer’s most recent card
@@ -36349,6 +36482,12 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                expires_at:
+                  description: The Epoch time in seconds at which the Checkout Session
+                    will expire. It can be anywhere from 1 to 24 hours after Checkout
+                    Session creation. By default, this value is 24 hours from creation.
+                  format: unix-time
+                  type: integer
                 line_items:
                   description: |-
                     A list of items the customer is purchasing. Use this parameter to pass one-time or recurring [Prices](https://stripe.com/docs/api/prices).
