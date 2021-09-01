@@ -96,6 +96,8 @@ components:
           type: object
           x-expandableFields:
           - data
+        future_requirements:
+          "$ref": "#/components/schemas/account_future_requirements"
         id:
           description: Unique identifier for the object.
           maxLength: 5000
@@ -146,6 +148,7 @@ components:
       - company
       - controller
       - external_accounts
+      - future_requirements
       - individual
       - requirements
       - settings
@@ -263,9 +266,9 @@ components:
       description: ''
       properties:
         acss_debit_payments:
-          description: The status of the ACSS Direct Debits payments capability of
-            the account, or whether the account can directly process ACSS Direct Debits
-            charges.
+          description: The status of the Canadian pre-authorized debits payments capability
+            of the account, or whether the account can directly process Canadian pre-authorized
+            debits charges.
           enum:
           - active
           - inactive
@@ -454,9 +457,91 @@ components:
       title: AccountCapabilities
       type: object
       x-expandableFields: []
+    account_capability_future_requirements:
+      description: ''
+      properties:
+        alternatives:
+          description: Fields that are due and can be satisfied by providing the corresponding
+            alternative fields instead.
+          items:
+            "$ref": "#/components/schemas/account_requirements_alternative"
+          type: array
+        current_deadline:
+          description: Date on which `future_requirements` merges with the main `requirements`
+            hash and `future_requirements` becomes empty. After the transition, `currently_due`
+            requirements may immediately become `past_due`, but the account may also
+            be given a grace period depending on the capability's enablement state
+            prior to transitioning.
+          format: unix-time
+          nullable: true
+          type: integer
+        currently_due:
+          description: Fields that need to be collected to keep the capability enabled.
+            If not collected by `future_requirements[current_deadline]`, these fields
+            will transition to the main `requirements` hash.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        disabled_reason:
+          description: This is typed as a string for consistency with `requirements.disabled_reason`,
+            but it safe to assume `future_requirements.disabled_reason` is empty because
+            fields in `future_requirements` will never disable the account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        errors:
+          description: Fields that are `currently_due` and need to be collected again
+            because validation or verification failed.
+          items:
+            "$ref": "#/components/schemas/account_requirements_error"
+          type: array
+        eventually_due:
+          description: Fields that need to be collected assuming all volume thresholds
+            are reached. As they become required, they appear in `currently_due` as
+            well.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        past_due:
+          description: Fields that weren't collected by `requirements.current_deadline`.
+            These fields need to be collected to enable the capability on the account.
+            New fields will never appear here; `future_requirements.past_due` will
+            always be a subset of `requirements.past_due`.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        pending_verification:
+          description: Fields that may become required depending on the results of
+            verification or review. Will be an empty array unless an asynchronous
+            verification is pending. If verification fails, these fields move to `eventually_due`
+            or `currently_due`.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+      required:
+      - currently_due
+      - errors
+      - eventually_due
+      - past_due
+      - pending_verification
+      title: AccountCapabilityFutureRequirements
+      type: object
+      x-expandableFields:
+      - alternatives
+      - errors
     account_capability_requirements:
       description: ''
       properties:
+        alternatives:
+          description: Fields that are due and can be satisfied by providing the corresponding
+            alternative fields instead.
+          items:
+            "$ref": "#/components/schemas/account_requirements_alternative"
+          type: array
         current_deadline:
           description: Date by which the fields in `currently_due` must be collected
             to keep the capability enabled for the account. These fields may disable
@@ -524,6 +609,7 @@ components:
       title: AccountCapabilityRequirements
       type: object
       x-expandableFields:
+      - alternatives
       - errors
     account_card_issuing_settings:
       description: ''
@@ -607,6 +693,81 @@ components:
       title: AccountDeclineChargeOn
       type: object
       x-expandableFields: []
+    account_future_requirements:
+      description: ''
+      properties:
+        alternatives:
+          description: Fields that are due and can be satisfied by providing the corresponding
+            alternative fields instead.
+          items:
+            "$ref": "#/components/schemas/account_requirements_alternative"
+          nullable: true
+          type: array
+        current_deadline:
+          description: Date on which `future_requirements` merges with the main `requirements`
+            hash and `future_requirements` becomes empty. After the transition, `currently_due`
+            requirements may immediately become `past_due`, but the account may also
+            be given a grace period depending on its enablement state prior to transitioning.
+          format: unix-time
+          nullable: true
+          type: integer
+        currently_due:
+          description: Fields that need to be collected to keep the account enabled.
+            If not collected by `future_requirements[current_deadline]`, these fields
+            will transition to the main `requirements` hash.
+          items:
+            maxLength: 5000
+            type: string
+          nullable: true
+          type: array
+        disabled_reason:
+          description: This is typed as a string for consistency with `requirements.disabled_reason`,
+            but it safe to assume `future_requirements.disabled_reason` is empty because
+            fields in `future_requirements` will never disable the account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        errors:
+          description: Fields that are `currently_due` and need to be collected again
+            because validation or verification failed.
+          items:
+            "$ref": "#/components/schemas/account_requirements_error"
+          nullable: true
+          type: array
+        eventually_due:
+          description: Fields that need to be collected assuming all volume thresholds
+            are reached. As they become required, they appear in `currently_due` as
+            well.
+          items:
+            maxLength: 5000
+            type: string
+          nullable: true
+          type: array
+        past_due:
+          description: Fields that weren't collected by `requirements.current_deadline`.
+            These fields need to be collected to enable the capability on the account.
+            New fields will never appear here; `future_requirements.past_due` will
+            always be a subset of `requirements.past_due`.
+          items:
+            maxLength: 5000
+            type: string
+          nullable: true
+          type: array
+        pending_verification:
+          description: Fields that may become required depending on the results of
+            verification or review. Will be an empty array unless an asynchronous
+            verification is pending. If verification fails, these fields move to `eventually_due`
+            or `currently_due`.
+          items:
+            maxLength: 5000
+            type: string
+          nullable: true
+          type: array
+      title: AccountFutureRequirements
+      type: object
+      x-expandableFields:
+      - alternatives
+      - errors
     account_link:
       description: |-
         Account Links are the means by which a Connect platform grants a connected account permission to access
@@ -696,6 +857,13 @@ components:
     account_requirements:
       description: ''
       properties:
+        alternatives:
+          description: Fields that are due and can be satisfied by providing the corresponding
+            alternative fields instead.
+          items:
+            "$ref": "#/components/schemas/account_requirements_alternative"
+          nullable: true
+          type: array
         current_deadline:
           description: Date by which the fields in `currently_due` must be collected
             to keep the account enabled. These fields may disable the account sooner
@@ -757,7 +925,30 @@ components:
       title: AccountRequirements
       type: object
       x-expandableFields:
+      - alternatives
       - errors
+    account_requirements_alternative:
+      description: ''
+      properties:
+        alternative_fields_due:
+          description: Fields that can be provided to satisfy all fields in `original_fields_due`.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        original_fields_due:
+          description: Fields that are due and can be satisfied by providing all fields
+            in `alternative_fields_due`.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+      required:
+      - alternative_fields_due
+      - original_fields_due
+      title: AccountRequirementsAlternative
+      type: object
+      x-expandableFields: []
     account_requirements_error:
       description: ''
       properties:
@@ -2196,6 +2387,8 @@ components:
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/account"
+        future_requirements:
+          "$ref": "#/components/schemas/account_capability_future_requirements"
         id:
           description: The identifier for the capability.
           maxLength: 5000
@@ -2237,6 +2430,7 @@ components:
       type: object
       x-expandableFields:
       - account
+      - future_requirements
       - requirements
       x-resourceId: capability
     card:
@@ -15927,14 +16121,12 @@ components:
         allow_promotion_codes:
           description: Enables user redeemable promotion codes on the recovered Checkout
             Sessions. Defaults to `false`
-          nullable: true
           type: boolean
         enabled:
           description: |-
             If `true`, a recovery url will be generated to recover this Checkout Session if it
             expires before a transaction is completed. It will be attached to the
             Checkout Session object upon expiration.
-          nullable: true
           type: boolean
         expires_at:
           description: The timestamp at which the recovery URL will expire.
@@ -15947,6 +16139,9 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+      required:
+      - allow_promotion_codes
+      - enabled
       title: PaymentPagesCheckoutSessionAfterExpirationRecovery
       type: object
       x-expandableFields: []
@@ -16666,6 +16861,12 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        future_requirements:
+          anyOf:
+          - "$ref": "#/components/schemas/person_future_requirements"
+          description: Information about the upcoming new requirements for this person,
+            including what information needs to be collected, and by when.
+          nullable: true
         gender:
           description: The person's gender (International regulations require either
             "male" or "female").
@@ -16754,10 +16955,74 @@ components:
       - address_kana
       - address_kanji
       - dob
+      - future_requirements
       - relationship
       - requirements
       - verification
       x-resourceId: person
+    person_future_requirements:
+      description: ''
+      properties:
+        alternatives:
+          description: Fields that are due and can be satisfied by providing the corresponding
+            alternative fields instead.
+          items:
+            "$ref": "#/components/schemas/account_requirements_alternative"
+          type: array
+        currently_due:
+          description: Fields that need to be collected to keep the person's account
+            enabled. If not collected by the account's `future_requirements[current_deadline]`,
+            these fields will transition to the main `requirements` hash, and may
+            immediately become `past_due`, but the account may also be given a grace
+            period depending on the account's enablement state prior to transition.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        errors:
+          description: Fields that are `currently_due` and need to be collected again
+            because validation or verification failed.
+          items:
+            "$ref": "#/components/schemas/account_requirements_error"
+          type: array
+        eventually_due:
+          description: Fields that need to be collected assuming all volume thresholds
+            are reached. As they become required, they appear in `currently_due` as
+            well, and the account's `future_requirements[current_deadline]` becomes
+            set.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        past_due:
+          description: Fields that weren't collected by the account's `requirements.current_deadline`.
+            These fields need to be collected to enable the person's account. New
+            fields will never appear here; `future_requirements.past_due` will always
+            be a subset of `requirements.past_due`.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        pending_verification:
+          description: Fields that may become required depending on the results of
+            verification or review. Will be an empty array unless an asynchronous
+            verification is pending. If verification fails, these fields move to `eventually_due`
+            or `currently_due`.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+      required:
+      - currently_due
+      - errors
+      - eventually_due
+      - past_due
+      - pending_verification
+      title: PersonFutureRequirements
+      type: object
+      x-expandableFields:
+      - alternatives
+      - errors
     person_relationship:
       description: ''
       properties:
@@ -16801,6 +17066,12 @@ components:
     person_requirements:
       description: ''
       properties:
+        alternatives:
+          description: Fields that are due and can be satisfied by providing the corresponding
+            alternative fields instead.
+          items:
+            "$ref": "#/components/schemas/account_requirements_alternative"
+          type: array
         currently_due:
           description: Fields that need to be collected to keep the person's account
             enabled. If not collected by the account's `current_deadline`, these fields
@@ -16848,6 +17119,7 @@ components:
       title: PersonRequirements
       type: object
       x-expandableFields:
+      - alternatives
       - errors
     plan:
       description: |-
