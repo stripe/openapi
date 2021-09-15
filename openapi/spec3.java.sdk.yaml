@@ -4646,6 +4646,15 @@ components:
           description: A URL for custom mandate text
           maxLength: 5000
           type: string
+        default_for:
+          description: List of Stripe products where this mandate can be selected
+            automatically. Returned when the Session is in `setup` mode.
+          items:
+            enum:
+            - invoice
+            - subscription
+            type: string
+          type: array
         interval_description:
           description: Description of the interval. Only required if the 'payment_schedule'
             parameter is 'interval' or 'combined'.
@@ -9544,6 +9553,46 @@ components:
       x-stripeResource:
         class_name: InvoiceLineItemPeriod
         in_package: ''
+    invoice_payment_method_options_acss_debit:
+      description: ''
+      properties:
+        mandate_options:
+          "$ref": "#/components/schemas/invoice_payment_method_options_acss_debit_mandate_options"
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          - microdeposits
+          type: string
+          x-stripeBypassValidation: true
+      title: invoice_payment_method_options_acss_debit
+      type: object
+      x-expandableFields:
+      - mandate_options
+      x-stripeResource:
+        class_name: AcssDebit
+        in_class: invoices_payment_method_options
+        inner_classes:
+        - invoice_payment_method_options_acss_debit_mandate_options
+    invoice_payment_method_options_acss_debit_mandate_options:
+      description: ''
+      properties:
+        transaction_type:
+          description: Transaction type of the mandate.
+          enum:
+          - business
+          - personal
+          nullable: true
+          type: string
+      required:
+      - transaction_type
+      title: invoice_payment_method_options_acss_debit_mandate_options
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: AcssDebitMandateOptions
+        in_class: invoice_payment_method_options_acss_debit
     invoice_payment_method_options_bancontact:
       description: ''
       properties:
@@ -10003,6 +10052,13 @@ components:
     invoices_payment_method_options:
       description: ''
       properties:
+        acss_debit:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_payment_method_options_acss_debit"
+          description: If paying by `acss_debit`, this sub-hash contains details about
+            the Canadian pre-authorized debit payment method options to pass to the
+            invoice’s PaymentIntent.
+          nullable: true
         bancontact:
           anyOf:
           - "$ref": "#/components/schemas/invoice_payment_method_options_bancontact"
@@ -10016,17 +10072,20 @@ components:
             Card payment method options to pass to the invoice’s PaymentIntent.
           nullable: true
       required:
+      - acss_debit
       - bancontact
       - card
       title: InvoicesPaymentMethodOptions
       type: object
       x-expandableFields:
+      - acss_debit
       - bancontact
       - card
       x-stripeResource:
         class_name: PaymentMethodOptions
         in_class: invoice
         inner_classes:
+        - invoice_payment_method_options_acss_debit
         - invoice_payment_method_options_bancontact
         - invoice_payment_method_options_card
     invoices_payment_settings:
@@ -10048,6 +10107,7 @@ components:
             enum:
             - ach_credit_transfer
             - ach_debit
+            - acss_debit
             - au_becs_debit
             - bacs_debit
             - bancontact
@@ -15203,6 +15263,15 @@ components:
     mandate_acss_debit:
       description: ''
       properties:
+        default_for:
+          description: List of Stripe products where this mandate can be selected
+            automatically.
+          items:
+            enum:
+            - invoice
+            - subscription
+            type: string
+          type: array
         interval_description:
           description: Description of the interval. Only required if the 'payment_schedule'
             parameter is 'interval' or 'combined'.
@@ -18338,7 +18407,10 @@ components:
         cardholder_name:
           description: The cardholder name as read from the card, in [ISO 7813](https://en.wikipedia.org/wiki/ISO/IEC_7813)
             format. May include alphanumeric characters, special characters and first/last
-            name separator (`/`).
+            name separator (`/`). In some cases, the cardholder name may not be available
+            depending on how the issuer has configured the card. Cardholder name is
+            typically not available on swipe or contactless payments, such as those
+            made with Apple Pay and Google Pay.
           maxLength: 5000
           nullable: true
           type: string
@@ -18971,7 +19043,10 @@ components:
         cardholder_name:
           description: The cardholder name as read from the card, in [ISO 7813](https://en.wikipedia.org/wiki/ISO/IEC_7813)
             format. May include alphanumeric characters, special characters and first/last
-            name separator (`/`).
+            name separator (`/`). In some cases, the cardholder name may not be available
+            depending on how the issuer has configured the card. Cardholder name is
+            typically not available on swipe or contactless payments, such as those
+            made with Apple Pay and Google Pay.
           maxLength: 5000
           nullable: true
           type: string
@@ -21800,6 +21875,7 @@ components:
           - none
           type: string
       required:
+      - cancellation_reason
       - enabled
       - mode
       - proration_behavior
@@ -24464,6 +24540,10 @@ components:
             such as `balance.summary.1`.
           maxLength: 5000
           type: string
+        livemode:
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+          type: boolean
         name:
           description: Human-readable name of the Report Type
           maxLength: 5000
@@ -24489,6 +24569,7 @@ components:
       - data_available_start
       - default_columns
       - id
+      - livemode
       - name
       - object
       - updated
@@ -25922,6 +26003,15 @@ components:
           description: A URL for custom mandate text
           maxLength: 5000
           type: string
+        default_for:
+          description: List of Stripe products where this mandate can be selected
+            automatically.
+          items:
+            enum:
+            - invoice
+            - subscription
+            type: string
+          type: array
         interval_description:
           description: Description of the interval. Only required if the 'payment_schedule'
             parameter is 'interval' or 'combined'.
@@ -29184,6 +29274,12 @@ components:
     subscriptions_resource_payment_method_options:
       description: ''
       properties:
+        acss_debit:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_payment_method_options_acss_debit"
+          description: This sub-hash contains details about the Canadian pre-authorized
+            debit payment method options to pass to invoices created by the subscription.
+          nullable: true
         bancontact:
           anyOf:
           - "$ref": "#/components/schemas/invoice_payment_method_options_bancontact"
@@ -29197,11 +29293,13 @@ components:
             options to pass to invoices created by the subscription.
           nullable: true
       required:
+      - acss_debit
       - bancontact
       - card
       title: SubscriptionsResourcePaymentMethodOptions
       type: object
       x-expandableFields:
+      - acss_debit
       - bancontact
       - card
       x-stripeResource:
@@ -29226,6 +29324,7 @@ components:
             enum:
             - ach_credit_transfer
             - ach_debit
+            - acss_debit
             - au_becs_debit
             - bacs_debit
             - bancontact
@@ -40131,6 +40230,18 @@ paths:
                                 A URL for custom mandate text to render during confirmation step.
                                 The URL will be rendered with additional GET parameters `payment_intent` and `payment_intent_client_secret` when confirming a Payment Intent,
                                 or `setup_intent` and `setup_intent_client_secret` when confirming a Setup Intent.
+                            default_for:
+                              description: List of Stripe products where this mandate
+                                can be selected automatically. Only usable in `setup`
+                                mode.
+                              items:
+                                enum:
+                                - invoice
+                                - subscription
+                                type: string
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: default_for
                             interval_description:
                               description: Description of the mandate interval. Only
                                 required if 'payment_schedule' parameter is 'interval'
@@ -47825,6 +47936,36 @@ paths:
                       description: Payment-method-specific configuration to provide
                         to the invoice’s PaymentIntent.
                       properties:
+                        acss_debit:
+                          anyOf:
+                          - properties:
+                              mandate_options:
+                                description: Additional fields for Mandate creation
+                                properties:
+                                  transaction_type:
+                                    description: Transaction type of the mandate.
+                                    enum:
+                                    - business
+                                    - personal
+                                    type: string
+                                title: mandate_options_param
+                                type: object
+                              verification_method:
+                                description: Verification method for the intent
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: If paying by `acss_debit`, this sub-hash contains
+                            details about the Canadian pre-authorized debit payment
+                            method options to pass to the invoice’s PaymentIntent.
                         bancontact:
                           anyOf:
                           - properties:
@@ -47880,6 +48021,7 @@ paths:
                           enum:
                           - ach_credit_transfer
                           - ach_debit
+                          - acss_debit
                           - au_becs_debit
                           - bacs_debit
                           - bancontact
@@ -49865,6 +50007,36 @@ paths:
                       description: Payment-method-specific configuration to provide
                         to the invoice’s PaymentIntent.
                       properties:
+                        acss_debit:
+                          anyOf:
+                          - properties:
+                              mandate_options:
+                                description: Additional fields for Mandate creation
+                                properties:
+                                  transaction_type:
+                                    description: Transaction type of the mandate.
+                                    enum:
+                                    - business
+                                    - personal
+                                    type: string
+                                title: mandate_options_param
+                                type: object
+                              verification_method:
+                                description: Verification method for the intent
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: If paying by `acss_debit`, this sub-hash contains
+                            details about the Canadian pre-authorized debit payment
+                            method options to pass to the invoice’s PaymentIntent.
                         bancontact:
                           anyOf:
                           - properties:
@@ -49920,6 +50092,7 @@ paths:
                           enum:
                           - ach_credit_transfer
                           - ach_debit
+                          - acss_debit
                           - au_becs_debit
                           - bacs_debit
                           - bancontact
@@ -64237,6 +64410,7 @@ paths:
                 description: ''
                 properties:
                   data:
+                    description: Details about each object.
                     items:
                       "$ref": "#/components/schemas/product"
                     type: array
@@ -64260,6 +64434,7 @@ paths:
                 - has_more
                 - object
                 - url
+                title: ProductList
                 type: object
                 x-expandableFields:
                 - data
@@ -69593,6 +69768,17 @@ paths:
                                 A URL for custom mandate text to render during confirmation step.
                                 The URL will be rendered with additional GET parameters `payment_intent` and `payment_intent_client_secret` when confirming a Payment Intent,
                                 or `setup_intent` and `setup_intent_client_secret` when confirming a Setup Intent.
+                            default_for:
+                              description: List of Stripe products where this mandate
+                                can be selected automatically.
+                              items:
+                                enum:
+                                - invoice
+                                - subscription
+                                type: string
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: default_for
                             interval_description:
                               description: Description of the mandate interval. Only
                                 required if 'payment_schedule' parameter is 'interval'
@@ -69880,6 +70066,17 @@ paths:
                                 A URL for custom mandate text to render during confirmation step.
                                 The URL will be rendered with additional GET parameters `payment_intent` and `payment_intent_client_secret` when confirming a Payment Intent,
                                 or `setup_intent` and `setup_intent_client_secret` when confirming a Setup Intent.
+                            default_for:
+                              description: List of Stripe products where this mandate
+                                can be selected automatically.
+                              items:
+                                enum:
+                                - invoice
+                                - subscription
+                                type: string
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: default_for
                             interval_description:
                               description: Description of the mandate interval. Only
                                 required if 'payment_schedule' parameter is 'interval'
@@ -70203,6 +70400,17 @@ paths:
                                 A URL for custom mandate text to render during confirmation step.
                                 The URL will be rendered with additional GET parameters `payment_intent` and `payment_intent_client_secret` when confirming a Payment Intent,
                                 or `setup_intent` and `setup_intent_client_secret` when confirming a Setup Intent.
+                            default_for:
+                              description: List of Stripe products where this mandate
+                                can be selected automatically.
+                              items:
+                                enum:
+                                - invoice
+                                - subscription
+                                type: string
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: default_for
                             interval_description:
                               description: Description of the mandate interval. Only
                                 required if 'payment_schedule' parameter is 'interval'
@@ -74937,6 +75145,36 @@ paths:
                       description: Payment-method-specific configuration to provide
                         to invoices created by the subscription.
                       properties:
+                        acss_debit:
+                          anyOf:
+                          - properties:
+                              mandate_options:
+                                description: Additional fields for Mandate creation
+                                properties:
+                                  transaction_type:
+                                    description: Transaction type of the mandate.
+                                    enum:
+                                    - business
+                                    - personal
+                                    type: string
+                                title: mandate_options_param
+                                type: object
+                              verification_method:
+                                description: Verification method for the intent
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: This sub-hash contains details about the Canadian
+                            pre-authorized debit payment method options to pass to
+                            the invoice’s PaymentIntent.
                         bancontact:
                           anyOf:
                           - properties:
@@ -74990,6 +75228,7 @@ paths:
                           enum:
                           - ach_credit_transfer
                           - ach_debit
+                          - acss_debit
                           - au_becs_debit
                           - bacs_debit
                           - bancontact
@@ -75692,6 +75931,36 @@ paths:
                       description: Payment-method-specific configuration to provide
                         to invoices created by the subscription.
                       properties:
+                        acss_debit:
+                          anyOf:
+                          - properties:
+                              mandate_options:
+                                description: Additional fields for Mandate creation
+                                properties:
+                                  transaction_type:
+                                    description: Transaction type of the mandate.
+                                    enum:
+                                    - business
+                                    - personal
+                                    type: string
+                                title: mandate_options_param
+                                type: object
+                              verification_method:
+                                description: Verification method for the intent
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: This sub-hash contains details about the Canadian
+                            pre-authorized debit payment method options to pass to
+                            the invoice’s PaymentIntent.
                         bancontact:
                           anyOf:
                           - properties:
@@ -75745,6 +76014,7 @@ paths:
                           enum:
                           - ach_credit_transfer
                           - ach_debit
+                          - acss_debit
                           - au_becs_debit
                           - bacs_debit
                           - bancontact
