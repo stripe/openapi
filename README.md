@@ -1,4 +1,4 @@
-# Stripe's OpenAPI Specification
+# Stripe's OpenAPI Specification 
 
 This repository contains [OpenAPI specifications][openapi] for Stripe's API.
 
