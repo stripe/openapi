@@ -4513,6 +4513,8 @@ components:
           - paid
           - unpaid
           type: string
+        phone_number_collection:
+          "$ref": "#/components/schemas/payment_pages_checkout_session_phone_number_collection"
         recovered_from:
           description: The ID of the original expired Checkout Session that triggered
             the recovery flow.
@@ -4630,6 +4632,7 @@ components:
       - line_items
       - payment_intent
       - payment_method_options
+      - phone_number_collection
       - setup_intent
       - shipping
       - shipping_address_collection
@@ -4685,6 +4688,7 @@ components:
         - payment_pages_checkout_session_consent
         - payment_pages_checkout_session_consent_collection
         - payment_pages_checkout_session_customer_details
+        - payment_pages_checkout_session_phone_number_collection
         - payment_pages_checkout_session_tax_id_collection
         - payment_pages_checkout_session_total_details
         - payment_pages_payment_page_resources_shipping_address_collection
@@ -21121,6 +21125,11 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        phone:
+          description: The customer's phone number at the time of checkout
+          maxLength: 5000
+          nullable: true
+          type: string
         tax_exempt:
           description: The customer’s tax exempt status at time of checkout.
           enum:
@@ -21148,6 +21157,21 @@ components:
         in_class: checkout.session
         inner_classes:
         - payment_pages_checkout_session_tax_id
+    payment_pages_checkout_session_phone_number_collection:
+      description: ''
+      properties:
+        enabled:
+          description: Indicates whether phone number collection is enabled for the
+            session
+          type: boolean
+      required:
+      - enabled
+      title: PaymentPagesCheckoutSessionPhoneNumberCollection
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: PhoneNumberCollection
+        in_class: checkout.session
     payment_pages_checkout_session_tax_id:
       description: ''
       properties:
@@ -24530,12 +24554,14 @@ components:
           type: string
         item_type:
           description: The type of items in the value list. One of `card_fingerprint`,
-            `card_bin`, `email`, `ip_address`, `country`, `string`, or `case_sensitive_string`.
+            `card_bin`, `email`, `ip_address`, `country`, `string`, `case_sensitive_string`,
+            or `customer_id`.
           enum:
           - card_bin
           - card_fingerprint
           - case_sensitive_string
           - country
+          - customer_id
           - email
           - ip_address
           - string
@@ -31095,9 +31121,11 @@ components:
           nullable: true
           type: string
         device_type:
-          description: Type of reader, one of `bbpos_chipper2x` or `verifone_P400`.
+          description: Type of reader, one of `bbpos_chipper2x`, `bbpos_wisepos_e`,
+            or `verifone_P400`.
           enum:
           - bbpos_chipper2x
+          - bbpos_wisepos_e
           - verifone_P400
           type: string
         id:
@@ -40689,6 +40717,9 @@ paths:
               payment_method_types:
                 explode: true
                 style: deepObject
+              phone_number_collection:
+                explode: true
+                style: deepObject
               setup_intent_data:
                 explode: true
                 style: deepObject
@@ -41460,6 +41491,20 @@ paths:
                   type: array
                   x-stripeParam:
                     containee_entity_name: payment_method_type
+                phone_number_collection:
+                  description: |-
+                    Controls phone number collection settings for the session.
+
+                    We recommend that you review your privacy policy and check with your legal contacts
+                    before using this feature. Learn more about [collecting phone numbers with Checkout](https://stripe.com/docs/payments/checkout/phone-numbers).
+                  properties:
+                    enabled:
+                      description: Set to `true` to enable phone number collection.
+                      type: boolean
+                  required:
+                  - enabled
+                  title: phone_number_collection_params
+                  type: object
                 setup_intent_data:
                   description: A subset of parameters to be passed to SetupIntent
                     creation for Checkout Sessions in `setup` mode.
@@ -62717,7 +62762,7 @@ paths:
       - description: The ID of the customer whose PaymentMethods will be retrieved.
         in: query
         name: customer
-        required: true
+        required: false
         schema:
           maxLength: 5000
           type: string
@@ -68287,13 +68332,15 @@ paths:
                   type: array
                 item_type:
                   description: Type of the items in the value list. One of `card_fingerprint`,
-                    `card_bin`, `email`, `ip_address`, `country`, `string`, or `case_sensitive_string`.
-                    Use `string` if the item type is unknown or mixed.
+                    `card_bin`, `email`, `ip_address`, `country`, `string`, `case_sensitive_string`,
+                    or `customer_id`. Use `string` if the item type is unknown or
+                    mixed.
                   enum:
                   - card_bin
                   - card_fingerprint
                   - case_sensitive_string
                   - country
+                  - customer_id
                   - email
                   - ip_address
                   - string
@@ -78257,6 +78304,7 @@ paths:
         schema:
           enum:
           - bbpos_chipper2x
+          - bbpos_wisepos_e
           - verifone_P400
           type: string
           x-stripeBypassValidation: true
