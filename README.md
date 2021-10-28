@@ -16,13 +16,11 @@ Files can be found in the `openapi/` directory:
 * `fixtures3.{json,yaml}`: Test fixtures for resources in `spec3`. See below
   for more information.
 
-We used to support OpenAPI 2.0, but have since deprecated its use, and it's no
-longer receiving updates. It will still be available in `DEPRECATED_openapi`
-for the next few months:
 
-* `spec2.{json,yaml}`: OpenAPI 2.0 spec. No longer receiving updates.
-  Deprecated in favor of `spec3`.
-* `fixtures2.{json,yaml}`: Test fixtures for resources in `spec2`.
+We used to support OpenAPI 2.0, but have since deprecated its use, and it's no
+longer receiving updates. It is available on
+[old versions](https://github.com/stripe/openapi/tree/v83) of this repository.
+
 
 ## Vendor Extensions
 
