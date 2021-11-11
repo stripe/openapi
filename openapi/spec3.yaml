@@ -3460,6 +3460,15 @@ components:
           description: When set, provides configuration for Checkout to collect a
             shipping address from a customer.
           nullable: true
+        status:
+          description: The status of the Checkout Session, one of `open`, `complete`,
+            or `expired`.
+          enum:
+          - complete
+          - expired
+          - open
+          nullable: true
+          type: string
         submit_type:
           description: |-
             Describes the type of transaction being performed by Checkout in order to customize
@@ -22536,6 +22545,26 @@ components:
       title: SubscriptionItemBillingThresholds
       type: object
       x-expandableFields: []
+    subscription_payment_method_options_card:
+      description: ''
+      properties:
+        request_three_d_secure:
+          description: We strongly recommend that you rely on our SCA Engine to automatically
+            prompt your customers for authentication based on risk level and [other
+            requirements](https://stripe.com/docs/strong-customer-authentication).
+            However, if you wish to request 3D Secure based on logic from your own
+            fraud engine, provide this option. Read our guide on [manually requesting
+            3D Secure](https://stripe.com/docs/payments/3d-secure#manual-three-ds)
+            for more information on how this configuration interacts with Radar and
+            our SCA Engine.
+          enum:
+          - any
+          - automatic
+          nullable: true
+          type: string
+      title: subscription_payment_method_options_card
+      type: object
+      x-expandableFields: []
     subscription_pending_invoice_item_interval:
       description: ''
       properties:
@@ -23067,7 +23096,7 @@ components:
           nullable: true
         card:
           anyOf:
-          - "$ref": "#/components/schemas/invoice_payment_method_options_card"
+          - "$ref": "#/components/schemas/subscription_payment_method_options_card"
           description: This sub-hash contains details about the Card payment method
             options to pass to invoices created by the subscription.
           nullable: true
@@ -23151,7 +23180,8 @@ components:
           description: Indicates if a plan's `trial_period_days` should be applied
             to the subscription. Setting `trial_end` per subscription is preferred,
             and this defaults to `false`. Setting this flag to `true` together with
-            `trial_end` is not allowed.
+            `trial_end` is not allowed. See [Using trial periods on subscriptions](docs/billing/subscriptions/trials)
+            to learn more.
           nullable: true
           type: boolean
       required:
@@ -25252,7 +25282,7 @@ paths:
                   description: A card or bank account to attach to the account for
                     receiving [payouts](https://stripe.com/docs/connect/bank-debit-card-payouts)
                     (you won’t be able to use it for top-ups). You can provide either
-                    a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js),
+                    a token, like the ones returned by [Stripe.js](https://stripe.com/docs/js),
                     or a dictionary, as documented in the `external_account` parameter
                     for [bank account](https://stripe.com/docs/api#account_create_bank_account)
                     creation. <br><br>By default, providing an external account sets
@@ -29027,7 +29057,7 @@ paths:
                   description: A card or bank account to attach to the account for
                     receiving [payouts](https://stripe.com/docs/connect/bank-debit-card-payouts)
                     (you won’t be able to use it for top-ups). You can provide either
-                    a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js),
+                    a token, like the ones returned by [Stripe.js](https://stripe.com/docs/js),
                     or a dictionary, as documented in the `external_account` parameter
                     for [bank account](https://stripe.com/docs/api#account_create_bank_account)
                     creation. <br><br>By default, providing an external account sets
@@ -30019,7 +30049,7 @@ paths:
                   description: A card or bank account to attach to the account for
                     receiving [payouts](https://stripe.com/docs/connect/bank-debit-card-payouts)
                     (you won’t be able to use it for top-ups). You can provide either
-                    a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js),
+                    a token, like the ones returned by [Stripe.js](https://stripe.com/docs/js),
                     or a dictionary, as documented in the `external_account` parameter
                     for [bank account](https://stripe.com/docs/api#account_create_bank_account)
                     creation. <br><br>By default, providing an external account sets
@@ -37124,7 +37154,8 @@ paths:
                     on the Checkout page. In `subscription` mode, the customer’s [default payment method](https://stripe.com/docs/api/customers/update#update_customer-invoice_settings-default_payment_method)
                     will be used if it’s a card, and otherwise the most recent card will be used. A valid billing address is required for Checkout to prefill the customer's card details.
 
-                    If the customer changes their email on the Checkout page, the Customer object will be updated with the new email.
+                    If the Customer already has a valid [email](https://stripe.com/docs/api/customers/object#customer_object-email) set, the email will be prefilled and not editable in Checkout.
+                    If the Customer does not have a valid `email`, Checkout will set the email entered during the session on the Customer.
 
                     If blank for Checkout Sessions in `payment` or `subscription` mode, Checkout will create a new Customer object based on information provided during the payment flow.
 
@@ -37984,6 +38015,52 @@ paths:
             schema:
               additionalProperties: false
               properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/checkout.session"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/checkout/sessions/{session}/expire":
+    post:
+      description: |-
+        <p>A Session can be expired when it is in one of these statuses: <code>open</code> </p>
+
+        <p>After it expires, a customer can’t complete a Session and customers loading the Session see a message saying the Session is expired.</p>
+      operationId: PostCheckoutSessionsSessionExpire
+      parameters:
+      - in: path
+        name: session
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
               type: object
         required: false
       responses:
@@ -43168,7 +43245,7 @@ paths:
                                 - any
                                 - automatic
                                 type: string
-                            title: invoice_payment_method_options_param
+                            title: subscription_payment_method_options_param
                             type: object
                           - enum:
                             - ''
@@ -43266,17 +43343,23 @@ paths:
                     plan. If set, trial_end will override the default trial period
                     of the plan the customer is being subscribed to. The special value
                     `now` can be provided to end the customer's trial immediately.
-                    Can be at most two years from `billing_cycle_anchor`.
+                    Can be at most two years from `billing_cycle_anchor`. See [Using
+                    trial periods on subscriptions](docs/billing/subscriptions/trials)
+                    to learn more.
                 trial_from_plan:
                   description: Indicates if a plan's `trial_period_days` should be
                     applied to the subscription. Setting `trial_end` per subscription
                     is preferred, and this defaults to `false`. Setting this flag
-                    to `true` together with `trial_end` is not allowed.
+                    to `true` together with `trial_end` is not allowed. See [Using
+                    trial periods on subscriptions](docs/billing/subscriptions/trials)
+                    to learn more.
                   type: boolean
                 trial_period_days:
                   description: Integer representing the number of trial period days
                     before the customer is charged for the first time. This will always
-                    overwrite any trials that might apply via a subscribed plan.
+                    overwrite any trials that might apply via a subscribed plan. See
+                    [Using trial periods on subscriptions](docs/billing/subscriptions/trials)
+                    to learn more.
                   type: integer
               type: object
         required: false
@@ -43832,7 +43915,7 @@ paths:
                                 - any
                                 - automatic
                                 type: string
-                            title: invoice_payment_method_options_param
+                            title: subscription_payment_method_options_param
                             type: object
                           - enum:
                             - ''
@@ -43952,7 +44035,9 @@ paths:
                   description: Indicates if a plan's `trial_period_days` should be
                     applied to the subscription. Setting `trial_end` per subscription
                     is preferred, and this defaults to `false`. Setting this flag
-                    to `true` together with `trial_end` is not allowed.
+                    to `true` together with `trial_end` is not allowed. See [Using
+                    trial periods on subscriptions](docs/billing/subscriptions/trials)
+                    to learn more.
                   type: boolean
               type: object
         required: false
@@ -48100,7 +48185,8 @@ paths:
       - description: Indicates if a plan's `trial_period_days` should be applied to
           the subscription. Setting `subscription_trial_end` per subscription is preferred,
           and this defaults to `false`. Setting this flag to `true` together with
-          `subscription_trial_end` is not allowed.
+          `subscription_trial_end` is not allowed. See [Using trial periods on subscriptions](docs/billing/subscriptions/trials)
+          to learn more.
         in: query
         name: subscription_trial_from_plan
         required: false
@@ -48731,7 +48817,8 @@ paths:
       - description: Indicates if a plan's `trial_period_days` should be applied to
           the subscription. Setting `subscription_trial_end` per subscription is preferred,
           and this defaults to `false`. Setting this flag to `true` together with
-          `subscription_trial_end` is not allowed.
+          `subscription_trial_end` is not allowed. See [Using trial periods on subscriptions](docs/billing/subscriptions/trials)
+          to learn more.
         in: query
         name: subscription_trial_from_plan
         required: false
@@ -65394,7 +65481,7 @@ paths:
               properties:
                 bank_account:
                   description: A bank account to attach to the recipient. You can
-                    provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js),
+                    provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/js),
                     or a dictionary containing a user's bank account details, with
                     the options described below.
                   maxLength: 5000
@@ -65404,10 +65491,10 @@ paths:
                   description: A U.S. Visa or MasterCard debit card (_not_ prepaid)
                     to attach to the recipient. If the debit card is not valid, recipient
                     creation will fail. You can provide either a token, like the ones
-                    returned by [Stripe.js](https://stripe.com/docs/stripe-js), or
-                    a dictionary containing a user's debit card details, with the
-                    options described below. Although not all information is required,
-                    the extra info helps prevent fraud.
+                    returned by [Stripe.js](https://stripe.com/docs/js), or a dictionary
+                    containing a user's debit card details, with the options described
+                    below. Although not all information is required, the extra info
+                    helps prevent fraud.
                   maxLength: 5000
                   type: string
                   x-stripeBypassValidation: true
@@ -65590,7 +65677,7 @@ paths:
               properties:
                 bank_account:
                   description: A bank account to attach to the recipient. You can
-                    provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js),
+                    provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/js),
                     or a dictionary containing a user's bank account details, with
                     the options described below.
                   maxLength: 5000
@@ -65599,7 +65686,7 @@ paths:
                 card:
                   description: A U.S. Visa or MasterCard debit card (not prepaid)
                     to attach to the recipient. You can provide either a token, like
-                    the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js),
+                    the ones returned by [Stripe.js](https://stripe.com/docs/js),
                     or a dictionary containing a user's debit card details, with the
                     options described below. Passing `card` will create a new card,
                     make it the new recipient default card, and delete the old recipient
@@ -72150,7 +72237,7 @@ paths:
                                 - any
                                 - automatic
                                 type: string
-                            title: invoice_payment_method_options_param
+                            title: subscription_payment_method_options_param
                             type: object
                           - enum:
                             - ''
@@ -72248,17 +72335,23 @@ paths:
                     plan. If set, trial_end will override the default trial period
                     of the plan the customer is being subscribed to. The special value
                     `now` can be provided to end the customer's trial immediately.
-                    Can be at most two years from `billing_cycle_anchor`.
+                    Can be at most two years from `billing_cycle_anchor`. See [Using
+                    trial periods on subscriptions](docs/billing/subscriptions/trials)
+                    to learn more.
                 trial_from_plan:
                   description: Indicates if a plan's `trial_period_days` should be
                     applied to the subscription. Setting `trial_end` per subscription
                     is preferred, and this defaults to `false`. Setting this flag
-                    to `true` together with `trial_end` is not allowed.
+                    to `true` together with `trial_end` is not allowed. See [Using
+                    trial periods on subscriptions](docs/billing/subscriptions/trials)
+                    to learn more.
                   type: boolean
                 trial_period_days:
                   description: Integer representing the number of trial period days
                     before the customer is charged for the first time. This will always
-                    overwrite any trials that might apply via a subscribed plan.
+                    overwrite any trials that might apply via a subscribed plan. See
+                    [Using trial periods on subscriptions](docs/billing/subscriptions/trials)
+                    to learn more.
                   type: integer
               required:
               - customer
@@ -72793,7 +72886,7 @@ paths:
                                 - any
                                 - automatic
                                 type: string
-                            title: invoice_payment_method_options_param
+                            title: subscription_payment_method_options_param
                             type: object
                           - enum:
                             - ''
@@ -72913,7 +73006,9 @@ paths:
                   description: Indicates if a plan's `trial_period_days` should be
                     applied to the subscription. Setting `trial_end` per subscription
                     is preferred, and this defaults to `false`. Setting this flag
-                    to `true` together with `trial_end` is not allowed.
+                    to `true` together with `trial_end` is not allowed. See [Using
+                    trial periods on subscriptions](docs/billing/subscriptions/trials)
+                    to learn more.
                   type: boolean
               type: object
         required: false
