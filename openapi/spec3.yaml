@@ -570,7 +570,7 @@ components:
           type: array
         disabled_reason:
           description: |-
-            If the capability is disabled, this string describes why. Can be `requirements.past_due`, `requirements.pending_verification`, `listed`, `platform_paused`, `rejected.fraud`, `rejected.listed`, `rejected.terms_of_service`, `rejected.other`, `under_review`, or `other`.
+            If the capability is disabled, this string describes why. Can be `requirements.past_due`, `requirements.pending_verification`, `listed`, `platform_paused`, `rejected.listed`, `rejected.terms_of_service`, `rejected.card_casher`, `rejected.auto_fraud_shutdown`, `rejected.fraud`, `rejected.dishonest_merchant`, `rejected.identity_fraud`, `rejected.platform_fraud`, `rejected.platform_terms_of_service`, `rejected.other`, `under_review`, or `other`.
 
             `rejected.unsupported_business` means that the account's business is not supported by the capability. For example, payment methods may restrict the businesses they support in their terms of service:
 
@@ -874,7 +874,9 @@ components:
         disabled_reason:
           description: If the account is disabled, this string describes why. Can
             be `requirements.past_due`, `requirements.pending_verification`, `listed`,
-            `platform_paused`, `rejected.fraud`, `rejected.listed`, `rejected.terms_of_service`,
+            `platform_paused`, `rejected.listed`, `rejected.terms_of_service`, `rejected.card_casher`,
+            `rejected.auto_fraud_shutdown`, `rejected.fraud`, `rejected.dishonest_merchant`,
+            `rejected.identity_fraud`, `rejected.platform_fraud`, `rejected.platform_terms_of_service`,
             `rejected.other`, `under_review`, or `other`.
           maxLength: 5000
           nullable: true
@@ -13185,6 +13187,17 @@ components:
       title: PackageDimensions
       type: object
       x-expandableFields: []
+    payment_flows_automatic_payment_methods_payment_intent:
+      description: ''
+      properties:
+        enabled:
+          description: Automatically calculates compatible payment methods
+          type: boolean
+      required:
+      - enabled
+      title: PaymentFlowsAutomaticPaymentMethodsPaymentIntent
+      type: object
+      x-expandableFields: []
     payment_flows_private_payment_methods_alipay:
       description: ''
       properties: {}
@@ -13277,6 +13290,12 @@ components:
             [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).
           nullable: true
           type: integer
+        automatic_payment_methods:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_flows_automatic_payment_methods_payment_intent"
+          description: Settings to configure compatible payment methods from the [Stripe
+            Dashboard](https://dashboard.stripe.com/settings/payment_methods)
+          nullable: true
         canceled_at:
           description: Populated when `status` is `canceled`, this is the time at
             which the PaymentIntent was canceled. Measured in seconds since the Unix
@@ -13559,6 +13578,7 @@ components:
       type: object
       x-expandableFields:
       - application
+      - automatic_payment_methods
       - charges
       - customer
       - invoice
@@ -13584,7 +13604,8 @@ components:
           "$ref": "#/components/schemas/payment_intent_next_action_redirect_to_url"
         type:
           description: Type of the next action to perform, one of `redirect_to_url`,
-            `use_stripe_sdk`, `alipay_handle_redirect`, or `oxxo_display_details`.
+            `use_stripe_sdk`, `alipay_handle_redirect`, `oxxo_display_details`, or
+            `verify_with_microdeposits`.
           maxLength: 5000
           type: string
         use_stripe_sdk:
@@ -20517,7 +20538,8 @@ components:
           "$ref": "#/components/schemas/setup_intent_next_action_redirect_to_url"
         type:
           description: Type of the next action to perform, one of `redirect_to_url`,
-            `use_stripe_sdk`, `alipay_handle_redirect`, or `oxxo_display_details`.
+            `use_stripe_sdk`, `alipay_handle_redirect`, `oxxo_display_details`, or
+            `verify_with_microdeposits`.
           maxLength: 5000
           type: string
         use_stripe_sdk:
@@ -37434,10 +37456,6 @@ paths:
                         - enabled
                         title: adjustable_quantity_params
                         type: object
-                      amount:
-                        type: integer
-                      currency:
-                        type: string
                       description:
                         maxLength: 5000
                         type: string
@@ -37446,14 +37464,6 @@ paths:
                           maxLength: 5000
                           type: string
                         type: array
-                      images:
-                        items:
-                          maxLength: 5000
-                          type: string
-                        type: array
-                      name:
-                        maxLength: 5000
-                        type: string
                       price:
                         maxLength: 5000
                         type: string
@@ -57527,6 +57537,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              automatic_payment_methods:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -57575,6 +57588,17 @@ paths:
                     more information, see the PaymentIntents [use case for connected
                     accounts](https://stripe.com/docs/payments/connected-accounts).
                   type: integer
+                automatic_payment_methods:
+                  description: When enabled, this PaymentIntent will accept payment
+                    methods that you have enabled in the Dashboard and are compatible
+                    with this PaymentIntent's other parameters.
+                  properties:
+                    enabled:
+                      type: boolean
+                  required:
+                  - enabled
+                  title: automatic_payment_methods_param
+                  type: object
                 capture_method:
                   description: Controls when the funds will be captured from the customer's
                     account.
