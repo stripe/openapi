@@ -2263,6 +2263,7 @@ components:
       - "$ref": "#/components/schemas/transfer"
       - "$ref": "#/components/schemas/transfer_reversal"
       title: Polymorphic
+      x-stripeBypassValidation: true
       x-stripeResource:
         class_name: BalanceTransactionSource
     bank_account:
@@ -5049,7 +5050,7 @@ components:
       description: |-
         A coupon contains information about a percent-off or amount-off discount you
         might want to apply to a customer. Coupons may be applied to [invoices](https://stripe.com/docs/api#invoices) or
-        [orders](https://stripe.com/docs/api#create_order-coupon). Coupons do not work with conventional one-off [charges](https://stripe.com/docs/api#create_charge).
+        [orders](https://stripe.com/docs/api#create_order_legacy-coupon). Coupons do not work with conventional one-off [charges](https://stripe.com/docs/api#create_charge).
       properties:
         amount_off:
           description: Amount (in the `currency` specified) that will be taken off
@@ -5711,10 +5712,7 @@ components:
         in_class: credit_note
     customer:
       description: |-
-        `Customer` objects allow you to perform recurring charges, and to track
-        multiple charges, that are associated with the same customer. The API allows
-        you to create, delete, and update your customers. You can retrieve individual
-        customers as well as a list of all your customers.
+        This object represents a customer of your business. It lets you create recurring charges and track payments that belong to the same customer.
 
         Related guide: [Save a card during payment](https://stripe.com/docs/payments/save-during-payment).
       properties:
@@ -6723,6 +6721,7 @@ components:
       - "$ref": "#/components/schemas/deleted_card"
       title: Polymorphic
       x-resourceId: deleted_external_account
+      x-stripeBypassValidation: true
       x-stripeResource:
         class_name: DeletedExternalAccount
     deleted_invoice:
@@ -8107,6 +8106,7 @@ components:
       - "$ref": "#/components/schemas/card"
       title: Polymorphic
       x-resourceId: external_account
+      x-stripeBypassValidation: true
       x-stripeOperations:
       - method_name: list
         method_on: collection
@@ -18162,6 +18162,18 @@ components:
           - challenge_only
           nullable: true
           type: string
+        setup_future_usage:
+          description: |-
+            Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+            Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+            When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+          enum:
+          - none
+          - off_session
+          - on_session
+          type: string
       required:
       - installments
       - network
@@ -18234,6 +18246,27 @@ components:
       x-stripeResource:
         class_name: SepaDebit
         in_class: payment_intent_payment_method_options
+    payment_intent_type_specific_payment_method_options_client:
+      description: ''
+      properties:
+        setup_future_usage:
+          description: |-
+            Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+            Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+            When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+          enum:
+          - none
+          - off_session
+          - on_session
+          type: string
+      title: PaymentIntentTypeSpecificPaymentMethodOptionsClient
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: PaymentIntentTypeSpecificPaymentMethodOptionsClient
+        in_package: ''
     payment_method:
       description: |-
         PaymentMethod objects represent your customer's payment instruments.
@@ -22166,6 +22199,7 @@ components:
           - bank_account
           - card
           type: string
+          x-stripeBypassValidation: true
       required:
       - amount
       - arrival_date
@@ -22650,9 +22684,8 @@ components:
       properties:
         director:
           description: Whether the person is a director of the account's legal entity.
-            Currently only required for accounts in the EU. Directors are typically
-            members of the governing board of the company, or responsible for ensuring
-            the company meets its regulatory obligations.
+            Directors are typically members of the governing board of the company,
+            or responsible for ensuring the company meets its regulatory obligations.
           nullable: true
           type: boolean
         executive:
@@ -37430,10 +37463,9 @@ paths:
                   properties:
                     director:
                       description: Whether the person is a director of the account's
-                        legal entity. Currently only required for accounts in the
-                        EU. Directors are typically members of the governing board
-                        of the company, or responsible for ensuring the company meets
-                        its regulatory obligations.
+                        legal entity. Directors are typically members of the governing
+                        board of the company, or responsible for ensuring the company
+                        meets its regulatory obligations.
                       type: boolean
                     executive:
                       description: Whether the person has significant responsibility
@@ -37964,10 +37996,9 @@ paths:
                   properties:
                     director:
                       description: Whether the person is a director of the account's
-                        legal entity. Currently only required for accounts in the
-                        EU. Directors are typically members of the governing board
-                        of the company, or responsible for ensuring the company meets
-                        its regulatory obligations.
+                        legal entity. Directors are typically members of the governing
+                        board of the company, or responsible for ensuring the company
+                        meets its regulatory obligations.
                       type: boolean
                     executive:
                       description: Whether the person has significant responsibility
@@ -45047,8 +45078,7 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
     get:
-      description: "<p>Retrieves the details of an existing customer. You need only
-        supply the unique customer identifier that was returned upon customer creation.</p>"
+      description: "<p>Retrieves a Customer object.</p>"
       operationId: GetCustomersCustomer
       parameters:
       - in: path
@@ -61366,6 +61396,21 @@ paths:
                             maxLength: 5000
                             type: string
                             x-stripeBypassValidation: true
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - ''
+                            - none
+                            - off_session
+                            - on_session
+                            type: string
                         title: payment_intent_param
                         type: object
                       - enum:
@@ -62518,6 +62563,21 @@ paths:
                             maxLength: 5000
                             type: string
                             x-stripeBypassValidation: true
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - ''
+                            - none
+                            - off_session
+                            - on_session
+                            type: string
                         title: payment_intent_param
                         type: object
                       - enum:
@@ -63814,6 +63874,21 @@ paths:
                             maxLength: 5000
                             type: string
                             x-stripeBypassValidation: true
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - ''
+                            - none
+                            - off_session
+                            - on_session
+                            type: string
                         title: payment_intent_param
                         type: object
                       - enum:
@@ -67703,7 +67778,9 @@ paths:
           description: Error response.
   "/v1/promotion_codes/{promotion_code}":
     get:
-      description: "<p>Retrieves the promotion code with the given ID.</p>"
+      description: <p>Retrieves the promotion code with the given ID. In order to
+        retrieve a promotion code by the customer-facing <code>code</code> use <a
+        href="/docs/api/promotion_codes/list">list</a> with the desired <code>code</code>.</p>
       operationId: GetPromotionCodesPromotionCode
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -81418,8 +81495,7 @@ paths:
                       properties:
                         director:
                           description: Whether the person is a director of the account's
-                            legal entity. Currently only required for accounts in
-                            the EU. Directors are typically members of the governing
+                            legal entity. Directors are typically members of the governing
                             board of the company, or responsible for ensuring the
                             company meets its regulatory obligations.
                           type: boolean
