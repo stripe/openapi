@@ -125,7 +125,7 @@ Run the test suite:
 
     make
 
-[expand]: https://stripe.com/docs/api/java#expanding_objects
+[expand]: https://stripe.com/docs/api/#expanding_objects
 [openapi]: https://www.openapis.org/
 
 <!--
