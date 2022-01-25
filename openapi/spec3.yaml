@@ -14256,12 +14256,16 @@ components:
       type: object
       x-expandableFields: []
     payment_link:
-      description: A payment link allows you create payment pages through a url you
-        can share with customers.
+      description: |-
+        A payment link is a shareable URL that will take your customers to a hosted payment page. A payment link can be shared and used multiple times.
+
+        When a customer opens a payment link it will open a new [checkout session](https://stripe.com/docs/api/checkout/sessions) to render the payment page. You can use [checkout session events](https://stripe.com/docs/api/events/types#event_types-checkout.session.completed) to track payments through payment links.
+
+        Related guide: [Payment Links API](https://stripe.com/docs/payments/payment-links/api)
       properties:
         active:
           description: Whether the payment link's `url` is active. If `false`, customers
-            visiting the url will be redirected.
+            visiting the URL will be shown a page saying that the link has been deactivated.
           type: boolean
         after_completion:
           "$ref": "#/components/schemas/payment_links_resource_after_completion"
@@ -14354,14 +14358,16 @@ components:
             - "$ref": "#/components/schemas/account"
         payment_method_types:
           description: The list of payment method types that customers can use. When
-            `null`, your [payment methods settings](https://dashboard.stripe.com/settings/payment_methods)
-            will be used.
+            `null`, Stripe will dynamically show relevant payment methods you've enabled
+            in your [payment method settings](https://dashboard.stripe.com/settings/payment_methods).
           items:
             enum:
             - card
             type: string
           nullable: true
           type: array
+        phone_number_collection:
+          "$ref": "#/components/schemas/payment_links_resource_phone_number_collection"
         shipping_address_collection:
           anyOf:
           - "$ref": "#/components/schemas/payment_links_resource_shipping_address_collection"
@@ -14381,7 +14387,7 @@ components:
             tax reporting, and where funds from each payment will be transferred to.
           nullable: true
         url:
-          description: The public url that can be shared with customers.
+          description: The public URL that can be shared with customers.
           maxLength: 5000
           type: string
       required:
@@ -14394,6 +14400,7 @@ components:
       - livemode
       - metadata
       - object
+      - phone_number_collection
       - url
       title: PaymentLink
       type: object
@@ -14402,6 +14409,7 @@ components:
       - automatic_tax
       - line_items
       - on_behalf_of
+      - phone_number_collection
       - shipping_address_collection
       - subscription_data
       - transfer_data
@@ -14454,13 +14462,24 @@ components:
       description: ''
       properties:
         url:
-          description: The `url` the customer will be redirected to after the purchase
+          description: The URL the customer will be redirected to after the purchase
             is complete.
           maxLength: 5000
           type: string
       required:
       - url
       title: PaymentLinksResourceCompletionBehaviorRedirect
+      type: object
+      x-expandableFields: []
+    payment_links_resource_phone_number_collection:
+      description: ''
+      properties:
+        enabled:
+          description: If `true`, a phone number will be collected during checkout.
+          type: boolean
+      required:
+      - enabled
+      title: PaymentLinksResourcePhoneNumberCollection
       type: object
       x-expandableFields: []
     payment_links_resource_shipping_address_collection:
@@ -14721,9 +14740,8 @@ components:
       description: ''
       properties:
         trial_period_days:
-          description: When creating a subscription, the specified configuration data
-            will be used. There must be at least one line item with a recurring price
-            to use `subscription_data`.
+          description: Integer representing the number of trial period days before
+            the customer is charged for the first time.
           nullable: true
           type: integer
       title: PaymentLinksResourceSubscriptionData
@@ -25695,7 +25713,7 @@ paths:
       description: |-
         <p>With <a href="/docs/connect">Connect</a>, you can delete accounts you manage.</p>
 
-        <p>Accounts created using test-mode keys can be deleted at any time. Custom or Express accounts created using live-mode keys can only be deleted once all balances are zero.</p>
+        <p>Accounts created using test-mode keys can be deleted at any time. Standard accounts created using live-mode keys cannot be deleted. Custom or Express accounts created using live-mode keys can only be deleted once all balances are zero.</p>
 
         <p>If you want to delete your own account, use the <a href="https://dashboard.stripe.com/account">account information tab in your account settings</a> instead.</p>
       operationId: DeleteAccount
@@ -30443,7 +30461,7 @@ paths:
       description: |-
         <p>With <a href="/docs/connect">Connect</a>, you can delete accounts you manage.</p>
 
-        <p>Accounts created using test-mode keys can be deleted at any time. Custom or Express accounts created using live-mode keys can only be deleted once all balances are zero.</p>
+        <p>Accounts created using test-mode keys can be deleted at any time. Standard accounts created using live-mode keys cannot be deleted. Custom or Express accounts created using live-mode keys can only be deleted once all balances are zero.</p>
 
         <p>If you want to delete your own account, use the <a href="https://dashboard.stripe.com/account">account information tab in your account settings</a> instead.</p>
       operationId: DeleteAccountsAccount
@@ -43285,7 +43303,6 @@ paths:
                   url:
                     description: The URL where this list can be accessed.
                     maxLength: 5000
-                    pattern: "^/v1/customers/:customer/payment_methods"
                     type: string
                 required:
                 - data
@@ -61586,6 +61603,9 @@ paths:
               payment_method_types:
                 explode: true
                 style: deepObject
+              phone_number_collection:
+                explode: true
+                style: deepObject
               shipping_address_collection:
                 explode: true
                 style: deepObject
@@ -61702,21 +61722,35 @@ paths:
                     Individual keys can be unset by posting an empty value to them.
                     All keys can be unset by posting an empty value to `metadata`.
                     Metadata associated with this Payment Link will automatically
-                    be copied to Checkout Sessions created by this Payment Link.
+                    be copied to [checkout sessions](https://stripe.com/docs/api/checkout/sessions)
+                    created by this payment link.
                   type: object
                 on_behalf_of:
                   description: The account on behalf of which to charge.
                   type: string
                 payment_method_types:
-                  description: The list of payment method types (e.g., card) that
-                    customers can use. Only `card` is supported. If no value is passed,
-                    your [payment methods settings](https://dashboard.stripe.com/settings/payment_methods)
-                    will be used.
+                  description: The list of payment method types that customers can
+                    use. Only `card` is supported. If no value is passed, Stripe will
+                    dynamically show relevant payment methods from your [payment method
+                    settings](https://dashboard.stripe.com/settings/payment_methods)
+                    (20+ payment methods [supported](https://stripe.com/docs/payments/payment-methods/integration-options#payment-method-product-support)).
                   items:
                     enum:
                     - card
                     type: string
                   type: array
+                phone_number_collection:
+                  description: |-
+                    Controls phone number collection settings during checkout.
+
+                    We recommend that you review your privacy policy and check with your legal contacts.
+                  properties:
+                    enabled:
+                      type: boolean
+                  required:
+                  - enabled
+                  title: phone_number_collection_params
+                  type: object
                 shipping_address_collection:
                   description: Configuration for collecting the customer's shipping
                     address.
@@ -62090,7 +62124,8 @@ paths:
               properties:
                 active:
                   description: Whether the payment link's `url` is active. If `false`,
-                    customers visiting the url will be redirected.
+                    customers visiting the URL will be shown a page saying that the
+                    link has been deactivated.
                   type: boolean
                 after_completion:
                   description: Behavior after the purchase is complete.
@@ -62182,7 +62217,8 @@ paths:
                     Individual keys can be unset by posting an empty value to them.
                     All keys can be unset by posting an empty value to `metadata`.
                     Metadata associated with this Payment Link will automatically
-                    be copied to Checkout Sessions created by this Payment Link.
+                    be copied to [checkout sessions](https://stripe.com/docs/api/checkout/sessions)
+                    created by this payment link.
                   type: object
                 payment_method_types:
                   anyOf:
@@ -62194,10 +62230,9 @@ paths:
                   - enum:
                     - ''
                     type: string
-                  description: The list of payment method types (e.g., card) that
-                    customers can use. Only `card` is supported. Pass an empty string
-                    to enable automatic payment methods that use your [payment methods
-                    settings](https://dashboard.stripe.com/settings/payment_methods).
+                  description: The list of payment method types that customers can
+                    use. Only `card` is supported. Pass an empty string to enable
+                    automatic payment methods that use your [payment method settings](https://dashboard.stripe.com/settings/payment_methods).
                 shipping_address_collection:
                   anyOf:
                   - properties:
@@ -79446,6 +79481,8 @@ paths:
                     - payment_intent.processing
                     - payment_intent.requires_action
                     - payment_intent.succeeded
+                    - payment_link.created
+                    - payment_link.updated
                     - payment_method.attached
                     - payment_method.automatically_updated
                     - payment_method.detached
@@ -79788,6 +79825,8 @@ paths:
                     - payment_intent.processing
                     - payment_intent.requires_action
                     - payment_intent.succeeded
+                    - payment_link.created
+                    - payment_link.updated
                     - payment_method.attached
                     - payment_method.automatically_updated
                     - payment_method.detached
