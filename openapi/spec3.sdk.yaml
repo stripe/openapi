@@ -559,6 +559,14 @@ components:
           - inactive
           - pending
           type: string
+        konbini_payments:
+          description: The status of the konbini payments capability of the account,
+            or whether the account can directly process konbini charges.
+          enum:
+          - active
+          - inactive
+          - pending
+          type: string
         legacy_payments:
           description: The status of the legacy payments capability of the account.
           enum:
@@ -4869,6 +4877,24 @@ components:
       x-stripeResource:
         class_name: Boleto
         in_class: checkout_session_payment_method_options
+    checkout_konbini_payment_method_options:
+      description: ''
+      properties:
+        expires_after_days:
+          description: The number of calendar days (between 1 and 60) after which
+            Konbini payment instructions will expire. For example, if a PaymentIntent
+            is confirmed with Konbini and `expires_after_days` set to 2 on Monday
+            JST, the instructions will expire on Wednesday 23:59:59 JST.
+          nullable: true
+          type: integer
+      required:
+      - expires_after_days
+      title: CheckoutKonbiniPaymentMethodOptions
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Konbini
+        in_class: checkout_session_payment_method_options
     checkout_oxxo_payment_method_options:
       description: ''
       properties:
@@ -4893,6 +4919,8 @@ components:
           "$ref": "#/components/schemas/checkout_acss_debit_payment_method_options"
         boleto:
           "$ref": "#/components/schemas/checkout_boleto_payment_method_options"
+        konbini:
+          "$ref": "#/components/schemas/checkout_konbini_payment_method_options"
         oxxo:
           "$ref": "#/components/schemas/checkout_oxxo_payment_method_options"
       title: CheckoutSessionPaymentMethodOptions
@@ -4900,6 +4928,7 @@ components:
       x-expandableFields:
       - acss_debit
       - boleto
+      - konbini
       - oxxo
       x-stripeResource:
         class_name: PaymentMethodOptions
@@ -4907,6 +4936,7 @@ components:
         inner_classes:
         - checkout_acss_debit_payment_method_options
         - checkout_boleto_payment_method_options
+        - checkout_konbini_payment_method_options
         - checkout_oxxo_payment_method_options
     connect_collection_transfer:
       description: ''
@@ -10726,6 +10756,15 @@ components:
       x-stripeResource:
         class_name: Card
         in_class: invoices_payment_method_options
+    invoice_payment_method_options_konbini:
+      description: ''
+      properties: {}
+      title: invoice_payment_method_options_konbini
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Konbini
+        in_class: invoices_payment_method_options
     invoice_setting_custom_field:
       description: ''
       properties:
@@ -11175,16 +11214,24 @@ components:
           description: If paying by `card`, this sub-hash contains details about the
             Card payment method options to pass to the invoice’s PaymentIntent.
           nullable: true
+        konbini:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_payment_method_options_konbini"
+          description: If paying by `konbini`, this sub-hash contains details about
+            the Konbini payment method options to pass to the invoice’s PaymentIntent.
+          nullable: true
       required:
       - acss_debit
       - bancontact
       - card
+      - konbini
       title: InvoicesPaymentMethodOptions
       type: object
       x-expandableFields:
       - acss_debit
       - bancontact
       - card
+      - konbini
       x-stripeResource:
         class_name: PaymentMethodOptions
         in_class: invoice
@@ -11192,6 +11239,7 @@ components:
         - invoice_payment_method_options_acss_debit
         - invoice_payment_method_options_bancontact
         - invoice_payment_method_options_card
+        - invoice_payment_method_options_konbini
     invoices_payment_settings:
       description: ''
       properties:
@@ -11221,6 +11269,7 @@ components:
             - giropay
             - grabpay
             - ideal
+            - konbini
             - sepa_credit_transfer
             - sepa_debit
             - sofort
@@ -17863,6 +17912,9 @@ components:
         - payment_intent_next_action_alipay_handle_redirect
         - payment_intent_next_action_boleto
         - payment_intent_next_action_display_oxxo_details
+        - payment_intent_next_action_konbini
+        - payment_intent_next_action_konbini_stores
+        - payment_intent_next_action_konbini_stores_store
         - payment_intent_next_action_redirect_to_url
         - payment_intent_payment_method_options
         - payment_intent_processing
@@ -17883,6 +17935,8 @@ components:
           "$ref": "#/components/schemas/payment_intent_next_action_alipay_handle_redirect"
         boleto_display_details:
           "$ref": "#/components/schemas/payment_intent_next_action_boleto"
+        konbini_display_details:
+          "$ref": "#/components/schemas/payment_intent_next_action_konbini"
         oxxo_display_details:
           "$ref": "#/components/schemas/payment_intent_next_action_display_oxxo_details"
         redirect_to_url:
@@ -17914,6 +17968,7 @@ components:
       x-expandableFields:
       - alipay_handle_redirect
       - boleto_display_details
+      - konbini_display_details
       - oxxo_display_details
       - redirect_to_url
       - verify_with_microdeposits
@@ -18029,6 +18084,89 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: NextActionOxxoDisplayDetails
+        in_class: payment_intent
+    payment_intent_next_action_konbini:
+      description: ''
+      properties:
+        expires_at:
+          description: The timestamp at which the pending Konbini payment expires.
+          format: unix-time
+          type: integer
+        hosted_voucher_url:
+          description: The URL for the Konbini payment instructions page, which allows
+            customers to view and print a Konbini voucher.
+          maxLength: 5000
+          nullable: true
+          type: string
+        stores:
+          "$ref": "#/components/schemas/payment_intent_next_action_konbini_stores"
+      required:
+      - expires_at
+      - hosted_voucher_url
+      - stores
+      title: payment_intent_next_action_konbini
+      type: object
+      x-expandableFields:
+      - stores
+      x-stripeResource:
+        class_name: NextActionKonbiniDisplayDetails
+        in_class: payment_intent
+    payment_intent_next_action_konbini_stores:
+      description: ''
+      properties:
+        familymart:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_intent_next_action_konbini_stores_store"
+          description: FamilyMart instruction details.
+          nullable: true
+        lawson:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_intent_next_action_konbini_stores_store"
+          description: Lawson instruction details.
+          nullable: true
+        ministop:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_intent_next_action_konbini_stores_store"
+          description: Ministop instruction details.
+          nullable: true
+        seicomart:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_intent_next_action_konbini_stores_store"
+          description: Seicomart instruction details.
+          nullable: true
+      required:
+      - familymart
+      - lawson
+      - ministop
+      - seicomart
+      title: payment_intent_next_action_konbini_stores
+      type: object
+      x-expandableFields:
+      - familymart
+      - lawson
+      - ministop
+      - seicomart
+      x-stripeResource:
+        class_name: NextActionKonbiniDisplayDetailsStores
+        in_class: payment_intent
+    payment_intent_next_action_konbini_stores_store:
+      description: ''
+      properties:
+        confirmation_number:
+          description: The confirmation number.
+          maxLength: 5000
+          type: string
+        payment_code:
+          description: The payment code.
+          maxLength: 5000
+          type: string
+      required:
+      - payment_code
+      title: payment_intent_next_action_konbini_stores_store
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: NextActionKonbiniDisplayDetailsStoresStore
         in_class: payment_intent
     payment_intent_next_action_redirect_to_url:
       description: ''
@@ -18200,6 +18338,8 @@ components:
           "$ref": "#/components/schemas/payment_method_options_interac_present"
         klarna:
           "$ref": "#/components/schemas/payment_method_options_klarna"
+        konbini:
+          "$ref": "#/components/schemas/payment_method_options_konbini"
         oxxo:
           "$ref": "#/components/schemas/payment_method_options_oxxo"
         p24:
@@ -18229,6 +18369,7 @@ components:
       - ideal
       - interac_present
       - klarna
+      - konbini
       - oxxo
       - p24
       - sepa_debit
@@ -18256,6 +18397,7 @@ components:
         - payment_method_options_ideal
         - payment_method_options_interac_present
         - payment_method_options_klarna
+        - payment_method_options_konbini
         - payment_method_options_oxxo
         - payment_method_options_p24
         - payment_method_options_sofort
@@ -19213,6 +19355,8 @@ components:
           "$ref": "#/components/schemas/payment_method_interac_present"
         klarna:
           "$ref": "#/components/schemas/payment_method_klarna"
+        konbini:
+          "$ref": "#/components/schemas/payment_method_konbini"
         livemode:
           description: Has the value `true` if the object exists in live mode or the
             value `false` if the object exists in test mode.
@@ -19261,6 +19405,7 @@ components:
           - ideal
           - interac_present
           - klarna
+          - konbini
           - oxxo
           - p24
           - sepa_debit
@@ -19300,6 +19445,7 @@ components:
       - ideal
       - interac_present
       - klarna
+      - konbini
       - oxxo
       - p24
       - sepa_debit
@@ -19413,6 +19559,7 @@ components:
         - payment_method_ideal
         - payment_method_interac_present
         - payment_method_klarna
+        - payment_method_konbini
         - payment_method_oxxo
         - payment_method_p24
         - payment_method_sepa_debit
@@ -19917,6 +20064,8 @@ components:
           "$ref": "#/components/schemas/payment_method_details_interac_present"
         klarna:
           "$ref": "#/components/schemas/payment_method_details_klarna"
+        konbini:
+          "$ref": "#/components/schemas/payment_method_details_konbini"
         multibanco:
           "$ref": "#/components/schemas/payment_method_details_multibanco"
         oxxo:
@@ -19965,6 +20114,7 @@ components:
       - ideal
       - interac_present
       - klarna
+      - konbini
       - multibanco
       - oxxo
       - p24
@@ -19996,6 +20146,8 @@ components:
         - payment_method_details_ideal
         - payment_method_details_interac_present
         - payment_method_details_klarna
+        - payment_method_details_konbini
+        - payment_method_details_konbini_store
         - payment_method_details_multibanco
         - payment_method_details_oxxo
         - payment_method_details_p24
@@ -21402,6 +21554,45 @@ components:
       x-stripeResource:
         class_name: Klarna
         in_class: payment_method_details
+    payment_method_details_konbini:
+      description: ''
+      properties:
+        store:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_details_konbini_store"
+          description: If the payment succeeded, this contains the details of the
+            convenience store where the payment was completed.
+          nullable: true
+      required:
+      - store
+      title: payment_method_details_konbini
+      type: object
+      x-expandableFields:
+      - store
+      x-stripeResource:
+        class_name: Konbini
+        in_class: payment_method_details
+    payment_method_details_konbini_store:
+      description: ''
+      properties:
+        chain:
+          description: The name of the convenience store chain where the payment was
+            completed.
+          enum:
+          - familymart
+          - lawson
+          - ministop
+          - seicomart
+          nullable: true
+          type: string
+      required:
+      - chain
+      title: payment_method_details_konbini_store
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: KonbiniStore
+        in_class: payment_method_details
     payment_method_details_multibanco:
       description: ''
       properties:
@@ -21905,6 +22096,15 @@ components:
         in_class: payment_method
         inner_classes:
         - payment_flows_private_payment_methods_klarna_dob
+    payment_method_konbini:
+      description: ''
+      properties: {}
+      title: payment_method_konbini
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Konbini
+        in_class: payment_method
     payment_method_options_afterpay_clearpay:
       description: ''
       properties:
@@ -22186,6 +22386,55 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: Klarna
+        in_class: payment_intent_payment_method_options
+    payment_method_options_konbini:
+      description: ''
+      properties:
+        confirmation_number:
+          description: An optional 10 to 11 digit numeric-only string determining
+            the confirmation code at applicable convenience stores.
+          maxLength: 5000
+          nullable: true
+          type: string
+        expires_after_days:
+          description: The number of calendar days (between 1 and 60) after which
+            Konbini payment instructions will expire. For example, if a PaymentIntent
+            is confirmed with Konbini and `expires_after_days` set to 2 on Monday
+            JST, the instructions will expire on Wednesday 23:59:59 JST.
+          nullable: true
+          type: integer
+        expires_at:
+          description: The timestamp at which the Konbini payment instructions will
+            expire. Only one of `expires_after_days` or `expires_at` may be set.
+          format: unix-time
+          nullable: true
+          type: integer
+        product_description:
+          description: A product descriptor of up to 22 characters, which will appear
+            to customers at the convenience store.
+          maxLength: 5000
+          nullable: true
+          type: string
+        setup_future_usage:
+          description: |-
+            Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+            Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+            When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+          enum:
+          - none
+          type: string
+      required:
+      - confirmation_number
+      - expires_after_days
+      - expires_at
+      - product_description
+      title: payment_method_options_konbini
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Konbini
         in_class: payment_intent_payment_method_options
     payment_method_options_oxxo:
       description: ''
@@ -24194,10 +24443,12 @@ components:
         privacy_policy_url:
           description: A link to the business’s publicly available privacy policy.
           maxLength: 5000
+          nullable: true
           type: string
         terms_of_service_url:
           description: A link to the business’s publicly available terms of service.
           maxLength: 5000
+          nullable: true
           type: string
       required:
       - headline
@@ -28598,6 +28849,15 @@ components:
       x-stripeResource:
         class_name: SepaDebit
         in_class: setup_intent_payment_method_options
+    setup_intent_type_specific_payment_method_options_client:
+      description: ''
+      properties: {}
+      title: SetupIntentTypeSpecificPaymentMethodOptionsClient
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: SetupIntentTypeSpecificPaymentMethodOptionsClient
+        in_package: ''
     shipping:
       description: ''
       properties:
@@ -32104,16 +32364,24 @@ components:
           description: This sub-hash contains details about the Card payment method
             options to pass to invoices created by the subscription.
           nullable: true
+        konbini:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_payment_method_options_konbini"
+          description: This sub-hash contains details about the Konbini payment method
+            options to pass to invoices created by the subscription.
+          nullable: true
       required:
       - acss_debit
       - bancontact
       - card
+      - konbini
       title: SubscriptionsResourcePaymentMethodOptions
       type: object
       x-expandableFields:
       - acss_debit
       - bancontact
       - card
+      - konbini
       x-stripeResource:
         class_name: PaymentMethodOptions
         in_class: subscription
@@ -32148,6 +32416,7 @@ components:
             - giropay
             - grabpay
             - ideal
+            - konbini
             - sepa_credit_transfer
             - sepa_debit
             - sofort
@@ -35042,6 +35311,18 @@ paths:
                           type: boolean
                       title: capability_param
                       type: object
+                    konbini_payments:
+                      description: The konbini_payments capability.
+                      properties:
+                        requested:
+                          description: Passing true requests the capability for the
+                            account, if it is not already requested. A requested capability
+                            may not immediately become active. Any requirements to
+                            activate the capability are returned in the `requirements`
+                            arrays.
+                          type: boolean
+                      title: capability_param
+                      type: object
                     legacy_payments:
                       description: The legacy_payments capability.
                       properties:
@@ -36470,6 +36751,18 @@ paths:
                       type: object
                     klarna_payments:
                       description: The klarna_payments capability.
+                      properties:
+                        requested:
+                          description: Passing true requests the capability for the
+                            account, if it is not already requested. A requested capability
+                            may not immediately become active. Any requirements to
+                            activate the capability are returned in the `requirements`
+                            arrays.
+                          type: boolean
+                      title: capability_param
+                      type: object
+                    konbini_payments:
+                      description: The konbini_payments capability.
                       properties:
                         requested:
                           description: Passing true requests the capability for the
@@ -40606,9 +40899,6 @@ paths:
                       description: A link to the business’s publicly available terms
                         of service.
                       type: string
-                  required:
-                  - privacy_policy_url
-                  - terms_of_service_url
                   title: business_profile_create_param
                   type: object
                 default_return_url:
@@ -40943,13 +41233,21 @@ paths:
                       maxLength: 60
                       type: string
                     privacy_policy_url:
+                      anyOf:
+                      - type: string
+                      - enum:
+                        - ''
+                        type: string
                       description: A link to the business’s publicly available privacy
                         policy.
-                      type: string
                     terms_of_service_url:
+                      anyOf:
+                      - type: string
+                      - enum:
+                        - ''
+                        type: string
                       description: A link to the business’s publicly available terms
                         of service.
-                      type: string
                   title: business_profile_update_param
                   type: object
                 default_return_url:
@@ -43325,6 +43623,23 @@ paths:
                           type: integer
                       title: payment_method_options_param
                       type: object
+                    konbini:
+                      description: contains details about the Konbini payment method
+                        options.
+                      properties:
+                        expires_after_days:
+                          anyOf:
+                          - type: integer
+                          - enum:
+                            - ''
+                            type: string
+                          description: The number of calendar days (between 1 and
+                            60) after which Konbini payment instructions will expire.
+                            For example, if a PaymentIntent is confirmed with Konbini
+                            and `expires_after_days` set to 2 on Monday JST, the instructions
+                            will expire on Wednesday 23:59:59 JST. Defaults to 3 days.
+                      title: payment_method_options_param
+                      type: object
                     oxxo:
                       description: contains details about the OXXO payment method
                         options.
@@ -43388,6 +43703,7 @@ paths:
                     - grabpay
                     - ideal
                     - klarna
+                    - konbini
                     - oxxo
                     - p24
                     - sepa_debit
@@ -46978,6 +47294,7 @@ paths:
           - grabpay
           - ideal
           - klarna
+          - konbini
           - oxxo
           - p24
           - sepa_debit
@@ -51377,6 +51694,17 @@ paths:
                           description: If paying by `card`, this sub-hash contains
                             details about the Card payment method options to pass
                             to the invoice’s PaymentIntent.
+                        konbini:
+                          anyOf:
+                          - properties: {}
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: If paying by `konbini`, this sub-hash contains
+                            details about the Konbini payment method options to pass
+                            to the invoice’s PaymentIntent.
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -51395,6 +51723,7 @@ paths:
                           - giropay
                           - grabpay
                           - ideal
+                          - konbini
                           - sepa_credit_transfer
                           - sepa_debit
                           - sofort
@@ -53463,6 +53792,17 @@ paths:
                           description: If paying by `card`, this sub-hash contains
                             details about the Card payment method options to pass
                             to the invoice’s PaymentIntent.
+                        konbini:
+                          anyOf:
+                          - properties: {}
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: If paying by `konbini`, this sub-hash contains
+                            details about the Konbini payment method options to pass
+                            to the invoice’s PaymentIntent.
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -53481,6 +53821,7 @@ paths:
                           - giropay
                           - grabpay
                           - ideal
+                          - konbini
                           - sepa_credit_transfer
                           - sepa_debit
                           - sofort
@@ -62206,6 +62547,12 @@ paths:
                           type: object
                       title: param
                       type: object
+                    konbini:
+                      description: If this is a `konbini` PaymentMethod, this hash
+                        contains details about the Konbini payment method.
+                      properties: {}
+                      title: param
+                      type: object
                     metadata:
                       additionalProperties:
                         type: string
@@ -62307,6 +62654,7 @@ paths:
                       - grabpay
                       - ideal
                       - klarna
+                      - konbini
                       - oxxo
                       - p24
                       - sepa_debit
@@ -62873,6 +63221,63 @@ paths:
                         type: string
                       description: If this is a `klarna` PaymentMethod, this sub-hash
                         contains details about the Klarna payment method options.
+                    konbini:
+                      anyOf:
+                      - properties:
+                          confirmation_number:
+                            description: An optional 10 to 11 digit numeric-only string
+                              determining the confirmation code at applicable convenience
+                              stores. Must not consist of only zeroes and could be
+                              rejected in case of insufficient uniqueness. We recommend
+                              to use the customer's phone number.
+                            maxLength: 11
+                            type: string
+                          expires_after_days:
+                            anyOf:
+                            - type: integer
+                            - enum:
+                              - ''
+                              type: string
+                            description: The number of calendar days (between 1 and
+                              60) after which Konbini payment instructions will expire.
+                              For example, if a PaymentIntent is confirmed with Konbini
+                              and `expires_after_days` set to 2 on Monday JST, the
+                              instructions will expire on Wednesday 23:59:59 JST.
+                              Defaults to 3 days.
+                          expires_at:
+                            anyOf:
+                            - format: unix-time
+                              type: integer
+                            - enum:
+                              - ''
+                              type: string
+                            description: The timestamp at which the Konbini payment
+                              instructions will expire. Only one of `expires_after_days`
+                              or `expires_at` may be set.
+                          product_description:
+                            description: A product descriptor of up to 22 characters,
+                              which will appear to customers at the convenience store.
+                            maxLength: 22
+                            type: string
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - none
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `konbini` PaymentMethod, this sub-hash
+                        contains details about the Konbini payment method options.
                     oxxo:
                       anyOf:
                       - properties:
@@ -63666,6 +64071,12 @@ paths:
                           type: object
                       title: param
                       type: object
+                    konbini:
+                      description: If this is a `konbini` PaymentMethod, this hash
+                        contains details about the Konbini payment method.
+                      properties: {}
+                      title: param
+                      type: object
                     metadata:
                       additionalProperties:
                         type: string
@@ -63767,6 +64178,7 @@ paths:
                       - grabpay
                       - ideal
                       - klarna
+                      - konbini
                       - oxxo
                       - p24
                       - sepa_debit
@@ -64333,6 +64745,63 @@ paths:
                         type: string
                       description: If this is a `klarna` PaymentMethod, this sub-hash
                         contains details about the Klarna payment method options.
+                    konbini:
+                      anyOf:
+                      - properties:
+                          confirmation_number:
+                            description: An optional 10 to 11 digit numeric-only string
+                              determining the confirmation code at applicable convenience
+                              stores. Must not consist of only zeroes and could be
+                              rejected in case of insufficient uniqueness. We recommend
+                              to use the customer's phone number.
+                            maxLength: 11
+                            type: string
+                          expires_after_days:
+                            anyOf:
+                            - type: integer
+                            - enum:
+                              - ''
+                              type: string
+                            description: The number of calendar days (between 1 and
+                              60) after which Konbini payment instructions will expire.
+                              For example, if a PaymentIntent is confirmed with Konbini
+                              and `expires_after_days` set to 2 on Monday JST, the
+                              instructions will expire on Wednesday 23:59:59 JST.
+                              Defaults to 3 days.
+                          expires_at:
+                            anyOf:
+                            - format: unix-time
+                              type: integer
+                            - enum:
+                              - ''
+                              type: string
+                            description: The timestamp at which the Konbini payment
+                              instructions will expire. Only one of `expires_after_days`
+                              or `expires_at` may be set.
+                          product_description:
+                            description: A product descriptor of up to 22 characters,
+                              which will appear to customers at the convenience store.
+                            maxLength: 22
+                            type: string
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - none
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `konbini` PaymentMethod, this sub-hash
+                        contains details about the Konbini payment method options.
                     oxxo:
                       anyOf:
                       - properties:
@@ -65270,6 +65739,12 @@ paths:
                           type: object
                       title: param
                       type: object
+                    konbini:
+                      description: If this is a `konbini` PaymentMethod, this hash
+                        contains details about the Konbini payment method.
+                      properties: {}
+                      title: param
+                      type: object
                     metadata:
                       additionalProperties:
                         type: string
@@ -65371,6 +65846,7 @@ paths:
                       - grabpay
                       - ideal
                       - klarna
+                      - konbini
                       - oxxo
                       - p24
                       - sepa_debit
@@ -65937,6 +66413,63 @@ paths:
                         type: string
                       description: If this is a `klarna` PaymentMethod, this sub-hash
                         contains details about the Klarna payment method options.
+                    konbini:
+                      anyOf:
+                      - properties:
+                          confirmation_number:
+                            description: An optional 10 to 11 digit numeric-only string
+                              determining the confirmation code at applicable convenience
+                              stores. Must not consist of only zeroes and could be
+                              rejected in case of insufficient uniqueness. We recommend
+                              to use the customer's phone number.
+                            maxLength: 11
+                            type: string
+                          expires_after_days:
+                            anyOf:
+                            - type: integer
+                            - enum:
+                              - ''
+                              type: string
+                            description: The number of calendar days (between 1 and
+                              60) after which Konbini payment instructions will expire.
+                              For example, if a PaymentIntent is confirmed with Konbini
+                              and `expires_after_days` set to 2 on Monday JST, the
+                              instructions will expire on Wednesday 23:59:59 JST.
+                              Defaults to 3 days.
+                          expires_at:
+                            anyOf:
+                            - format: unix-time
+                              type: integer
+                            - enum:
+                              - ''
+                              type: string
+                            description: The timestamp at which the Konbini payment
+                              instructions will expire. Only one of `expires_after_days`
+                              or `expires_at` may be set.
+                          product_description:
+                            description: A product descriptor of up to 22 characters,
+                              which will appear to customers at the convenience store.
+                            maxLength: 22
+                            type: string
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - none
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `konbini` PaymentMethod, this sub-hash
+                        contains details about the Konbini payment method options.
                     oxxo:
                       anyOf:
                       - properties:
@@ -67563,6 +68096,7 @@ paths:
           - grabpay
           - ideal
           - klarna
+          - konbini
           - oxxo
           - p24
           - sepa_debit
@@ -67681,6 +68215,9 @@ paths:
                 explode: true
                 style: deepObject
               klarna:
+                explode: true
+                style: deepObject
+              konbini:
                 explode: true
                 style: deepObject
               metadata:
@@ -68049,6 +68586,12 @@ paths:
                       type: object
                   title: param
                   type: object
+                konbini:
+                  description: If this is a `konbini` PaymentMethod, this hash contains
+                    details about the Konbini payment method.
+                  properties: {}
+                  title: param
+                  type: object
                 metadata:
                   additionalProperties:
                     type: string
@@ -68155,6 +68698,7 @@ paths:
                   - grabpay
                   - ideal
                   - klarna
+                  - konbini
                   - oxxo
                   - p24
                   - sepa_debit
@@ -81634,6 +82178,16 @@ paths:
                             type: string
                           description: This sub-hash contains details about the Card
                             payment method options to pass to the invoice’s PaymentIntent.
+                        konbini:
+                          anyOf:
+                          - properties: {}
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: This sub-hash contains details about the Konbini
+                            payment method options to pass to the invoice’s PaymentIntent.
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -81652,6 +82206,7 @@ paths:
                           - giropay
                           - grabpay
                           - ideal
+                          - konbini
                           - sepa_credit_transfer
                           - sepa_debit
                           - sofort
@@ -82451,6 +83006,16 @@ paths:
                             type: string
                           description: This sub-hash contains details about the Card
                             payment method options to pass to the invoice’s PaymentIntent.
+                        konbini:
+                          anyOf:
+                          - properties: {}
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: This sub-hash contains details about the Konbini
+                            payment method options to pass to the invoice’s PaymentIntent.
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -82469,6 +83034,7 @@ paths:
                           - giropay
                           - grabpay
                           - ideal
+                          - konbini
                           - sepa_credit_transfer
                           - sepa_debit
                           - sofort
