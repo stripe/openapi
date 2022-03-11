@@ -16828,11 +16828,14 @@
       "payment_intent_card_processing": {
         "description": "",
         "properties": {
+          "customer_notification": {
+            "$ref": "#/components/schemas/payment_intent_processing_customer_notification"
+          }
         },
         "title": "PaymentIntentCardProcessing",
         "type": "object",
         "x-expandableFields": [
-
+          "customer_notification"
         ]
       },
       "payment_intent_next_action": {
@@ -16843,6 +16846,9 @@
           },
           "boleto_display_details": {
             "$ref": "#/components/schemas/payment_intent_next_action_boleto"
+          },
+          "card_await_notification": {
+            "$ref": "#/components/schemas/payment_intent_next_action_card_await_notification"
           },
           "konbini_display_details": {
             "$ref": "#/components/schemas/payment_intent_next_action_konbini"
@@ -16883,6 +16889,7 @@
         "x-expandableFields": [
           "alipay_handle_redirect",
           "boleto_display_details",
+          "card_await_notification",
           "konbini_display_details",
           "oxxo_display_details",
           "redirect_to_url",
@@ -16955,6 +16962,27 @@
           }
         },
         "title": "payment_intent_next_action_boleto",
+        "type": "object",
+        "x-expandableFields": [
+
+        ]
+      },
+      "payment_intent_next_action_card_await_notification": {
+        "description": "",
+        "properties": {
+          "charge_attempt_at": {
+            "description": "The time that payment will be attempted. If customer approval is required, they need to provide approval before this time.",
+            "format": "unix-time",
+            "nullable": true,
+            "type": "integer"
+          },
+          "customer_approval_required": {
+            "description": "For payments greater than INR 5000, the customer must provide explicit approval of the payment with their bank. For payments of lower amount, no customer action is required.",
+            "nullable": true,
+            "type": "boolean"
+          }
+        },
+        "title": "PaymentIntentNextActionCardAwaitNotification",
         "type": "object",
         "x-expandableFields": [
 
@@ -17625,6 +17653,15 @@
             "description": "Installment details for this payment (Mexico only).\n\nFor more information, see the [installments integration guide](https://stripe.com/docs/payments/installments).",
             "nullable": true
           },
+          "mandate_options": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/payment_method_options_card_mandate_options"
+              }
+            ],
+            "description": "Configuration options for setting up an eMandate for cards issued in India.",
+            "nullable": true
+          },
           "network": {
             "description": "Selected network to process this payment intent on. Depends on the available networks of the card attached to the payment intent. Can be only set confirm-time.",
             "enum": [
@@ -17665,7 +17702,8 @@
         "title": "payment_intent_payment_method_options_card",
         "type": "object",
         "x-expandableFields": [
-          "installments"
+          "installments",
+          "mandate_options"
         ]
       },
       "payment_intent_payment_method_options_eps": {
@@ -17778,6 +17816,27 @@
         "type": "object",
         "x-expandableFields": [
           "card"
+        ]
+      },
+      "payment_intent_processing_customer_notification": {
+        "description": "",
+        "properties": {
+          "approval_requested": {
+            "description": "Whether customer approval has been requested for this payment. For payments greater than INR 5000 or mandate amount, the customer must provide explicit approval of the payment with their bank.",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "completes_at": {
+            "description": "If customer approval is required, they need to provide approval before this time.",
+            "format": "unix-time",
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "title": "PaymentIntentProcessingCustomerNotification",
+        "type": "object",
+        "x-expandableFields": [
+
         ]
       },
       "payment_intent_type_specific_payment_method_options_client": {
@@ -19588,6 +19647,12 @@
             "nullable": true,
             "type": "string"
           },
+          "mandate": {
+            "description": "ID of the mandate used to make this payment or created by it.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
           "network": {
             "description": "Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `interac`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.",
             "maxLength": 5000,
@@ -21167,6 +21232,84 @@
         "x-expandableFields": [
           "available_plans",
           "plan"
+        ]
+      },
+      "payment_method_options_card_mandate_options": {
+        "description": "",
+        "properties": {
+          "amount": {
+            "description": "Amount to be charged for future payments.",
+            "type": "integer"
+          },
+          "amount_type": {
+            "description": "One of `fixed` or `maximum`. If `fixed`, the `amount` param refers to the exact amount to be charged in future payments. If `maximum`, the amount charged can be up to the value passed for the `amount` param.",
+            "enum": [
+              "fixed",
+              "maximum"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "description": "A description of the mandate or subscription that is meant to be displayed to the customer.",
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
+          "end_date": {
+            "description": "End date of the mandate or subscription. If not provided, the mandate will be active until canceled. If provided, end date should be after start date.",
+            "format": "unix-time",
+            "nullable": true,
+            "type": "integer"
+          },
+          "interval": {
+            "description": "Specifies payment frequency. One of `day`, `week`, `month`, `year`, or `sporadic`.",
+            "enum": [
+              "day",
+              "month",
+              "sporadic",
+              "week",
+              "year"
+            ],
+            "type": "string"
+          },
+          "interval_count": {
+            "description": "The number of intervals between payments. For example, `interval=month` and `interval_count=3` indicates one payment every three months. Maximum of one year interval allowed (1 year, 12 months, or 52 weeks). This parameter is optional when `interval=sporadic`.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "reference": {
+            "description": "Unique identifier for the mandate or subscription.",
+            "maxLength": 80,
+            "type": "string"
+          },
+          "start_date": {
+            "description": "Start date of the mandate or subscription. Start date should not be lesser than yesterday.",
+            "format": "unix-time",
+            "type": "integer"
+          },
+          "supported_types": {
+            "description": "Specifies the type of mandates supported. Possible values are `india`.",
+            "items": {
+              "enum": [
+                "india"
+              ],
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "amount",
+          "amount_type",
+          "interval",
+          "reference",
+          "start_date"
+        ],
+        "title": "payment_method_options_card_mandate_options",
+        "type": "object",
+        "x-expandableFields": [
+
         ]
       },
       "payment_method_options_card_present": {
@@ -26983,6 +27126,15 @@
       "setup_intent_payment_method_options_card": {
         "description": "",
         "properties": {
+          "mandate_options": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/setup_intent_payment_method_options_card_mandate_options"
+              }
+            ],
+            "description": "Configuration options for setting up an eMandate for cards issued in India.",
+            "nullable": true
+          },
           "request_three_d_secure": {
             "description": "We strongly recommend that you rely on our SCA Engine to automatically prompt your customers for authentication based on risk level and [other requirements](https://stripe.com/docs/strong-customer-authentication). However, if you wish to request 3D Secure based on logic from your own fraud engine, provide this option. Permitted values include: `automatic` or `any`. If not provided, defaults to `automatic`. Read our guide on [manually requesting 3D Secure](https://stripe.com/docs/payments/3d-secure#manual-three-ds) for more information on how this configuration interacts with Radar and our SCA Engine.",
             "enum": [
@@ -26995,6 +27147,89 @@
           }
         },
         "title": "setup_intent_payment_method_options_card",
+        "type": "object",
+        "x-expandableFields": [
+          "mandate_options"
+        ]
+      },
+      "setup_intent_payment_method_options_card_mandate_options": {
+        "description": "",
+        "properties": {
+          "amount": {
+            "description": "Amount to be charged for future payments.",
+            "type": "integer"
+          },
+          "amount_type": {
+            "description": "One of `fixed` or `maximum`. If `fixed`, the `amount` param refers to the exact amount to be charged in future payments. If `maximum`, the amount charged can be up to the value passed for the `amount` param.",
+            "enum": [
+              "fixed",
+              "maximum"
+            ],
+            "type": "string"
+          },
+          "currency": {
+            "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+            "type": "string"
+          },
+          "description": {
+            "description": "A description of the mandate or subscription that is meant to be displayed to the customer.",
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
+          "end_date": {
+            "description": "End date of the mandate or subscription. If not provided, the mandate will be active until canceled. If provided, end date should be after start date.",
+            "format": "unix-time",
+            "nullable": true,
+            "type": "integer"
+          },
+          "interval": {
+            "description": "Specifies payment frequency. One of `day`, `week`, `month`, `year`, or `sporadic`.",
+            "enum": [
+              "day",
+              "month",
+              "sporadic",
+              "week",
+              "year"
+            ],
+            "type": "string"
+          },
+          "interval_count": {
+            "description": "The number of intervals between payments. For example, `interval=month` and `interval_count=3` indicates one payment every three months. Maximum of one year interval allowed (1 year, 12 months, or 52 weeks). This parameter is optional when `interval=sporadic`.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "reference": {
+            "description": "Unique identifier for the mandate or subscription.",
+            "maxLength": 80,
+            "type": "string"
+          },
+          "start_date": {
+            "description": "Start date of the mandate or subscription. Start date should not be lesser than yesterday.",
+            "format": "unix-time",
+            "type": "integer"
+          },
+          "supported_types": {
+            "description": "Specifies the type of mandates supported. Possible values are `india`.",
+            "items": {
+              "enum": [
+                "india"
+              ],
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "amount",
+          "amount_type",
+          "currency",
+          "interval",
+          "reference",
+          "start_date"
+        ],
+        "title": "setup_intent_payment_method_options_card_mandate_options",
         "type": "object",
         "x-expandableFields": [
 
@@ -52703,7 +52938,7 @@
             "style": "form"
           },
           {
-            "description": "Provides a list of customers that are associated with the specified test clock. If no list is provided, the response won't include customers with test clocks.",
+            "description": "Provides a list of customers that are associated with the specified test clock. The response will not include customers with test clocks if this parameter is not set.",
             "in": "query",
             "name": "test_clock",
             "required": false,
@@ -76614,6 +76849,67 @@
                                 "title": "installments_param",
                                 "type": "object"
                               },
+                              "mandate_options": {
+                                "properties": {
+                                  "amount": {
+                                    "type": "integer"
+                                  },
+                                  "amount_type": {
+                                    "enum": [
+                                      "fixed",
+                                      "maximum"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "description": {
+                                    "maxLength": 200,
+                                    "type": "string"
+                                  },
+                                  "end_date": {
+                                    "format": "unix-time",
+                                    "type": "integer"
+                                  },
+                                  "interval": {
+                                    "enum": [
+                                      "day",
+                                      "month",
+                                      "sporadic",
+                                      "week",
+                                      "year"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "interval_count": {
+                                    "type": "integer"
+                                  },
+                                  "reference": {
+                                    "maxLength": 80,
+                                    "type": "string"
+                                  },
+                                  "start_date": {
+                                    "format": "unix-time",
+                                    "type": "integer"
+                                  },
+                                  "supported_types": {
+                                    "items": {
+                                      "enum": [
+                                        "india"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "amount",
+                                  "amount_type",
+                                  "interval",
+                                  "reference",
+                                  "start_date"
+                                ],
+                                "title": "mandate_options_param",
+                                "type": "object"
+                              },
                               "network": {
                                 "enum": [
                                   "amex",
@@ -78143,6 +78439,67 @@
                                   }
                                 },
                                 "title": "installments_param",
+                                "type": "object"
+                              },
+                              "mandate_options": {
+                                "properties": {
+                                  "amount": {
+                                    "type": "integer"
+                                  },
+                                  "amount_type": {
+                                    "enum": [
+                                      "fixed",
+                                      "maximum"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "description": {
+                                    "maxLength": 200,
+                                    "type": "string"
+                                  },
+                                  "end_date": {
+                                    "format": "unix-time",
+                                    "type": "integer"
+                                  },
+                                  "interval": {
+                                    "enum": [
+                                      "day",
+                                      "month",
+                                      "sporadic",
+                                      "week",
+                                      "year"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "interval_count": {
+                                    "type": "integer"
+                                  },
+                                  "reference": {
+                                    "maxLength": 80,
+                                    "type": "string"
+                                  },
+                                  "start_date": {
+                                    "format": "unix-time",
+                                    "type": "integer"
+                                  },
+                                  "supported_types": {
+                                    "items": {
+                                      "enum": [
+                                        "india"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "amount",
+                                  "amount_type",
+                                  "interval",
+                                  "reference",
+                                  "start_date"
+                                ],
+                                "title": "mandate_options_param",
                                 "type": "object"
                               },
                               "network": {
@@ -79852,6 +80209,67 @@
                                 "title": "installments_param",
                                 "type": "object"
                               },
+                              "mandate_options": {
+                                "properties": {
+                                  "amount": {
+                                    "type": "integer"
+                                  },
+                                  "amount_type": {
+                                    "enum": [
+                                      "fixed",
+                                      "maximum"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "description": {
+                                    "maxLength": 200,
+                                    "type": "string"
+                                  },
+                                  "end_date": {
+                                    "format": "unix-time",
+                                    "type": "integer"
+                                  },
+                                  "interval": {
+                                    "enum": [
+                                      "day",
+                                      "month",
+                                      "sporadic",
+                                      "week",
+                                      "year"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "interval_count": {
+                                    "type": "integer"
+                                  },
+                                  "reference": {
+                                    "maxLength": 80,
+                                    "type": "string"
+                                  },
+                                  "start_date": {
+                                    "format": "unix-time",
+                                    "type": "integer"
+                                  },
+                                  "supported_types": {
+                                    "items": {
+                                      "enum": [
+                                        "india"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "amount",
+                                  "amount_type",
+                                  "interval",
+                                  "reference",
+                                  "start_date"
+                                ],
+                                "title": "mandate_options_param",
+                                "type": "object"
+                              },
                               "network": {
                                 "enum": [
                                   "amex",
@@ -81159,11 +81577,14 @@
                     "type": "object"
                   }
                 },
+                "required": [
+                  "line_items"
+                ],
                 "type": "object"
               }
             }
           },
-          "required": false
+          "required": true
         },
         "responses": {
           "200": {
@@ -91954,6 +92375,71 @@
                       },
                       "card": {
                         "properties": {
+                          "mandate_options": {
+                            "properties": {
+                              "amount": {
+                                "type": "integer"
+                              },
+                              "amount_type": {
+                                "enum": [
+                                  "fixed",
+                                  "maximum"
+                                ],
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              "end_date": {
+                                "format": "unix-time",
+                                "type": "integer"
+                              },
+                              "interval": {
+                                "enum": [
+                                  "day",
+                                  "month",
+                                  "sporadic",
+                                  "week",
+                                  "year"
+                                ],
+                                "type": "string"
+                              },
+                              "interval_count": {
+                                "type": "integer"
+                              },
+                              "reference": {
+                                "maxLength": 80,
+                                "type": "string"
+                              },
+                              "start_date": {
+                                "format": "unix-time",
+                                "type": "integer"
+                              },
+                              "supported_types": {
+                                "items": {
+                                  "enum": [
+                                    "india"
+                                  ],
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "amount",
+                              "amount_type",
+                              "currency",
+                              "interval",
+                              "reference",
+                              "start_date"
+                            ],
+                            "title": "setup_intent_mandate_options_param",
+                            "type": "object"
+                          },
                           "request_three_d_secure": {
                             "enum": [
                               "any",
@@ -92285,6 +92771,71 @@
                       },
                       "card": {
                         "properties": {
+                          "mandate_options": {
+                            "properties": {
+                              "amount": {
+                                "type": "integer"
+                              },
+                              "amount_type": {
+                                "enum": [
+                                  "fixed",
+                                  "maximum"
+                                ],
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              "end_date": {
+                                "format": "unix-time",
+                                "type": "integer"
+                              },
+                              "interval": {
+                                "enum": [
+                                  "day",
+                                  "month",
+                                  "sporadic",
+                                  "week",
+                                  "year"
+                                ],
+                                "type": "string"
+                              },
+                              "interval_count": {
+                                "type": "integer"
+                              },
+                              "reference": {
+                                "maxLength": 80,
+                                "type": "string"
+                              },
+                              "start_date": {
+                                "format": "unix-time",
+                                "type": "integer"
+                              },
+                              "supported_types": {
+                                "items": {
+                                  "enum": [
+                                    "india"
+                                  ],
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "amount",
+                              "amount_type",
+                              "currency",
+                              "interval",
+                              "reference",
+                              "start_date"
+                            ],
+                            "title": "setup_intent_mandate_options_param",
+                            "type": "object"
+                          },
                           "request_three_d_secure": {
                             "enum": [
                               "any",
@@ -92656,6 +93207,71 @@
                       },
                       "card": {
                         "properties": {
+                          "mandate_options": {
+                            "properties": {
+                              "amount": {
+                                "type": "integer"
+                              },
+                              "amount_type": {
+                                "enum": [
+                                  "fixed",
+                                  "maximum"
+                                ],
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              "end_date": {
+                                "format": "unix-time",
+                                "type": "integer"
+                              },
+                              "interval": {
+                                "enum": [
+                                  "day",
+                                  "month",
+                                  "sporadic",
+                                  "week",
+                                  "year"
+                                ],
+                                "type": "string"
+                              },
+                              "interval_count": {
+                                "type": "integer"
+                              },
+                              "reference": {
+                                "maxLength": 80,
+                                "type": "string"
+                              },
+                              "start_date": {
+                                "format": "unix-time",
+                                "type": "integer"
+                              },
+                              "supported_types": {
+                                "items": {
+                                  "enum": [
+                                    "india"
+                                  ],
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "amount",
+                              "amount_type",
+                              "currency",
+                              "interval",
+                              "reference",
+                              "start_date"
+                            ],
+                            "title": "setup_intent_mandate_options_param",
+                            "type": "object"
+                          },
                           "request_three_d_secure": {
                             "enum": [
                               "any",

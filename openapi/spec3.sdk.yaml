@@ -18042,18 +18042,23 @@ components:
         - payment_intent_next_action
         - payment_intent_next_action_alipay_handle_redirect
         - payment_intent_next_action_boleto
+        - payment_intent_next_action_card_await_notification
         - payment_intent_next_action_display_oxxo_details
         - payment_intent_next_action_konbini
         - payment_intent_next_action_redirect_to_url
         - payment_intent_payment_method_options
         - payment_intent_processing
+        - payment_intent_processing_customer_notification
         - transfer_data
     payment_intent_card_processing:
       description: ''
-      properties: {}
+      properties:
+        customer_notification:
+          "$ref": "#/components/schemas/payment_intent_processing_customer_notification"
       title: PaymentIntentCardProcessing
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - customer_notification
       x-stripeResource:
         class_name: Card
         in_class: payment_intent_processing
@@ -18064,6 +18069,8 @@ components:
           "$ref": "#/components/schemas/payment_intent_next_action_alipay_handle_redirect"
         boleto_display_details:
           "$ref": "#/components/schemas/payment_intent_next_action_boleto"
+        card_await_notification:
+          "$ref": "#/components/schemas/payment_intent_next_action_card_await_notification"
         konbini_display_details:
           "$ref": "#/components/schemas/payment_intent_next_action_konbini"
         oxxo_display_details:
@@ -18097,6 +18104,7 @@ components:
       x-expandableFields:
       - alipay_handle_redirect
       - boleto_display_details
+      - card_await_notification
       - konbini_display_details
       - oxxo_display_details
       - redirect_to_url
@@ -18184,6 +18192,30 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: NextActionDisplayBoletoDetails
+        in_class: payment_intent
+    payment_intent_next_action_card_await_notification:
+      description: ''
+      properties:
+        charge_attempt_at:
+          description: The time that payment will be attempted. If customer approval
+            is required, they need to provide approval before this time.
+          format: unix-time
+          nullable: true
+          type: integer
+        customer_approval_required:
+          description: For payments greater than INR 5000, the customer must provide
+            explicit approval of the payment with their bank. For payments of lower
+            amount, no customer action is required.
+          nullable: true
+          type: boolean
+      required:
+      - charge_attempt_at
+      - customer_approval_required
+      title: PaymentIntentNextActionCardAwaitNotification
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: NextActionCardAwaitNotification
         in_class: payment_intent
     payment_intent_next_action_display_oxxo_details:
       description: ''
@@ -18661,6 +18693,12 @@ components:
 
             For more information, see the [installments integration guide](https://stripe.com/docs/payments/installments).
           nullable: true
+        mandate_options:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_options_card_mandate_options"
+          description: Configuration options for setting up an eMandate for cards
+            issued in India.
+          nullable: true
         network:
           description: Selected network to process this payment intent on. Depends
             on the available networks of the card attached to the payment intent.
@@ -18708,17 +18746,20 @@ components:
           type: string
       required:
       - installments
+      - mandate_options
       - network
       - request_three_d_secure
       title: payment_intent_payment_method_options_card
       type: object
       x-expandableFields:
       - installments
+      - mandate_options
       x-stripeResource:
         class_name: Card
         in_class: payment_intent_payment_method_options
         inner_classes:
         - payment_method_options_card_installments
+        - payment_method_options_card_mandate_options
     payment_intent_payment_method_options_eps:
       description: ''
       properties:
@@ -18831,6 +18872,30 @@ components:
         in_class: payment_intent
         inner_classes:
         - payment_intent_card_processing
+    payment_intent_processing_customer_notification:
+      description: ''
+      properties:
+        approval_requested:
+          description: Whether customer approval has been requested for this payment.
+            For payments greater than INR 5000 or mandate amount, the customer must
+            provide explicit approval of the payment with their bank.
+          nullable: true
+          type: boolean
+        completes_at:
+          description: If customer approval is required, they need to provide approval
+            before this time.
+          format: unix-time
+          nullable: true
+          type: integer
+      required:
+      - approval_requested
+      - completes_at
+      title: PaymentIntentProcessingCustomerNotification
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: ProcessingCustomerNotification
+        in_class: payment_intent
     payment_intent_type_specific_payment_method_options_client:
       description: ''
       properties:
@@ -20736,6 +20801,11 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        mandate:
+          description: ID of the mandate used to make this payment or created by it.
+          maxLength: 5000
+          nullable: true
+          type: string
         moto:
           description: True if this payment was marked as MOTO and out of scope for
             SCA.
@@ -20768,6 +20838,7 @@ components:
       - funding
       - installments
       - last4
+      - mandate
       - network
       - three_d_secure
       - wallet
@@ -22458,6 +22529,84 @@ components:
         in_class: payment_intent_payment_method_options_card
         inner_classes:
         - payment_method_details_card_installments_plan
+    payment_method_options_card_mandate_options:
+      description: ''
+      properties:
+        amount:
+          description: Amount to be charged for future payments.
+          type: integer
+        amount_type:
+          description: One of `fixed` or `maximum`. If `fixed`, the `amount` param
+            refers to the exact amount to be charged in future payments. If `maximum`,
+            the amount charged can be up to the value passed for the `amount` param.
+          enum:
+          - fixed
+          - maximum
+          type: string
+        description:
+          description: A description of the mandate or subscription that is meant
+            to be displayed to the customer.
+          maxLength: 200
+          nullable: true
+          type: string
+        end_date:
+          description: End date of the mandate or subscription. If not provided, the
+            mandate will be active until canceled. If provided, end date should be
+            after start date.
+          format: unix-time
+          nullable: true
+          type: integer
+        interval:
+          description: Specifies payment frequency. One of `day`, `week`, `month`,
+            `year`, or `sporadic`.
+          enum:
+          - day
+          - month
+          - sporadic
+          - week
+          - year
+          type: string
+        interval_count:
+          description: The number of intervals between payments. For example, `interval=month`
+            and `interval_count=3` indicates one payment every three months. Maximum
+            of one year interval allowed (1 year, 12 months, or 52 weeks). This parameter
+            is optional when `interval=sporadic`.
+          nullable: true
+          type: integer
+        reference:
+          description: Unique identifier for the mandate or subscription.
+          maxLength: 80
+          type: string
+        start_date:
+          description: Start date of the mandate or subscription. Start date should
+            not be lesser than yesterday.
+          format: unix-time
+          type: integer
+        supported_types:
+          description: Specifies the type of mandates supported. Possible values are
+            `india`.
+          items:
+            enum:
+            - india
+            type: string
+          nullable: true
+          type: array
+      required:
+      - amount
+      - amount_type
+      - description
+      - end_date
+      - interval
+      - interval_count
+      - reference
+      - start_date
+      - supported_types
+      title: payment_method_options_card_mandate_options
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: MandateOptions
+        in_class: payment_intent_payment_method_options_card
     payment_method_options_card_present:
       description: ''
       properties: {}
@@ -29011,6 +29160,12 @@ components:
     setup_intent_payment_method_options_card:
       description: ''
       properties:
+        mandate_options:
+          anyOf:
+          - "$ref": "#/components/schemas/setup_intent_payment_method_options_card_mandate_options"
+          description: Configuration options for setting up an eMandate for cards
+            issued in India.
+          nullable: true
         request_three_d_secure:
           description: 'We strongly recommend that you rely on our SCA Engine to automatically
             prompt your customers for authentication based on risk level and [other
@@ -29028,13 +29183,100 @@ components:
           nullable: true
           type: string
       required:
+      - mandate_options
       - request_three_d_secure
       title: setup_intent_payment_method_options_card
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - mandate_options
       x-stripeResource:
         class_name: Card
         in_class: setup_intent_payment_method_options
+        inner_classes:
+        - setup_intent_payment_method_options_card_mandate_options
+    setup_intent_payment_method_options_card_mandate_options:
+      description: ''
+      properties:
+        amount:
+          description: Amount to be charged for future payments.
+          type: integer
+        amount_type:
+          description: One of `fixed` or `maximum`. If `fixed`, the `amount` param
+            refers to the exact amount to be charged in future payments. If `maximum`,
+            the amount charged can be up to the value passed for the `amount` param.
+          enum:
+          - fixed
+          - maximum
+          type: string
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+          type: string
+        description:
+          description: A description of the mandate or subscription that is meant
+            to be displayed to the customer.
+          maxLength: 200
+          nullable: true
+          type: string
+        end_date:
+          description: End date of the mandate or subscription. If not provided, the
+            mandate will be active until canceled. If provided, end date should be
+            after start date.
+          format: unix-time
+          nullable: true
+          type: integer
+        interval:
+          description: Specifies payment frequency. One of `day`, `week`, `month`,
+            `year`, or `sporadic`.
+          enum:
+          - day
+          - month
+          - sporadic
+          - week
+          - year
+          type: string
+        interval_count:
+          description: The number of intervals between payments. For example, `interval=month`
+            and `interval_count=3` indicates one payment every three months. Maximum
+            of one year interval allowed (1 year, 12 months, or 52 weeks). This parameter
+            is optional when `interval=sporadic`.
+          nullable: true
+          type: integer
+        reference:
+          description: Unique identifier for the mandate or subscription.
+          maxLength: 80
+          type: string
+        start_date:
+          description: Start date of the mandate or subscription. Start date should
+            not be lesser than yesterday.
+          format: unix-time
+          type: integer
+        supported_types:
+          description: Specifies the type of mandates supported. Possible values are
+            `india`.
+          items:
+            enum:
+            - india
+            type: string
+          nullable: true
+          type: array
+      required:
+      - amount
+      - amount_type
+      - currency
+      - description
+      - end_date
+      - interval
+      - interval_count
+      - reference
+      - start_date
+      - supported_types
+      title: setup_intent_payment_method_options_card_mandate_options
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: MandateOptions
+        in_class: setup_intent_payment_method_options_card
     setup_intent_payment_method_options_mandate_options_acss_debit:
       description: ''
       properties:
@@ -46487,8 +46729,8 @@ paths:
           type: string
         style: form
       - description: Provides a list of customers that are associated with the specified
-          test clock. If no list is provided, the response won't include customers
-          with test clocks.
+          test clock. The response will not include customers with test clocks if
+          this parameter is not set.
         in: query
         name: test_clock
         required: false
@@ -63406,6 +63648,80 @@ paths:
                                   This parameter can only be provided during confirmation.
                             title: installments_param
                             type: object
+                          mandate_options:
+                            description: Configuration options for setting up an eMandate
+                              for cards issued in India.
+                            properties:
+                              amount:
+                                description: Amount to be charged for future payments.
+                                type: integer
+                              amount_type:
+                                description: One of `fixed` or `maximum`. If `fixed`,
+                                  the `amount` param refers to the exact amount to
+                                  be charged in future payments. If `maximum`, the
+                                  amount charged can be up to the value passed for
+                                  the `amount` param.
+                                enum:
+                                - fixed
+                                - maximum
+                                type: string
+                              description:
+                                description: A description of the mandate or subscription
+                                  that is meant to be displayed to the customer.
+                                maxLength: 200
+                                type: string
+                              end_date:
+                                description: End date of the mandate or subscription.
+                                  If not provided, the mandate will be active until
+                                  canceled. If provided, end date should be after
+                                  start date.
+                                format: unix-time
+                                type: integer
+                              interval:
+                                description: Specifies payment frequency. One of `day`,
+                                  `week`, `month`, `year`, or `sporadic`.
+                                enum:
+                                - day
+                                - month
+                                - sporadic
+                                - week
+                                - year
+                                type: string
+                              interval_count:
+                                description: The number of intervals between payments.
+                                  For example, `interval=month` and `interval_count=3`
+                                  indicates one payment every three months. Maximum
+                                  of one year interval allowed (1 year, 12 months,
+                                  or 52 weeks). This parameter is optional when `interval=sporadic`.
+                                type: integer
+                              reference:
+                                description: Unique identifier for the mandate or
+                                  subscription.
+                                maxLength: 80
+                                type: string
+                              start_date:
+                                description: Start date of the mandate or subscription.
+                                  Start date should not be lesser than yesterday.
+                                format: unix-time
+                                type: integer
+                              supported_types:
+                                description: Specifies the type of mandates supported.
+                                  Possible values are `india`.
+                                items:
+                                  enum:
+                                  - india
+                                  type: string
+                                type: array
+                                x-stripeParam:
+                                  containee_entity_name: supported_type
+                            required:
+                            - amount
+                            - amount_type
+                            - interval
+                            - reference
+                            - start_date
+                            title: mandate_options_param
+                            type: object
                           moto:
                             description: |-
                               When specified, this parameter indicates that a transaction will be marked
@@ -64929,6 +65245,80 @@ paths:
                                   The selected installment plan to use for this payment attempt.
                                   This parameter can only be provided during confirmation.
                             title: installments_param
+                            type: object
+                          mandate_options:
+                            description: Configuration options for setting up an eMandate
+                              for cards issued in India.
+                            properties:
+                              amount:
+                                description: Amount to be charged for future payments.
+                                type: integer
+                              amount_type:
+                                description: One of `fixed` or `maximum`. If `fixed`,
+                                  the `amount` param refers to the exact amount to
+                                  be charged in future payments. If `maximum`, the
+                                  amount charged can be up to the value passed for
+                                  the `amount` param.
+                                enum:
+                                - fixed
+                                - maximum
+                                type: string
+                              description:
+                                description: A description of the mandate or subscription
+                                  that is meant to be displayed to the customer.
+                                maxLength: 200
+                                type: string
+                              end_date:
+                                description: End date of the mandate or subscription.
+                                  If not provided, the mandate will be active until
+                                  canceled. If provided, end date should be after
+                                  start date.
+                                format: unix-time
+                                type: integer
+                              interval:
+                                description: Specifies payment frequency. One of `day`,
+                                  `week`, `month`, `year`, or `sporadic`.
+                                enum:
+                                - day
+                                - month
+                                - sporadic
+                                - week
+                                - year
+                                type: string
+                              interval_count:
+                                description: The number of intervals between payments.
+                                  For example, `interval=month` and `interval_count=3`
+                                  indicates one payment every three months. Maximum
+                                  of one year interval allowed (1 year, 12 months,
+                                  or 52 weeks). This parameter is optional when `interval=sporadic`.
+                                type: integer
+                              reference:
+                                description: Unique identifier for the mandate or
+                                  subscription.
+                                maxLength: 80
+                                type: string
+                              start_date:
+                                description: Start date of the mandate or subscription.
+                                  Start date should not be lesser than yesterday.
+                                format: unix-time
+                                type: integer
+                              supported_types:
+                                description: Specifies the type of mandates supported.
+                                  Possible values are `india`.
+                                items:
+                                  enum:
+                                  - india
+                                  type: string
+                                type: array
+                                x-stripeParam:
+                                  containee_entity_name: supported_type
+                            required:
+                            - amount
+                            - amount_type
+                            - interval
+                            - reference
+                            - start_date
+                            title: mandate_options_param
                             type: object
                           moto:
                             description: |-
@@ -66598,6 +66988,80 @@ paths:
                                   This parameter can only be provided during confirmation.
                             title: installments_param
                             type: object
+                          mandate_options:
+                            description: Configuration options for setting up an eMandate
+                              for cards issued in India.
+                            properties:
+                              amount:
+                                description: Amount to be charged for future payments.
+                                type: integer
+                              amount_type:
+                                description: One of `fixed` or `maximum`. If `fixed`,
+                                  the `amount` param refers to the exact amount to
+                                  be charged in future payments. If `maximum`, the
+                                  amount charged can be up to the value passed for
+                                  the `amount` param.
+                                enum:
+                                - fixed
+                                - maximum
+                                type: string
+                              description:
+                                description: A description of the mandate or subscription
+                                  that is meant to be displayed to the customer.
+                                maxLength: 200
+                                type: string
+                              end_date:
+                                description: End date of the mandate or subscription.
+                                  If not provided, the mandate will be active until
+                                  canceled. If provided, end date should be after
+                                  start date.
+                                format: unix-time
+                                type: integer
+                              interval:
+                                description: Specifies payment frequency. One of `day`,
+                                  `week`, `month`, `year`, or `sporadic`.
+                                enum:
+                                - day
+                                - month
+                                - sporadic
+                                - week
+                                - year
+                                type: string
+                              interval_count:
+                                description: The number of intervals between payments.
+                                  For example, `interval=month` and `interval_count=3`
+                                  indicates one payment every three months. Maximum
+                                  of one year interval allowed (1 year, 12 months,
+                                  or 52 weeks). This parameter is optional when `interval=sporadic`.
+                                type: integer
+                              reference:
+                                description: Unique identifier for the mandate or
+                                  subscription.
+                                maxLength: 80
+                                type: string
+                              start_date:
+                                description: Start date of the mandate or subscription.
+                                  Start date should not be lesser than yesterday.
+                                format: unix-time
+                                type: integer
+                              supported_types:
+                                description: Specifies the type of mandates supported.
+                                  Possible values are `india`.
+                                items:
+                                  enum:
+                                  - india
+                                  type: string
+                                type: array
+                                x-stripeParam:
+                                  containee_entity_name: supported_type
+                            required:
+                            - amount
+                            - amount_type
+                            - interval
+                            - reference
+                            - start_date
+                            title: mandate_options_param
+                            type: object
                           moto:
                             description: |-
                               When specified, this parameter indicates that a transaction will be marked
@@ -67833,8 +68297,10 @@ paths:
                   - destination
                   title: transfer_data_params
                   type: object
+              required:
+              - line_items
               type: object
-        required: false
+        required: true
       responses:
         '200':
           content:
@@ -76738,6 +77204,85 @@ paths:
                       description: Configuration for any card setup attempted on this
                         SetupIntent.
                       properties:
+                        mandate_options:
+                          description: Configuration options for setting up an eMandate
+                            for cards issued in India.
+                          properties:
+                            amount:
+                              description: Amount to be charged for future payments.
+                              type: integer
+                            amount_type:
+                              description: One of `fixed` or `maximum`. If `fixed`,
+                                the `amount` param refers to the exact amount to be
+                                charged in future payments. If `maximum`, the amount
+                                charged can be up to the value passed for the `amount`
+                                param.
+                              enum:
+                              - fixed
+                              - maximum
+                              type: string
+                            currency:
+                              description: Currency in which future payments will
+                                be charged. Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                                in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+                              type: string
+                            description:
+                              description: A description of the mandate or subscription
+                                that is meant to be displayed to the customer.
+                              maxLength: 200
+                              type: string
+                            end_date:
+                              description: End date of the mandate or subscription.
+                                If not provided, the mandate will be active until
+                                canceled. If provided, end date should be after start
+                                date.
+                              format: unix-time
+                              type: integer
+                            interval:
+                              description: Specifies payment frequency. One of `day`,
+                                `week`, `month`, `year`, or `sporadic`.
+                              enum:
+                              - day
+                              - month
+                              - sporadic
+                              - week
+                              - year
+                              type: string
+                            interval_count:
+                              description: The number of intervals between payments.
+                                For example, `interval=month` and `interval_count=3`
+                                indicates one payment every three months. Maximum
+                                of one year interval allowed (1 year, 12 months, or
+                                52 weeks). This parameter is optional when `interval=sporadic`.
+                              type: integer
+                            reference:
+                              description: Unique identifier for the mandate or subscription.
+                              maxLength: 80
+                              type: string
+                            start_date:
+                              description: Start date of the mandate or subscription.
+                                Start date should not be lesser than yesterday.
+                              format: unix-time
+                              type: integer
+                            supported_types:
+                              description: Specifies the type of mandates supported.
+                                Possible values are `india`.
+                              items:
+                                enum:
+                                - india
+                                type: string
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: supported_type
+                          required:
+                          - amount
+                          - amount_type
+                          - currency
+                          - interval
+                          - reference
+                          - start_date
+                          title: setup_intent_mandate_options_param
+                          type: object
                         moto:
                           description: |-
                             When specified, this parameter signals that a card has been collected
@@ -77036,6 +77581,85 @@ paths:
                       description: Configuration for any card setup attempted on this
                         SetupIntent.
                       properties:
+                        mandate_options:
+                          description: Configuration options for setting up an eMandate
+                            for cards issued in India.
+                          properties:
+                            amount:
+                              description: Amount to be charged for future payments.
+                              type: integer
+                            amount_type:
+                              description: One of `fixed` or `maximum`. If `fixed`,
+                                the `amount` param refers to the exact amount to be
+                                charged in future payments. If `maximum`, the amount
+                                charged can be up to the value passed for the `amount`
+                                param.
+                              enum:
+                              - fixed
+                              - maximum
+                              type: string
+                            currency:
+                              description: Currency in which future payments will
+                                be charged. Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                                in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+                              type: string
+                            description:
+                              description: A description of the mandate or subscription
+                                that is meant to be displayed to the customer.
+                              maxLength: 200
+                              type: string
+                            end_date:
+                              description: End date of the mandate or subscription.
+                                If not provided, the mandate will be active until
+                                canceled. If provided, end date should be after start
+                                date.
+                              format: unix-time
+                              type: integer
+                            interval:
+                              description: Specifies payment frequency. One of `day`,
+                                `week`, `month`, `year`, or `sporadic`.
+                              enum:
+                              - day
+                              - month
+                              - sporadic
+                              - week
+                              - year
+                              type: string
+                            interval_count:
+                              description: The number of intervals between payments.
+                                For example, `interval=month` and `interval_count=3`
+                                indicates one payment every three months. Maximum
+                                of one year interval allowed (1 year, 12 months, or
+                                52 weeks). This parameter is optional when `interval=sporadic`.
+                              type: integer
+                            reference:
+                              description: Unique identifier for the mandate or subscription.
+                              maxLength: 80
+                              type: string
+                            start_date:
+                              description: Start date of the mandate or subscription.
+                                Start date should not be lesser than yesterday.
+                              format: unix-time
+                              type: integer
+                            supported_types:
+                              description: Specifies the type of mandates supported.
+                                Possible values are `india`.
+                              items:
+                                enum:
+                                - india
+                                type: string
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: supported_type
+                          required:
+                          - amount
+                          - amount_type
+                          - currency
+                          - interval
+                          - reference
+                          - start_date
+                          title: setup_intent_mandate_options_param
+                          type: object
                         moto:
                           description: |-
                             When specified, this parameter signals that a card has been collected
@@ -77370,6 +77994,85 @@ paths:
                       description: Configuration for any card setup attempted on this
                         SetupIntent.
                       properties:
+                        mandate_options:
+                          description: Configuration options for setting up an eMandate
+                            for cards issued in India.
+                          properties:
+                            amount:
+                              description: Amount to be charged for future payments.
+                              type: integer
+                            amount_type:
+                              description: One of `fixed` or `maximum`. If `fixed`,
+                                the `amount` param refers to the exact amount to be
+                                charged in future payments. If `maximum`, the amount
+                                charged can be up to the value passed for the `amount`
+                                param.
+                              enum:
+                              - fixed
+                              - maximum
+                              type: string
+                            currency:
+                              description: Currency in which future payments will
+                                be charged. Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                                in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+                              type: string
+                            description:
+                              description: A description of the mandate or subscription
+                                that is meant to be displayed to the customer.
+                              maxLength: 200
+                              type: string
+                            end_date:
+                              description: End date of the mandate or subscription.
+                                If not provided, the mandate will be active until
+                                canceled. If provided, end date should be after start
+                                date.
+                              format: unix-time
+                              type: integer
+                            interval:
+                              description: Specifies payment frequency. One of `day`,
+                                `week`, `month`, `year`, or `sporadic`.
+                              enum:
+                              - day
+                              - month
+                              - sporadic
+                              - week
+                              - year
+                              type: string
+                            interval_count:
+                              description: The number of intervals between payments.
+                                For example, `interval=month` and `interval_count=3`
+                                indicates one payment every three months. Maximum
+                                of one year interval allowed (1 year, 12 months, or
+                                52 weeks). This parameter is optional when `interval=sporadic`.
+                              type: integer
+                            reference:
+                              description: Unique identifier for the mandate or subscription.
+                              maxLength: 80
+                              type: string
+                            start_date:
+                              description: Start date of the mandate or subscription.
+                                Start date should not be lesser than yesterday.
+                              format: unix-time
+                              type: integer
+                            supported_types:
+                              description: Specifies the type of mandates supported.
+                                Possible values are `india`.
+                              items:
+                                enum:
+                                - india
+                                type: string
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: supported_type
+                          required:
+                          - amount
+                          - amount_type
+                          - currency
+                          - interval
+                          - reference
+                          - start_date
+                          title: setup_intent_mandate_options_param
+                          type: object
                         moto:
                           description: |-
                             When specified, this parameter signals that a card has been collected
