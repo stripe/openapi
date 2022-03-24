@@ -430,6 +430,14 @@ components:
           - inactive
           - pending
           type: string
+        paynow_payments:
+          description: The status of the paynow payments capability of the account,
+            or whether the account can directly process paynow charges.
+          enum:
+          - active
+          - inactive
+          - pending
+          type: string
         sepa_debit_payments:
           description: The status of the SEPA Direct Debits payments capability of
             the account, or whether the account can directly process SEPA Direct Debits
@@ -2823,6 +2831,17 @@ components:
         disputed:
           description: Whether the charge has been disputed.
           type: boolean
+        failure_balance_transaction:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/balance_transaction"
+          description: ID of the balance transaction that describes the reversal of
+            the balance on your account due to payment failure.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/balance_transaction"
         failure_code:
           description: Error code explaining reason for charge failure if available
             (see [the errors section](https://stripe.com/docs/api#errors) for a list
@@ -3082,6 +3101,7 @@ components:
       - balance_transaction
       - billing_details
       - customer
+      - failure_balance_transaction
       - fraud_details
       - invoice
       - on_behalf_of
@@ -3724,6 +3744,8 @@ components:
           "$ref": "#/components/schemas/checkout_konbini_payment_method_options"
         oxxo:
           "$ref": "#/components/schemas/checkout_oxxo_payment_method_options"
+        us_bank_account:
+          "$ref": "#/components/schemas/checkout_us_bank_account_payment_method_options"
       title: CheckoutSessionPaymentMethodOptions
       type: object
       x-expandableFields:
@@ -3731,6 +3753,20 @@ components:
       - boleto
       - konbini
       - oxxo
+      - us_bank_account
+    checkout_us_bank_account_payment_method_options:
+      description: ''
+      properties:
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          type: string
+          x-stripeBypassValidation: true
+      title: CheckoutUsBankAccountPaymentMethodOptions
+      type: object
+      x-expandableFields: []
     connect_collection_transfer:
       description: ''
       properties:
@@ -8043,6 +8079,20 @@ components:
       title: invoice_payment_method_options_konbini
       type: object
       x-expandableFields: []
+    invoice_payment_method_options_us_bank_account:
+      description: ''
+      properties:
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          - microdeposits
+          type: string
+          x-stripeBypassValidation: true
+      title: invoice_payment_method_options_us_bank_account
+      type: object
+      x-expandableFields: []
     invoice_setting_custom_field:
       description: ''
       properties:
@@ -8420,6 +8470,13 @@ components:
           description: If paying by `konbini`, this sub-hash contains details about
             the Konbini payment method options to pass to the invoice’s PaymentIntent.
           nullable: true
+        us_bank_account:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_payment_method_options_us_bank_account"
+          description: If paying by `us_bank_account`, this sub-hash contains details
+            about the ACH direct debit payment method options to pass to the invoice’s
+            PaymentIntent.
+          nullable: true
       title: InvoicesPaymentMethodOptions
       type: object
       x-expandableFields:
@@ -8427,6 +8484,7 @@ components:
       - bancontact
       - card
       - konbini
+      - us_bank_account
     invoices_payment_settings:
       description: ''
       properties:
@@ -8457,8 +8515,10 @@ components:
             - grabpay
             - ideal
             - konbini
+            - paynow
             - sepa_debit
             - sofort
+            - us_bank_account
             - wechat_pay
             type: string
             x-stripeBypassValidation: true
@@ -13032,6 +13092,8 @@ components:
             method.
           maxLength: 5000
           type: string
+        us_bank_account:
+          "$ref": "#/components/schemas/mandate_us_bank_account"
       required:
       - type
       title: mandate_payment_method_details
@@ -13042,6 +13104,7 @@ components:
       - bacs_debit
       - card
       - sepa_debit
+      - us_bank_account
     mandate_sepa_debit:
       description: ''
       properties:
@@ -13073,6 +13136,12 @@ components:
       - amount
       - currency
       title: mandate_single_use
+      type: object
+      x-expandableFields: []
+    mandate_us_bank_account:
+      description: ''
+      properties: {}
+      title: mandate_us_bank_account
       type: object
       x-expandableFields: []
     networks:
@@ -13940,6 +14009,8 @@ components:
           "$ref": "#/components/schemas/payment_intent_next_action_konbini"
         oxxo_display_details:
           "$ref": "#/components/schemas/payment_intent_next_action_display_oxxo_details"
+        paynow_display_qr_code:
+          "$ref": "#/components/schemas/payment_intent_next_action_paynow_display_qr_code"
         redirect_to_url:
           "$ref": "#/components/schemas/payment_intent_next_action_redirect_to_url"
         type:
@@ -13972,6 +14043,7 @@ components:
       - card_await_notification
       - konbini_display_details
       - oxxo_display_details
+      - paynow_display_qr_code
       - redirect_to_url
       - verify_with_microdeposits
       - wechat_pay_display_qr_code
@@ -14190,6 +14262,29 @@ components:
       - lawson
       - ministop
       - seicomart
+    payment_intent_next_action_paynow_display_qr_code:
+      description: ''
+      properties:
+        data:
+          description: The raw data string used to generate QR code, it should be
+            used together with QR code library.
+          maxLength: 5000
+          type: string
+        image_url_png:
+          description: "​​The image_url_png string used to render QR code"
+          maxLength: 5000
+          type: string
+        image_url_svg:
+          description: "​​The image_url_svg string used to render QR code"
+          maxLength: 5000
+          type: string
+      required:
+      - data
+      - image_url_png
+      - image_url_svg
+      title: PaymentIntentNextActionPaynowDisplayQrCode
+      type: object
+      x-expandableFields: []
     payment_intent_next_action_redirect_to_url:
       description: ''
       properties:
@@ -14219,6 +14314,14 @@ components:
           description: The URL for the hosted verification page, which allows customers
             to verify their bank account.
           maxLength: 5000
+          type: string
+        microdeposit_type:
+          description: The type of the microdeposit sent to the customer. Used to
+            distinguish between different verification methods.
+          enum:
+          - amounts
+          - descriptor_code
+          nullable: true
           type: string
       required:
       - arrival_date
@@ -14386,6 +14489,10 @@ components:
           anyOf:
           - "$ref": "#/components/schemas/payment_method_options_p24"
           - "$ref": "#/components/schemas/payment_intent_type_specific_payment_method_options_client"
+        paynow:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_options_paynow"
+          - "$ref": "#/components/schemas/payment_intent_type_specific_payment_method_options_client"
         sepa_debit:
           anyOf:
           - "$ref": "#/components/schemas/payment_intent_payment_method_options_sepa_debit"
@@ -14393,6 +14500,10 @@ components:
         sofort:
           anyOf:
           - "$ref": "#/components/schemas/payment_method_options_sofort"
+          - "$ref": "#/components/schemas/payment_intent_type_specific_payment_method_options_client"
+        us_bank_account:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_intent_payment_method_options_us_bank_account"
           - "$ref": "#/components/schemas/payment_intent_type_specific_payment_method_options_client"
         wechat_pay:
           anyOf:
@@ -14420,8 +14531,10 @@ components:
       - konbini
       - oxxo
       - p24
+      - paynow
       - sepa_debit
       - sofort
+      - us_bank_account
       - wechat_pay
     payment_intent_payment_method_options_acss_debit:
       description: ''
@@ -14473,6 +14586,12 @@ components:
     payment_intent_payment_method_options_card:
       description: ''
       properties:
+        capture_method:
+          description: Controls when the funds will be captured from the customer's
+            account.
+          enum:
+          - manual
+          type: string
         installments:
           anyOf:
           - "$ref": "#/components/schemas/payment_method_options_card_installments"
@@ -14611,6 +14730,32 @@ components:
       type: object
       x-expandableFields:
       - mandate_options
+    payment_intent_payment_method_options_us_bank_account:
+      description: ''
+      properties:
+        setup_future_usage:
+          description: |-
+            Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+            Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+            When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+          enum:
+          - none
+          - off_session
+          - on_session
+          type: string
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          - microdeposits
+          type: string
+          x-stripeBypassValidation: true
+      title: payment_intent_payment_method_options_us_bank_account
+      type: object
+      x-expandableFields: []
     payment_intent_processing:
       description: ''
       properties:
@@ -14649,6 +14794,12 @@ components:
     payment_intent_type_specific_payment_method_options_client:
       description: ''
       properties:
+        capture_method:
+          description: Controls when the funds will be captured from the customer's
+            account.
+          enum:
+          - manual
+          type: string
         setup_future_usage:
           description: |-
             Indicates that you intend to make future payments with this PaymentIntent's payment method.
@@ -14661,6 +14812,14 @@ components:
           - off_session
           - on_session
           type: string
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          - microdeposits
+          type: string
+          x-stripeBypassValidation: true
       title: PaymentIntentTypeSpecificPaymentMethodOptionsClient
       type: object
       x-expandableFields: []
@@ -15266,6 +15425,8 @@ components:
           "$ref": "#/components/schemas/payment_method_oxxo"
         p24:
           "$ref": "#/components/schemas/payment_method_p24"
+        paynow:
+          "$ref": "#/components/schemas/payment_method_paynow"
         sepa_debit:
           "$ref": "#/components/schemas/payment_method_sepa_debit"
         sofort:
@@ -15294,11 +15455,15 @@ components:
           - konbini
           - oxxo
           - p24
+          - paynow
           - sepa_debit
           - sofort
+          - us_bank_account
           - wechat_pay
           type: string
           x-stripeBypassValidation: true
+        us_bank_account:
+          "$ref": "#/components/schemas/payment_method_us_bank_account"
         wechat_pay:
           "$ref": "#/components/schemas/payment_method_wechat_pay"
       required:
@@ -15332,8 +15497,10 @@ components:
       - konbini
       - oxxo
       - p24
+      - paynow
       - sepa_debit
       - sofort
+      - us_bank_account
       - wechat_pay
       x-resourceId: payment_method
     payment_method_acss_debit:
@@ -15766,6 +15933,8 @@ components:
           "$ref": "#/components/schemas/payment_method_details_oxxo"
         p24:
           "$ref": "#/components/schemas/payment_method_details_p24"
+        paynow:
+          "$ref": "#/components/schemas/payment_method_details_paynow"
         sepa_debit:
           "$ref": "#/components/schemas/payment_method_details_sepa_debit"
         sofort:
@@ -15779,6 +15948,8 @@ components:
             It contains information specific to the payment method.
           maxLength: 5000
           type: string
+        us_bank_account:
+          "$ref": "#/components/schemas/payment_method_details_us_bank_account"
         wechat:
           "$ref": "#/components/schemas/payment_method_details_wechat"
         wechat_pay:
@@ -15810,9 +15981,11 @@ components:
       - multibanco
       - oxxo
       - p24
+      - paynow
       - sepa_debit
       - sofort
       - stripe_account
+      - us_bank_account
       - wechat
       - wechat_pay
     payment_method_details_ach_credit_transfer:
@@ -17023,6 +17196,17 @@ components:
       title: payment_method_details_p24
       type: object
       x-expandableFields: []
+    payment_method_details_paynow:
+      description: ''
+      properties:
+        reference:
+          description: Reference number associated with this PayNow payment
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_paynow
+      type: object
+      x-expandableFields: []
     payment_method_details_sepa_debit:
       description: ''
       properties:
@@ -17142,6 +17326,48 @@ components:
       description: ''
       properties: {}
       title: payment_method_details_stripe_account
+      type: object
+      x-expandableFields: []
+    payment_method_details_us_bank_account:
+      description: ''
+      properties:
+        account_holder_type:
+          description: 'Account holder type: individual or company.'
+          enum:
+          - company
+          - individual
+          nullable: true
+          type: string
+        account_type:
+          description: 'Account type: checkings or savings. Defaults to checking if
+            omitted.'
+          enum:
+          - checking
+          - savings
+          nullable: true
+          type: string
+        bank_name:
+          description: Name of the bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        fingerprint:
+          description: Uniquely identifies this particular bank account. You can use
+            this attribute to check whether two bank accounts are the same.
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          description: Last four digits of the bank account number.
+          maxLength: 5000
+          nullable: true
+          type: string
+        routing_number:
+          description: Routing number of the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_us_bank_account
       type: object
       x-expandableFields: []
     payment_method_details_wechat:
@@ -17334,6 +17560,12 @@ components:
     payment_method_options_afterpay_clearpay:
       description: ''
       properties:
+        capture_method:
+          description: Controls when the funds will be captured from the customer's
+            account.
+          enum:
+          - manual
+          type: string
         reference:
           description: |-
             Order identifier shown to the customer in Afterpay’s online portal. We recommend using a value that helps you answer any questions a customer might have about
@@ -17618,6 +17850,12 @@ components:
     payment_method_options_klarna:
       description: ''
       properties:
+        capture_method:
+          description: Controls when the funds will be captured from the customer's
+            account.
+          enum:
+          - manual
+          type: string
         preferred_locale:
           description: Preferred locale of the Klarna checkout page that the customer
             is redirected to.
@@ -17716,6 +17954,22 @@ components:
           - none
           type: string
       title: payment_method_options_p24
+      type: object
+      x-expandableFields: []
+    payment_method_options_paynow:
+      description: ''
+      properties:
+        setup_future_usage:
+          description: |-
+            Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+            Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+            When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+          enum:
+          - none
+          type: string
+      title: payment_method_options_paynow
       type: object
       x-expandableFields: []
     payment_method_options_sofort:
@@ -17822,6 +18076,12 @@ components:
       title: payment_method_p24
       type: object
       x-expandableFields: []
+    payment_method_paynow:
+      description: ''
+      properties: {}
+      title: payment_method_paynow
+      type: object
+      x-expandableFields: []
     payment_method_sepa_debit:
       description: ''
       properties:
@@ -17871,6 +18131,48 @@ components:
           nullable: true
           type: string
       title: payment_method_sofort
+      type: object
+      x-expandableFields: []
+    payment_method_us_bank_account:
+      description: ''
+      properties:
+        account_holder_type:
+          description: 'Account holder type: individual or company.'
+          enum:
+          - company
+          - individual
+          nullable: true
+          type: string
+        account_type:
+          description: 'Account type: checkings or savings. Defaults to checking if
+            omitted.'
+          enum:
+          - checking
+          - savings
+          nullable: true
+          type: string
+        bank_name:
+          description: The name of the bank.
+          maxLength: 5000
+          nullable: true
+          type: string
+        fingerprint:
+          description: Uniquely identifies this particular bank account. You can use
+            this attribute to check whether two bank accounts are the same.
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          description: Last four digits of the bank account number.
+          maxLength: 5000
+          nullable: true
+          type: string
+        routing_number:
+          description: Routing number of the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_us_bank_account
       type: object
       x-expandableFields: []
     payment_method_wechat_pay:
@@ -21632,6 +21934,8 @@ components:
             for the payment method.
           maxLength: 5000
           type: string
+        us_bank_account:
+          "$ref": "#/components/schemas/setup_attempt_payment_method_details_us_bank_account"
       required:
       - type
       title: SetupAttemptPaymentMethodDetails
@@ -21647,6 +21951,7 @@ components:
       - ideal
       - sepa_debit
       - sofort
+      - us_bank_account
     setup_attempt_payment_method_details_acss_debit:
       description: ''
       properties: {}
@@ -21923,6 +22228,12 @@ components:
       x-expandableFields:
       - generated_sepa_debit
       - generated_sepa_debit_mandate
+    setup_attempt_payment_method_details_us_bank_account:
+      description: ''
+      properties: {}
+      title: setup_attempt_payment_method_details_us_bank_account
+      type: object
+      x-expandableFields: []
     setup_intent:
       description: |-
         A SetupIntent guides you through the process of setting up and saving a customer's payment credentials for future payments.
@@ -22193,6 +22504,14 @@ components:
             to verify their bank account.
           maxLength: 5000
           type: string
+        microdeposit_type:
+          description: The type of the microdeposit sent to the customer. Used to
+            distinguish between different verification methods.
+          enum:
+          - amounts
+          - descriptor_code
+          nullable: true
+          type: string
       required:
       - arrival_date
       - hosted_verification_url
@@ -22212,12 +22531,17 @@ components:
           anyOf:
           - "$ref": "#/components/schemas/setup_intent_payment_method_options_sepa_debit"
           - "$ref": "#/components/schemas/setup_intent_type_specific_payment_method_options_client"
+        us_bank_account:
+          anyOf:
+          - "$ref": "#/components/schemas/setup_intent_payment_method_options_us_bank_account"
+          - "$ref": "#/components/schemas/setup_intent_type_specific_payment_method_options_client"
       title: SetupIntentPaymentMethodOptions
       type: object
       x-expandableFields:
       - acss_debit
       - card
       - sepa_debit
+      - us_bank_account
     setup_intent_payment_method_options_acss_debit:
       description: ''
       properties:
@@ -22402,9 +22726,31 @@ components:
       type: object
       x-expandableFields:
       - mandate_options
+    setup_intent_payment_method_options_us_bank_account:
+      description: ''
+      properties:
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          - microdeposits
+          type: string
+          x-stripeBypassValidation: true
+      title: setup_intent_payment_method_options_us_bank_account
+      type: object
+      x-expandableFields: []
     setup_intent_type_specific_payment_method_options_client:
       description: ''
-      properties: {}
+      properties:
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          - microdeposits
+          type: string
+          x-stripeBypassValidation: true
       title: SetupIntentTypeSpecificPaymentMethodOptionsClient
       type: object
       x-expandableFields: []
@@ -25042,6 +25388,12 @@ components:
           description: This sub-hash contains details about the Konbini payment method
             options to pass to invoices created by the subscription.
           nullable: true
+        us_bank_account:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_payment_method_options_us_bank_account"
+          description: This sub-hash contains details about the ACH direct debit payment
+            method options to pass to invoices created by the subscription.
+          nullable: true
       title: SubscriptionsResourcePaymentMethodOptions
       type: object
       x-expandableFields:
@@ -25049,6 +25401,7 @@ components:
       - bancontact
       - card
       - konbini
+      - us_bank_account
     subscriptions_resource_payment_settings:
       description: ''
       properties:
@@ -25079,8 +25432,10 @@ components:
             - grabpay
             - ideal
             - konbini
+            - paynow
             - sepa_debit
             - sofort
+            - us_bank_account
             - wechat_pay
             type: string
             x-stripeBypassValidation: true
@@ -27015,6 +27370,12 @@ paths:
                       title: capability_param
                       type: object
                     p24_payments:
+                      properties:
+                        requested:
+                          type: boolean
+                      title: capability_param
+                      type: object
+                    paynow_payments:
                       properties:
                         requested:
                           type: boolean
@@ -30793,6 +31154,12 @@ paths:
                           type: boolean
                       title: capability_param
                       type: object
+                    paynow_payments:
+                      properties:
+                        requested:
+                          type: boolean
+                      title: capability_param
+                      type: object
                     sepa_debit_payments:
                       properties:
                         requested:
@@ -31795,6 +32162,12 @@ paths:
                       title: capability_param
                       type: object
                     p24_payments:
+                      properties:
+                        requested:
+                          type: boolean
+                      title: capability_param
+                      type: object
+                    paynow_payments:
                       properties:
                         requested:
                           type: boolean
@@ -39627,6 +40000,16 @@ paths:
                           type: integer
                       title: payment_method_options_param
                       type: object
+                    us_bank_account:
+                      properties:
+                        verification_method:
+                          enum:
+                          - automatic
+                          - instant
+                          type: string
+                          x-stripeBypassValidation: true
+                      title: payment_method_options_param
+                      type: object
                     wechat_pay:
                       properties:
                         app_id:
@@ -39674,8 +40057,10 @@ paths:
                     - konbini
                     - oxxo
                     - p24
+                    - paynow
                     - sepa_debit
                     - sofort
+                    - us_bank_account
                     - wechat_pay
                     type: string
                     x-stripeBypassValidation: true
@@ -44275,8 +44660,10 @@ paths:
           - konbini
           - oxxo
           - p24
+          - paynow
           - sepa_debit
           - sofort
+          - us_bank_account
           - wechat_pay
           type: string
           x-stripeBypassValidation: true
@@ -45445,6 +45832,21 @@ paths:
                           - enum:
                             - ''
                             type: string
+                        us_bank_account:
+                          anyOf:
+                          - properties:
+                              verification_method:
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -45464,8 +45866,10 @@ paths:
                           - grabpay
                           - ideal
                           - konbini
+                          - paynow
                           - sepa_debit
                           - sofort
+                          - us_bank_account
                           - wechat_pay
                           type: string
                           x-stripeBypassValidation: true
@@ -46139,6 +46543,21 @@ paths:
                           - enum:
                             - ''
                             type: string
+                        us_bank_account:
+                          anyOf:
+                          - properties:
+                              verification_method:
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -46158,8 +46577,10 @@ paths:
                           - grabpay
                           - ideal
                           - konbini
+                          - paynow
                           - sepa_debit
                           - sofort
+                          - us_bank_account
                           - wechat_pay
                           type: string
                           x-stripeBypassValidation: true
@@ -49774,6 +50195,21 @@ paths:
                           - enum:
                             - ''
                             type: string
+                        us_bank_account:
+                          anyOf:
+                          - properties:
+                              verification_method:
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -49793,8 +50229,10 @@ paths:
                           - grabpay
                           - ideal
                           - konbini
+                          - paynow
                           - sepa_debit
                           - sofort
+                          - us_bank_account
                           - wechat_pay
                           type: string
                           x-stripeBypassValidation: true
@@ -51501,6 +51939,21 @@ paths:
                           - enum:
                             - ''
                             type: string
+                        us_bank_account:
+                          anyOf:
+                          - properties:
+                              verification_method:
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -51520,8 +51973,10 @@ paths:
                           - grabpay
                           - ideal
                           - konbini
+                          - paynow
                           - sepa_debit
                           - sofort
+                          - us_bank_account
                           - wechat_pay
                           type: string
                           x-stripeBypassValidation: true
@@ -60006,6 +60461,10 @@ paths:
                           x-stripeBypassValidation: true
                       title: param
                       type: object
+                    paynow:
+                      properties: {}
+                      title: param
+                      type: object
                     sepa_debit:
                       properties:
                         iban:
@@ -60048,11 +60507,33 @@ paths:
                       - konbini
                       - oxxo
                       - p24
+                      - paynow
                       - sepa_debit
                       - sofort
+                      - us_bank_account
                       - wechat_pay
                       type: string
                       x-stripeBypassValidation: true
+                    us_bank_account:
+                      properties:
+                        account_holder_type:
+                          enum:
+                          - company
+                          - individual
+                          type: string
+                        account_number:
+                          maxLength: 5000
+                          type: string
+                        account_type:
+                          enum:
+                          - checking
+                          - savings
+                          type: string
+                        routing_number:
+                          maxLength: 5000
+                          type: string
+                      title: payment_method_param
+                      type: object
                     wechat_pay:
                       properties: {}
                       title: param
@@ -60113,6 +60594,11 @@ paths:
                     afterpay_clearpay:
                       anyOf:
                       - properties:
+                          capture_method:
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           reference:
                             maxLength: 128
                             type: string
@@ -60210,6 +60696,11 @@ paths:
                     card:
                       anyOf:
                       - properties:
+                          capture_method:
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           cvc_token:
                             maxLength: 5000
                             type: string
@@ -60401,6 +60892,11 @@ paths:
                     klarna:
                       anyOf:
                       - properties:
+                          capture_method:
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           preferred_locale:
                             enum:
                             - da-DK
@@ -60501,6 +60997,18 @@ paths:
                       - enum:
                         - ''
                         type: string
+                    paynow:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            enum:
+                            - none
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
                     sepa_debit:
                       anyOf:
                       - properties:
@@ -60541,6 +61049,28 @@ paths:
                             - off_session
                             type: string
                         title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                    us_bank_account:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            enum:
+                            - ''
+                            - none
+                            - off_session
+                            - on_session
+                            type: string
+                          verification_method:
+                            enum:
+                            - automatic
+                            - instant
+                            - microdeposits
+                            type: string
+                            x-stripeBypassValidation: true
+                        title: payment_intent_payment_method_options_param
                         type: object
                       - enum:
                         - ''
@@ -61147,6 +61677,10 @@ paths:
                           x-stripeBypassValidation: true
                       title: param
                       type: object
+                    paynow:
+                      properties: {}
+                      title: param
+                      type: object
                     sepa_debit:
                       properties:
                         iban:
@@ -61189,11 +61723,33 @@ paths:
                       - konbini
                       - oxxo
                       - p24
+                      - paynow
                       - sepa_debit
                       - sofort
+                      - us_bank_account
                       - wechat_pay
                       type: string
                       x-stripeBypassValidation: true
+                    us_bank_account:
+                      properties:
+                        account_holder_type:
+                          enum:
+                          - company
+                          - individual
+                          type: string
+                        account_number:
+                          maxLength: 5000
+                          type: string
+                        account_type:
+                          enum:
+                          - checking
+                          - savings
+                          type: string
+                        routing_number:
+                          maxLength: 5000
+                          type: string
+                      title: payment_method_param
+                      type: object
                     wechat_pay:
                       properties: {}
                       title: param
@@ -61254,6 +61810,11 @@ paths:
                     afterpay_clearpay:
                       anyOf:
                       - properties:
+                          capture_method:
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           reference:
                             maxLength: 128
                             type: string
@@ -61351,6 +61912,11 @@ paths:
                     card:
                       anyOf:
                       - properties:
+                          capture_method:
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           cvc_token:
                             maxLength: 5000
                             type: string
@@ -61542,6 +62108,11 @@ paths:
                     klarna:
                       anyOf:
                       - properties:
+                          capture_method:
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           preferred_locale:
                             enum:
                             - da-DK
@@ -61642,6 +62213,18 @@ paths:
                       - enum:
                         - ''
                         type: string
+                    paynow:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            enum:
+                            - none
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
                     sepa_debit:
                       anyOf:
                       - properties:
@@ -61682,6 +62265,28 @@ paths:
                             - off_session
                             type: string
                         title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                    us_bank_account:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            enum:
+                            - ''
+                            - none
+                            - off_session
+                            - on_session
+                            type: string
+                          verification_method:
+                            enum:
+                            - automatic
+                            - instant
+                            - microdeposits
+                            type: string
+                            x-stripeBypassValidation: true
+                        title: payment_intent_payment_method_options_param
                         type: object
                       - enum:
                         - ''
@@ -62423,6 +63028,10 @@ paths:
                           x-stripeBypassValidation: true
                       title: param
                       type: object
+                    paynow:
+                      properties: {}
+                      title: param
+                      type: object
                     sepa_debit:
                       properties:
                         iban:
@@ -62465,11 +63074,33 @@ paths:
                       - konbini
                       - oxxo
                       - p24
+                      - paynow
                       - sepa_debit
                       - sofort
+                      - us_bank_account
                       - wechat_pay
                       type: string
                       x-stripeBypassValidation: true
+                    us_bank_account:
+                      properties:
+                        account_holder_type:
+                          enum:
+                          - company
+                          - individual
+                          type: string
+                        account_number:
+                          maxLength: 5000
+                          type: string
+                        account_type:
+                          enum:
+                          - checking
+                          - savings
+                          type: string
+                        routing_number:
+                          maxLength: 5000
+                          type: string
+                      title: payment_method_param
+                      type: object
                     wechat_pay:
                       properties: {}
                       title: param
@@ -62530,6 +63161,11 @@ paths:
                     afterpay_clearpay:
                       anyOf:
                       - properties:
+                          capture_method:
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           reference:
                             maxLength: 128
                             type: string
@@ -62627,6 +63263,11 @@ paths:
                     card:
                       anyOf:
                       - properties:
+                          capture_method:
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           cvc_token:
                             maxLength: 5000
                             type: string
@@ -62818,6 +63459,11 @@ paths:
                     klarna:
                       anyOf:
                       - properties:
+                          capture_method:
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           preferred_locale:
                             enum:
                             - da-DK
@@ -62918,6 +63564,18 @@ paths:
                       - enum:
                         - ''
                         type: string
+                    paynow:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            enum:
+                            - none
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
                     sepa_debit:
                       anyOf:
                       - properties:
@@ -62958,6 +63616,28 @@ paths:
                             - off_session
                             type: string
                         title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                    us_bank_account:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            enum:
+                            - ''
+                            - none
+                            - off_session
+                            - on_session
+                            type: string
+                          verification_method:
+                            enum:
+                            - automatic
+                            - instant
+                            - microdeposits
+                            type: string
+                            x-stripeBypassValidation: true
+                        title: payment_intent_payment_method_options_param
                         type: object
                       - enum:
                         - ''
@@ -63123,6 +63803,11 @@ paths:
                   type: array
                 client_secret:
                   description: The client secret of the PaymentIntent.
+                  maxLength: 5000
+                  type: string
+                descriptor_code:
+                  description: A six-character code starting with SM present in the
+                    microdeposit sent to the bank account.
                   maxLength: 5000
                   type: string
                 expand:
@@ -64366,8 +65051,10 @@ paths:
           - konbini
           - oxxo
           - p24
+          - paynow
           - sepa_debit
           - sofort
+          - us_bank_account
           - wechat_pay
           type: string
           x-stripeBypassValidation: true
@@ -64496,10 +65183,16 @@ paths:
               p24:
                 explode: true
                 style: deepObject
+              paynow:
+                explode: true
+                style: deepObject
               sepa_debit:
                 explode: true
                 style: deepObject
               sofort:
+                explode: true
+                style: deepObject
+              us_bank_account:
                 explode: true
                 style: deepObject
               wechat_pay:
@@ -64866,6 +65559,12 @@ paths:
                   description: The PaymentMethod to share.
                   maxLength: 5000
                   type: string
+                paynow:
+                  description: If this is a `paynow` PaymentMethod, this hash contains
+                    details about the PayNow payment method.
+                  properties: {}
+                  title: param
+                  type: object
                 sepa_debit:
                   description: If this is a `sepa_debit` PaymentMethod, this hash
                     contains details about the SEPA debit bank account.
@@ -64917,11 +65616,35 @@ paths:
                   - konbini
                   - oxxo
                   - p24
+                  - paynow
                   - sepa_debit
                   - sofort
+                  - us_bank_account
                   - wechat_pay
                   type: string
                   x-stripeBypassValidation: true
+                us_bank_account:
+                  description: If this is an `us_bank_account` PaymentMethod, this
+                    hash contains details about the US bank account payment method.
+                  properties:
+                    account_holder_type:
+                      enum:
+                      - company
+                      - individual
+                      type: string
+                    account_number:
+                      maxLength: 5000
+                      type: string
+                    account_type:
+                      enum:
+                      - checking
+                      - savings
+                      type: string
+                    routing_number:
+                      maxLength: 5000
+                      type: string
+                  title: payment_method_param
+                  type: object
                 wechat_pay:
                   description: If this is an `wechat_pay` PaymentMethod, this hash
                     contains details about the wechat_pay payment method.
@@ -65016,6 +65739,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              us_bank_account:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -65092,6 +65818,17 @@ paths:
                     additional information about the object in a structured format.
                     Individual keys can be unset by posting an empty value to them.
                     All keys can be unset by posting an empty value to `metadata`.
+                us_bank_account:
+                  description: If this is an `us_bank_account` PaymentMethod, this
+                    hash contains details about the US bank account payment method.
+                  properties:
+                    account_holder_type:
+                      enum:
+                      - company
+                      - individual
+                      type: string
+                  title: update_param
+                  type: object
               type: object
         required: false
       responses:
@@ -72092,6 +72829,17 @@ paths:
                           type: object
                       title: setup_intent_payment_method_options_param
                       type: object
+                    us_bank_account:
+                      properties:
+                        verification_method:
+                          enum:
+                          - automatic
+                          - instant
+                          - microdeposits
+                          type: string
+                          x-stripeBypassValidation: true
+                      title: setup_intent_payment_method_options_param
+                      type: object
                   title: payment_method_options_param
                   type: object
                 payment_method_types:
@@ -72384,6 +73132,17 @@ paths:
                           properties: {}
                           title: payment_method_options_mandate_options_param
                           type: object
+                      title: setup_intent_payment_method_options_param
+                      type: object
+                    us_bank_account:
+                      properties:
+                        verification_method:
+                          enum:
+                          - automatic
+                          - instant
+                          - microdeposits
+                          type: string
+                          x-stripeBypassValidation: true
                       title: setup_intent_payment_method_options_param
                       type: object
                   title: payment_method_options_param
@@ -72704,6 +73463,17 @@ paths:
                           type: object
                       title: setup_intent_payment_method_options_param
                       type: object
+                    us_bank_account:
+                      properties:
+                        verification_method:
+                          enum:
+                          - automatic
+                          - instant
+                          - microdeposits
+                          type: string
+                          x-stripeBypassValidation: true
+                      title: setup_intent_payment_method_options_param
+                      type: object
                   title: payment_method_options_param
                   type: object
                 return_url:
@@ -72760,6 +73530,11 @@ paths:
                   type: array
                 client_secret:
                   description: The client secret of the SetupIntent.
+                  maxLength: 5000
+                  type: string
+                descriptor_code:
+                  description: A six-character code starting with SM present in the
+                    microdeposit sent to the bank account.
                   maxLength: 5000
                   type: string
                 expand:
@@ -77177,6 +77952,21 @@ paths:
                           - enum:
                             - ''
                             type: string
+                        us_bank_account:
+                          anyOf:
+                          - properties:
+                              verification_method:
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -77196,8 +77986,10 @@ paths:
                           - grabpay
                           - ideal
                           - konbini
+                          - paynow
                           - sepa_debit
                           - sofort
+                          - us_bank_account
                           - wechat_pay
                           type: string
                           x-stripeBypassValidation: true
@@ -77850,6 +78642,21 @@ paths:
                           - enum:
                             - ''
                             type: string
+                        us_bank_account:
+                          anyOf:
+                          - properties:
+                              verification_method:
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -77869,8 +78676,10 @@ paths:
                           - grabpay
                           - ideal
                           - konbini
+                          - paynow
                           - sepa_debit
                           - sofort
+                          - us_bank_account
                           - wechat_pay
                           type: string
                           x-stripeBypassValidation: true

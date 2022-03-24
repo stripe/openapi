@@ -590,6 +590,14 @@ components:
           - inactive
           - pending
           type: string
+        paynow_payments:
+          description: The status of the paynow payments capability of the account,
+            or whether the account can directly process paynow charges.
+          enum:
+          - active
+          - inactive
+          - pending
+          type: string
         sepa_debit_payments:
           description: The status of the SEPA Direct Debits payments capability of
             the account, or whether the account can directly process SEPA Direct Debits
@@ -3769,6 +3777,17 @@ components:
         disputed:
           description: Whether the charge has been disputed.
           type: boolean
+        failure_balance_transaction:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/balance_transaction"
+          description: ID of the balance transaction that describes the reversal of
+            the balance on your account due to payment failure.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/balance_transaction"
         failure_code:
           description: Error code explaining reason for charge failure if available
             (see [the errors section](https://stripe.com/docs/api#errors) for a list
@@ -4071,6 +4090,7 @@ components:
       - customer
       - destination
       - dispute
+      - failure_balance_transaction
       - fraud_details
       - invoice
       - level3
@@ -4930,6 +4950,8 @@ components:
           "$ref": "#/components/schemas/checkout_konbini_payment_method_options"
         oxxo:
           "$ref": "#/components/schemas/checkout_oxxo_payment_method_options"
+        us_bank_account:
+          "$ref": "#/components/schemas/checkout_us_bank_account_payment_method_options"
       title: CheckoutSessionPaymentMethodOptions
       type: object
       x-expandableFields:
@@ -4937,6 +4959,7 @@ components:
       - boleto
       - konbini
       - oxxo
+      - us_bank_account
       x-stripeResource:
         class_name: PaymentMethodOptions
         in_class: checkout.session
@@ -4945,6 +4968,23 @@ components:
         - checkout_boleto_payment_method_options
         - checkout_konbini_payment_method_options
         - checkout_oxxo_payment_method_options
+        - checkout_us_bank_account_payment_method_options
+    checkout_us_bank_account_payment_method_options:
+      description: ''
+      properties:
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          type: string
+          x-stripeBypassValidation: true
+      title: CheckoutUsBankAccountPaymentMethodOptions
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: UsBankAccount
+        in_class: checkout_session_payment_method_options
     connect_collection_transfer:
       description: ''
       properties:
@@ -10844,6 +10884,23 @@ components:
       x-stripeResource:
         class_name: Konbini
         in_class: invoices_payment_method_options
+    invoice_payment_method_options_us_bank_account:
+      description: ''
+      properties:
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          - microdeposits
+          type: string
+          x-stripeBypassValidation: true
+      title: invoice_payment_method_options_us_bank_account
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: UsBankAccount
+        in_class: invoices_payment_method_options
     invoice_setting_custom_field:
       description: ''
       properties:
@@ -11351,6 +11408,13 @@ components:
           description: If paying by `konbini`, this sub-hash contains details about
             the Konbini payment method options to pass to the invoice’s PaymentIntent.
           nullable: true
+        us_bank_account:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_payment_method_options_us_bank_account"
+          description: If paying by `us_bank_account`, this sub-hash contains details
+            about the ACH direct debit payment method options to pass to the invoice’s
+            PaymentIntent.
+          nullable: true
       required:
       - acss_debit
       - bancontact
@@ -11363,6 +11427,7 @@ components:
       - bancontact
       - card
       - konbini
+      - us_bank_account
       x-stripeResource:
         class_name: PaymentMethodOptions
         in_class: invoice
@@ -11371,6 +11436,7 @@ components:
         - invoice_payment_method_options_bancontact
         - invoice_payment_method_options_card
         - invoice_payment_method_options_konbini
+        - invoice_payment_method_options_us_bank_account
     invoices_payment_settings:
       description: ''
       properties:
@@ -11401,9 +11467,11 @@ components:
             - grabpay
             - ideal
             - konbini
+            - paynow
             - sepa_credit_transfer
             - sepa_debit
             - sofort
+            - us_bank_account
             - wechat_pay
             type: string
             x-stripeBypassValidation: true
@@ -16681,6 +16749,7 @@ components:
         - mandate_multi_use
         - mandate_payment_method_details
         - mandate_single_use
+        - mandate_us_bank_account
     mandate_acss_debit:
       description: ''
       properties:
@@ -16798,6 +16867,8 @@ components:
             method.
           maxLength: 5000
           type: string
+        us_bank_account:
+          "$ref": "#/components/schemas/mandate_us_bank_account"
       required:
       - type
       title: mandate_payment_method_details
@@ -16808,6 +16879,7 @@ components:
       - bacs_debit
       - card
       - sepa_debit
+      - us_bank_account
       x-stripeResource:
         class_name: PaymentMethodDetails
         in_class: mandate
@@ -16853,6 +16925,15 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: SingleUse
+        in_class: mandate
+    mandate_us_bank_account:
+      description: ''
+      properties: {}
+      title: mandate_us_bank_account
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: UsBankAccount
         in_class: mandate
     networks:
       description: ''
@@ -18086,6 +18167,8 @@ components:
           "$ref": "#/components/schemas/payment_intent_next_action_konbini"
         oxxo_display_details:
           "$ref": "#/components/schemas/payment_intent_next_action_display_oxxo_details"
+        paynow_display_qr_code:
+          "$ref": "#/components/schemas/payment_intent_next_action_paynow_display_qr_code"
         redirect_to_url:
           "$ref": "#/components/schemas/payment_intent_next_action_redirect_to_url"
         type:
@@ -18118,6 +18201,7 @@ components:
       - card_await_notification
       - konbini_display_details
       - oxxo_display_details
+      - paynow_display_qr_code
       - redirect_to_url
       - verify_with_microdeposits
       - wechat_pay_display_qr_code
@@ -18127,6 +18211,7 @@ components:
         class_name: NextAction
         in_class: payment_intent
         inner_classes:
+        - payment_intent_next_action_paynow_display_qr_code
         - payment_intent_next_action_verify_with_microdeposits
         - payment_intent_next_action_wechat_pay_display_qr_code
         - payment_intent_next_action_wechat_pay_redirect_to_android_app
@@ -18404,6 +18489,32 @@ components:
         - payment_intent_next_action_konbini_lawson
         - payment_intent_next_action_konbini_ministop
         - payment_intent_next_action_konbini_seicomart
+    payment_intent_next_action_paynow_display_qr_code:
+      description: ''
+      properties:
+        data:
+          description: The raw data string used to generate QR code, it should be
+            used together with QR code library.
+          maxLength: 5000
+          type: string
+        image_url_png:
+          description: "​​The image_url_png string used to render QR code"
+          maxLength: 5000
+          type: string
+        image_url_svg:
+          description: "​​The image_url_svg string used to render QR code"
+          maxLength: 5000
+          type: string
+      required:
+      - data
+      - image_url_png
+      - image_url_svg
+      title: PaymentIntentNextActionPaynowDisplayQrCode
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: PaynowDisplayQrCode
+        in_class: payment_intent_next_action
     payment_intent_next_action_redirect_to_url:
       description: ''
       properties:
@@ -18439,6 +18550,14 @@ components:
           description: The URL for the hosted verification page, which allows customers
             to verify their bank account.
           maxLength: 5000
+          type: string
+        microdeposit_type:
+          description: The type of the microdeposit sent to the customer. Used to
+            distinguish between different verification methods.
+          enum:
+          - amounts
+          - descriptor_code
+          nullable: true
           type: string
       required:
       - arrival_date
@@ -18580,10 +18699,14 @@ components:
           "$ref": "#/components/schemas/payment_method_options_oxxo"
         p24:
           "$ref": "#/components/schemas/payment_method_options_p24"
+        paynow:
+          "$ref": "#/components/schemas/payment_method_options_paynow"
         sepa_debit:
           "$ref": "#/components/schemas/payment_intent_payment_method_options_sepa_debit"
         sofort:
           "$ref": "#/components/schemas/payment_method_options_sofort"
+        us_bank_account:
+          "$ref": "#/components/schemas/payment_intent_payment_method_options_us_bank_account"
         wechat_pay:
           "$ref": "#/components/schemas/payment_method_options_wechat_pay"
       title: PaymentIntentPaymentMethodOptions
@@ -18608,8 +18731,10 @@ components:
       - konbini
       - oxxo
       - p24
+      - paynow
       - sepa_debit
       - sofort
+      - us_bank_account
       - wechat_pay
       x-stripeResource:
         class_name: PaymentMethodOptions
@@ -18621,6 +18746,7 @@ components:
         - payment_intent_payment_method_options_eps
         - payment_intent_payment_method_options_mandate_options_sepa_debit
         - payment_intent_payment_method_options_sepa_debit
+        - payment_intent_payment_method_options_us_bank_account
         - payment_method_options_afterpay_clearpay
         - payment_method_options_alipay
         - payment_method_options_bacs_debit
@@ -18636,6 +18762,7 @@ components:
         - payment_method_options_konbini
         - payment_method_options_oxxo
         - payment_method_options_p24
+        - payment_method_options_paynow
         - payment_method_options_sofort
         - payment_method_options_wechat_pay
     payment_intent_payment_method_options_acss_debit:
@@ -18696,6 +18823,12 @@ components:
     payment_intent_payment_method_options_card:
       description: ''
       properties:
+        capture_method:
+          description: Controls when the funds will be captured from the customer's
+            account.
+          enum:
+          - manual
+          type: string
         installments:
           anyOf:
           - "$ref": "#/components/schemas/payment_method_options_card_installments"
@@ -18861,6 +18994,35 @@ components:
       x-stripeResource:
         class_name: SepaDebit
         in_class: payment_intent_payment_method_options
+    payment_intent_payment_method_options_us_bank_account:
+      description: ''
+      properties:
+        setup_future_usage:
+          description: |-
+            Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+            Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+            When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+          enum:
+          - none
+          - off_session
+          - on_session
+          type: string
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          - microdeposits
+          type: string
+          x-stripeBypassValidation: true
+      title: payment_intent_payment_method_options_us_bank_account
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: UsBankAccount
+        in_class: payment_intent_payment_method_options
     payment_intent_processing:
       description: ''
       properties:
@@ -18910,6 +19072,12 @@ components:
     payment_intent_type_specific_payment_method_options_client:
       description: ''
       properties:
+        capture_method:
+          description: Controls when the funds will be captured from the customer's
+            account.
+          enum:
+          - manual
+          type: string
         setup_future_usage:
           description: |-
             Indicates that you intend to make future payments with this PaymentIntent's payment method.
@@ -18922,6 +19090,14 @@ components:
           - off_session
           - on_session
           type: string
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          - microdeposits
+          type: string
+          x-stripeBypassValidation: true
       title: PaymentIntentTypeSpecificPaymentMethodOptionsClient
       type: object
       x-expandableFields: []
@@ -19649,6 +19825,8 @@ components:
           "$ref": "#/components/schemas/payment_method_oxxo"
         p24:
           "$ref": "#/components/schemas/payment_method_p24"
+        paynow:
+          "$ref": "#/components/schemas/payment_method_paynow"
         sepa_debit:
           "$ref": "#/components/schemas/payment_method_sepa_debit"
         sofort:
@@ -19677,11 +19855,15 @@ components:
           - konbini
           - oxxo
           - p24
+          - paynow
           - sepa_debit
           - sofort
+          - us_bank_account
           - wechat_pay
           type: string
           x-stripeBypassValidation: true
+        us_bank_account:
+          "$ref": "#/components/schemas/payment_method_us_bank_account"
         wechat_pay:
           "$ref": "#/components/schemas/payment_method_wechat_pay"
       required:
@@ -19717,8 +19899,10 @@ components:
       - konbini
       - oxxo
       - p24
+      - paynow
       - sepa_debit
       - sofort
+      - us_bank_account
       - wechat_pay
       x-resourceId: payment_method
       x-stripeOperations:
@@ -19831,8 +20015,10 @@ components:
         - payment_method_konbini
         - payment_method_oxxo
         - payment_method_p24
+        - payment_method_paynow
         - payment_method_sepa_debit
         - payment_method_sofort
+        - payment_method_us_bank_account
         - payment_method_wechat_pay
     payment_method_acss_debit:
       description: ''
@@ -20341,6 +20527,8 @@ components:
           "$ref": "#/components/schemas/payment_method_details_oxxo"
         p24:
           "$ref": "#/components/schemas/payment_method_details_p24"
+        paynow:
+          "$ref": "#/components/schemas/payment_method_details_paynow"
         sepa_credit_transfer:
           "$ref": "#/components/schemas/payment_method_details_sepa_credit_transfer"
         sepa_debit:
@@ -20356,6 +20544,8 @@ components:
             It contains information specific to the payment method.
           maxLength: 5000
           type: string
+        us_bank_account:
+          "$ref": "#/components/schemas/payment_method_details_us_bank_account"
         wechat:
           "$ref": "#/components/schemas/payment_method_details_wechat"
         wechat_pay:
@@ -20387,10 +20577,12 @@ components:
       - multibanco
       - oxxo
       - p24
+      - paynow
       - sepa_credit_transfer
       - sepa_debit
       - sofort
       - stripe_account
+      - us_bank_account
       - wechat
       - wechat_pay
       x-stripeResource:
@@ -20420,10 +20612,12 @@ components:
         - payment_method_details_multibanco
         - payment_method_details_oxxo
         - payment_method_details_p24
+        - payment_method_details_paynow
         - payment_method_details_sepa_credit_transfer
         - payment_method_details_sepa_debit
         - payment_method_details_sofort
         - payment_method_details_stripe_account
+        - payment_method_details_us_bank_account
         - payment_method_details_wechat
         - payment_method_details_wechat_pay
     payment_method_details_ach_credit_transfer:
@@ -21967,6 +22161,22 @@ components:
       x-stripeResource:
         class_name: P24
         in_class: payment_method_details
+    payment_method_details_paynow:
+      description: ''
+      properties:
+        reference:
+          description: Reference number associated with this PayNow payment
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+      - reference
+      title: payment_method_details_paynow
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Paynow
+        in_class: payment_method_details
     payment_method_details_sepa_credit_transfer:
       description: ''
       properties:
@@ -22141,6 +22351,58 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: StripeAccount
+        in_class: payment_method_details
+    payment_method_details_us_bank_account:
+      description: ''
+      properties:
+        account_holder_type:
+          description: 'Account holder type: individual or company.'
+          enum:
+          - company
+          - individual
+          nullable: true
+          type: string
+        account_type:
+          description: 'Account type: checkings or savings. Defaults to checking if
+            omitted.'
+          enum:
+          - checking
+          - savings
+          nullable: true
+          type: string
+        bank_name:
+          description: Name of the bank associated with the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+        fingerprint:
+          description: Uniquely identifies this particular bank account. You can use
+            this attribute to check whether two bank accounts are the same.
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          description: Last four digits of the bank account number.
+          maxLength: 5000
+          nullable: true
+          type: string
+        routing_number:
+          description: Routing number of the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+      - account_holder_type
+      - account_type
+      - bank_name
+      - fingerprint
+      - last4
+      - routing_number
+      title: payment_method_details_us_bank_account
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: UsBankAccount
         in_class: payment_method_details
     payment_method_details_wechat:
       description: ''
@@ -22383,6 +22645,12 @@ components:
     payment_method_options_afterpay_clearpay:
       description: ''
       properties:
+        capture_method:
+          description: Controls when the funds will be captured from the customer's
+            account.
+          enum:
+          - manual
+          type: string
         reference:
           description: |-
             Order identifier shown to the customer in Afterpay’s online portal. We recommend using a value that helps you answer any questions a customer might have about
@@ -22716,6 +22984,12 @@ components:
     payment_method_options_klarna:
       description: ''
       properties:
+        capture_method:
+          description: Controls when the funds will be captured from the customer's
+            account.
+          enum:
+          - manual
+          type: string
         preferred_locale:
           description: Preferred locale of the Klarna checkout page that the customer
             is redirected to.
@@ -22834,6 +23108,25 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: P24
+        in_class: payment_intent_payment_method_options
+    payment_method_options_paynow:
+      description: ''
+      properties:
+        setup_future_usage:
+          description: |-
+            Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+            Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+            When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+          enum:
+          - none
+          type: string
+      title: payment_method_options_paynow
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Paynow
         in_class: payment_intent_payment_method_options
     payment_method_options_sofort:
       description: ''
@@ -22958,6 +23251,15 @@ components:
       x-stripeResource:
         class_name: P24
         in_class: payment_method
+    payment_method_paynow:
+      description: ''
+      properties: {}
+      title: payment_method_paynow
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Paynow
+        in_class: payment_method
     payment_method_sepa_debit:
       description: ''
       properties:
@@ -23025,6 +23327,58 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: Sofort
+        in_class: payment_method
+    payment_method_us_bank_account:
+      description: ''
+      properties:
+        account_holder_type:
+          description: 'Account holder type: individual or company.'
+          enum:
+          - company
+          - individual
+          nullable: true
+          type: string
+        account_type:
+          description: 'Account type: checkings or savings. Defaults to checking if
+            omitted.'
+          enum:
+          - checking
+          - savings
+          nullable: true
+          type: string
+        bank_name:
+          description: The name of the bank.
+          maxLength: 5000
+          nullable: true
+          type: string
+        fingerprint:
+          description: Uniquely identifies this particular bank account. You can use
+            this attribute to check whether two bank accounts are the same.
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          description: Last four digits of the bank account number.
+          maxLength: 5000
+          nullable: true
+          type: string
+        routing_number:
+          description: Routing number of the bank account.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+      - account_holder_type
+      - account_type
+      - bank_name
+      - fingerprint
+      - last4
+      - routing_number
+      title: payment_method_us_bank_account
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: USBankAccount
         in_class: payment_method
     payment_method_wechat_pay:
       description: ''
@@ -28356,6 +28710,8 @@ components:
             for the payment method.
           maxLength: 5000
           type: string
+        us_bank_account:
+          "$ref": "#/components/schemas/setup_attempt_payment_method_details_us_bank_account"
       required:
       - type
       title: SetupAttemptPaymentMethodDetails
@@ -28371,6 +28727,7 @@ components:
       - ideal
       - sepa_debit
       - sofort
+      - us_bank_account
       x-stripeResource:
         class_name: PaymentMethodDetails
         in_class: setup_attempt
@@ -28385,6 +28742,7 @@ components:
         - setup_attempt_payment_method_details_ideal
         - setup_attempt_payment_method_details_sepa_debit
         - setup_attempt_payment_method_details_sofort
+        - setup_attempt_payment_method_details_us_bank_account
     setup_attempt_payment_method_details_acss_debit:
       description: ''
       properties: {}
@@ -28719,6 +29077,15 @@ components:
       - generated_sepa_debit_mandate
       x-stripeResource:
         class_name: Sofort
+        in_class: setup_attempt_payment_method_details
+    setup_attempt_payment_method_details_us_bank_account:
+      description: ''
+      properties: {}
+      title: setup_attempt_payment_method_details_us_bank_account
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: UsBankAccount
         in_class: setup_attempt_payment_method_details
     setup_intent:
       description: |-
@@ -29124,6 +29491,14 @@ components:
             to verify their bank account.
           maxLength: 5000
           type: string
+        microdeposit_type:
+          description: The type of the microdeposit sent to the customer. Used to
+            distinguish between different verification methods.
+          enum:
+          - amounts
+          - descriptor_code
+          nullable: true
+          type: string
       required:
       - arrival_date
       - hosted_verification_url
@@ -29142,12 +29517,15 @@ components:
           "$ref": "#/components/schemas/setup_intent_payment_method_options_card"
         sepa_debit:
           "$ref": "#/components/schemas/setup_intent_payment_method_options_sepa_debit"
+        us_bank_account:
+          "$ref": "#/components/schemas/setup_intent_payment_method_options_us_bank_account"
       title: SetupIntentPaymentMethodOptions
       type: object
       x-expandableFields:
       - acss_debit
       - card
       - sepa_debit
+      - us_bank_account
       x-stripeResource:
         class_name: PaymentMethodOptions
         in_class: setup_intent
@@ -29156,6 +29534,7 @@ components:
         - setup_intent_payment_method_options_card
         - setup_intent_payment_method_options_mandate_options_sepa_debit
         - setup_intent_payment_method_options_sepa_debit
+        - setup_intent_payment_method_options_us_bank_account
     setup_intent_payment_method_options_acss_debit:
       description: ''
       properties:
@@ -29375,9 +29754,34 @@ components:
       x-stripeResource:
         class_name: SepaDebit
         in_class: setup_intent_payment_method_options
+    setup_intent_payment_method_options_us_bank_account:
+      description: ''
+      properties:
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          - microdeposits
+          type: string
+          x-stripeBypassValidation: true
+      title: setup_intent_payment_method_options_us_bank_account
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: UsBankAccount
+        in_class: setup_intent_payment_method_options
     setup_intent_type_specific_payment_method_options_client:
       description: ''
-      properties: {}
+      properties:
+        verification_method:
+          description: Bank account verification method.
+          enum:
+          - automatic
+          - instant
+          - microdeposits
+          type: string
+          x-stripeBypassValidation: true
       title: SetupIntentTypeSpecificPaymentMethodOptionsClient
       type: object
       x-expandableFields: []
@@ -32918,6 +33322,12 @@ components:
           description: This sub-hash contains details about the Konbini payment method
             options to pass to invoices created by the subscription.
           nullable: true
+        us_bank_account:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_payment_method_options_us_bank_account"
+          description: This sub-hash contains details about the ACH direct debit payment
+            method options to pass to invoices created by the subscription.
+          nullable: true
       required:
       - acss_debit
       - bancontact
@@ -32930,6 +33340,7 @@ components:
       - bancontact
       - card
       - konbini
+      - us_bank_account
       x-stripeResource:
         class_name: PaymentMethodOptions
         in_class: subscription
@@ -32965,9 +33376,11 @@ components:
             - grabpay
             - ideal
             - konbini
+            - paynow
             - sepa_credit_transfer
             - sepa_debit
             - sofort
+            - us_bank_account
             - wechat_pay
             type: string
             x-stripeBypassValidation: true
@@ -36041,6 +36454,18 @@ paths:
                           type: boolean
                       title: capability_param
                       type: object
+                    paynow_payments:
+                      description: The paynow_payments capability.
+                      properties:
+                        requested:
+                          description: Passing true requests the capability for the
+                            account, if it is not already requested. A requested capability
+                            may not immediately become active. Any requirements to
+                            activate the capability are returned in the `requirements`
+                            arrays.
+                          type: boolean
+                      title: capability_param
+                      type: object
                     sepa_debit_payments:
                       description: The sepa_debit_payments capability.
                       properties:
@@ -37481,6 +37906,18 @@ paths:
                       type: object
                     p24_payments:
                       description: The p24_payments capability.
+                      properties:
+                        requested:
+                          description: Passing true requests the capability for the
+                            account, if it is not already requested. A requested capability
+                            may not immediately become active. Any requirements to
+                            activate the capability are returned in the `requirements`
+                            arrays.
+                          type: boolean
+                      title: capability_param
+                      type: object
+                    paynow_payments:
+                      description: The paynow_payments capability.
                       properties:
                         requested:
                           description: Passing true requests the capability for the
@@ -44335,6 +44772,19 @@ paths:
                           type: integer
                       title: payment_method_options_param
                       type: object
+                    us_bank_account:
+                      description: contains details about the Us Bank Account payment
+                        method options.
+                      properties:
+                        verification_method:
+                          description: Verification method for the intent
+                          enum:
+                          - automatic
+                          - instant
+                          type: string
+                          x-stripeBypassValidation: true
+                      title: payment_method_options_param
+                      type: object
                     wechat_pay:
                       description: contains details about the WeChat Pay payment method
                         options.
@@ -44388,8 +44838,10 @@ paths:
                     - konbini
                     - oxxo
                     - p24
+                    - paynow
                     - sepa_debit
                     - sofort
+                    - us_bank_account
                     - wechat_pay
                     type: string
                     x-stripeBypassValidation: true
@@ -47997,8 +48449,10 @@ paths:
           - konbini
           - oxxo
           - p24
+          - paynow
           - sepa_debit
           - sofort
+          - us_bank_account
           - wechat_pay
           type: string
           x-stripeBypassValidation: true
@@ -52409,6 +52863,25 @@ paths:
                           description: If paying by `konbini`, this sub-hash contains
                             details about the Konbini payment method options to pass
                             to the invoice’s PaymentIntent.
+                        us_bank_account:
+                          anyOf:
+                          - properties:
+                              verification_method:
+                                description: Verification method for the intent
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: If paying by `us_bank_account`, this sub-hash
+                            contains details about the ACH direct debit payment method
+                            options to pass to the invoice’s PaymentIntent.
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -52428,9 +52901,11 @@ paths:
                           - grabpay
                           - ideal
                           - konbini
+                          - paynow
                           - sepa_credit_transfer
                           - sepa_debit
                           - sofort
+                          - us_bank_account
                           - wechat_pay
                           type: string
                           x-stripeBypassValidation: true
@@ -54526,6 +55001,25 @@ paths:
                           description: If paying by `konbini`, this sub-hash contains
                             details about the Konbini payment method options to pass
                             to the invoice’s PaymentIntent.
+                        us_bank_account:
+                          anyOf:
+                          - properties:
+                              verification_method:
+                                description: Verification method for the intent
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: If paying by `us_bank_account`, this sub-hash
+                            contains details about the ACH direct debit payment method
+                            options to pass to the invoice’s PaymentIntent.
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -54545,9 +55039,11 @@ paths:
                           - grabpay
                           - ideal
                           - konbini
+                          - paynow
                           - sepa_credit_transfer
                           - sepa_debit
                           - sofort
+                          - us_bank_account
                           - wechat_pay
                           type: string
                           x-stripeBypassValidation: true
@@ -63327,6 +63823,12 @@ paths:
                           x-stripeBypassValidation: true
                       title: param
                       type: object
+                    paynow:
+                      description: If this is a `paynow` PaymentMethod, this hash
+                        contains details about the PayNow payment method.
+                      properties: {}
+                      title: param
+                      type: object
                     sepa_debit:
                       description: If this is a `sepa_debit` PaymentMethod, this hash
                         contains details about the SEPA debit bank account.
@@ -63380,11 +63882,41 @@ paths:
                       - konbini
                       - oxxo
                       - p24
+                      - paynow
                       - sepa_debit
                       - sofort
+                      - us_bank_account
                       - wechat_pay
                       type: string
                       x-stripeBypassValidation: true
+                    us_bank_account:
+                      description: If this is an `us_bank_account` PaymentMethod,
+                        this hash contains details about the US bank account payment
+                        method.
+                      properties:
+                        account_holder_type:
+                          description: 'Account holder type: individual or company.'
+                          enum:
+                          - company
+                          - individual
+                          type: string
+                        account_number:
+                          description: Account number of the bank account.
+                          maxLength: 5000
+                          type: string
+                        account_type:
+                          description: 'Account type: checkings or savings. Defaults
+                            to checking if omitted.'
+                          enum:
+                          - checking
+                          - savings
+                          type: string
+                        routing_number:
+                          description: Routing number of the bank account.
+                          maxLength: 5000
+                          type: string
+                      title: payment_method_param
+                      type: object
                     wechat_pay:
                       description: If this is an `wechat_pay` PaymentMethod, this
                         hash contains details about the wechat_pay payment method.
@@ -63468,6 +64000,17 @@ paths:
                     afterpay_clearpay:
                       anyOf:
                       - properties:
+                          capture_method:
+                            description: |-
+                              Controls when the funds will be captured from the customer's account.
+
+                              If provided, this parameter will override the top-level `capture_method` when finalizing the payment with this payment method type.
+
+                              If `capture_method` is already set on the PaymentIntent, providing an empty value for this parameter will unset the stored value for this payment method type.
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           reference:
                             description: |-
                               Order identifier shown to the customer in Afterpay’s online portal. We recommend using a value that helps you answer any questions a customer might have about
@@ -63637,6 +64180,17 @@ paths:
                     card:
                       anyOf:
                       - properties:
+                          capture_method:
+                            description: |-
+                              Controls when the funds will be captured from the customer's account.
+
+                              If provided, this parameter will override the top-level `capture_method` when finalizing the payment with this payment method type.
+
+                              If `capture_method` is already set on the PaymentIntent, providing an empty value for this parameter will unset the stored value for this payment method type.
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           cvc_token:
                             description: A single-use `cvc_update` Token that represents
                               a card CVC value. When provided, the CVC value will
@@ -63965,6 +64519,17 @@ paths:
                     klarna:
                       anyOf:
                       - properties:
+                          capture_method:
+                            description: |-
+                              Controls when the funds will be captured from the customer's account.
+
+                              If provided, this parameter will override the top-level `capture_method` when finalizing the payment with this payment method type.
+
+                              If `capture_method` is already set on the PaymentIntent, providing an empty value for this parameter will unset the stored value for this payment method type.
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           preferred_locale:
                             description: Preferred language of the Klarna authorization
                               page that the customer is redirected to
@@ -64130,6 +64695,28 @@ paths:
                         type: string
                       description: If this is a `p24` PaymentMethod, this sub-hash
                         contains details about the Przelewy24 payment method options.
+                    paynow:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - none
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `paynow` PaymentMethod, this sub-hash
+                        contains details about the PayNow payment method options.
                     sepa_debit:
                       anyOf:
                       - properties:
@@ -64196,6 +64783,40 @@ paths:
                         type: string
                       description: If this is a `sofort` PaymentMethod, this sub-hash
                         contains details about the SOFORT payment method options.
+                    us_bank_account:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - ''
+                            - none
+                            - off_session
+                            - on_session
+                            type: string
+                          verification_method:
+                            description: Verification method for the intent
+                            enum:
+                            - automatic
+                            - instant
+                            - microdeposits
+                            type: string
+                            x-stripeBypassValidation: true
+                        title: payment_intent_payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `us_bank_account` PaymentMethod, this
+                        sub-hash contains details about the US bank account payment
+                        method options.
                     wechat_pay:
                       anyOf:
                       - properties:
@@ -64925,6 +65546,12 @@ paths:
                           x-stripeBypassValidation: true
                       title: param
                       type: object
+                    paynow:
+                      description: If this is a `paynow` PaymentMethod, this hash
+                        contains details about the PayNow payment method.
+                      properties: {}
+                      title: param
+                      type: object
                     sepa_debit:
                       description: If this is a `sepa_debit` PaymentMethod, this hash
                         contains details about the SEPA debit bank account.
@@ -64978,11 +65605,41 @@ paths:
                       - konbini
                       - oxxo
                       - p24
+                      - paynow
                       - sepa_debit
                       - sofort
+                      - us_bank_account
                       - wechat_pay
                       type: string
                       x-stripeBypassValidation: true
+                    us_bank_account:
+                      description: If this is an `us_bank_account` PaymentMethod,
+                        this hash contains details about the US bank account payment
+                        method.
+                      properties:
+                        account_holder_type:
+                          description: 'Account holder type: individual or company.'
+                          enum:
+                          - company
+                          - individual
+                          type: string
+                        account_number:
+                          description: Account number of the bank account.
+                          maxLength: 5000
+                          type: string
+                        account_type:
+                          description: 'Account type: checkings or savings. Defaults
+                            to checking if omitted.'
+                          enum:
+                          - checking
+                          - savings
+                          type: string
+                        routing_number:
+                          description: Routing number of the bank account.
+                          maxLength: 5000
+                          type: string
+                      title: payment_method_param
+                      type: object
                     wechat_pay:
                       description: If this is an `wechat_pay` PaymentMethod, this
                         hash contains details about the wechat_pay payment method.
@@ -65066,6 +65723,17 @@ paths:
                     afterpay_clearpay:
                       anyOf:
                       - properties:
+                          capture_method:
+                            description: |-
+                              Controls when the funds will be captured from the customer's account.
+
+                              If provided, this parameter will override the top-level `capture_method` when finalizing the payment with this payment method type.
+
+                              If `capture_method` is already set on the PaymentIntent, providing an empty value for this parameter will unset the stored value for this payment method type.
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           reference:
                             description: |-
                               Order identifier shown to the customer in Afterpay’s online portal. We recommend using a value that helps you answer any questions a customer might have about
@@ -65235,6 +65903,17 @@ paths:
                     card:
                       anyOf:
                       - properties:
+                          capture_method:
+                            description: |-
+                              Controls when the funds will be captured from the customer's account.
+
+                              If provided, this parameter will override the top-level `capture_method` when finalizing the payment with this payment method type.
+
+                              If `capture_method` is already set on the PaymentIntent, providing an empty value for this parameter will unset the stored value for this payment method type.
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           cvc_token:
                             description: A single-use `cvc_update` Token that represents
                               a card CVC value. When provided, the CVC value will
@@ -65563,6 +66242,17 @@ paths:
                     klarna:
                       anyOf:
                       - properties:
+                          capture_method:
+                            description: |-
+                              Controls when the funds will be captured from the customer's account.
+
+                              If provided, this parameter will override the top-level `capture_method` when finalizing the payment with this payment method type.
+
+                              If `capture_method` is already set on the PaymentIntent, providing an empty value for this parameter will unset the stored value for this payment method type.
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           preferred_locale:
                             description: Preferred language of the Klarna authorization
                               page that the customer is redirected to
@@ -65728,6 +66418,28 @@ paths:
                         type: string
                       description: If this is a `p24` PaymentMethod, this sub-hash
                         contains details about the Przelewy24 payment method options.
+                    paynow:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - none
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `paynow` PaymentMethod, this sub-hash
+                        contains details about the PayNow payment method options.
                     sepa_debit:
                       anyOf:
                       - properties:
@@ -65794,6 +66506,40 @@ paths:
                         type: string
                       description: If this is a `sofort` PaymentMethod, this sub-hash
                         contains details about the SOFORT payment method options.
+                    us_bank_account:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - ''
+                            - none
+                            - off_session
+                            - on_session
+                            type: string
+                          verification_method:
+                            description: Verification method for the intent
+                            enum:
+                            - automatic
+                            - instant
+                            - microdeposits
+                            type: string
+                            x-stripeBypassValidation: true
+                        title: payment_intent_payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `us_bank_account` PaymentMethod, this
+                        sub-hash contains details about the US bank account payment
+                        method options.
                     wechat_pay:
                       anyOf:
                       - properties:
@@ -66669,6 +67415,12 @@ paths:
                           x-stripeBypassValidation: true
                       title: param
                       type: object
+                    paynow:
+                      description: If this is a `paynow` PaymentMethod, this hash
+                        contains details about the PayNow payment method.
+                      properties: {}
+                      title: param
+                      type: object
                     sepa_debit:
                       description: If this is a `sepa_debit` PaymentMethod, this hash
                         contains details about the SEPA debit bank account.
@@ -66722,11 +67474,41 @@ paths:
                       - konbini
                       - oxxo
                       - p24
+                      - paynow
                       - sepa_debit
                       - sofort
+                      - us_bank_account
                       - wechat_pay
                       type: string
                       x-stripeBypassValidation: true
+                    us_bank_account:
+                      description: If this is an `us_bank_account` PaymentMethod,
+                        this hash contains details about the US bank account payment
+                        method.
+                      properties:
+                        account_holder_type:
+                          description: 'Account holder type: individual or company.'
+                          enum:
+                          - company
+                          - individual
+                          type: string
+                        account_number:
+                          description: Account number of the bank account.
+                          maxLength: 5000
+                          type: string
+                        account_type:
+                          description: 'Account type: checkings or savings. Defaults
+                            to checking if omitted.'
+                          enum:
+                          - checking
+                          - savings
+                          type: string
+                        routing_number:
+                          description: Routing number of the bank account.
+                          maxLength: 5000
+                          type: string
+                      title: payment_method_param
+                      type: object
                     wechat_pay:
                       description: If this is an `wechat_pay` PaymentMethod, this
                         hash contains details about the wechat_pay payment method.
@@ -66810,6 +67592,17 @@ paths:
                     afterpay_clearpay:
                       anyOf:
                       - properties:
+                          capture_method:
+                            description: |-
+                              Controls when the funds will be captured from the customer's account.
+
+                              If provided, this parameter will override the top-level `capture_method` when finalizing the payment with this payment method type.
+
+                              If `capture_method` is already set on the PaymentIntent, providing an empty value for this parameter will unset the stored value for this payment method type.
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           reference:
                             description: |-
                               Order identifier shown to the customer in Afterpay’s online portal. We recommend using a value that helps you answer any questions a customer might have about
@@ -66979,6 +67772,17 @@ paths:
                     card:
                       anyOf:
                       - properties:
+                          capture_method:
+                            description: |-
+                              Controls when the funds will be captured from the customer's account.
+
+                              If provided, this parameter will override the top-level `capture_method` when finalizing the payment with this payment method type.
+
+                              If `capture_method` is already set on the PaymentIntent, providing an empty value for this parameter will unset the stored value for this payment method type.
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           cvc_token:
                             description: A single-use `cvc_update` Token that represents
                               a card CVC value. When provided, the CVC value will
@@ -67307,6 +68111,17 @@ paths:
                     klarna:
                       anyOf:
                       - properties:
+                          capture_method:
+                            description: |-
+                              Controls when the funds will be captured from the customer's account.
+
+                              If provided, this parameter will override the top-level `capture_method` when finalizing the payment with this payment method type.
+
+                              If `capture_method` is already set on the PaymentIntent, providing an empty value for this parameter will unset the stored value for this payment method type.
+                            enum:
+                            - ''
+                            - manual
+                            type: string
                           preferred_locale:
                             description: Preferred language of the Klarna authorization
                               page that the customer is redirected to
@@ -67472,6 +68287,28 @@ paths:
                         type: string
                       description: If this is a `p24` PaymentMethod, this sub-hash
                         contains details about the Przelewy24 payment method options.
+                    paynow:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - none
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `paynow` PaymentMethod, this sub-hash
+                        contains details about the PayNow payment method options.
                     sepa_debit:
                       anyOf:
                       - properties:
@@ -67538,6 +68375,40 @@ paths:
                         type: string
                       description: If this is a `sofort` PaymentMethod, this sub-hash
                         contains details about the SOFORT payment method options.
+                    us_bank_account:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - ''
+                            - none
+                            - off_session
+                            - on_session
+                            type: string
+                          verification_method:
+                            description: Verification method for the intent
+                            enum:
+                            - automatic
+                            - instant
+                            - microdeposits
+                            type: string
+                            x-stripeBypassValidation: true
+                        title: payment_intent_payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `us_bank_account` PaymentMethod, this
+                        sub-hash contains details about the US bank account payment
+                        method options.
                     wechat_pay:
                       anyOf:
                       - properties:
@@ -67723,6 +68594,11 @@ paths:
                   type: array
                   x-stripeParam:
                     containee_entity_name: amount
+                descriptor_code:
+                  description: A six-character code starting with SM present in the
+                    microdeposit sent to the bank account.
+                  maxLength: 5000
+                  type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -69048,8 +69924,10 @@ paths:
           - konbini
           - oxxo
           - p24
+          - paynow
           - sepa_debit
           - sofort
+          - us_bank_account
           - wechat_pay
           type: string
           x-stripeBypassValidation: true
@@ -69178,10 +70056,16 @@ paths:
               p24:
                 explode: true
                 style: deepObject
+              paynow:
+                explode: true
+                style: deepObject
               sepa_debit:
                 explode: true
                 style: deepObject
               sofort:
+                explode: true
+                style: deepObject
+              us_bank_account:
                 explode: true
                 style: deepObject
               wechat_pay:
@@ -69596,6 +70480,12 @@ paths:
                   description: The PaymentMethod to share.
                   maxLength: 5000
                   type: string
+                paynow:
+                  description: If this is a `paynow` PaymentMethod, this hash contains
+                    details about the PayNow payment method.
+                  properties: {}
+                  title: param
+                  type: object
                 sepa_debit:
                   description: If this is a `sepa_debit` PaymentMethod, this hash
                     contains details about the SEPA debit bank account.
@@ -69650,11 +70540,40 @@ paths:
                   - konbini
                   - oxxo
                   - p24
+                  - paynow
                   - sepa_debit
                   - sofort
+                  - us_bank_account
                   - wechat_pay
                   type: string
                   x-stripeBypassValidation: true
+                us_bank_account:
+                  description: If this is an `us_bank_account` PaymentMethod, this
+                    hash contains details about the US bank account payment method.
+                  properties:
+                    account_holder_type:
+                      description: 'Account holder type: individual or company.'
+                      enum:
+                      - company
+                      - individual
+                      type: string
+                    account_number:
+                      description: Account number of the bank account.
+                      maxLength: 5000
+                      type: string
+                    account_type:
+                      description: 'Account type: checkings or savings. Defaults to
+                        checking if omitted.'
+                      enum:
+                      - checking
+                      - savings
+                      type: string
+                    routing_number:
+                      description: Routing number of the bank account.
+                      maxLength: 5000
+                      type: string
+                  title: payment_method_param
+                  type: object
                 wechat_pay:
                   description: If this is an `wechat_pay` PaymentMethod, this hash
                     contains details about the wechat_pay payment method.
@@ -69759,6 +70678,9 @@ paths:
                 explode: true
                 style: deepObject
               sepa_debit:
+                explode: true
+                style: deepObject
+              us_bank_account:
                 explode: true
                 style: deepObject
             schema:
@@ -69875,6 +70797,18 @@ paths:
                   description: This is a legacy parameter that will be removed in
                     the future. It is a hash that does not accept any keys.
                   properties: {}
+                  title: update_param
+                  type: object
+                us_bank_account:
+                  description: If this is an `us_bank_account` PaymentMethod, this
+                    hash contains details about the US bank account payment method.
+                  properties:
+                    account_holder_type:
+                      description: Bank account type.
+                      enum:
+                      - company
+                      - individual
+                      type: string
                   title: update_param
                   type: object
               type: object
@@ -77419,6 +78353,21 @@ paths:
                           type: object
                       title: setup_intent_payment_method_options_param
                       type: object
+                    us_bank_account:
+                      description: If this is a `us_bank_account` SetupIntent, this
+                        sub-hash contains details about the US bank account payment
+                        method options.
+                      properties:
+                        verification_method:
+                          description: Verification method for the intent
+                          enum:
+                          - automatic
+                          - instant
+                          - microdeposits
+                          type: string
+                          x-stripeBypassValidation: true
+                      title: setup_intent_payment_method_options_param
+                      type: object
                   title: payment_method_options_param
                   type: object
                 payment_method_types:
@@ -77794,6 +78743,21 @@ paths:
                           properties: {}
                           title: payment_method_options_mandate_options_param
                           type: object
+                      title: setup_intent_payment_method_options_param
+                      type: object
+                    us_bank_account:
+                      description: If this is a `us_bank_account` SetupIntent, this
+                        sub-hash contains details about the US bank account payment
+                        method options.
+                      properties:
+                        verification_method:
+                          description: Verification method for the intent
+                          enum:
+                          - automatic
+                          - instant
+                          - microdeposits
+                          type: string
+                          x-stripeBypassValidation: true
                       title: setup_intent_payment_method_options_param
                       type: object
                   title: payment_method_options_param
@@ -78209,6 +79173,21 @@ paths:
                           type: object
                       title: setup_intent_payment_method_options_param
                       type: object
+                    us_bank_account:
+                      description: If this is a `us_bank_account` SetupIntent, this
+                        sub-hash contains details about the US bank account payment
+                        method options.
+                      properties:
+                        verification_method:
+                          description: Verification method for the intent
+                          enum:
+                          - automatic
+                          - instant
+                          - microdeposits
+                          type: string
+                          x-stripeBypassValidation: true
+                      title: setup_intent_payment_method_options_param
+                      type: object
                   title: payment_method_options_param
                   type: object
                 return_url:
@@ -78265,6 +79244,11 @@ paths:
                   type: array
                   x-stripeParam:
                     containee_entity_name: amount
+                descriptor_code:
+                  description: A six-character code starting with SM present in the
+                    microdeposit sent to the bank account.
+                  maxLength: 5000
+                  type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -83441,6 +84425,25 @@ paths:
                             type: string
                           description: This sub-hash contains details about the Konbini
                             payment method options to pass to the invoice’s PaymentIntent.
+                        us_bank_account:
+                          anyOf:
+                          - properties:
+                              verification_method:
+                                description: Verification method for the intent
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: This sub-hash contains details about the ACH
+                            direct debit payment method options to pass to the invoice’s
+                            PaymentIntent.
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -83460,9 +84463,11 @@ paths:
                           - grabpay
                           - ideal
                           - konbini
+                          - paynow
                           - sepa_credit_transfer
                           - sepa_debit
                           - sofort
+                          - us_bank_account
                           - wechat_pay
                           type: string
                           x-stripeBypassValidation: true
@@ -84269,6 +85274,25 @@ paths:
                             type: string
                           description: This sub-hash contains details about the Konbini
                             payment method options to pass to the invoice’s PaymentIntent.
+                        us_bank_account:
+                          anyOf:
+                          - properties:
+                              verification_method:
+                                description: Verification method for the intent
+                                enum:
+                                - automatic
+                                - instant
+                                - microdeposits
+                                type: string
+                                x-stripeBypassValidation: true
+                            title: invoice_payment_method_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                          description: This sub-hash contains details about the ACH
+                            direct debit payment method options to pass to the invoice’s
+                            PaymentIntent.
                       title: payment_method_options
                       type: object
                     payment_method_types:
@@ -84288,9 +85312,11 @@ paths:
                           - grabpay
                           - ideal
                           - konbini
+                          - paynow
                           - sepa_credit_transfer
                           - sepa_debit
                           - sofort
+                          - us_bank_account
                           - wechat_pay
                           type: string
                           x-stripeBypassValidation: true
