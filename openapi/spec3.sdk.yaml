@@ -4705,7 +4705,9 @@ components:
           description: Tax and discount details for the computed total amount.
           nullable: true
         url:
-          description: The URL to the Checkout Session.
+          description: The URL to the Checkout Session. Redirect customers to this
+            URL to take them to Checkout. If you’re using [Custom Domains](https://stripe.com/docs/payments/checkout/custom-domains),
+            the URL will use your subdomain. Otherwise, it’ll use `checkout.stripe.com.`
           maxLength: 5000
           nullable: true
           type: string
@@ -18242,6 +18244,22 @@ components:
         path_resource_variables:
         - method_parameter: intent
           name: intent
+      - method_name: apply_customer_balance
+        method_on: instance
+        method_type: custom
+        operation: post
+        path: "/v1/payment_intents/{intent}/apply_customer_balance"
+        path_resource_variables:
+        - name: intent
+          object_property: id
+      - method_name: apply_customer_balance
+        method_on: service
+        method_type: custom
+        operation: post
+        path: "/v1/payment_intents/{intent}/apply_customer_balance"
+        path_resource_variables:
+        - method_parameter: intent
+          name: intent
       x-stripeResource:
         class_name: PaymentIntent
         has_collection_class: true
@@ -24084,14 +24102,14 @@ components:
       description: ''
       properties:
         amount_discount:
-          description: This is the sum of all the line item discounts.
+          description: This is the sum of all the discounts.
           type: integer
         amount_shipping:
-          description: This is the sum of all the line item shipping amounts.
+          description: This is the sum of all the shipping amounts.
           nullable: true
           type: integer
         amount_tax:
-          description: This is the sum of all the line item tax amounts.
+          description: This is the sum of all the tax amounts.
           type: integer
         breakdown:
           "$ref": "#/components/schemas/payment_pages_checkout_session_total_details_resource_breakdown"
@@ -24112,12 +24130,12 @@ components:
       description: ''
       properties:
         discounts:
-          description: The aggregated line item discounts.
+          description: The aggregated discounts.
           items:
             "$ref": "#/components/schemas/line_items_discount_amount"
           type: array
         taxes:
-          description: The aggregated line item tax amounts by rate.
+          description: The aggregated tax amounts by rate.
           items:
             "$ref": "#/components/schemas/line_items_tax_amount"
           type: array
@@ -26893,14 +26911,14 @@ components:
       description: ''
       properties:
         amount_discount:
-          description: This is the sum of all the line item discounts.
+          description: This is the sum of all the discounts.
           type: integer
         amount_shipping:
-          description: This is the sum of all the line item shipping amounts.
+          description: This is the sum of all the shipping amounts.
           nullable: true
           type: integer
         amount_tax:
-          description: This is the sum of all the line item tax amounts.
+          description: This is the sum of all the tax amounts.
           type: integer
         breakdown:
           "$ref": "#/components/schemas/quotes_resource_total_details_resource_breakdown"
@@ -26921,12 +26939,12 @@ components:
       description: ''
       properties:
         discounts:
-          description: The aggregated line item discounts.
+          description: The aggregated discounts.
           items:
             "$ref": "#/components/schemas/line_items_discount_amount"
           type: array
         taxes:
-          description: The aggregated line item tax amounts by rate.
+          description: The aggregated tax amounts by rate.
           items:
             "$ref": "#/components/schemas/line_items_tax_amount"
           type: array
@@ -67710,6 +67728,66 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
+  "/v1/payment_intents/{intent}/apply_customer_balance":
+    post:
+      description: |-
+        <p>Manually reconcile the remaining amount for a customer_balance PaymentIntent.</p>
+
+        <p>This can be used when the cash balance for <a href="docs/payments/customer-balance/reconciliation#cash-manual-reconciliation">a customer in manual reconciliation mode</a> received funds.</p>
+      operationId: PostPaymentIntentsIntentApplyCustomerBalance
+      parameters:
+      - in: path
+        name: intent
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                amount:
+                  description: |-
+                    Amount intended to be applied to this PaymentIntent from the customer’s cash balance.
+
+                    A positive integer representing how much to charge in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal) (e.g., 100 cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency).
+
+                    The maximum amount is the amount of the PaymentIntent.
+
+                    When omitted, the amount defaults to the remaining amount requested on the PaymentIntent.
+                  type: integer
+                currency:
+                  description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                    in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/payment_intent"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
   "/v1/payment_intents/{intent}/cancel":
     post:
       description: |-
@@ -91193,6 +91271,7 @@ paths:
                     - billing_portal.configuration.created
                     - billing_portal.configuration.updated
                     - capability.updated
+                    - cash_balance.funds_available
                     - charge.captured
                     - charge.dispute.closed
                     - charge.dispute.created
@@ -91547,6 +91626,7 @@ paths:
                     - billing_portal.configuration.created
                     - billing_portal.configuration.updated
                     - capability.updated
+                    - cash_balance.funds_available
                     - charge.captured
                     - charge.dispute.closed
                     - charge.dispute.created
