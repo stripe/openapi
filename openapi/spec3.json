@@ -16700,7 +16700,7 @@
             ]
           },
           "client_secret": {
-            "description": "The client secret of this PaymentIntent. Used for client-side retrieval using a publishable key. \n\nThe client secret can be used to complete a payment from your frontend. It should not be stored, logged, embedded in URLs, or exposed to anyone other than the customer. Make sure that you have TLS enabled on any page that includes the client secret.\n\nRefer to our docs to [accept a payment](https://stripe.com/docs/payments/accept-a-payment?integration=elements) and learn about how `client_secret` should be handled.",
+            "description": "The client secret of this PaymentIntent. Used for client-side retrieval using a publishable key. \n\nThe client secret can be used to complete a payment from your frontend. It should not be stored, logged, or exposed to anyone other than the customer. Make sure that you have TLS enabled on any page that includes the client secret.\n\nRefer to our docs to [accept a payment](https://stripe.com/docs/payments/accept-a-payment?ui=elements) and learn about how `client_secret` should be handled.",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
@@ -18749,7 +18749,7 @@
         ]
       },
       "payment_method": {
-        "description": "PaymentMethod objects represent your customer's payment instruments.\nThey can be used with [PaymentIntents](https://stripe.com/docs/payments/payment-intents) to collect payments or saved to\nCustomer objects to store instrument details for future payments.\n\nRelated guides: [Payment Methods](https://stripe.com/docs/payments/payment-methods) and [More Payment Scenarios](https://stripe.com/docs/payments/more-payment-scenarios).",
+        "description": "PaymentMethod objects represent your customer's payment instruments.\nYou can use them with [PaymentIntents](https://stripe.com/docs/payments/payment-intents) to collect payments or save them to\nCustomer objects to store instrument details for future payments.\n\nRelated guides: [Payment Methods](https://stripe.com/docs/payments/payment-methods) and [More Payment Scenarios](https://stripe.com/docs/payments/more-payment-scenarios).",
         "properties": {
           "acss_debit": {
             "$ref": "#/components/schemas/payment_method_acss_debit"
@@ -20142,6 +20142,11 @@
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
+          },
+          "incremental_authorization_supported": {
+            "description": "Whether this [PaymentIntent](https://stripe.com/docs/api/payment_intents) is eligible for incremental authorizations. Request support using [request_incremental_authorization_support] /docs/api/payment_intents/create#create_payment_intent-payment_method_options-card_present-request_incremental_authorization_support.",
+            "nullable": true,
+            "type": "boolean"
           },
           "last4": {
             "description": "The last four digits of the card.",
@@ -21706,6 +21711,11 @@
         "properties": {
           "request_extended_authorization": {
             "description": "Request ability to capture this payment beyond the standard [authorization validity window](https://stripe.com/docs/terminal/features/extended-authorizations#authorization-validity)",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "request_incremental_authorization_support": {
+            "description": "Request ability to [increment](docs/terminal/features/incremental-authorizations) this PaymentIntent if the combination of MCC and card brand is eligible. Check [incremental_authorization_supported](https://stripe.com/docs/api/charges/object#charge_object-payment_method_details-card_present-incremental_authorization_supported) in the [Confirm](https://stripe.com/docs/api/payment_intents/confirm) response to verify support.",
             "nullable": true,
             "type": "boolean"
           }
@@ -27249,7 +27259,7 @@
             "type": "string"
           },
           "client_secret": {
-            "description": "The client secret of this SetupIntent. Used for client-side retrieval using a publishable key.\n\nThe client secret can be used to complete payment setup from your frontend. It should not be stored, logged, embedded in URLs, or exposed to anyone other than the customer. Make sure that you have TLS enabled on any page that includes the client secret.",
+            "description": "The client secret of this SetupIntent. Used for client-side retrieval using a publishable key.\n\nThe client secret can be used to complete payment setup from your frontend. It should not be stored, logged, or exposed to anyone other than the customer. Make sure that you have TLS enabled on any page that includes the client secret.",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
@@ -78561,6 +78571,9 @@
                             "properties": {
                               "request_extended_authorization": {
                                 "type": "boolean"
+                              },
+                              "request_incremental_authorization_support": {
+                                "type": "boolean"
                               }
                             },
                             "title": "payment_method_options_param",
@@ -80402,6 +80415,9 @@
                           {
                             "properties": {
                               "request_extended_authorization": {
+                                "type": "boolean"
+                              },
+                              "request_incremental_authorization_support": {
                                 "type": "boolean"
                               }
                             },
@@ -82362,6 +82378,9 @@
                             "properties": {
                               "request_extended_authorization": {
                                 "type": "boolean"
+                              },
+                              "request_incremental_authorization_support": {
+                                "type": "boolean"
                               }
                             },
                             "title": "payment_method_options_param",
@@ -82951,6 +82970,114 @@
             }
           },
           "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payment_intent"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        }
+      }
+    },
+    "/v1/payment_intents/{intent}/increment_authorization": {
+      "post": {
+        "description": "<p>Perform an incremental authorization on an eligible\n<a href=\"/docs/api/payment_intents/object\">PaymentIntent</a>. To be eligible, the\nPaymentIntent’s status must be <code>requires_capture</code> and\n<a href=\"/docs/api/charges/object#charge_object-payment_method_details-card_present-incremental_authorization_supported\">incremental_authorization_supported</a>\nmust be <code>true</code>.</p>\n\n<p>Incremental authorizations attempt to increase the authorized amount on\nyour customer’s card to the new, higher <code>amount</code> provided. As with the\ninitial authorization, incremental authorizations may be declined. A\nsingle PaymentIntent can call this endpoint multiple times to further\nincrease the authorized amount.</p>\n\n<p>If the incremental authorization succeeds, the PaymentIntent object is\nreturned with the updated\n<a href=\"/docs/api/payment_intents/object#payment_intent_object-amount\">amount</a>.\nIf the incremental authorization fails, a\n<a href=\"/docs/error-codes#card-declined\">card_declined</a> error is returned, and no\nfields on the PaymentIntent or Charge are updated. The PaymentIntent\nobject remains capturable for the previously authorized amount.</p>\n\n<p>Each PaymentIntent can have a maximum of 10 incremental authorization attempts, including declines.\nOnce captured, a PaymentIntent can no longer be incremented.</p>\n\n<p>Learn more about <a href=\"/docs/terminal/features/incremental-authorizations\">incremental authorizations</a>.</p>",
+        "operationId": "PostPaymentIntentsIntentIncrementAuthorization",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "intent",
+            "required": true,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {
+                "expand": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "metadata": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "transfer_data": {
+                  "explode": true,
+                  "style": "deepObject"
+                }
+              },
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "amount": {
+                    "description": "The updated total amount you intend to collect from the cardholder. This amount must be greater than the currently authorized amount.",
+                    "type": "integer"
+                  },
+                  "application_fee_amount": {
+                    "description": "The amount of the application fee (if any) that will be requested to be applied to the payment and transferred to the application owner's Stripe account. The amount of the application fee collected will be capped at the total payment amount. For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
+                    "type": "integer"
+                  },
+                  "description": {
+                    "description": "An arbitrary string attached to the object. Often useful for displaying to users.",
+                    "maxLength": 1000,
+                    "type": "string"
+                  },
+                  "expand": {
+                    "description": "Specifies which fields in the response should be expanded.",
+                    "items": {
+                      "maxLength": 5000,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.",
+                    "type": "object"
+                  },
+                  "transfer_data": {
+                    "description": "The parameters used to automatically create a Transfer when the payment is captured.\nFor more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
+                    "properties": {
+                      "amount": {
+                        "type": "integer"
+                      }
+                    },
+                    "title": "transfer_data_update_params",
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "amount"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
         },
         "responses": {
           "200": {
