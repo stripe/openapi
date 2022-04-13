@@ -8974,6 +8974,159 @@ components:
       x-stripeResource:
         class_name: Parameters
         in_class: reporting.report_run
+    funding_instructions:
+      description: |-
+        Each customer has a [`balance`](https://stripe.com/docs/api/customers/object#customer_object-balance) that is
+        automatically applied to future invoices and payments using the `customer_balance` payment method.
+        Customers can fund this balance by initiating a bank transfer to any account in the
+        `financial_addresses` field.
+        Related guide: [Customer Balance - Funding Instructions](https://stripe.com/docs/payments/customer-balance/funding-instructions) to learn more
+      properties:
+        bank_transfer:
+          "$ref": "#/components/schemas/funding_instructions_bank_transfer"
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+          maxLength: 5000
+          type: string
+        funding_type:
+          description: The `funding_type` of the returned instructions
+          enum:
+          - bank_transfer
+          type: string
+        livemode:
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+          type: boolean
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - funding_instructions
+          type: string
+      required:
+      - bank_transfer
+      - currency
+      - funding_type
+      - livemode
+      - object
+      title: CustomerBalanceFundingInstructionsCustomerBalanceFundingInstructions
+      type: object
+      x-expandableFields:
+      - bank_transfer
+      x-resourceId: funding_instructions
+      x-stripeOperations:
+      - method_name: create
+        method_on: collection
+        method_type: create
+        operation: post
+        path: "/v1/customers/{customer}/funding_instructions"
+        path_resource_variables:
+        - method_parameter: customer
+          name: customer
+      - method_name: create
+        method_on: service
+        method_type: create
+        operation: post
+        path: "/v1/customers/{customer}/funding_instructions"
+        path_resource_variables:
+        - method_parameter: customer
+          name: customer
+      - method_name: list
+        method_on: collection
+        method_type: list
+        operation: get
+        path: "/v1/customers/{customer}/funding_instructions"
+        path_resource_variables:
+        - method_parameter: customer
+          name: customer
+      - method_name: list
+        method_on: service
+        method_type: list
+        operation: get
+        path: "/v1/customers/{customer}/funding_instructions"
+        path_resource_variables:
+        - method_parameter: customer
+          name: customer
+      x-stripeResource:
+        class_name: FundingInstructions
+        has_collection_class: true
+        in_package: ''
+        inner_classes:
+        - funding_instructions_bank_transfer
+    funding_instructions_bank_transfer:
+      description: ''
+      properties:
+        country:
+          description: The country of the bank account to fund
+          maxLength: 5000
+          type: string
+        financial_addresses:
+          description: A list of financial addresses that can be used to fund a particular
+            balance
+          items:
+            "$ref": "#/components/schemas/funding_instructions_bank_transfer_financial_address"
+          type: array
+        type:
+          description: The bank_transfer type
+          enum:
+          - jp_bank_transfer
+          type: string
+          x-stripeBypassValidation: true
+      required:
+      - country
+      - financial_addresses
+      - type
+      title: FundingInstructionsBankTransfer
+      type: object
+      x-expandableFields:
+      - financial_addresses
+      x-stripeResource:
+        class_name: BankTransfer
+        in_class: funding_instructions
+        inner_classes:
+        - funding_instructions_bank_transfer_financial_address
+    funding_instructions_bank_transfer_financial_address:
+      description: FinancialAddresses contain identifying information that resolves
+        to a FinancialAccount.
+      properties:
+        supported_networks:
+          description: The payment networks supported by this FinancialAddress
+          items:
+            enum:
+            - zengin
+            type: string
+            x-stripeBypassValidation: true
+          type: array
+        type:
+          description: The type of financial address
+          enum:
+          - zengin
+          type: string
+          x-stripeBypassValidation: true
+        zengin:
+          "$ref": "#/components/schemas/funding_instructions_bank_transfer_zengin_record"
+      required:
+      - type
+      title: FundingInstructionsBankTransferFinancialAddress
+      type: object
+      x-expandableFields:
+      - zengin
+      x-stripeResource:
+        class_name: FinancialAddresses
+        in_class: funding_instructions_bank_transfer
+        inner_classes:
+        - funding_instructions_bank_transfer_zengin_record
+    funding_instructions_bank_transfer_zengin_record:
+      description: Zengin Records contain Japan bank account details per the Zengin
+        format.
+      properties: {}
+      title: FundingInstructionsBankTransferZenginRecord
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Zengin
+        in_class: funding_instructions_bank_transfer_financial_address
     gelato_data_document_report_date_of_birth:
       description: Point in Time
       properties:
@@ -18286,6 +18439,7 @@ components:
         - payment_intent_next_action_alipay_handle_redirect
         - payment_intent_next_action_boleto
         - payment_intent_next_action_card_await_notification
+        - payment_intent_next_action_display_bank_transfer_instructions
         - payment_intent_next_action_display_oxxo_details
         - payment_intent_next_action_konbini
         - payment_intent_next_action_redirect_to_url
@@ -18315,6 +18469,8 @@ components:
           "$ref": "#/components/schemas/payment_intent_next_action_boleto"
         card_await_notification:
           "$ref": "#/components/schemas/payment_intent_next_action_card_await_notification"
+        display_bank_transfer_instructions:
+          "$ref": "#/components/schemas/payment_intent_next_action_display_bank_transfer_instructions"
         konbini_display_details:
           "$ref": "#/components/schemas/payment_intent_next_action_konbini"
         oxxo_display_details:
@@ -18351,6 +18507,7 @@ components:
       - alipay_handle_redirect
       - boleto_display_details
       - card_await_notification
+      - display_bank_transfer_instructions
       - konbini_display_details
       - oxxo_display_details
       - paynow_display_qr_code
@@ -18464,6 +18621,49 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: NextActionCardAwaitNotification
+        in_class: payment_intent
+    payment_intent_next_action_display_bank_transfer_instructions:
+      description: ''
+      properties:
+        amount_remaining:
+          description: The remaining amount that needs to be transferred to complete
+            the payment.
+          nullable: true
+          type: integer
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+          nullable: true
+          type: string
+        financial_addresses:
+          description: A list of financial addresses that can be used to fund the
+            customer balance
+          items:
+            "$ref": "#/components/schemas/funding_instructions_bank_transfer_financial_address"
+          type: array
+        reference:
+          description: A string identifying this payment. Instruct your customer to
+            include this code in the reference or memo field of their bank transfer.
+          maxLength: 5000
+          nullable: true
+          type: string
+        type:
+          description: Type of bank transfer
+          enum:
+          - jp_bank_transfer
+          type: string
+          x-stripeBypassValidation: true
+      required:
+      - amount_remaining
+      - currency
+      - reference
+      - type
+      title: PaymentIntentNextActionDisplayBankTransferInstructions
+      type: object
+      x-expandableFields:
+      - financial_addresses
+      x-stripeResource:
+        class_name: NextActionDisplayBankTransferInstructions
         in_class: payment_intent
     payment_intent_next_action_display_oxxo_details:
       description: ''
@@ -18832,6 +19032,8 @@ components:
           "$ref": "#/components/schemas/payment_intent_payment_method_options_card"
         card_present:
           "$ref": "#/components/schemas/payment_method_options_card_present"
+        customer_balance:
+          "$ref": "#/components/schemas/payment_method_options_customer_balance"
         eps:
           "$ref": "#/components/schemas/payment_intent_payment_method_options_eps"
         fpx:
@@ -18874,6 +19076,7 @@ components:
       - boleto
       - card
       - card_present
+      - customer_balance
       - eps
       - fpx
       - giropay
@@ -18906,6 +19109,8 @@ components:
         - payment_method_options_bancontact
         - payment_method_options_boleto
         - payment_method_options_card_present
+        - payment_method_options_customer_balance
+        - payment_method_options_customer_balance_bank_transfer
         - payment_method_options_fpx
         - payment_method_options_giropay
         - payment_method_options_grabpay
@@ -19935,6 +20140,8 @@ components:
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/customer"
+        customer_balance:
+          "$ref": "#/components/schemas/payment_method_customer_balance"
         eps:
           "$ref": "#/components/schemas/payment_method_eps"
         fpx:
@@ -19998,6 +20205,7 @@ components:
           - boleto
           - card
           - card_present
+          - customer_balance
           - eps
           - fpx
           - giropay
@@ -20042,6 +20250,7 @@ components:
       - card
       - card_present
       - customer
+      - customer_balance
       - eps
       - fpx
       - giropay
@@ -20158,6 +20367,7 @@ components:
         - payment_method_boleto
         - payment_method_card
         - payment_method_card_present
+        - payment_method_customer_balance
         - payment_method_eps
         - payment_method_fpx
         - payment_method_giropay
@@ -20633,6 +20843,15 @@ components:
       x-stripeResource:
         class_name: VisaCheckout
         in_class: payment_method_card_wallet
+    payment_method_customer_balance:
+      description: ''
+      properties: {}
+      title: payment_method_customer_balance
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: CustomerBalance
+        in_class: payment_method
     payment_method_details:
       description: ''
       properties:
@@ -20658,6 +20877,8 @@ components:
           "$ref": "#/components/schemas/payment_method_details_card"
         card_present:
           "$ref": "#/components/schemas/payment_method_details_card_present"
+        customer_balance:
+          "$ref": "#/components/schemas/payment_method_details_customer_balance"
         eps:
           "$ref": "#/components/schemas/payment_method_details_eps"
         fpx:
@@ -20719,6 +20940,7 @@ components:
       - boleto
       - card
       - card_present
+      - customer_balance
       - eps
       - fpx
       - giropay
@@ -20753,6 +20975,7 @@ components:
         - payment_method_details_boleto
         - payment_method_details_card
         - payment_method_details_card_present
+        - payment_method_details_customer_balance
         - payment_method_details_eps
         - payment_method_details_fpx
         - payment_method_details_giropay
@@ -21697,6 +21920,15 @@ components:
       x-stripeResource:
         class_name: VisaCheckout
         in_class: payment_method_details_card_wallet
+    payment_method_details_customer_balance:
+      description: ''
+      properties: {}
+      title: payment_method_details_customer_balance
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: CustomerBalance
+        in_class: payment_method_details
     payment_method_details_eps:
       description: ''
       properties:
@@ -23075,6 +23307,80 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: CardPresent
+        in_class: payment_intent_payment_method_options
+    payment_method_options_customer_balance:
+      description: ''
+      properties:
+        bank_transfer:
+          "$ref": "#/components/schemas/payment_method_options_customer_balance_bank_transfer"
+        funding_type:
+          description: 'The funding method type to be used when there are not enough
+            funds in the customer balance. Permitted values include: `bank_transfer`.'
+          enum:
+          - bank_transfer
+          nullable: true
+          type: string
+        setup_future_usage:
+          description: |-
+            Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+            Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+            When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+          enum:
+          - none
+          type: string
+      required:
+      - funding_type
+      title: payment_method_options_customer_balance
+      type: object
+      x-expandableFields:
+      - bank_transfer
+      x-stripeResource:
+        class_name: CustomerBalance
+        in_class: payment_intent_payment_method_options
+    payment_method_options_customer_balance_bank_transfer:
+      description: ''
+      properties:
+        requested_address_types:
+          description: |-
+            List of address types that should be returned in the financial_addresses response. If not specified, all valid types will be returned.
+
+            Permitted values include: `zengin`.
+          items:
+            enum:
+            - zengin
+            type: string
+            x-stripeBypassValidation: true
+          type: array
+        type:
+          description: 'The bank transfer type that this PaymentIntent is allowed
+            to use for funding. Permitted values include: `us_bank_account`, `eu_bank_account`,
+            `id_bank_account`, `gb_bank_account`, `jp_bank_account`, `mx_bank_account`,
+            `eu_bank_transfer`, `gb_bank_transfer`, `id_bank_transfer`, `jp_bank_transfer`,
+            `mx_bank_transfer`, or `us_bank_transfer`.'
+          enum:
+          - eu_bank_account
+          - eu_bank_transfer
+          - gb_bank_account
+          - gb_bank_transfer
+          - id_bank_account
+          - id_bank_transfer
+          - jp_bank_account
+          - jp_bank_transfer
+          - mx_bank_account
+          - mx_bank_transfer
+          - us_bank_account
+          - us_bank_transfer
+          nullable: true
+          type: string
+      required:
+      - type
+      title: payment_method_options_customer_balance_bank_transfer
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: BankTransfer
         in_class: payment_intent_payment_method_options
     payment_method_options_fpx:
       description: ''
@@ -47936,6 +48242,9 @@ paths:
               address:
                 explode: true
                 style: deepObject
+              cash_balance:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -48002,6 +48311,33 @@ paths:
                     due on an invoice; a positive amount increases the amount due
                     on an invoice.
                   type: integer
+                cash_balance:
+                  description: Balance information and default balance settings for
+                    this customer.
+                  properties:
+                    settings:
+                      description: |-
+                        Settings controlling the behavior of the customer's cash balance,
+                        such as reconciliation of funds received.
+                      properties:
+                        reconciliation_mode:
+                          description: |-
+                            Method for using the customer balance to pay outstanding
+                            `customer_balance` PaymentIntents. If set to `automatic`, all available
+                            funds will automatically be used to pay any outstanding PaymentIntent.
+                            If set to `manual`, only customer balance funds from bank transfers
+                            with a reference code matching
+                            `payment_intent.next_action.display_bank_transfer_intructions.reference_code` will
+                            automatically be used to pay the corresponding outstanding
+                            PaymentIntent.
+                          enum:
+                          - automatic
+                          - manual
+                          type: string
+                      title: balance_settings_param
+                      type: object
+                  title: cash_balance_param
+                  type: object
                 coupon:
                   maxLength: 5000
                   type: string
@@ -48493,6 +48829,9 @@ paths:
               address:
                 explode: true
                 style: deepObject
+              cash_balance:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -48559,6 +48898,33 @@ paths:
                     due on an invoice; a positive amount increases the amount due
                     on an invoice.
                   type: integer
+                cash_balance:
+                  description: Balance information and default balance settings for
+                    this customer.
+                  properties:
+                    settings:
+                      description: |-
+                        Settings controlling the behavior of the customer's cash balance,
+                        such as reconciliation of funds received.
+                      properties:
+                        reconciliation_mode:
+                          description: |-
+                            Method for using the customer balance to pay outstanding
+                            `customer_balance` PaymentIntents. If set to `automatic`, all available
+                            funds will automatically be used to pay any outstanding PaymentIntent.
+                            If set to `manual`, only customer balance funds from bank transfers
+                            with a reference code matching
+                            `payment_intent.next_action.display_bank_transfer_intructions.reference_code` will
+                            automatically be used to pay the corresponding outstanding
+                            PaymentIntent.
+                          enum:
+                          - automatic
+                          - manual
+                          type: string
+                      title: balance_settings_param
+                      type: object
+                  title: cash_balance_param
+                  type: object
                 coupon:
                   maxLength: 5000
                   type: string
@@ -49130,6 +49496,167 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
+  "/v1/customers/{customer}/funding_instructions":
+    get:
+      description: "<p>Retrieve all applicable funding instructions for a customer
+        cash balance.</p>"
+      operationId: GetCustomersCustomerFundingInstructions
+      parameters:
+      - in: path
+        name: customer
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: ''
+                properties:
+                  data:
+                    items:
+                      "$ref": "#/components/schemas/funding_instructions"
+                    type: array
+                  has_more:
+                    description: True if this list has another page of items after
+                      this one that can be fetched.
+                    type: boolean
+                  object:
+                    description: String representing the object's type. Objects of
+                      the same type share the same value. Always has the value `list`.
+                    enum:
+                    - list
+                    type: string
+                  url:
+                    description: The URL where this list can be accessed.
+                    maxLength: 5000
+                    pattern: "^/v1/customers/:customer/funding_instructions"
+                    type: string
+                required:
+                - data
+                - has_more
+                - object
+                - url
+                type: object
+                x-expandableFields:
+                - data
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+    post:
+      description: |-
+        <p>Retrieve funding instructions for a customer cash balance. If funding instructions do not yet exist for the customer, new
+        funding instructions will be created. If funding instructions have already been created for a given customer, the same
+        funding instructions will be retrieved. In other words, we will return the same funding instructions each time.</p>
+      operationId: PostCustomersCustomerFundingInstructions
+      parameters:
+      - in: path
+        name: customer
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              bank_transfer:
+                explode: true
+                style: deepObject
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                bank_transfer:
+                  description: Additional parameters for `bank_transfer` funding types
+                  properties:
+                    requested_address_types:
+                      description: |-
+                        List of address types that should be returned in the financial_addresses response. If not specified, all valid types will be returned.
+
+                        Permitted values include: `zengin`.
+                      items:
+                        enum:
+                        - zengin
+                        type: string
+                        x-stripeBypassValidation: true
+                      type: array
+                      x-stripeParam:
+                        containee_entity_name: requested_address_type
+                    type:
+                      description: The type of the `bank_transfer`
+                      enum:
+                      - jp_bank_transfer
+                      type: string
+                      x-stripeBypassValidation: true
+                  required:
+                  - type
+                  title: bank_transfer_params
+                  type: object
+                currency:
+                  description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                    in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                funding_type:
+                  description: The `funding_type` to get the instructions for.
+                  enum:
+                  - bank_transfer
+                  type: string
+              required:
+              - bank_transfer
+              - currency
+              - funding_type
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/funding_instructions"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
   "/v1/customers/{customer}/payment_methods":
     get:
       description: "<p>Returns a list of PaymentMethods for a given Customer</p>"
@@ -49198,6 +49725,7 @@ paths:
           - boleto
           - card
           - card_present
+          - customer_balance
           - eps
           - fpx
           - giropay
@@ -64546,6 +65074,13 @@ paths:
                       - tax_id
                       title: param
                       type: object
+                    customer_balance:
+                      description: If this is a `customer_balance` PaymentMethod,
+                        this hash contains details about the CustomerBalance payment
+                        method.
+                      properties: {}
+                      title: param
+                      type: object
                     eps:
                       description: If this is an `eps` PaymentMethod, this hash contains
                         details about the EPS payment method.
@@ -64800,6 +65335,7 @@ paths:
                       - bacs_debit
                       - bancontact
                       - boleto
+                      - customer_balance
                       - eps
                       - fpx
                       - giropay
@@ -65331,6 +65867,69 @@ paths:
                       description: If this is a `card_present` PaymentMethod, this
                         sub-hash contains details about the Card Present payment method
                         options.
+                    customer_balance:
+                      anyOf:
+                      - properties:
+                          bank_transfer:
+                            description: Configuration for the bank transfer funding
+                              type, if the `funding_type` is set to `bank_transfer`.
+                            properties:
+                              requested_address_types:
+                                description: |-
+                                  List of address types that should be returned in the financial_addresses response. If not specified, all valid types will be returned.
+
+                                  Permitted values include: `zengin`.
+                                items:
+                                  enum:
+                                  - zengin
+                                  type: string
+                                  x-stripeBypassValidation: true
+                                type: array
+                                x-stripeParam:
+                                  containee_entity_name: requested_address_type
+                              type:
+                                description: 'The list of bank transfer types that
+                                  this PaymentIntent is allowed to use for funding.
+                                  Permitted values include: `us_bank_account`, `eu_bank_account`,
+                                  `id_bank_account`, `gb_bank_account`, `jp_bank_account`,
+                                  `mx_bank_account`, `eu_bank_transfer`, `gb_bank_transfer`,
+                                  `id_bank_transfer`, `jp_bank_transfer`, `mx_bank_transfer`,
+                                  or `us_bank_transfer`.'
+                                enum:
+                                - jp_bank_transfer
+                                type: string
+                                x-stripeBypassValidation: true
+                            required:
+                            - type
+                            title: bank_transfer_param
+                            type: object
+                          funding_type:
+                            description: 'The funding method type to be used when
+                              there are not enough funds in the customer balance.
+                              Permitted values include: `bank_transfer`.'
+                            enum:
+                            - bank_transfer
+                            type: string
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - none
+                            type: string
+                        title: payment_intent_payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `customer balance` PaymentMethod,
+                        this sub-hash contains details about the customer balance
+                        payment method options.
                     eps:
                       anyOf:
                       - properties:
@@ -66383,6 +66982,13 @@ paths:
                       - tax_id
                       title: param
                       type: object
+                    customer_balance:
+                      description: If this is a `customer_balance` PaymentMethod,
+                        this hash contains details about the CustomerBalance payment
+                        method.
+                      properties: {}
+                      title: param
+                      type: object
                     eps:
                       description: If this is an `eps` PaymentMethod, this hash contains
                         details about the EPS payment method.
@@ -66637,6 +67243,7 @@ paths:
                       - bacs_debit
                       - bancontact
                       - boleto
+                      - customer_balance
                       - eps
                       - fpx
                       - giropay
@@ -67168,6 +67775,69 @@ paths:
                       description: If this is a `card_present` PaymentMethod, this
                         sub-hash contains details about the Card Present payment method
                         options.
+                    customer_balance:
+                      anyOf:
+                      - properties:
+                          bank_transfer:
+                            description: Configuration for the bank transfer funding
+                              type, if the `funding_type` is set to `bank_transfer`.
+                            properties:
+                              requested_address_types:
+                                description: |-
+                                  List of address types that should be returned in the financial_addresses response. If not specified, all valid types will be returned.
+
+                                  Permitted values include: `zengin`.
+                                items:
+                                  enum:
+                                  - zengin
+                                  type: string
+                                  x-stripeBypassValidation: true
+                                type: array
+                                x-stripeParam:
+                                  containee_entity_name: requested_address_type
+                              type:
+                                description: 'The list of bank transfer types that
+                                  this PaymentIntent is allowed to use for funding.
+                                  Permitted values include: `us_bank_account`, `eu_bank_account`,
+                                  `id_bank_account`, `gb_bank_account`, `jp_bank_account`,
+                                  `mx_bank_account`, `eu_bank_transfer`, `gb_bank_transfer`,
+                                  `id_bank_transfer`, `jp_bank_transfer`, `mx_bank_transfer`,
+                                  or `us_bank_transfer`.'
+                                enum:
+                                - jp_bank_transfer
+                                type: string
+                                x-stripeBypassValidation: true
+                            required:
+                            - type
+                            title: bank_transfer_param
+                            type: object
+                          funding_type:
+                            description: 'The funding method type to be used when
+                              there are not enough funds in the customer balance.
+                              Permitted values include: `bank_transfer`.'
+                            enum:
+                            - bank_transfer
+                            type: string
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - none
+                            type: string
+                        title: payment_intent_payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `customer balance` PaymentMethod,
+                        this sub-hash contains details about the customer balance
+                        payment method options.
                     eps:
                       anyOf:
                       - properties:
@@ -68323,6 +68993,13 @@ paths:
                       - tax_id
                       title: param
                       type: object
+                    customer_balance:
+                      description: If this is a `customer_balance` PaymentMethod,
+                        this hash contains details about the CustomerBalance payment
+                        method.
+                      properties: {}
+                      title: param
+                      type: object
                     eps:
                       description: If this is an `eps` PaymentMethod, this hash contains
                         details about the EPS payment method.
@@ -68577,6 +69254,7 @@ paths:
                       - bacs_debit
                       - bancontact
                       - boleto
+                      - customer_balance
                       - eps
                       - fpx
                       - giropay
@@ -69108,6 +69786,69 @@ paths:
                       description: If this is a `card_present` PaymentMethod, this
                         sub-hash contains details about the Card Present payment method
                         options.
+                    customer_balance:
+                      anyOf:
+                      - properties:
+                          bank_transfer:
+                            description: Configuration for the bank transfer funding
+                              type, if the `funding_type` is set to `bank_transfer`.
+                            properties:
+                              requested_address_types:
+                                description: |-
+                                  List of address types that should be returned in the financial_addresses response. If not specified, all valid types will be returned.
+
+                                  Permitted values include: `zengin`.
+                                items:
+                                  enum:
+                                  - zengin
+                                  type: string
+                                  x-stripeBypassValidation: true
+                                type: array
+                                x-stripeParam:
+                                  containee_entity_name: requested_address_type
+                              type:
+                                description: 'The list of bank transfer types that
+                                  this PaymentIntent is allowed to use for funding.
+                                  Permitted values include: `us_bank_account`, `eu_bank_account`,
+                                  `id_bank_account`, `gb_bank_account`, `jp_bank_account`,
+                                  `mx_bank_account`, `eu_bank_transfer`, `gb_bank_transfer`,
+                                  `id_bank_transfer`, `jp_bank_transfer`, `mx_bank_transfer`,
+                                  or `us_bank_transfer`.'
+                                enum:
+                                - jp_bank_transfer
+                                type: string
+                                x-stripeBypassValidation: true
+                            required:
+                            - type
+                            title: bank_transfer_param
+                            type: object
+                          funding_type:
+                            description: 'The funding method type to be used when
+                              there are not enough funds in the customer balance.
+                              Permitted values include: `bank_transfer`.'
+                            enum:
+                            - bank_transfer
+                            type: string
+                          setup_future_usage:
+                            description: |-
+                              Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                              Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+                              When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+
+                              If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+                            enum:
+                            - none
+                            type: string
+                        title: payment_intent_payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                      description: If this is a `customer balance` PaymentMethod,
+                        this sub-hash contains details about the customer balance
+                        payment method options.
                     eps:
                       anyOf:
                       - properties:
@@ -71151,6 +71892,7 @@ paths:
           - boleto
           - card
           - card_present
+          - customer_balance
           - eps
           - fpx
           - giropay
@@ -71254,6 +71996,9 @@ paths:
                 explode: true
                 style: deepObject
               card:
+                explode: true
+                style: deepObject
+              customer_balance:
                 explode: true
                 style: deepObject
               eps:
@@ -71503,6 +72248,12 @@ paths:
                     attached.
                   maxLength: 5000
                   type: string
+                customer_balance:
+                  description: If this is a `customer_balance` PaymentMethod, this
+                    hash contains details about the CustomerBalance payment method.
+                  properties: {}
+                  title: param
+                  type: object
                 eps:
                   description: If this is an `eps` PaymentMethod, this hash contains
                     details about the EPS payment method.
@@ -71767,6 +72518,7 @@ paths:
                   - bancontact
                   - boleto
                   - card
+                  - customer_balance
                   - eps
                   - fpx
                   - giropay
