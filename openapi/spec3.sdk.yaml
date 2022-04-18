@@ -6243,14 +6243,22 @@ components:
         path_resource_variables:
         - name: customer
           object_property: id
-      - method_name: funding_instructions
+      - method_name: create_funding_instructions
         method_on: instance
         method_type: custom
-        operation: get
+        operation: post
         path: "/v1/customers/{customer}/funding_instructions"
         path_resource_variables:
         - name: customer
           object_property: id
+      - method_name: create_funding_instructions
+        method_on: service
+        method_type: custom
+        operation: post
+        path: "/v1/customers/{customer}/funding_instructions"
+        path_resource_variables:
+        - method_parameter: customer
+          name: customer
       - method_name: delete_discount
         method_on: instance
         method_type: custom
@@ -9052,42 +9060,8 @@ components:
       x-expandableFields:
       - bank_transfer
       x-resourceId: funding_instructions
-      x-stripeOperations:
-      - method_name: create
-        method_on: collection
-        method_type: create
-        operation: post
-        path: "/v1/customers/{customer}/funding_instructions"
-        path_resource_variables:
-        - method_parameter: customer
-          name: customer
-      - method_name: create
-        method_on: service
-        method_type: create
-        operation: post
-        path: "/v1/customers/{customer}/funding_instructions"
-        path_resource_variables:
-        - method_parameter: customer
-          name: customer
-      - method_name: list
-        method_on: collection
-        method_type: list
-        operation: get
-        path: "/v1/customers/{customer}/funding_instructions"
-        path_resource_variables:
-        - method_parameter: customer
-          name: customer
-      - method_name: list
-        method_on: service
-        method_type: list
-        operation: get
-        path: "/v1/customers/{customer}/funding_instructions"
-        path_resource_variables:
-        - method_parameter: customer
-          name: customer
       x-stripeResource:
         class_name: FundingInstructions
-        has_collection_class: true
         in_package: ''
         inner_classes:
         - funding_instructions_bank_transfer
@@ -17837,6 +17811,35 @@ components:
       x-stripeResource:
         class_name: PackageDimensions
         in_package: ''
+    payment_flows_amount_details:
+      description: ''
+      properties:
+        tip:
+          "$ref": "#/components/schemas/payment_flows_amount_details_resource_tip"
+      title: PaymentFlowsAmountDetails
+      type: object
+      x-expandableFields:
+      - tip
+      x-stripeResource:
+        class_name: AmountDetails
+        in_class: payment_intent
+        inner_classes:
+        - payment_flows_amount_details_resource_tip
+    payment_flows_amount_details_resource_tip:
+      description: ''
+      properties:
+        amount:
+          description: Portion of the amount that corresponds to a tip.
+          nullable: true
+          type: integer
+      required:
+      - amount
+      title: PaymentFlowsAmountDetailsResourceTip
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Tip
+        in_class: payment_flows_amount_details
     payment_flows_automatic_payment_methods_payment_intent:
       description: ''
       properties:
@@ -17938,6 +17941,8 @@ components:
         amount_capturable:
           description: Amount that can be captured from this PaymentIntent.
           type: integer
+        amount_details:
+          "$ref": "#/components/schemas/payment_flows_amount_details"
         amount_received:
           description: Amount that was collected by this PaymentIntent.
           type: integer
@@ -18294,6 +18299,7 @@ components:
       title: PaymentIntent
       type: object
       x-expandableFields:
+      - amount_details
       - application
       - automatic_payment_methods
       - charges
@@ -18475,6 +18481,7 @@ components:
         has_search_result_class: true
         in_package: ''
         inner_classes:
+        - payment_flows_amount_details
         - payment_intent_next_action
         - payment_intent_next_action_alipay_handle_redirect
         - payment_intent_next_action_boleto
@@ -49754,79 +49761,6 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
   "/v1/customers/{customer}/funding_instructions":
-    get:
-      description: "<p>Retrieve all applicable funding instructions for a customer
-        cash balance.</p>"
-      operationId: GetCustomersCustomerFundingInstructions
-      parameters:
-      - in: path
-        name: customer
-        required: true
-        schema:
-          maxLength: 5000
-          type: string
-        style: simple
-      - description: Specifies which fields in the response should be expanded.
-        explode: true
-        in: query
-        name: expand
-        required: false
-        schema:
-          items:
-            maxLength: 5000
-            type: string
-          type: array
-        style: deepObject
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            encoding: {}
-            schema:
-              additionalProperties: false
-              properties: {}
-              type: object
-        required: false
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                description: ''
-                properties:
-                  data:
-                    items:
-                      "$ref": "#/components/schemas/funding_instructions"
-                    type: array
-                  has_more:
-                    description: True if this list has another page of items after
-                      this one that can be fetched.
-                    type: boolean
-                  object:
-                    description: String representing the object's type. Objects of
-                      the same type share the same value. Always has the value `list`.
-                    enum:
-                    - list
-                    type: string
-                  url:
-                    description: The URL where this list can be accessed.
-                    maxLength: 5000
-                    pattern: "^/v1/customers/:customer/funding_instructions"
-                    type: string
-                required:
-                - data
-                - has_more
-                - object
-                - url
-                type: object
-                x-expandableFields:
-                - data
-          description: Successful response.
-        default:
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/error"
-          description: Error response.
     post:
       description: |-
         <p>Retrieve funding instructions for a customer cash balance. If funding instructions do not yet exist for the customer, new
