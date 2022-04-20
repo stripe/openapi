@@ -2016,10 +2016,15 @@ components:
             portal sessions.
           type: boolean
         application:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/application"
           description: ID of the Connect Application that created the configuration.
-          maxLength: 5000
           nullable: true
-          type: string
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/application"
         business_profile:
           "$ref": "#/components/schemas/portal_business_profile"
         created:
@@ -2082,6 +2087,7 @@ components:
       title: PortalConfiguration
       type: object
       x-expandableFields:
+      - application
       - business_profile
       - features
       x-resourceId: billing_portal.configuration
@@ -20355,7 +20361,7 @@ components:
           - maxLength: 5000
             type: string
           - "$ref": "#/components/schemas/tax_code"
-          description: A [tax code](https://stripe.com/docs/tax/tax-codes) ID.
+          description: A [tax code](https://stripe.com/docs/tax/tax-categories) ID.
           nullable: true
           x-expansionResources:
             oneOf:
@@ -23260,8 +23266,8 @@ components:
           - maxLength: 5000
             type: string
           - "$ref": "#/components/schemas/tax_code"
-          description: A [tax code](https://stripe.com/docs/tax/tax-codes) ID. The
-            Shipping tax code is `txcd_92010001`.
+          description: A [tax code](https://stripe.com/docs/tax/tax-categories) ID.
+            The Shipping tax code is `txcd_92010001`.
           nullable: true
           x-expansionResources:
             oneOf:
@@ -25873,8 +25879,8 @@ components:
       x-expandableFields:
       - subscription_items
     tax_code:
-      description: "[Tax codes](https://stripe.com/docs/tax/tax-codes) classify goods
-        and services for tax purposes."
+      description: "[Tax codes](https://stripe.com/docs/tax/tax-categories) classify
+        goods and services for tax purposes."
       properties:
         description:
           description: A detailed description of which types of products the tax code
@@ -40412,7 +40418,8 @@ paths:
                     When a Customer is not created, you can still retrieve email, address, and other customer data entered in Checkout
                     with [customer_details](https://stripe.com/docs/api/checkout/sessions/object#checkout_session_object-customer_details).
 
-                    Sessions that do not create Customers will instead create [Guest Customers](https://support.stripe.com/questions/guest-customer-faq) in the Dashboard.
+                    Sessions that don't create Customers instead create [Guest Customers](https://support.stripe.com/questions/guest-customer-faq)
+                    in the Dashboard. Promotion codes limited to first time customers will return invalid for these Sessions.
 
                     Can only be set in `payment` and `setup` mode.
                   enum:
@@ -59224,13 +59231,11 @@ paths:
                   type: object
                 transaction:
                   description: The ID of the issuing transaction to create a dispute
-                    for.
+                    for. For transaction on Treasury FinancialAccounts, use `treasury.received_debit`.
                   maxLength: 5000
                   type: string
-              required:
-              - transaction
               type: object
-        required: true
+        required: false
       responses:
         '200':
           content:
@@ -69461,7 +69466,7 @@ paths:
                   maxLength: 22
                   type: string
                 tax_code:
-                  description: A [tax code](https://stripe.com/docs/tax/tax-codes)
+                  description: A [tax code](https://stripe.com/docs/tax/tax-categories)
                     ID.
                   type: string
                 unit_label:
@@ -69794,7 +69799,7 @@ paths:
                   - enum:
                     - ''
                     type: string
-                  description: A [tax code](https://stripe.com/docs/tax/tax-codes)
+                  description: A [tax code](https://stripe.com/docs/tax/tax-categories)
                     ID.
                 unit_label:
                   description: A label that represents units of this product in Stripe
@@ -75609,7 +75614,7 @@ paths:
                   - unspecified
                   type: string
                 tax_code:
-                  description: A [tax code](https://stripe.com/docs/tax/tax-codes)
+                  description: A [tax code](https://stripe.com/docs/tax/tax-categories)
                     ID. The Shipping tax code is `txcd_92010001`.
                   type: string
                 type:
@@ -80788,7 +80793,7 @@ paths:
           description: Error response.
   "/v1/tax_codes":
     get:
-      description: <p>A list of <a href="https://stripe.com/docs/tax/tax-codes">all
+      description: <p>A list of <a href="https://stripe.com/docs/tax/tax-categories">all
         tax codes available</a> to add to Products in order to allow specific tax
         calculations.</p>
       operationId: GetTaxCodes
@@ -83021,6 +83026,48 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/terminal.reader"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/test_helpers/refunds/{refund}/expire":
+    post:
+      description: "<p>Expire a refund with a status of <code>requires_action</code>.</p>"
+      operationId: PostTestHelpersRefundsRefundExpire
+      parameters:
+      - in: path
+        name: refund
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/refund"
           description: Successful response.
         default:
           content:
