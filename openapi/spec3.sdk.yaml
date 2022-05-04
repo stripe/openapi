@@ -2562,6 +2562,199 @@ components:
         - deleted_payment_source
         - external_account
         - payment_source
+    bank_connections_resource_accountholder:
+      description: ''
+      properties:
+        account:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/account"
+          description: The ID of the Stripe account this account belongs to. Should
+            only be present if `account_holder.type` is `account`.
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/account"
+        customer:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/customer"
+          description: ID of the Stripe customer this account belongs to. Present
+            if and only if `account_holder.type` is `customer`.
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/customer"
+        type:
+          description: Type of account holder that this account belongs to.
+          enum:
+          - account
+          - customer
+          type: string
+      required:
+      - type
+      title: BankConnectionsResourceAccountholder
+      type: object
+      x-expandableFields:
+      - account
+      - customer
+      x-stripeResource:
+        class_name: AccountHolder
+        in_class: financial_connections.account
+    bank_connections_resource_balance:
+      description: ''
+      properties:
+        as_of:
+          description: The time that the external institution calculated this balance.
+            Measured in seconds since the Unix epoch.
+          format: unix-time
+          type: integer
+        cash:
+          "$ref": "#/components/schemas/bank_connections_resource_balance_api_resource_cash_balance"
+        credit:
+          "$ref": "#/components/schemas/bank_connections_resource_balance_api_resource_credit_balance"
+        current:
+          additionalProperties:
+            type: integer
+          description: |-
+            The balances owed to (or by) the account holder.
+
+            Each key is a three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase.
+
+            Each value is a integer amount. A positive amount indicates money owed to the account holder. A negative amount indicates money owed by the account holder.
+          type: object
+        type:
+          description: The `type` of the balance. An additional hash is included on
+            the balance with a name matching this value.
+          enum:
+          - cash
+          - credit
+          type: string
+      required:
+      - as_of
+      - current
+      - type
+      title: BankConnectionsResourceBalance
+      type: object
+      x-expandableFields:
+      - cash
+      - credit
+      x-stripeResource:
+        class_name: Balance
+        in_class: financial_connections.account
+        inner_classes:
+        - bank_connections_resource_balance_api_resource_cash_balance
+        - bank_connections_resource_balance_api_resource_credit_balance
+    bank_connections_resource_balance_api_resource_cash_balance:
+      description: ''
+      properties:
+        available:
+          additionalProperties:
+            type: integer
+          description: |-
+            The funds available to the account holder. Typically this is the current balance less any holds.
+
+            Each key is a three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase.
+
+            Each value is a integer amount. A positive amount indicates money owed to the account holder. A negative amount indicates money owed by the account holder.
+          nullable: true
+          type: object
+      required:
+      - available
+      title: BankConnectionsResourceBalanceAPIResourceCashBalance
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: CashBalance
+        in_class: bank_connections_resource_balance
+    bank_connections_resource_balance_api_resource_credit_balance:
+      description: ''
+      properties:
+        used:
+          additionalProperties:
+            type: integer
+          description: |-
+            The credit that has been used by the account holder.
+
+            Each key is a three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase.
+
+            Each value is a integer amount. A positive amount indicates money owed to the account holder. A negative amount indicates money owed by the account holder.
+          nullable: true
+          type: object
+      required:
+      - used
+      title: BankConnectionsResourceBalanceAPIResourceCreditBalance
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: CreditBalance
+        in_class: bank_connections_resource_balance
+    bank_connections_resource_balance_refresh:
+      description: ''
+      properties:
+        last_attempted_at:
+          description: The time at which the last refresh attempt was initiated. Measured
+            in seconds since the Unix epoch.
+          format: unix-time
+          type: integer
+        status:
+          description: The status of the last refresh attempt.
+          enum:
+          - failed
+          - pending
+          - succeeded
+          type: string
+      required:
+      - last_attempted_at
+      - status
+      title: BankConnectionsResourceBalanceRefresh
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: BalanceRefresh
+        in_class: financial_connections.account
+    bank_connections_resource_link_account_session_filters:
+      description: ''
+      properties:
+        countries:
+          description: List of countries from which to filter accounts.
+          items:
+            maxLength: 5000
+            type: string
+          nullable: true
+          type: array
+      required:
+      - countries
+      title: BankConnectionsResourceLinkAccountSessionFilters
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: Filters
+        in_class: financial_connections.session
+    bank_connections_resource_ownership_refresh:
+      description: ''
+      properties:
+        last_attempted_at:
+          description: The time at which the last refresh attempt was initiated. Measured
+            in seconds since the Unix epoch.
+          format: unix-time
+          type: integer
+        status:
+          description: The status of the last refresh attempt.
+          enum:
+          - failed
+          - pending
+          - succeeded
+          type: string
+      required:
+      - last_attempted_at
+      - status
+      title: BankConnectionsResourceOwnershipRefresh
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: OwnershipRefresh
+        in_class: financial_connections.account
     billing_details:
       description: ''
       properties:
@@ -5103,6 +5296,8 @@ components:
     checkout_us_bank_account_payment_method_options:
       description: ''
       properties:
+        financial_connections:
+          "$ref": "#/components/schemas/linked_account_options_us_bank_account"
         verification_method:
           description: Bank account verification method.
           enum:
@@ -5112,7 +5307,8 @@ components:
           x-stripeBypassValidation: true
       title: CheckoutUsBankAccountPaymentMethodOptions
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - financial_connections
       x-stripeResource:
         class_name: UsBankAccount
         in_class: checkout_session_payment_method_options
@@ -9132,6 +9328,457 @@ components:
         class_name: FileLink
         has_collection_class: true
         in_package: ''
+    financial_connections.account:
+      description: A Financial Connections Account represents an account that exists
+        outside of Stripe, to which you have been granted some degree of access.
+      properties:
+        account_holder:
+          anyOf:
+          - "$ref": "#/components/schemas/bank_connections_resource_accountholder"
+          description: The account holder that this account belongs to.
+          nullable: true
+        balance:
+          anyOf:
+          - "$ref": "#/components/schemas/bank_connections_resource_balance"
+          description: The most recent information about the account's balance.
+          nullable: true
+        balance_refresh:
+          anyOf:
+          - "$ref": "#/components/schemas/bank_connections_resource_balance_refresh"
+          description: The state of the most recent attempt to refresh the account
+            balance.
+          nullable: true
+        category:
+          description: The type of the account. Account category is further divided
+            in `subcategory`.
+          enum:
+          - cash
+          - credit
+          - investment
+          - other
+          type: string
+        created:
+          description: Time at which the object was created. Measured in seconds since
+            the Unix epoch.
+          format: unix-time
+          type: integer
+        display_name:
+          description: A human-readable name that has been assigned to this account,
+            either by the account holder or by the institution.
+          maxLength: 5000
+          nullable: true
+          type: string
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        institution_name:
+          description: The name of the institution that holds this account.
+          maxLength: 5000
+          type: string
+        last4:
+          description: The last 4 digits of the account number. If present, this will
+            be 4 numeric characters.
+          maxLength: 5000
+          nullable: true
+          type: string
+        livemode:
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+          type: boolean
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - financial_connections.account
+          type: string
+        ownership:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/financial_connections.account_ownership"
+          description: The most recent information about the account's owners.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/financial_connections.account_ownership"
+        ownership_refresh:
+          anyOf:
+          - "$ref": "#/components/schemas/bank_connections_resource_ownership_refresh"
+          description: The state of the most recent attempt to refresh the account
+            owners.
+          nullable: true
+        permissions:
+          description: The list of permissions granted by this account.
+          items:
+            enum:
+            - balances
+            - ownership
+            - payment_method
+            - transactions
+            type: string
+          nullable: true
+          type: array
+        status:
+          description: The status of the link to the account.
+          enum:
+          - active
+          - disconnected
+          - inactive
+          type: string
+        subcategory:
+          description: |-
+            If `category` is `cash`, one of:
+
+             - `checking`
+             - `savings`
+             - `other`
+
+            If `category` is `credit`, one of:
+
+             - `mortgage`
+             - `line_of_credit`
+             - `credit_card`
+             - `other`
+
+            If `category` is `investment` or `other`, this will be `other`.
+          enum:
+          - checking
+          - credit_card
+          - line_of_credit
+          - mortgage
+          - other
+          - savings
+          type: string
+        supported_payment_method_types:
+          description: The [PaymentMethod type](https://stripe.com/docs/api/payment_methods/object#payment_method_object-type)(s)
+            that can be created from this account.
+          items:
+            enum:
+            - link
+            - us_bank_account
+            type: string
+          type: array
+      required:
+      - account_holder
+      - balance
+      - balance_refresh
+      - category
+      - created
+      - display_name
+      - id
+      - institution_name
+      - last4
+      - livemode
+      - object
+      - ownership
+      - ownership_refresh
+      - permissions
+      - status
+      - subcategory
+      - supported_payment_method_types
+      title: BankConnectionsResourceLinkedAccount
+      type: object
+      x-expandableFields:
+      - account_holder
+      - balance
+      - balance_refresh
+      - ownership
+      - ownership_refresh
+      x-resourceId: financial_connections.account
+      x-stripeOperations:
+      - method_name: retrieve
+        method_on: class
+        method_type: retrieve
+        operation: get
+        path: "/v1/financial_connections/accounts/{account}"
+        path_resource_variables:
+        - method_parameter: account
+          name: account
+      - method_name: retrieve
+        method_on: service
+        method_type: retrieve
+        operation: get
+        path: "/v1/financial_connections/accounts/{account}"
+        path_resource_variables:
+        - method_parameter: account
+          name: account
+      - method_name: refresh
+        method_on: class
+        method_type: custom
+        operation: post
+        path: "/v1/financial_connections/accounts/{account}/refresh"
+        path_resource_variables:
+        - method_parameter: account
+          name: account
+      - method_name: refresh
+        method_on: service
+        method_type: custom
+        operation: post
+        path: "/v1/financial_connections/accounts/{account}/refresh"
+        path_resource_variables:
+        - method_parameter: account
+          name: account
+      - method_name: disconnect
+        method_on: class
+        method_type: custom
+        operation: post
+        path: "/v1/financial_connections/accounts/{account}/disconnect"
+        path_resource_variables:
+        - method_parameter: account
+          name: account
+      - method_name: disconnect
+        method_on: service
+        method_type: custom
+        operation: post
+        path: "/v1/financial_connections/accounts/{account}/disconnect"
+        path_resource_variables:
+        - method_parameter: account
+          name: account
+      x-stripeResource:
+        class_name: Account
+        has_collection_class: true
+        in_package: FinancialConnections
+        inner_classes:
+        - bank_connections_resource_accountholder
+        - bank_connections_resource_balance
+        - bank_connections_resource_balance_refresh
+        - bank_connections_resource_ownership_refresh
+        - financial_connections.account_ownership
+    financial_connections.account_owner:
+      description: ''
+      properties:
+        email:
+          description: The email address of the owner.
+          maxLength: 5000
+          nullable: true
+          type: string
+        name:
+          description: The full name of the owner.
+          maxLength: 5000
+          type: string
+        ownership:
+          description: The ownership object that this owner belongs to.
+          maxLength: 5000
+          type: string
+        phone:
+          description: The raw phone number of the owner.
+          maxLength: 5000
+          nullable: true
+          type: string
+        raw_address:
+          description: The raw physical address of the owner.
+          maxLength: 5000
+          nullable: true
+          type: string
+        refreshed_at:
+          description: The timestamp of the refresh that updated this owner.
+          format: unix-time
+          nullable: true
+          type: integer
+      required:
+      - email
+      - name
+      - ownership
+      - phone
+      - raw_address
+      - refreshed_at
+      title: BankConnectionsResourceOwner
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: AccountOwner
+        has_collection_class: true
+        in_package: FinancialConnections
+    financial_connections.account_ownership:
+      description: Describes a snapshot of the owners of an account at a particular
+        point in time.
+      properties:
+        created:
+          description: Time at which the object was created. Measured in seconds since
+            the Unix epoch.
+          format: unix-time
+          type: integer
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - financial_connections.account_ownership
+          type: string
+        owners:
+          description: A paginated list of owners for this account.
+          properties:
+            data:
+              description: Details about each object.
+              items:
+                "$ref": "#/components/schemas/financial_connections.account_owner"
+              type: array
+            has_more:
+              description: True if this list has another page of items after this
+                one that can be fetched.
+              type: boolean
+            object:
+              description: String representing the object's type. Objects of the same
+                type share the same value. Always has the value `list`.
+              enum:
+              - list
+              type: string
+            url:
+              description: The URL where this list can be accessed.
+              maxLength: 5000
+              type: string
+          required:
+          - data
+          - has_more
+          - object
+          - url
+          title: BankConnectionsResourceOwnerList
+          type: object
+          x-expandableFields:
+          - data
+      required:
+      - created
+      - id
+      - object
+      - owners
+      title: BankConnectionsResourceOwnership
+      type: object
+      x-expandableFields:
+      - owners
+      x-stripeResource:
+        class_name: Ownership
+        in_class: financial_connections.account
+    financial_connections.session:
+      description: A Financial Connections Session is the secure way to programmatically
+        launch the client-side Stripe.js modal that lets your users link their accounts.
+      properties:
+        account_holder:
+          anyOf:
+          - "$ref": "#/components/schemas/bank_connections_resource_accountholder"
+          description: The account holder for whom accounts are collected in this
+            session.
+          nullable: true
+        accounts:
+          description: The accounts that were collected as part of this Session.
+          properties:
+            data:
+              description: Details about each object.
+              items:
+                "$ref": "#/components/schemas/financial_connections.account"
+              type: array
+            has_more:
+              description: True if this list has another page of items after this
+                one that can be fetched.
+              type: boolean
+            object:
+              description: String representing the object's type. Objects of the same
+                type share the same value. Always has the value `list`.
+              enum:
+              - list
+              type: string
+            url:
+              description: The URL where this list can be accessed.
+              maxLength: 5000
+              pattern: "^/v1/financial_connections/accounts"
+              type: string
+          required:
+          - data
+          - has_more
+          - object
+          - url
+          title: BankConnectionsResourceLinkedAccountList
+          type: object
+          x-expandableFields:
+          - data
+        client_secret:
+          description: A value that will be passed to the client to launch the authentication
+            flow.
+          maxLength: 5000
+          type: string
+        filters:
+          "$ref": "#/components/schemas/bank_connections_resource_link_account_session_filters"
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        livemode:
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+          type: boolean
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - financial_connections.session
+          type: string
+        permissions:
+          description: Permissions requested for accounts collected during this session.
+          items:
+            enum:
+            - balances
+            - ownership
+            - payment_method
+            - transactions
+            type: string
+            x-stripeBypassValidation: true
+          type: array
+        return_url:
+          description: For webview integrations only. Upon completing OAuth login
+            in the native browser, the user will be redirected to this URL to return
+            to your app.
+          maxLength: 5000
+          type: string
+      required:
+      - account_holder
+      - accounts
+      - client_secret
+      - id
+      - livemode
+      - object
+      - permissions
+      title: BankConnectionsResourceLinkAccountSession
+      type: object
+      x-expandableFields:
+      - account_holder
+      - accounts
+      - filters
+      x-resourceId: financial_connections.session
+      x-stripeOperations:
+      - method_name: create
+        method_on: class
+        method_type: create
+        operation: post
+        path: "/v1/financial_connections/sessions"
+      - method_name: create
+        method_on: service
+        method_type: create
+        operation: post
+        path: "/v1/financial_connections/sessions"
+      - method_name: retrieve
+        method_on: class
+        method_type: retrieve
+        operation: get
+        path: "/v1/financial_connections/sessions/{session}"
+        path_resource_variables:
+        - method_parameter: session
+          name: session
+      - method_name: retrieve
+        method_on: service
+        method_type: retrieve
+        operation: get
+        path: "/v1/financial_connections/sessions/{session}"
+        path_resource_variables:
+        - method_parameter: session
+          name: session
+      x-stripeResource:
+        class_name: Session
+        in_package: FinancialConnections
+        inner_classes:
+        - bank_connections_resource_link_account_session_filters
     financial_reporting_finance_report_run_run_parameters:
       description: ''
       properties:
@@ -11325,6 +11972,8 @@ components:
     invoice_payment_method_options_us_bank_account:
       description: ''
       properties:
+        financial_connections:
+          "$ref": "#/components/schemas/invoice_payment_method_options_us_bank_account_linked_account_options"
         verification_method:
           description: Bank account verification method.
           enum:
@@ -11335,10 +11984,33 @@ components:
           x-stripeBypassValidation: true
       title: invoice_payment_method_options_us_bank_account
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - financial_connections
       x-stripeResource:
         class_name: UsBankAccount
         in_class: invoices_payment_method_options
+        inner_classes:
+        - invoice_payment_method_options_us_bank_account_linked_account_options
+    invoice_payment_method_options_us_bank_account_linked_account_options:
+      description: ''
+      properties:
+        permissions:
+          description: The list of permissions to request. The `payment_method` permission
+            must be included.
+          items:
+            enum:
+            - balances
+            - payment_method
+            - transactions
+            type: string
+            x-stripeBypassValidation: true
+          type: array
+      title: invoice_payment_method_options_us_bank_account_linked_account_options
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: FinancialConnections
+        in_class: invoice_payment_method_options_us_bank_account
     invoice_setting_custom_field:
       description: ''
       properties:
@@ -17063,6 +17735,32 @@ components:
       x-stripeResource:
         class_name: Tax
         in_class: item
+    linked_account_options_us_bank_account:
+      description: ''
+      properties:
+        permissions:
+          description: The list of permissions to request. The `payment_method` permission
+            must be included.
+          items:
+            enum:
+            - balances
+            - ownership
+            - payment_method
+            - transactions
+            type: string
+          type: array
+        return_url:
+          description: For webview integrations only. Upon completing OAuth login
+            in the native browser, the user will be redirected to this URL to return
+            to your app.
+          maxLength: 5000
+          type: string
+      title: linked_account_options_us_bank_account
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: FinancialConnections
+        in_class: payment_intent_payment_method_options_us_bank_account
     login_link:
       description: ''
       properties:
@@ -19577,6 +20275,8 @@ components:
     payment_intent_payment_method_options_us_bank_account:
       description: ''
       properties:
+        financial_connections:
+          "$ref": "#/components/schemas/linked_account_options_us_bank_account"
         setup_future_usage:
           description: |-
             Indicates that you intend to make future payments with this PaymentIntent's payment method.
@@ -19599,10 +20299,13 @@ components:
           x-stripeBypassValidation: true
       title: payment_intent_payment_method_options_us_bank_account
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - financial_connections
       x-stripeResource:
         class_name: UsBankAccount
         in_class: payment_intent_payment_method_options
+        inner_classes:
+        - linked_account_options_us_bank_account
     payment_intent_processing:
       description: ''
       properties:
@@ -24056,6 +24759,12 @@ components:
           type: string
         bank_name:
           description: The name of the bank.
+          maxLength: 5000
+          nullable: true
+          type: string
+        financial_connections_account:
+          description: The ID of the Financial Connections Account used to create
+            the payment method.
           maxLength: 5000
           nullable: true
           type: string
@@ -30536,6 +31245,8 @@ components:
     setup_intent_payment_method_options_us_bank_account:
       description: ''
       properties:
+        financial_connections:
+          "$ref": "#/components/schemas/linked_account_options_us_bank_account"
         verification_method:
           description: Bank account verification method.
           enum:
@@ -30546,7 +31257,8 @@ components:
           x-stripeBypassValidation: true
       title: setup_intent_payment_method_options_us_bank_account
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - financial_connections
       x-stripeResource:
         class_name: UsBankAccount
         in_class: setup_intent_payment_method_options
@@ -46373,6 +47085,29 @@ paths:
                       description: contains details about the Us Bank Account payment
                         method options.
                       properties:
+                        financial_connections:
+                          description: Additional fields for Financial Connections
+                            Session creation
+                          properties:
+                            permissions:
+                              description: 'The list of permissions to request. If
+                                this parameter is passed, the `payment_method` permission
+                                must be included. Valid permissions include: `balances`,
+                                `payment_method`, and `transactions`.'
+                              items:
+                                enum:
+                                - balances
+                                - ownership
+                                - payment_method
+                                - transactions
+                                maxLength: 5000
+                                type: string
+                                x-stripeBypassValidation: true
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: permission
+                          title: linked_account_options_param
+                          type: object
                         verification_method:
                           description: Verification method for the intent
                           enum:
@@ -52974,6 +53709,311 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
+  "/v1/financial_connections/accounts/{account}":
+    get:
+      description: "<p>Retrieves the details of an Financial Connections <code>Account</code>.</p>"
+      operationId: GetFinancialConnectionsAccountsAccount
+      parameters:
+      - in: path
+        name: account
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/financial_connections.account"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/financial_connections/accounts/{account}/disconnect":
+    post:
+      description: "<p>Disables your access to a Financial Connections <code>Account</code>.
+        You will no longer be able to access data associated with the account (e.g.
+        balances, transactions).</p>"
+      operationId: PostFinancialConnectionsAccountsAccountDisconnect
+      parameters:
+      - in: path
+        name: account
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/financial_connections.account"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/financial_connections/accounts/{account}/refresh":
+    post:
+      description: "<p>Refreshes the data associated with a Financial Connections
+        <code>Account</code>.</p>"
+      operationId: PostFinancialConnectionsAccountsAccountRefresh
+      parameters:
+      - in: path
+        name: account
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+              features:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                features:
+                  description: 'The list of account features that you would like to
+                    refresh. Either: `balance` or `ownership`.'
+                  items:
+                    enum:
+                    - balance
+                    - ownership
+                    type: string
+                  type: array
+                  x-stripeParam:
+                    containee_entity_name: feature
+              required:
+              - features
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/financial_connections.account"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/financial_connections/sessions":
+    post:
+      description: "<p>To launch the Financial Connections authorization flow, create
+        a <code>Session</code>. The session’s <code>client_secret</code> can be used
+        to launch the flow using Stripe.js.</p>"
+      operationId: PostFinancialConnectionsSessions
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              account_holder:
+                explode: true
+                style: deepObject
+              expand:
+                explode: true
+                style: deepObject
+              filters:
+                explode: true
+                style: deepObject
+              permissions:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                account_holder:
+                  description: The account holder to link accounts for.
+                  properties:
+                    account:
+                      description: The ID of the Stripe account whose accounts will
+                        be retrieved. Should only be present if `type` is `account`.
+                      maxLength: 5000
+                      type: string
+                    customer:
+                      description: The ID of the Stripe customer whose accounts will
+                        be retrieved. Should only be present if `type` is `customer`.
+                      maxLength: 5000
+                      type: string
+                    type:
+                      description: Type of account holder to collect accounts for.
+                      enum:
+                      - account
+                      - customer
+                      type: string
+                  required:
+                  - type
+                  title: accountholder_params
+                  type: object
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                filters:
+                  description: Filters to restrict the kinds of accounts to collect.
+                  properties:
+                    countries:
+                      description: List of countries from which to collect accounts.
+                      items:
+                        maxLength: 5000
+                        type: string
+                      type: array
+                      x-stripeParam:
+                        containee_entity_name: country
+                  required:
+                  - countries
+                  title: filters_params
+                  type: object
+                permissions:
+                  description: |-
+                    List of data features that you would like to request access to.
+
+                    Possible values are `balances`, `transactions`, `ownership`, and `payment_method`.
+                  items:
+                    enum:
+                    - balances
+                    - ownership
+                    - payment_method
+                    - transactions
+                    maxLength: 5000
+                    type: string
+                    x-stripeBypassValidation: true
+                  type: array
+                  x-stripeParam:
+                    containee_entity_name: permission
+                return_url:
+                  description: For webview integrations only. Upon completing OAuth
+                    login in the native browser, the user will be redirected to this
+                    URL to return to your app.
+                  maxLength: 5000
+                  type: string
+              required:
+              - account_holder
+              - permissions
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/financial_connections.session"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/financial_connections/sessions/{session}":
+    get:
+      description: "<p>Retrieves the details of a Financial Connections <code>Session</code></p>"
+      operationId: GetFinancialConnectionsSessionsSession
+      parameters:
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      - in: path
+        name: session
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/financial_connections.session"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
   "/v1/identity/verification_reports":
     get:
       description: "<p>List all verification reports.</p>"
@@ -54857,6 +55897,29 @@ paths:
                         us_bank_account:
                           anyOf:
                           - properties:
+                              financial_connections:
+                                description: Additional fields for Financial Connections
+                                  Session creation
+                                properties:
+                                  permissions:
+                                    description: 'The list of permissions to request.
+                                      If this parameter is passed, the `payment_method`
+                                      permission must be included. Valid permissions
+                                      include: `balances`, `payment_method`, and `transactions`.'
+                                    items:
+                                      enum:
+                                      - balances
+                                      - ownership
+                                      - payment_method
+                                      - transactions
+                                      maxLength: 5000
+                                      type: string
+                                      x-stripeBypassValidation: true
+                                    type: array
+                                    x-stripeParam:
+                                      containee_entity_name: permission
+                                title: invoice_linked_account_options_param
+                                type: object
                               verification_method:
                                 description: Verification method for the intent
                                 enum:
@@ -57133,6 +58196,29 @@ paths:
                         us_bank_account:
                           anyOf:
                           - properties:
+                              financial_connections:
+                                description: Additional fields for Financial Connections
+                                  Session creation
+                                properties:
+                                  permissions:
+                                    description: 'The list of permissions to request.
+                                      If this parameter is passed, the `payment_method`
+                                      permission must be included. Valid permissions
+                                      include: `balances`, `payment_method`, and `transactions`.'
+                                    items:
+                                      enum:
+                                      - balances
+                                      - ownership
+                                      - payment_method
+                                      - transactions
+                                      maxLength: 5000
+                                      type: string
+                                      x-stripeBypassValidation: true
+                                    type: array
+                                    x-stripeParam:
+                                      containee_entity_name: permission
+                                title: invoice_linked_account_options_param
+                                type: object
                               verification_method:
                                 description: Verification method for the intent
                                 enum:
@@ -66047,6 +67133,11 @@ paths:
                           - checking
                           - savings
                           type: string
+                        financial_connections_account:
+                          description: The ID of a Financial Connections Account to
+                            use as a payment method.
+                          maxLength: 5000
+                          type: string
                         routing_number:
                           description: Routing number of the bank account.
                           maxLength: 5000
@@ -66996,6 +68087,35 @@ paths:
                     us_bank_account:
                       anyOf:
                       - properties:
+                          financial_connections:
+                            description: Additional fields for Financial Connections
+                              Session creation
+                            properties:
+                              permissions:
+                                description: 'The list of permissions to request.
+                                  If this parameter is passed, the `payment_method`
+                                  permission must be included. Valid permissions include:
+                                  `balances`, `payment_method`, and `transactions`.'
+                                items:
+                                  enum:
+                                  - balances
+                                  - ownership
+                                  - payment_method
+                                  - transactions
+                                  maxLength: 5000
+                                  type: string
+                                  x-stripeBypassValidation: true
+                                type: array
+                                x-stripeParam:
+                                  containee_entity_name: permission
+                              return_url:
+                                description: For webview integrations only. Upon completing
+                                  OAuth login in the native browser, the user will
+                                  be redirected to this URL to return to your app.
+                                maxLength: 5000
+                                type: string
+                            title: linked_account_options_param
+                            type: object
                           setup_future_usage:
                             description: |-
                               Indicates that you intend to make future payments with this PaymentIntent's payment method.
@@ -67955,6 +69075,11 @@ paths:
                           - checking
                           - savings
                           type: string
+                        financial_connections_account:
+                          description: The ID of a Financial Connections Account to
+                            use as a payment method.
+                          maxLength: 5000
+                          type: string
                         routing_number:
                           description: Routing number of the bank account.
                           maxLength: 5000
@@ -68904,6 +70029,35 @@ paths:
                     us_bank_account:
                       anyOf:
                       - properties:
+                          financial_connections:
+                            description: Additional fields for Financial Connections
+                              Session creation
+                            properties:
+                              permissions:
+                                description: 'The list of permissions to request.
+                                  If this parameter is passed, the `payment_method`
+                                  permission must be included. Valid permissions include:
+                                  `balances`, `payment_method`, and `transactions`.'
+                                items:
+                                  enum:
+                                  - balances
+                                  - ownership
+                                  - payment_method
+                                  - transactions
+                                  maxLength: 5000
+                                  type: string
+                                  x-stripeBypassValidation: true
+                                type: array
+                                x-stripeParam:
+                                  containee_entity_name: permission
+                              return_url:
+                                description: For webview integrations only. Upon completing
+                                  OAuth login in the native browser, the user will
+                                  be redirected to this URL to return to your app.
+                                maxLength: 5000
+                                type: string
+                            title: linked_account_options_param
+                            type: object
                           setup_future_usage:
                             description: |-
                               Indicates that you intend to make future payments with this PaymentIntent's payment method.
@@ -69966,6 +71120,11 @@ paths:
                           - checking
                           - savings
                           type: string
+                        financial_connections_account:
+                          description: The ID of a Financial Connections Account to
+                            use as a payment method.
+                          maxLength: 5000
+                          type: string
                         routing_number:
                           description: Routing number of the bank account.
                           maxLength: 5000
@@ -70915,6 +72074,35 @@ paths:
                     us_bank_account:
                       anyOf:
                       - properties:
+                          financial_connections:
+                            description: Additional fields for Financial Connections
+                              Session creation
+                            properties:
+                              permissions:
+                                description: 'The list of permissions to request.
+                                  If this parameter is passed, the `payment_method`
+                                  permission must be included. Valid permissions include:
+                                  `balances`, `payment_method`, and `transactions`.'
+                                items:
+                                  enum:
+                                  - balances
+                                  - ownership
+                                  - payment_method
+                                  - transactions
+                                  maxLength: 5000
+                                  type: string
+                                  x-stripeBypassValidation: true
+                                type: array
+                                x-stripeParam:
+                                  containee_entity_name: permission
+                              return_url:
+                                description: For webview integrations only. Upon completing
+                                  OAuth login in the native browser, the user will
+                                  be redirected to this URL to return to your app.
+                                maxLength: 5000
+                                type: string
+                            title: linked_account_options_param
+                            type: object
                           setup_future_usage:
                             description: |-
                               Indicates that you intend to make future payments with this PaymentIntent's payment method.
@@ -73228,6 +74416,11 @@ paths:
                       enum:
                       - checking
                       - savings
+                      type: string
+                    financial_connections_account:
+                      description: The ID of a Financial Connections Account to use
+                        as a payment method.
+                      maxLength: 5000
                       type: string
                     routing_number:
                       description: Routing number of the bank account.
@@ -81480,6 +82673,11 @@ paths:
                           - checking
                           - savings
                           type: string
+                        financial_connections_account:
+                          description: The ID of a Financial Connections Account to
+                            use as a payment method.
+                          maxLength: 5000
+                          type: string
                         routing_number:
                           description: Routing number of the bank account.
                           maxLength: 5000
@@ -81689,6 +82887,35 @@ paths:
                         sub-hash contains details about the US bank account payment
                         method options.
                       properties:
+                        financial_connections:
+                          description: Additional fields for Financial Connections
+                            Session creation
+                          properties:
+                            permissions:
+                              description: 'The list of permissions to request. If
+                                this parameter is passed, the `payment_method` permission
+                                must be included. Valid permissions include: `balances`,
+                                `payment_method`, and `transactions`.'
+                              items:
+                                enum:
+                                - balances
+                                - ownership
+                                - payment_method
+                                - transactions
+                                maxLength: 5000
+                                type: string
+                                x-stripeBypassValidation: true
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: permission
+                            return_url:
+                              description: For webview integrations only. Upon completing
+                                OAuth login in the native browser, the user will be
+                                redirected to this URL to return to your app.
+                              maxLength: 5000
+                              type: string
+                          title: linked_account_options_param
+                          type: object
                         verification_method:
                           description: Verification method for the intent
                           enum:
@@ -82340,6 +83567,11 @@ paths:
                           - checking
                           - savings
                           type: string
+                        financial_connections_account:
+                          description: The ID of a Financial Connections Account to
+                            use as a payment method.
+                          maxLength: 5000
+                          type: string
                         routing_number:
                           description: Routing number of the bank account.
                           maxLength: 5000
@@ -82549,6 +83781,35 @@ paths:
                         sub-hash contains details about the US bank account payment
                         method options.
                       properties:
+                        financial_connections:
+                          description: Additional fields for Financial Connections
+                            Session creation
+                          properties:
+                            permissions:
+                              description: 'The list of permissions to request. If
+                                this parameter is passed, the `payment_method` permission
+                                must be included. Valid permissions include: `balances`,
+                                `payment_method`, and `transactions`.'
+                              items:
+                                enum:
+                                - balances
+                                - ownership
+                                - payment_method
+                                - transactions
+                                maxLength: 5000
+                                type: string
+                                x-stripeBypassValidation: true
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: permission
+                            return_url:
+                              description: For webview integrations only. Upon completing
+                                OAuth login in the native browser, the user will be
+                                redirected to this URL to return to your app.
+                              maxLength: 5000
+                              type: string
+                          title: linked_account_options_param
+                          type: object
                         verification_method:
                           description: Verification method for the intent
                           enum:
@@ -83236,6 +84497,11 @@ paths:
                           - checking
                           - savings
                           type: string
+                        financial_connections_account:
+                          description: The ID of a Financial Connections Account to
+                            use as a payment method.
+                          maxLength: 5000
+                          type: string
                         routing_number:
                           description: Routing number of the bank account.
                           maxLength: 5000
@@ -83445,6 +84711,35 @@ paths:
                         sub-hash contains details about the US bank account payment
                         method options.
                       properties:
+                        financial_connections:
+                          description: Additional fields for Financial Connections
+                            Session creation
+                          properties:
+                            permissions:
+                              description: 'The list of permissions to request. If
+                                this parameter is passed, the `payment_method` permission
+                                must be included. Valid permissions include: `balances`,
+                                `payment_method`, and `transactions`.'
+                              items:
+                                enum:
+                                - balances
+                                - ownership
+                                - payment_method
+                                - transactions
+                                maxLength: 5000
+                                type: string
+                                x-stripeBypassValidation: true
+                              type: array
+                              x-stripeParam:
+                                containee_entity_name: permission
+                            return_url:
+                              description: For webview integrations only. Upon completing
+                                OAuth login in the native browser, the user will be
+                                redirected to this URL to return to your app.
+                              maxLength: 5000
+                              type: string
+                          title: linked_account_options_param
+                          type: object
                         verification_method:
                           description: Verification method for the intent
                           enum:
@@ -88735,6 +90030,29 @@ paths:
                         us_bank_account:
                           anyOf:
                           - properties:
+                              financial_connections:
+                                description: Additional fields for Financial Connections
+                                  Session creation
+                                properties:
+                                  permissions:
+                                    description: 'The list of permissions to request.
+                                      If this parameter is passed, the `payment_method`
+                                      permission must be included. Valid permissions
+                                      include: `balances`, `payment_method`, and `transactions`.'
+                                    items:
+                                      enum:
+                                      - balances
+                                      - ownership
+                                      - payment_method
+                                      - transactions
+                                      maxLength: 5000
+                                      type: string
+                                      x-stripeBypassValidation: true
+                                    type: array
+                                    x-stripeParam:
+                                      containee_entity_name: permission
+                                title: invoice_linked_account_options_param
+                                type: object
                               verification_method:
                                 description: Verification method for the intent
                                 enum:
@@ -89718,6 +91036,29 @@ paths:
                         us_bank_account:
                           anyOf:
                           - properties:
+                              financial_connections:
+                                description: Additional fields for Financial Connections
+                                  Session creation
+                                properties:
+                                  permissions:
+                                    description: 'The list of permissions to request.
+                                      If this parameter is passed, the `payment_method`
+                                      permission must be included. Valid permissions
+                                      include: `balances`, `payment_method`, and `transactions`.'
+                                    items:
+                                      enum:
+                                      - balances
+                                      - ownership
+                                      - payment_method
+                                      - transactions
+                                      maxLength: 5000
+                                      type: string
+                                      x-stripeBypassValidation: true
+                                    type: array
+                                    x-stripeParam:
+                                      containee_entity_name: permission
+                                title: invoice_linked_account_options_param
+                                type: object
                               verification_method:
                                 description: Verification method for the intent
                                 enum:
