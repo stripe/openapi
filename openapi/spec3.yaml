@@ -7081,9 +7081,19 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
         name:
           description: The full name of the owner.
           maxLength: 5000
+          type: string
+        object:
+          description: String representing the object's type. Objects of the same
+            type share the same value.
+          enum:
+          - financial_connections.account_owner
           type: string
         ownership:
           description: The ownership object that this owner belongs to.
@@ -7105,7 +7115,9 @@ components:
           nullable: true
           type: integer
       required:
+      - id
       - name
+      - object
       - ownership
       title: BankConnectionsResourceOwner
       type: object
@@ -20983,6 +20995,17 @@ components:
             the Unix epoch.
           format: unix-time
           type: integer
+        default_price:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/price"
+          description: The ID of the [Price](https://stripe.com/docs/api/prices) object
+            that is the default price for this product.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/price"
         description:
           description: The product's description, meant to be displayable to the customer.
             Use this field to optionally store a long form explanation of the product
@@ -21079,6 +21102,7 @@ components:
       title: Product
       type: object
       x-expandableFields:
+      - default_price
       - package_dimensions
       - tax_code
       x-resourceId: product
@@ -22301,6 +22325,10 @@ components:
           type: string
         id:
           description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        instructions_email:
+          description: Email to which refund instructions, if required, are sent to.
           maxLength: 5000
           type: string
         metadata:
@@ -40833,6 +40861,8 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                instructions_email:
+                  type: string
                 metadata:
                   anyOf:
                   - additionalProperties:
@@ -41014,6 +41044,8 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                instructions_email:
+                  type: string
                 metadata:
                   anyOf:
                   - additionalProperties:
@@ -71209,6 +71241,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              default_price_data:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -71228,6 +71263,42 @@ paths:
                   description: Whether the product is currently available for purchase.
                     Defaults to `true`.
                   type: boolean
+                default_price_data:
+                  description: Data used to generate a new [Price](https://stripe.com/docs/api/prices)
+                    object. This Price will be set as the default price for this product.
+                  properties:
+                    currency:
+                      type: string
+                    recurring:
+                      properties:
+                        interval:
+                          enum:
+                          - day
+                          - month
+                          - week
+                          - year
+                          type: string
+                        interval_count:
+                          type: integer
+                      required:
+                      - interval
+                      title: recurring_adhoc
+                      type: object
+                    tax_behavior:
+                      enum:
+                      - exclusive
+                      - inclusive
+                      - unspecified
+                      type: string
+                    unit_amount:
+                      type: integer
+                    unit_amount_decimal:
+                      format: decimal
+                      type: string
+                  required:
+                  - currency
+                  title: price_data_without_product
+                  type: object
                 description:
                   description: The product's description, meant to be displayable
                     to the customer. Use this field to optionally store a long form
@@ -71550,6 +71621,11 @@ paths:
                 active:
                   description: Whether the product is available for purchase.
                   type: boolean
+                default_price:
+                  description: The ID of the [Price](https://stripe.com/docs/api/prices)
+                    object that is the default price for this product.
+                  maxLength: 5000
+                  type: string
                 description:
                   description: The product's description, meant to be displayable
                     to the customer. Use this field to optionally store a long form
@@ -74592,6 +74668,8 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                instructions_email:
+                  type: string
                 metadata:
                   anyOf:
                   - additionalProperties:
