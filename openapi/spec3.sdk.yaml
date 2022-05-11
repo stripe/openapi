@@ -5501,8 +5501,8 @@ components:
     coupon:
       description: |-
         A coupon contains information about a percent-off or amount-off discount you
-        might want to apply to a customer. Coupons may be applied to [invoices](https://stripe.com/docs/api#invoices) or
-        [orders](https://stripe.com/docs/api#create_order_legacy-coupon). Coupons do not work with conventional one-off [charges](https://stripe.com/docs/api#create_charge).
+        might want to apply to a customer. Coupons may be applied to [subscriptions](https://stripe.com/docs/api#subscriptions), [invoices](https://stripe.com/docs/api#invoices),
+        [checkout sessions](https://stripe.com/docs/api/checkout/sessions), [quotes](https://stripe.com/docs/api#quotes), and more. Coupons do not work with conventional one-off [charges](https://stripe.com/docs/api#create_charge) or [payment intents](https://stripe.com/docs/api/payment_intents).
       properties:
         amount_off:
           description: Amount (in the `currency` specified) that will be taken off
@@ -7779,9 +7779,8 @@ components:
         in_package: ''
     discount:
       description: |-
-        A discount represents the actual application of a coupon to a particular
-        customer. It contains information about when the discount began and when it
-        will end.
+        A discount represents the actual application of a [coupon](https://stripe.com/docs/api#coupons) or [promotion code](https://stripe.com/docs/api#promotion_codes).
+        It contains information about when the discount began, when it will end, and what it is applied to.
 
         Related guide: [Applying Discounts to Subscriptions](https://stripe.com/docs/billing/subscriptions/discounts).
       properties:
@@ -18186,6 +18185,8 @@ components:
         An Order describes a purchase being made by a customer, including the
         products & quantities being purchased, the order status, the payment information,
         and the billing/shipping details.
+
+        Related guide: [Orders overview](https://stripe.com/docs/orders)
       properties:
         amount_subtotal:
           description: Order cost before any discounts or taxes are applied. A positive
@@ -20884,6 +20885,18 @@ components:
           - auto
           - required
           type: string
+        consent_collection:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_links_resource_consent_collection"
+          description: When set, provides configuration to gather active consent from
+            customers.
+          nullable: true
+        customer_creation:
+          description: Configuration for Customer creation during checkout.
+          enum:
+          - always
+          - if_required
+          type: string
         id:
           description: Unique identifier for the object.
           maxLength: 5000
@@ -20949,6 +20962,12 @@ components:
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/account"
+        payment_intent_data:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_links_resource_payment_intent_data"
+          description: Indicates the parameters to be passed to PaymentIntent creation
+            during checkout.
+          nullable: true
         payment_method_types:
           description: The list of payment method types that customers can use. When
             `null`, Stripe will dynamically show relevant payment methods you've enabled
@@ -20967,6 +20986,20 @@ components:
           - "$ref": "#/components/schemas/payment_links_resource_shipping_address_collection"
           description: Configuration for collecting the customer's shipping address.
           nullable: true
+        shipping_options:
+          description: The shipping rate options applied to the session.
+          items:
+            "$ref": "#/components/schemas/payment_links_resource_shipping_option"
+          type: array
+        submit_type:
+          description: Indicates the type of transaction being performed which customizes
+            relevant text on the page, such as the submit button.
+          enum:
+          - auto
+          - book
+          - donate
+          - pay
+          type: string
         subscription_data:
           anyOf:
           - "$ref": "#/components/schemas/payment_links_resource_subscription_data"
@@ -20974,6 +21007,8 @@ components:
             will be used. There must be at least one line item with a recurring price
             to use `subscription_data`.
           nullable: true
+        tax_id_collection:
+          "$ref": "#/components/schemas/payment_links_resource_tax_id_collection"
         transfer_data:
           anyOf:
           - "$ref": "#/components/schemas/payment_links_resource_transfer_data"
@@ -20992,15 +21027,21 @@ components:
       - application_fee_percent
       - automatic_tax
       - billing_address_collection
+      - consent_collection
+      - customer_creation
       - id
       - livemode
       - metadata
       - object
       - on_behalf_of
+      - payment_intent_data
       - payment_method_types
       - phone_number_collection
       - shipping_address_collection
+      - shipping_options
+      - submit_type
       - subscription_data
+      - tax_id_collection
       - transfer_data
       - url
       title: PaymentLink
@@ -21008,11 +21049,15 @@ components:
       x-expandableFields:
       - after_completion
       - automatic_tax
+      - consent_collection
       - line_items
       - on_behalf_of
+      - payment_intent_data
       - phone_number_collection
       - shipping_address_collection
+      - shipping_options
       - subscription_data
+      - tax_id_collection
       - transfer_data
       x-resourceId: payment_link
       x-stripeOperations:
@@ -21091,9 +21136,13 @@ components:
         inner_classes:
         - payment_links_resource_after_completion
         - payment_links_resource_automatic_tax
+        - payment_links_resource_consent_collection
+        - payment_links_resource_payment_intent_data
         - payment_links_resource_phone_number_collection
         - payment_links_resource_shipping_address_collection
+        - payment_links_resource_shipping_option
         - payment_links_resource_subscription_data
+        - payment_links_resource_tax_id_collection
         - payment_links_resource_transfer_data
     payment_links_resource_after_completion:
       description: ''
@@ -21169,6 +21218,52 @@ components:
       x-stripeResource:
         class_name: Redirect
         in_class: payment_links_resource_after_completion
+    payment_links_resource_consent_collection:
+      description: ''
+      properties:
+        promotions:
+          description: If set to `auto`, enables the collection of customer consent
+            for promotional communications.
+          enum:
+          - auto
+          nullable: true
+          type: string
+      required:
+      - promotions
+      title: PaymentLinksResourceConsentCollection
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: ConsentCollection
+        in_class: payment_link
+    payment_links_resource_payment_intent_data:
+      description: ''
+      properties:
+        capture_method:
+          description: Indicates when the funds will be captured from the customer's
+            account.
+          enum:
+          - automatic
+          - manual
+          nullable: true
+          type: string
+        setup_future_usage:
+          description: Indicates that you intend to make future payments with the
+            payment method collected during checkout.
+          enum:
+          - off_session
+          - on_session
+          nullable: true
+          type: string
+      required:
+      - capture_method
+      - setup_future_usage
+      title: PaymentLinksResourcePaymentIntentData
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: PaymentIntentData
+        in_class: payment_link
     payment_links_resource_phone_number_collection:
       description: ''
       properties:
@@ -21440,6 +21535,31 @@ components:
       x-stripeResource:
         class_name: ShippingAddressCollection
         in_class: payment_link
+    payment_links_resource_shipping_option:
+      description: ''
+      properties:
+        shipping_amount:
+          description: A non-negative integer in cents representing how much to charge.
+          type: integer
+        shipping_rate:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/shipping_rate"
+          description: The ID of the Shipping Rate to use for this shipping option.
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/shipping_rate"
+      required:
+      - shipping_amount
+      - shipping_rate
+      title: PaymentLinksResourceShippingOption
+      type: object
+      x-expandableFields:
+      - shipping_rate
+      x-stripeResource:
+        class_name: ShippingOption
+        in_class: payment_link
     payment_links_resource_subscription_data:
       description: ''
       properties:
@@ -21455,6 +21575,20 @@ components:
       x-expandableFields: []
       x-stripeResource:
         class_name: SubscriptionData
+        in_class: payment_link
+    payment_links_resource_tax_id_collection:
+      description: ''
+      properties:
+        enabled:
+          description: Indicates whether tax ID collection is enabled for the session.
+          type: boolean
+      required:
+      - enabled
+      title: PaymentLinksResourceTaxIdCollection
+      type: object
+      x-expandableFields: []
+      x-stripeResource:
+        class_name: TaxIdCollection
         in_class: payment_link
     payment_links_resource_transfer_data:
       description: ''
@@ -27865,7 +27999,7 @@ components:
         in_package: ''
     promotion_code:
       description: |-
-        A Promotion Code represents a customer-redeemable code for a coupon. It can be used to
+        A Promotion Code represents a customer-redeemable code for a [coupon](https://stripe.com/docs/api#coupons). It can be used to
         create multiple codes for a single coupon.
       properties:
         active:
@@ -29713,7 +29847,8 @@ components:
         status:
           description: Status of the refund. For credit card refunds, this can be
             `pending`, `succeeded`, or `failed`. For other types of refunds, it can
-            be `pending`, `succeeded`, `failed`, or `canceled`. Refer to our [refunds](https://stripe.com/docs/refunds#failed-refunds)
+            be `pending`, `requires_action`, `succeeded`, `failed`, or `canceled`.
+            Refer to our [refunds](https://stripe.com/docs/refunds#failed-refunds)
             documentation for more details.
           maxLength: 5000
           nullable: true
@@ -33937,6 +34072,13 @@ components:
             "$ref": "#/components/schemas/tax_rate"
           nullable: true
           type: array
+        description:
+          description: The subscription's description, meant to be displayable to
+            the customer. Use this field to optionally store an explanation of the
+            subscription for rendering in Stripe surfaces.
+          maxLength: 500
+          nullable: true
+          type: string
         discount:
           anyOf:
           - "$ref": "#/components/schemas/discount"
@@ -34144,6 +34286,7 @@ components:
       - days_until_due
       - default_payment_method
       - default_source
+      - description
       - discount
       - ended_at
       - id
@@ -35036,6 +35179,17 @@ components:
           items:
             "$ref": "#/components/schemas/subscription_schedule_configuration_item"
           type: array
+        metadata:
+          additionalProperties:
+            maxLength: 500
+            type: string
+          description: Set of [key-value pairs](https://stripe.com/docs/api/metadata)
+            that you can attach to a phase. Metadata on a schedule's phase will update
+            the underlying subscription's `metadata` when the phase is entered. Updating
+            the underlying subscription's `metadata` directly will not affect the
+            current phase's `metadata`.
+          nullable: true
+          type: object
         proration_behavior:
           description: If the subscription schedule will prorate when transitioning
             to this phase. Possible values are `create_prorations` and `none`.
@@ -35071,6 +35225,7 @@ components:
       - end_date
       - invoice_settings
       - items
+      - metadata
       - proration_behavior
       - start_date
       - transfer_data
@@ -48068,6 +48223,13 @@ paths:
                       type: array
                       x-stripeParam:
                         containee_entity_name: default_tax_rate
+                    description:
+                      description: |-
+                        The subscription's description, meant to be displayable to the customer.
+                        Use this field to optionally store an explanation of the subscription
+                        for rendering in Stripe hosted surfaces.
+                      maxLength: 500
+                      type: string
                     items:
                       description: A list of items, each with an attached plan, that
                         the customer is subscribing to. Prefer using `line_items`.
@@ -68452,7 +68614,7 @@ paths:
           description: Error response.
   "/v1/orders/{id}/reopen":
     post:
-      description: "<p>Reopens a <code>processing</code> order.</p>"
+      description: "<p>Reopens a <code>submitted</code> order.</p>"
       operationId: PostOrdersIdReopen
       parameters:
       - in: path
@@ -74797,6 +74959,9 @@ paths:
               automatic_tax:
                 explode: true
                 style: deepObject
+              consent_collection:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -74804,6 +74969,9 @@ paths:
                 explode: true
                 style: deepObject
               metadata:
+                explode: true
+                style: deepObject
+              payment_intent_data:
                 explode: true
                 style: deepObject
               payment_method_types:
@@ -74815,7 +74983,13 @@ paths:
               shipping_address_collection:
                 explode: true
                 style: deepObject
+              shipping_options:
+                explode: true
+                style: deepObject
               subscription_data:
+                explode: true
+                style: deepObject
+              tax_id_collection:
                 explode: true
                 style: deepObject
               transfer_data:
@@ -74897,6 +75071,26 @@ paths:
                   - auto
                   - required
                   type: string
+                consent_collection:
+                  description: Configure fields to gather active consent from customers.
+                  properties:
+                    promotions:
+                      description: |-
+                        If set to `auto`, enables the collection of customer consent for promotional communications. The Checkout
+                        Session will determine whether to display an option to opt into promotional communication
+                        from the merchant depending on the customer's locale. Only available to US merchants.
+                      enum:
+                      - auto
+                      type: string
+                  title: consent_collection_params
+                  type: object
+                customer_creation:
+                  description: Configures whether [checkout sessions](https://stripe.com/docs/api/checkout/sessions)
+                    created by this payment link create a [Customer](https://stripe.com/docs/api/customers).
+                  enum:
+                  - always
+                  - if_required
+                  type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -74963,6 +75157,36 @@ paths:
                 on_behalf_of:
                   description: The account on behalf of which to charge.
                   type: string
+                payment_intent_data:
+                  description: A subset of parameters to be passed to PaymentIntent
+                    creation for Checkout Sessions in `payment` mode.
+                  properties:
+                    capture_method:
+                      description: Controls when the funds will be captured from the
+                        customer's account.
+                      enum:
+                      - automatic
+                      - manual
+                      type: string
+                    setup_future_usage:
+                      description: |-
+                        Indicates that you intend to [make future payments](https://stripe.com/docs/payments/payment-intents#future-usage) with the payment method collected by this Checkout Session.
+
+                        When setting this to `on_session`, Checkout will show a notice to the customer that their payment details will be saved.
+
+                        When setting this to `off_session`, Checkout will show a notice to the customer that their payment details will be saved and used for future payments.
+
+                        If a Customer has been provided or Checkout creates a new Customer,Checkout will attach the payment method to the Customer.
+
+                        If Checkout does not create a Customer, the payment method is not attached to a Customer. To reuse the payment method, you can retrieve it from the Checkout Session's PaymentIntent.
+
+                        When processing card payments, Checkout also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as SCA.
+                      enum:
+                      - off_session
+                      - on_session
+                      type: string
+                  title: payment_intent_data_params
+                  type: object
                 payment_method_types:
                   description: The list of payment method types that customers can
                     use. Only `card` is supported. If no value is passed, Stripe will
@@ -75245,6 +75469,31 @@ paths:
                   - allowed_countries
                   title: shipping_address_collection_params
                   type: object
+                shipping_options:
+                  description: The shipping rate options to apply to [checkout sessions](https://stripe.com/docs/api/checkout/sessions)
+                    created by this payment link.
+                  items:
+                    properties:
+                      shipping_rate:
+                        description: The ID of the Shipping Rate to use for this shipping
+                          option.
+                        maxLength: 5000
+                        type: string
+                    title: shipping_option_params
+                    type: object
+                  type: array
+                  x-stripeParam:
+                    containee_entity_name: shipping_option
+                submit_type:
+                  description: Describes the type of transaction being performed in
+                    order to customize relevant text on the page, such as the submit
+                    button.
+                  enum:
+                  - auto
+                  - book
+                  - donate
+                  - pay
+                  type: string
                 subscription_data:
                   description: When creating a subscription, the specified configuration
                     data will be used. There must be at least one line item with a
@@ -75256,6 +75505,16 @@ paths:
                         to be at least 1.
                       type: integer
                   title: subscription_data_params
+                  type: object
+                tax_id_collection:
+                  description: Controls tax ID collection during checkout.
+                  properties:
+                    enabled:
+                      description: Set to `true` to enable tax ID collection.
+                      type: boolean
+                  required:
+                  - enabled
+                  title: tax_id_collection_params
                   type: object
                 transfer_data:
                   description: The account (if any) the payments will be attributed
@@ -75442,6 +75701,13 @@ paths:
                   enum:
                   - auto
                   - required
+                  type: string
+                customer_creation:
+                  description: Configures whether [checkout sessions](https://stripe.com/docs/api/checkout/sessions)
+                    created by this payment link create a [Customer](https://stripe.com/docs/api/customers).
+                  enum:
+                  - always
+                  - if_required
                   type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
@@ -90715,6 +90981,20 @@ paths:
                           results in a phase of duration `2 * 3 months = 6 months`.
                           If set, `end_date` must not be set.
                         type: integer
+                      metadata:
+                        additionalProperties:
+                          type: string
+                        description: Set of [key-value pairs](https://stripe.com/docs/api/metadata)
+                          that you can attach to a phase. Metadata on a schedule's
+                          phase will update the underlying subscription's `metadata`
+                          when the phase is entered, adding new keys and replacing
+                          existing keys in the subscription's `metadata`. Individual
+                          keys in the subscription's `metadata` can be unset by posting
+                          an empty value to them in the phase's `metadata`. To unset
+                          all keys in the subscription's `metadata`, update the subscription
+                          directly or unset every key individually from the phase's
+                          `metadata`.
+                        type: object
                       proration_behavior:
                         description: If a subscription schedule will create prorations
                           when transitioning to this phase. Possible values are `create_prorations`
@@ -91331,6 +91611,20 @@ paths:
                           results in a phase of duration `2 * 3 months = 6 months`.
                           If set, `end_date` must not be set.
                         type: integer
+                      metadata:
+                        additionalProperties:
+                          type: string
+                        description: Set of [key-value pairs](https://stripe.com/docs/api/metadata)
+                          that you can attach to a phase. Metadata on a schedule's
+                          phase will update the underlying subscription's `metadata`
+                          when the phase is entered, adding new keys and replacing
+                          existing keys in the subscription's `metadata`. Individual
+                          keys in the subscription's `metadata` can be unset by posting
+                          an empty value to them in the phase's `metadata`. To unset
+                          all keys in the subscription's `metadata`, update the subscription
+                          directly or unset every key individually from the phase's
+                          `metadata`.
+                        type: object
                       proration_behavior:
                         description: If a subscription schedule will create prorations
                           when transitioning to this phase. Possible values are `create_prorations`
@@ -92004,6 +92298,12 @@ paths:
                   description: The tax rates that will apply to any subscription item
                     that does not have `tax_rates` set. Invoices created will have
                     their `default_tax_rates` populated from the subscription.
+                description:
+                  description: The subscription's description, meant to be displayable
+                    to the customer. Use this field to optionally store an explanation
+                    of the subscription for rendering in Stripe surfaces.
+                  maxLength: 500
+                  type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -92965,6 +93265,12 @@ paths:
                     that does not have `tax_rates` set. Invoices created will have
                     their `default_tax_rates` populated from the subscription. Pass
                     an empty string to remove previously-defined tax rates.
+                description:
+                  description: The subscription's description, meant to be displayable
+                    to the customer. Use this field to optionally store an explanation
+                    of the subscription for rendering in Stripe surfaces.
+                  maxLength: 500
+                  type: string
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -98996,6 +99302,7 @@ paths:
                     - balance.available
                     - billing_portal.configuration.created
                     - billing_portal.configuration.updated
+                    - billing_portal.session.created
                     - capability.updated
                     - cash_balance.funds_available
                     - charge.captured
@@ -99351,6 +99658,7 @@ paths:
                     - balance.available
                     - billing_portal.configuration.created
                     - billing_portal.configuration.updated
+                    - billing_portal.session.created
                     - capability.updated
                     - cash_balance.funds_available
                     - charge.captured
