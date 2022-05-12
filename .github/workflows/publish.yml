@@ -13,11 +13,24 @@ jobs:
         token: ${{ secrets.BOT_USER_PERSONAL_ACCESS_TOKEN }}
         repository: pakrym-stripe/stripe-mock
         path: stripe-mock
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.BOT_USER_PERSONAL_ACCESS_TOKEN }}
+        repository: pakrym-stripe/stripe-cli
+        path: stripe-cli
+
+    - run: |
+        rm -f ./api/openapi-spec/spec3.sdk.json 
+        cp ../openapi/spec3.json ./api/openapi-spec/spec3.sdk.json 
+        go generate ./...
+      working-directory: ./stripe-cli
+
     - run: |
         rm -f ./stripe-mock/openapi/spec3.json
         rm -f ./stripe-mock/openapi/fixtures3.json
         cp openapi/spec3.json stripe-mock/openapi/spec3.json
         cp openapi/fixtures3.json stripe-mock/openapi/fixtures3.json
+
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v4
       with:
@@ -27,5 +40,17 @@ jobs:
         branch: update-openapi
         token: ${{ secrets.BOT_USER_PERSONAL_ACCESS_TOKEN }}
         push-to-fork: pakrym-stripe-bot/stripe-mock
+        delete-branch: true
+        commit-message: Update OpenAPI for ${{ github.sha }}
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v4
+      with:
+        path: stripe-cli
+        title: OpenAPI Update
+        body: Automated OpenAPI update for https://github.com/stripe/openapi/commit/${{ github.sha }}
+        branch: update-openapi
+        token: ${{ secrets.BOT_USER_PERSONAL_ACCESS_TOKEN }}
+        push-to-fork: pakrym-stripe-bot/stripe-cli
         delete-branch: true
         commit-message: Update OpenAPI for ${{ github.sha }}
