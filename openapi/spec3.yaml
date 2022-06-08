@@ -8060,11 +8060,20 @@ components:
       description: FinancialAddresses contain identifying information that resolves
         to a FinancialAccount.
       properties:
+        iban:
+          "$ref": "#/components/schemas/funding_instructions_bank_transfer_iban_record"
+        sort_code:
+          "$ref": "#/components/schemas/funding_instructions_bank_transfer_sort_code_record"
+        spei:
+          "$ref": "#/components/schemas/funding_instructions_bank_transfer_spei_record"
         supported_networks:
           description: The payment networks supported by this FinancialAddress
           items:
             enum:
+            - bacs
+            - fps
             - sepa
+            - spei
             - zengin
             type: string
             x-stripeBypassValidation: true
@@ -8073,6 +8082,8 @@ components:
           description: The type of financial address
           enum:
           - iban
+          - sort_code
+          - spei
           - zengin
           type: string
           x-stripeBypassValidation: true
@@ -8083,7 +8094,82 @@ components:
       title: FundingInstructionsBankTransferFinancialAddress
       type: object
       x-expandableFields:
+      - iban
+      - sort_code
+      - spei
       - zengin
+    funding_instructions_bank_transfer_iban_record:
+      description: Iban Records contain E.U. bank account details per the SEPA format.
+      properties:
+        account_holder_name:
+          description: The name of the person or business that owns the bank account
+          maxLength: 5000
+          type: string
+        bic:
+          description: The BIC/SWIFT code of the account.
+          maxLength: 5000
+          type: string
+        country:
+          description: Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).
+          maxLength: 5000
+          type: string
+        iban:
+          description: The IBAN of the account.
+          maxLength: 5000
+          type: string
+      required:
+      - account_holder_name
+      - bic
+      - country
+      - iban
+      title: FundingInstructionsBankTransferIbanRecord
+      type: object
+      x-expandableFields: []
+    funding_instructions_bank_transfer_sort_code_record:
+      description: Sort Code Records contain U.K. bank account details per the sort
+        code format.
+      properties:
+        account_holder_name:
+          description: The name of the person or business that owns the bank account
+          maxLength: 5000
+          type: string
+        account_number:
+          description: The account number
+          maxLength: 5000
+          type: string
+        sort_code:
+          description: The six-digit sort code
+          maxLength: 5000
+          type: string
+      required:
+      - account_holder_name
+      - account_number
+      - sort_code
+      title: FundingInstructionsBankTransferSortCodeRecord
+      type: object
+      x-expandableFields: []
+    funding_instructions_bank_transfer_spei_record:
+      description: SPEI Records contain Mexico bank account details per the SPEI format.
+      properties:
+        bank_code:
+          description: The three-digit bank code
+          maxLength: 5000
+          type: string
+        bank_name:
+          description: The short banking institution name
+          maxLength: 5000
+          type: string
+        clabe:
+          description: The CLABE number
+          maxLength: 5000
+          type: string
+      required:
+      - bank_code
+      - bank_name
+      - clabe
+      title: FundingInstructionsBankTransferSpeiRecord
+      type: object
+      x-expandableFields: []
     funding_instructions_bank_transfer_zengin_record:
       description: Zengin Records contain Japan bank account details per the Zengin
         format.
@@ -9720,12 +9806,34 @@ components:
     invoice_payment_method_options_customer_balance_bank_transfer:
       description: ''
       properties:
+        eu_bank_transfer:
+          "$ref": "#/components/schemas/invoice_payment_method_options_customer_balance_bank_transfer_eu_bank_transfer"
         type:
           description: 'The bank transfer type that can be used for funding. Permitted
-            values include: `jp_bank_transfer`.'
+            values include: `eu_bank_transfer`, `gb_bank_transfer`, `jp_bank_transfer`,
+            or `mx_bank_transfer`.'
           nullable: true
           type: string
       title: invoice_payment_method_options_customer_balance_bank_transfer
+      type: object
+      x-expandableFields:
+      - eu_bank_transfer
+    invoice_payment_method_options_customer_balance_bank_transfer_eu_bank_transfer:
+      description: ''
+      properties:
+        country:
+          description: 'The desired country code of the bank account information.
+            Permitted values include: `DE`, `ES`, `FR`, `IE`, or `NL`.'
+          enum:
+          - DE
+          - ES
+          - FR
+          - IE
+          - NL
+          type: string
+      required:
+      - country
+      title: invoice_payment_method_options_customer_balance_bank_transfer_eu_bank_transfer
       type: object
       x-expandableFields: []
     invoice_payment_method_options_konbini:
@@ -16697,7 +16805,10 @@ components:
         type:
           description: Type of bank transfer
           enum:
+          - eu_bank_transfer
+          - gb_bank_transfer
           - jp_bank_transfer
+          - mx_bank_transfer
           type: string
           x-stripeBypassValidation: true
       required:
@@ -20658,26 +20769,55 @@ components:
     payment_method_options_customer_balance_bank_transfer:
       description: ''
       properties:
+        eu_bank_transfer:
+          "$ref": "#/components/schemas/payment_method_options_customer_balance_eu_bank_account"
         requested_address_types:
           description: |-
             List of address types that should be returned in the financial_addresses response. If not specified, all valid types will be returned.
 
-            Permitted values include: `zengin`.
+            Permitted values include: `sort_code`, `zengin`, `iban`, or `spei`.
           items:
             enum:
+            - iban
+            - sepa
+            - sort_code
+            - spei
             - zengin
             type: string
             x-stripeBypassValidation: true
           type: array
         type:
           description: 'The bank transfer type that this PaymentIntent is allowed
-            to use for funding Permitted values include: `jp_bank_transfer`.'
+            to use for funding Permitted values include: `eu_bank_transfer`, `gb_bank_transfer`,
+            `jp_bank_transfer`, or `mx_bank_transfer`.'
           enum:
+          - eu_bank_transfer
+          - gb_bank_transfer
           - jp_bank_transfer
+          - mx_bank_transfer
           nullable: true
           type: string
           x-stripeBypassValidation: true
       title: payment_method_options_customer_balance_bank_transfer
+      type: object
+      x-expandableFields:
+      - eu_bank_transfer
+    payment_method_options_customer_balance_eu_bank_account:
+      description: ''
+      properties:
+        country:
+          description: 'The desired country code of the bank account information.
+            Permitted values include: `DE`, `ES`, `FR`, `IE`, or `NL`.'
+          enum:
+          - DE
+          - ES
+          - FR
+          - IE
+          - NL
+          type: string
+      required:
+      - country
+      title: payment_method_options_customer_balance_eu_bank_account
       type: object
       x-expandableFields: []
     payment_method_options_fpx:
@@ -50862,16 +51002,31 @@ paths:
                 bank_transfer:
                   description: Additional parameters for `bank_transfer` funding types
                   properties:
+                    eu_bank_transfer:
+                      properties:
+                        country:
+                          maxLength: 5000
+                          type: string
+                      required:
+                      - country
+                      title: eu_bank_account_params
+                      type: object
                     requested_address_types:
                       items:
                         enum:
+                        - iban
+                        - sort_code
+                        - spei
                         - zengin
                         type: string
                         x-stripeBypassValidation: true
                       type: array
                     type:
                       enum:
+                      - eu_bank_transfer
+                      - gb_bank_transfer
                       - jp_bank_transfer
+                      - mx_bank_transfer
                       type: string
                       x-stripeBypassValidation: true
                   required:
@@ -51051,11 +51206,10 @@ paths:
           description: Error response.
   "/v1/customers/{customer}/payment_methods/{payment_method}":
     get:
-      description: "<p>Retrieves a PaymentMethod object.</p>"
+      description: "<p>Retrieves a PaymentMethod object for a given Customer.</p>"
       operationId: GetCustomersCustomerPaymentMethodsPaymentMethod
       parameters:
-      - description: The ID of the customer whose PaymentMethod will be retrieved.
-        in: path
+      - in: path
         name: customer
         required: true
         schema:
@@ -52215,6 +52369,15 @@ paths:
                           - properties:
                               bank_transfer:
                                 properties:
+                                  eu_bank_transfer:
+                                    properties:
+                                      country:
+                                        maxLength: 5000
+                                        type: string
+                                    required:
+                                    - country
+                                    title: eu_bank_transfer_param
+                                    type: object
                                   type:
                                     type: string
                                 title: bank_transfer_param
@@ -52965,6 +53128,15 @@ paths:
                           - properties:
                               bank_transfer:
                                 properties:
+                                  eu_bank_transfer:
+                                    properties:
+                                      country:
+                                        maxLength: 5000
+                                        type: string
+                                    required:
+                                    - country
+                                    title: eu_bank_transfer_param
+                                    type: object
                                   type:
                                     type: string
                                 title: bank_transfer_param
@@ -57195,6 +57367,15 @@ paths:
                           - properties:
                               bank_transfer:
                                 properties:
+                                  eu_bank_transfer:
+                                    properties:
+                                      country:
+                                        maxLength: 5000
+                                        type: string
+                                    required:
+                                    - country
+                                    title: eu_bank_transfer_param
+                                    type: object
                                   type:
                                     type: string
                                 title: bank_transfer_param
@@ -59070,6 +59251,15 @@ paths:
                           - properties:
                               bank_transfer:
                                 properties:
+                                  eu_bank_transfer:
+                                    properties:
+                                      country:
+                                        maxLength: 5000
+                                        type: string
+                                    required:
+                                    - country
+                                    title: eu_bank_transfer_param
+                                    type: object
                                   type:
                                     type: string
                                 title: bank_transfer_param
@@ -67146,16 +67336,32 @@ paths:
                               properties:
                                 bank_transfer:
                                   properties:
+                                    eu_bank_transfer:
+                                      properties:
+                                        country:
+                                          maxLength: 5000
+                                          type: string
+                                      required:
+                                      - country
+                                      title: eu_bank_transfer_params
+                                      type: object
                                     requested_address_types:
                                       items:
                                         enum:
+                                        - iban
+                                        - sepa
+                                        - sort_code
+                                        - spei
                                         - zengin
                                         type: string
                                         x-stripeBypassValidation: true
                                       type: array
                                     type:
                                       enum:
+                                      - eu_bank_transfer
+                                      - gb_bank_transfer
                                       - jp_bank_transfer
+                                      - mx_bank_transfer
                                       type: string
                                       x-stripeBypassValidation: true
                                   required:
@@ -68004,16 +68210,32 @@ paths:
                               - properties:
                                   bank_transfer:
                                     properties:
+                                      eu_bank_transfer:
+                                        properties:
+                                          country:
+                                            maxLength: 5000
+                                            type: string
+                                        required:
+                                        - country
+                                        title: eu_bank_transfer_params
+                                        type: object
                                       requested_address_types:
                                         items:
                                           enum:
+                                          - iban
+                                          - sepa
+                                          - sort_code
+                                          - spei
                                           - zengin
                                           type: string
                                           x-stripeBypassValidation: true
                                         type: array
                                       type:
                                         enum:
+                                        - eu_bank_transfer
+                                        - gb_bank_transfer
                                         - jp_bank_transfer
+                                        - mx_bank_transfer
                                         type: string
                                         x-stripeBypassValidation: true
                                     required:
@@ -69762,16 +69984,32 @@ paths:
                       - properties:
                           bank_transfer:
                             properties:
+                              eu_bank_transfer:
+                                properties:
+                                  country:
+                                    maxLength: 5000
+                                    type: string
+                                required:
+                                - country
+                                title: eu_bank_transfer_params
+                                type: object
                               requested_address_types:
                                 items:
                                   enum:
+                                  - iban
+                                  - sepa
+                                  - sort_code
+                                  - spei
                                   - zengin
                                   type: string
                                   x-stripeBypassValidation: true
                                 type: array
                               type:
                                 enum:
+                                - eu_bank_transfer
+                                - gb_bank_transfer
                                 - jp_bank_transfer
+                                - mx_bank_transfer
                                 type: string
                                 x-stripeBypassValidation: true
                             required:
@@ -71223,16 +71461,32 @@ paths:
                       - properties:
                           bank_transfer:
                             properties:
+                              eu_bank_transfer:
+                                properties:
+                                  country:
+                                    maxLength: 5000
+                                    type: string
+                                required:
+                                - country
+                                title: eu_bank_transfer_params
+                                type: object
                               requested_address_types:
                                 items:
                                   enum:
+                                  - iban
+                                  - sepa
+                                  - sort_code
+                                  - spei
                                   - zengin
                                   type: string
                                   x-stripeBypassValidation: true
                                 type: array
                               type:
                                 enum:
+                                - eu_bank_transfer
+                                - gb_bank_transfer
                                 - jp_bank_transfer
+                                - mx_bank_transfer
                                 type: string
                                 x-stripeBypassValidation: true
                             required:
@@ -72771,16 +73025,32 @@ paths:
                       - properties:
                           bank_transfer:
                             properties:
+                              eu_bank_transfer:
+                                properties:
+                                  country:
+                                    maxLength: 5000
+                                    type: string
+                                required:
+                                - country
+                                title: eu_bank_transfer_params
+                                type: object
                               requested_address_types:
                                 items:
                                   enum:
+                                  - iban
+                                  - sepa
+                                  - sort_code
+                                  - spei
                                   - zengin
                                   type: string
                                   x-stripeBypassValidation: true
                                 type: array
                               type:
                                 enum:
+                                - eu_bank_transfer
+                                - gb_bank_transfer
                                 - jp_bank_transfer
+                                - mx_bank_transfer
                                 type: string
                                 x-stripeBypassValidation: true
                             required:
@@ -74644,13 +74914,12 @@ paths:
           description: Error response.
   "/v1/payment_methods":
     get:
-      description: <p>Returns a list of PaymentMethods. For listing a customer’s payment
-        methods, you should use <a href="/docs/api/payment_methods/customer_list">List
+      description: <p>Returns a list of PaymentMethods attached to the StripeAccount.
+        For listing a customer’s payment methods, you should use <a href="/docs/api/payment_methods/customer_list">List
         a Customer’s PaymentMethods</a></p>
       operationId: GetPaymentMethods
       parameters:
       - description: The ID of the customer whose PaymentMethods will be retrieved.
-          If not provided, the response list will be empty.
         in: query
         name: customer
         required: false
@@ -75387,7 +75656,9 @@ paths:
           description: Error response.
   "/v1/payment_methods/{payment_method}":
     get:
-      description: "<p>Retrieves a PaymentMethod object.</p>"
+      description: <p>Retrieves a PaymentMethod object attached to the StripeAccount.
+        To retrieve a payment method attached to a Customer, you should use <a href="/docs/api/payment_methods/customer">Retrieve
+        a Customer’s PaymentMethods</a></p>
       operationId: GetPaymentMethodsPaymentMethod
       parameters:
       - description: Specifies which fields in the response should be expanded.
@@ -89242,6 +89513,15 @@ paths:
                           - properties:
                               bank_transfer:
                                 properties:
+                                  eu_bank_transfer:
+                                    properties:
+                                      country:
+                                        maxLength: 5000
+                                        type: string
+                                    required:
+                                    - country
+                                    title: eu_bank_transfer_param
+                                    type: object
                                   type:
                                     type: string
                                 title: bank_transfer_param
@@ -90079,6 +90359,15 @@ paths:
                           - properties:
                               bank_transfer:
                                 properties:
+                                  eu_bank_transfer:
+                                    properties:
+                                      country:
+                                        maxLength: 5000
+                                        type: string
+                                    required:
+                                    - country
+                                    title: eu_bank_transfer_param
+                                    type: object
                                   type:
                                     type: string
                                 title: bank_transfer_param
