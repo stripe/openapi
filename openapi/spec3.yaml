@@ -1342,6 +1342,8 @@ components:
           "$ref": "#/components/schemas/account_payout_settings"
         sepa_debit_payments:
           "$ref": "#/components/schemas/account_sepa_debit_payments_settings"
+        treasury:
+          "$ref": "#/components/schemas/account_treasury_settings"
       required:
       - branding
       - card_payments
@@ -1358,6 +1360,29 @@ components:
       - payments
       - payouts
       - sepa_debit_payments
+      - treasury
+    account_terms_of_service:
+      description: ''
+      properties:
+        date:
+          description: The Unix timestamp marking when the account representative
+            accepted the service agreement.
+          nullable: true
+          type: integer
+        ip:
+          description: The IP address from which the account representative accepted
+            the service agreement.
+          maxLength: 5000
+          nullable: true
+          type: string
+        user_agent:
+          description: The user agent of the browser from which the account representative
+            accepted the service agreement.
+          maxLength: 5000
+          type: string
+      title: AccountTermsOfService
+      type: object
+      x-expandableFields: []
     account_tos_acceptance:
       description: ''
       properties:
@@ -1386,6 +1411,15 @@ components:
       title: AccountTOSAcceptance
       type: object
       x-expandableFields: []
+    account_treasury_settings:
+      description: ''
+      properties:
+        tos_acceptance:
+          "$ref": "#/components/schemas/account_terms_of_service"
+      title: AccountTreasurySettings
+      type: object
+      x-expandableFields:
+      - tos_acceptance
     account_unification_account_controller:
       description: ''
       properties:
@@ -5303,6 +5337,25 @@ components:
       type: object
       x-expandableFields:
       - tax_rate
+    custom_unit_amount:
+      description: ''
+      properties:
+        maximum:
+          description: The maximum unit amount the customer can specify for this item.
+          nullable: true
+          type: integer
+        minimum:
+          description: The minimum unit amount the customer can specify for this item.
+            Must be at least the minimum charge amount.
+          nullable: true
+          type: integer
+        preset:
+          description: The starting unit amount which can be updated by the customer.
+          nullable: true
+          type: integer
+      title: CustomUnitAmount
+      type: object
+      x-expandableFields: []
     customer:
       description: |-
         This object represents a customer of your business. It lets you create recurring charges and track payments that belong to the same customer.
@@ -22844,6 +22897,12 @@ components:
           description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
             in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
           type: string
+        custom_unit_amount:
+          anyOf:
+          - "$ref": "#/components/schemas/custom_unit_amount"
+          description: When set, provides configuration for the amount to be adjusted
+            by the customer during Checkout Sessions and Payment Links.
+          nullable: true
         id:
           description: Unique identifier for the object.
           maxLength: 5000
@@ -22959,6 +23018,7 @@ components:
       title: Price
       type: object
       x-expandableFields:
+      - custom_unit_amount
       - product
       - recurring
       - tiers
@@ -33100,6 +33160,22 @@ paths:
                           type: string
                       title: payout_settings_specs
                       type: object
+                    treasury:
+                      properties:
+                        tos_acceptance:
+                          properties:
+                            date:
+                              format: unix-time
+                              type: integer
+                            ip:
+                              type: string
+                            user_agent:
+                              maxLength: 5000
+                              type: string
+                          title: settings_terms_of_service_specs
+                          type: object
+                      title: treasury_settings_specs
+                      type: object
                   title: settings_specs_update
                   type: object
                 tos_acceptance:
@@ -37082,6 +37158,22 @@ paths:
                           type: string
                       title: payout_settings_specs
                       type: object
+                    treasury:
+                      properties:
+                        tos_acceptance:
+                          properties:
+                            date:
+                              format: unix-time
+                              type: integer
+                            ip:
+                              type: string
+                            user_agent:
+                              maxLength: 5000
+                              type: string
+                          title: settings_terms_of_service_specs
+                          type: object
+                      title: treasury_settings_specs
+                      type: object
                   title: settings_specs
                   type: object
                 tos_acceptance:
@@ -38140,6 +38232,22 @@ paths:
                           maxLength: 22
                           type: string
                       title: payout_settings_specs
+                      type: object
+                    treasury:
+                      properties:
+                        tos_acceptance:
+                          properties:
+                            date:
+                              format: unix-time
+                              type: integer
+                            ip:
+                              type: string
+                            user_agent:
+                              maxLength: 5000
+                              type: string
+                          title: settings_terms_of_service_specs
+                          type: object
+                      title: treasury_settings_specs
                       type: object
                   title: settings_specs_update
                   type: object
@@ -48579,6 +48687,16 @@ paths:
                     footer:
                       maxLength: 5000
                       type: string
+                    rendering_options:
+                      properties:
+                        amount_tax_display:
+                          enum:
+                          - ''
+                          - exclude_tax
+                          - include_inclusive_tax
+                          type: string
+                      title: rendering_options_param
+                      type: object
                   title: customer_param
                   type: object
                 metadata:
@@ -49221,6 +49339,16 @@ paths:
                     footer:
                       maxLength: 5000
                       type: string
+                    rendering_options:
+                      properties:
+                        amount_tax_display:
+                          enum:
+                          - ''
+                          - exclude_tax
+                          - include_inclusive_tax
+                          type: string
+                      title: rendering_options_param
+                      type: object
                   title: customer_param
                   type: object
                 metadata:
@@ -77144,6 +77272,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              custom_unit_amount:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -77186,6 +77317,23 @@ paths:
                   description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
                     in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
                   type: string
+                custom_unit_amount:
+                  description: When set, provides configuration for the amount to
+                    be adjusted by the customer during Checkout Sessions and Payment
+                    Links.
+                  properties:
+                    enabled:
+                      type: boolean
+                    maximum:
+                      type: integer
+                    minimum:
+                      type: integer
+                    preset:
+                      type: integer
+                  required:
+                  - enabled
+                  title: custom_unit_amount
+                  type: object
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
