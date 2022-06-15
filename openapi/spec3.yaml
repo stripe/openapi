@@ -702,6 +702,24 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        statement_descriptor_prefix_kana:
+          description: The Kana variation of the default text that appears on credit
+            card statements when a charge is made (Japan only). This field prefixes
+            any dynamic `statement_descriptor_suffix_kana` specified on the charge.
+            `statement_descriptor_prefix_kana` is useful for maximizing descriptor
+            space for the dynamic portion.
+          maxLength: 5000
+          nullable: true
+          type: string
+        statement_descriptor_prefix_kanji:
+          description: The Kanji variation of the default text that appears on credit
+            card statements when a charge is made (Japan only). This field prefixes
+            any dynamic `statement_descriptor_suffix_kanji` specified on the charge.
+            `statement_descriptor_prefix_kanji` is useful for maximizing descriptor
+            space for the dynamic portion.
+          maxLength: 5000
+          nullable: true
+          type: string
       title: AccountCardPaymentsSettings
       type: object
       x-expandableFields:
@@ -873,6 +891,24 @@ components:
         statement_descriptor_kanji:
           description: The Kanji variation of the default text that appears on credit
             card statements when a charge is made (Japan only)
+          maxLength: 5000
+          nullable: true
+          type: string
+        statement_descriptor_prefix_kana:
+          description: The Kana variation of the default text that appears on credit
+            card statements when a charge is made (Japan only). This field prefixes
+            any dynamic `statement_descriptor_suffix_kana` specified on the charge.
+            `statement_descriptor_prefix_kana` is useful for maximizing descriptor
+            space for the dynamic portion.
+          maxLength: 5000
+          nullable: true
+          type: string
+        statement_descriptor_prefix_kanji:
+          description: The Kanji variation of the default text that appears on credit
+            card statements when a charge is made (Japan only). This field prefixes
+            any dynamic `statement_descriptor_suffix_kanji` specified on the charge.
+            `statement_descriptor_prefix_kanji` is useful for maximizing descriptor
+            space for the dynamic portion.
           maxLength: 5000
           nullable: true
           type: string
@@ -4423,6 +4459,24 @@ components:
           - off_session
           - on_session
           type: string
+        statement_descriptor_suffix_kana:
+          description: Provides information about a card payment that customers see
+            on their statements. Concatenated with the Kana prefix (shortened Kana
+            descriptor) or Kana statement descriptor that’s set on the account to
+            form the complete statement descriptor. Maximum 22 characters. On card
+            statements, the *concatenation* of both prefix and suffix (including separators)
+            will appear truncated to 22 characters.
+          maxLength: 5000
+          type: string
+        statement_descriptor_suffix_kanji:
+          description: Provides information about a card payment that customers see
+            on their statements. Concatenated with the Kanji prefix (shortened Kanji
+            descriptor) or Kanji statement descriptor that’s set on the account to
+            form the complete statement descriptor. Maximum 17 characters. On card
+            statements, the *concatenation* of both prefix and suffix (including separators)
+            will appear truncated to 17 characters.
+          maxLength: 5000
+          type: string
       title: CheckoutCardPaymentMethodOptions
       type: object
       x-expandableFields: []
@@ -5165,7 +5219,7 @@ components:
           type: string
         subtotal:
           description: The integer amount in %s representing the amount of the credit
-            note, excluding tax and invoice level discounts.
+            note, excluding exclusive tax and invoice level discounts.
           type: integer
         tax_amounts:
           description: The aggregate amounts calculated per tax rate for all line
@@ -5176,6 +5230,11 @@ components:
         total:
           description: The integer amount in %s representing the total amount of the
             credit note, including tax and all discount.
+          type: integer
+        total_excluding_tax:
+          description: The integer amount in %s representing the total amount of the
+            credit note, excluding tax, but including discounts.
+          nullable: true
           type: integer
         type:
           description: Type of this credit note, one of `pre_payment` or `post_payment`.
@@ -9044,7 +9103,20 @@ components:
       title: InboundTransfersResourceFailureDetails
       type: object
       x-expandableFields: []
-    inbound_transfers_resource_inbound_transfer_resource_status_transitions:
+    inbound_transfers_resource_treasury_inbound_transfer_resource_linked_flows:
+      description: ''
+      properties:
+        received_debit:
+          description: If funds for this flow were returned after the flow went to
+            the `succeeded` state, this field contains a reference to the ReceivedDebit
+            return.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: InboundTransfersResourceTreasuryInboundTransferResourceLinkedFlows
+      type: object
+      x-expandableFields: []
+    inbound_transfers_resource_treasury_inbound_transfer_resource_status_transitions:
       description: ''
       properties:
         canceled_at:
@@ -9065,20 +9137,7 @@ components:
           format: unix-time
           nullable: true
           type: integer
-      title: InboundTransfersResourceInboundTransferResourceStatusTransitions
-      type: object
-      x-expandableFields: []
-    inbound_transfers_resource_treasury_inbound_transfer_resource_linked_flows:
-      description: ''
-      properties:
-        received_debit:
-          description: If funds for this flow were returned after the flow went to
-            the `succeeded` state, this field contains a reference to the ReceivedDebit
-            return.
-          maxLength: 5000
-          nullable: true
-          type: string
-      title: InboundTransfersResourceTreasuryInboundTransferResourceLinkedFlows
+      title: InboundTransfersResourceTreasuryInboundTransferResourceStatusTransitions
       type: object
       x-expandableFields: []
     invoice:
@@ -9561,6 +9620,11 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        rendering_options:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_setting_rendering_options"
+          description: Options for invoice PDF rendering.
+          nullable: true
         starting_balance:
           description: Starting customer balance before the invoice is finalized.
             If the invoice has not been finalized yet, this will be the current customer
@@ -9602,8 +9666,8 @@ components:
           type: integer
         subtotal:
           description: Total of all subscriptions, invoice items, and prorations on
-            the invoice before any invoice level discount or tax is applied. Item
-            discounts are already incorporated
+            the invoice before any invoice level discount or exclusive tax is applied.
+            Item discounts are already incorporated
           type: integer
         tax:
           description: The amount of tax on this invoice. This is the sum of all the
@@ -9703,6 +9767,7 @@ components:
       - payment_intent
       - payment_settings
       - quote
+      - rendering_options
       - status_transitions
       - subscription
       - test_clock
@@ -9973,11 +10038,17 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        rendering_options:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_setting_rendering_options"
+          description: Default options for invoice PDF rendering for this customer.
+          nullable: true
       title: InvoiceSettingCustomerSetting
       type: object
       x-expandableFields:
       - custom_fields
       - default_payment_method
+      - rendering_options
     invoice_setting_quote_setting:
       description: ''
       properties:
@@ -9987,6 +10058,18 @@ components:
           nullable: true
           type: integer
       title: InvoiceSettingQuoteSetting
+      type: object
+      x-expandableFields: []
+    invoice_setting_rendering_options:
+      description: ''
+      properties:
+        amount_tax_display:
+          description: How line-item prices and amounts will be displayed with respect
+            to tax on invoice PDFs.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: InvoiceSettingRenderingOptions
       type: object
       x-expandableFields: []
     invoice_setting_subscription_schedule_setting:
@@ -17411,6 +17494,24 @@ components:
           - none
           - off_session
           - on_session
+          type: string
+        statement_descriptor_suffix_kana:
+          description: Provides information about a card payment that customers see
+            on their statements. Concatenated with the Kana prefix (shortened Kana
+            descriptor) or Kana statement descriptor that’s set on the account to
+            form the complete statement descriptor. Maximum 22 characters. On card
+            statements, the *concatenation* of both prefix and suffix (including separators)
+            will appear truncated to 22 characters.
+          maxLength: 5000
+          type: string
+        statement_descriptor_suffix_kanji:
+          description: Provides information about a card payment that customers see
+            on their statements. Concatenated with the Kanji prefix (shortened Kanji
+            descriptor) or Kanji statement descriptor that’s set on the account to
+            form the complete statement descriptor. Maximum 17 characters. On card
+            statements, the *concatenation* of both prefix and suffix (including separators)
+            will appear truncated to 17 characters.
+          maxLength: 5000
           type: string
       title: payment_intent_payment_method_options_card
       type: object
@@ -30541,8 +30642,9 @@ components:
           maxLength: 5000
           type: string
         hosted_regulatory_receipt_url:
-          description: A hosted transaction receipt URL that is provided when money
-            movement is considered regulated under Stripe's money transmission licenses.
+          description: A [hosted transaction receipt](https://stripe.com/docs/treasury/moving-money/regulatory-receipts)
+            URL that is provided when money movement is considered regulated under
+            Stripe's money transmission licenses.
           maxLength: 5000
           nullable: true
           type: string
@@ -30633,8 +30735,9 @@ components:
           nullable: true
           type: string
         hosted_regulatory_receipt_url:
-          description: A hosted transaction receipt URL that is provided when money
-            movement is considered regulated under Stripe's money transmission licenses.
+          description: A [hosted transaction receipt](https://stripe.com/docs/treasury/moving-money/regulatory-receipts)
+            URL that is provided when money movement is considered regulated under
+            Stripe's money transmission licenses.
           maxLength: 5000
           nullable: true
           type: string
@@ -30893,7 +30996,8 @@ components:
       - outbound_transfers
       x-resourceId: treasury.financial_account_features
     treasury.inbound_transfer:
-      description: Use InboundTransfers to add funds to your [FinancialAccount](https://stripe.com/docs/api#financial_accounts)
+      description: Use [InboundTransfers](https://stripe.com/docs/treasury/moving-money/financial-accounts/into/inbound-transfers)
+        to add funds to your [FinancialAccount](https://stripe.com/docs/api#financial_accounts)
         via a PaymentMethod that is owned by you. The funds will be transferred via
         an ACH debit.
       properties:
@@ -30929,8 +31033,9 @@ components:
           maxLength: 5000
           type: string
         hosted_regulatory_receipt_url:
-          description: A hosted transaction receipt URL that is provided when money
-            movement is considered regulated under Stripe's money transmission licenses.
+          description: A [hosted transaction receipt](https://stripe.com/docs/treasury/moving-money/regulatory-receipts)
+            URL that is provided when money movement is considered regulated under
+            Stripe's money transmission licenses.
           maxLength: 5000
           nullable: true
           type: string
@@ -30990,7 +31095,7 @@ components:
           - succeeded
           type: string
         status_transitions:
-          "$ref": "#/components/schemas/inbound_transfers_resource_inbound_transfer_resource_status_transitions"
+          "$ref": "#/components/schemas/inbound_transfers_resource_treasury_inbound_transfer_resource_status_transitions"
         transaction:
           anyOf:
           - maxLength: 5000
@@ -31047,7 +31152,8 @@ components:
             in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
           type: string
         customer:
-          description: ID of the customer to whom an OutboundPayment is sent.
+          description: ID of the [customer](https://stripe.com/docs/api/customers)
+            to whom an OutboundPayment is sent.
           maxLength: 5000
           nullable: true
           type: string
@@ -31083,8 +31189,9 @@ components:
           maxLength: 5000
           type: string
         hosted_regulatory_receipt_url:
-          description: A hosted transaction receipt URL that is provided when money
-            movement is considered regulated under Stripe's money transmission licenses.
+          description: A [hosted transaction receipt](https://stripe.com/docs/treasury/moving-money/regulatory-receipts)
+            URL that is provided when money movement is considered regulated under
+            Stripe's money transmission licenses.
           maxLength: 5000
           nullable: true
           type: string
@@ -31214,8 +31321,9 @@ components:
           maxLength: 5000
           type: string
         hosted_regulatory_receipt_url:
-          description: A hosted transaction receipt URL that is provided when money
-            movement is considered regulated under Stripe's money transmission licenses.
+          description: A [hosted transaction receipt](https://stripe.com/docs/treasury/moving-money/regulatory-receipts)
+            URL that is provided when money movement is considered regulated under
+            Stripe's money transmission licenses.
           maxLength: 5000
           nullable: true
           type: string
@@ -33103,6 +33211,20 @@ paths:
                         statement_descriptor_prefix:
                           maxLength: 10
                           type: string
+                        statement_descriptor_prefix_kana:
+                          anyOf:
+                          - maxLength: 10
+                            type: string
+                          - enum:
+                            - ''
+                            type: string
+                        statement_descriptor_prefix_kanji:
+                          anyOf:
+                          - maxLength: 10
+                            type: string
+                          - enum:
+                            - ''
+                            type: string
                       title: card_payments_settings_specs
                       type: object
                     payments:
@@ -37101,6 +37223,20 @@ paths:
                         statement_descriptor_prefix:
                           maxLength: 10
                           type: string
+                        statement_descriptor_prefix_kana:
+                          anyOf:
+                          - maxLength: 10
+                            type: string
+                          - enum:
+                            - ''
+                            type: string
+                        statement_descriptor_prefix_kanji:
+                          anyOf:
+                          - maxLength: 10
+                            type: string
+                          - enum:
+                            - ''
+                            type: string
                       title: card_payments_settings_specs
                       type: object
                     payments:
@@ -38176,6 +38312,20 @@ paths:
                         statement_descriptor_prefix:
                           maxLength: 10
                           type: string
+                        statement_descriptor_prefix_kana:
+                          anyOf:
+                          - maxLength: 10
+                            type: string
+                          - enum:
+                            - ''
+                            type: string
+                        statement_descriptor_prefix_kanji:
+                          anyOf:
+                          - maxLength: 10
+                            type: string
+                          - enum:
+                            - ''
+                            type: string
                       title: card_payments_settings_specs
                       type: object
                     payments:
@@ -46114,6 +46264,12 @@ paths:
                           - off_session
                           - on_session
                           type: string
+                        statement_descriptor_suffix_kana:
+                          maxLength: 22
+                          type: string
+                        statement_descriptor_suffix_kanji:
+                          maxLength: 17
+                          type: string
                       title: payment_method_options_param
                       type: object
                     eps:
@@ -48688,15 +48844,19 @@ paths:
                       maxLength: 5000
                       type: string
                     rendering_options:
-                      properties:
-                        amount_tax_display:
-                          enum:
-                          - ''
-                          - exclude_tax
-                          - include_inclusive_tax
-                          type: string
-                      title: rendering_options_param
-                      type: object
+                      anyOf:
+                      - properties:
+                          amount_tax_display:
+                            enum:
+                            - ''
+                            - exclude_tax
+                            - include_inclusive_tax
+                            type: string
+                        title: rendering_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
                   title: customer_param
                   type: object
                 metadata:
@@ -49340,15 +49500,19 @@ paths:
                       maxLength: 5000
                       type: string
                     rendering_options:
-                      properties:
-                        amount_tax_display:
-                          enum:
-                          - ''
-                          - exclude_tax
-                          - include_inclusive_tax
-                          type: string
-                      title: rendering_options_param
-                      type: object
+                      anyOf:
+                      - properties:
+                          amount_tax_display:
+                            enum:
+                            - ''
+                            - exclude_tax
+                            - include_inclusive_tax
+                            type: string
+                        title: rendering_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
                   title: customer_param
                   type: object
                 metadata:
@@ -51100,6 +51264,79 @@ paths:
                 "$ref": "#/components/schemas/error"
           description: Error response.
   "/v1/customers/{customer}/funding_instructions":
+    get:
+      description: "<p>Retrieve all applicable funding instructions for a customer
+        cash balance.</p>"
+      operationId: GetCustomersCustomerFundingInstructions
+      parameters:
+      - in: path
+        name: customer
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      - description: Specifies which fields in the response should be expanded.
+        explode: true
+        in: query
+        name: expand
+        required: false
+        schema:
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+        style: deepObject
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: ''
+                properties:
+                  data:
+                    items:
+                      "$ref": "#/components/schemas/funding_instructions"
+                    type: array
+                  has_more:
+                    description: True if this list has another page of items after
+                      this one that can be fetched.
+                    type: boolean
+                  object:
+                    description: String representing the object's type. Objects of
+                      the same type share the same value. Always has the value `list`.
+                    enum:
+                    - list
+                    type: string
+                  url:
+                    description: The URL where this list can be accessed.
+                    maxLength: 5000
+                    pattern: "^/v1/customers/:customer/funding_instructions"
+                    type: string
+                required:
+                - data
+                - has_more
+                - object
+                - url
+                type: object
+                x-expandableFields:
+                - data
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
     post:
       description: |-
         <p>Retrieve funding instructions for a customer cash balance. If funding instructions do not yet exist for the customer, new
@@ -70090,6 +70327,20 @@ paths:
                             - off_session
                             - on_session
                             type: string
+                          statement_descriptor_suffix_kana:
+                            anyOf:
+                            - maxLength: 22
+                              type: string
+                            - enum:
+                              - ''
+                              type: string
+                          statement_descriptor_suffix_kanji:
+                            anyOf:
+                            - maxLength: 17
+                              type: string
+                            - enum:
+                              - ''
+                              type: string
                         title: payment_intent_param
                         type: object
                       - enum:
@@ -71567,6 +71818,20 @@ paths:
                             - off_session
                             - on_session
                             type: string
+                          statement_descriptor_suffix_kana:
+                            anyOf:
+                            - maxLength: 22
+                              type: string
+                            - enum:
+                              - ''
+                              type: string
+                          statement_descriptor_suffix_kanji:
+                            anyOf:
+                            - maxLength: 17
+                              type: string
+                            - enum:
+                              - ''
+                              type: string
                         title: payment_intent_param
                         type: object
                       - enum:
@@ -73131,6 +73396,20 @@ paths:
                             - off_session
                             - on_session
                             type: string
+                          statement_descriptor_suffix_kana:
+                            anyOf:
+                            - maxLength: 22
+                              type: string
+                            - enum:
+                              - ''
+                              type: string
+                          statement_descriptor_suffix_kanji:
+                            anyOf:
+                            - maxLength: 17
+                              type: string
+                            - enum:
+                              - ''
+                              type: string
                         title: payment_intent_param
                         type: object
                       - enum:
@@ -93008,6 +93287,69 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/terminal.reader"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/test_helpers/customers/{customer}/fund_cash_balance":
+    post:
+      description: "<p>Create an incoming testmode bank transfer</p>"
+      operationId: PostTestHelpersCustomersCustomerFundCashBalance
+      parameters:
+      - in: path
+        name: customer
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                amount:
+                  description: Amount intended to be collected by this PaymentIntent.
+                    A positive integer representing how much to charge in the [smallest
+                    currency unit](https://stripe.com/docs/currencies#zero-decimal)
+                    (e.g., 100 cents to charge $1.00 or 100 to charge ¥100, a zero-decimal
+                    currency). The minimum amount is $0.50 US or [equivalent in charge
+                    currency](https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts).
+                    The amount value supports up to eight digits (e.g., a value of
+                    99999999 for a USD charge of $999,999.99).
+                  type: integer
+                currency:
+                  description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                    in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                reference:
+                  maxLength: 5000
+                  type: string
+              required:
+              - amount
+              - currency
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/customer_balance_transaction"
           description: Successful response.
         default:
           content:
