@@ -463,6 +463,14 @@ components:
           - inactive
           - pending
           type: string
+        promptpay_payments:
+          description: The status of the promptpay payments capability of the account,
+            or whether the account can directly process promptpay charges.
+          enum:
+          - active
+          - inactive
+          - pending
+          type: string
         sepa_debit_payments:
           description: The status of the SEPA Direct Debits payments capability of
             the account, or whether the account can directly process SEPA Direct Debits
@@ -5221,6 +5229,11 @@ components:
           description: The integer amount in %s representing the amount of the credit
             note, excluding exclusive tax and invoice level discounts.
           type: integer
+        subtotal_excluding_tax:
+          description: The integer amount in %s representing the amount of the credit
+            note, excluding all tax and invoice level discounts.
+          nullable: true
+          type: integer
         tax_amounts:
           description: The aggregate amounts calculated per tax rate for all line
             items.
@@ -5287,6 +5300,11 @@ components:
           description: The integer amount in %s representing the gross amount being
             credited for this line item, excluding (exclusive) tax and discounts.
           type: integer
+        amount_excluding_tax:
+          description: The integer amount in %s representing the amount being credited
+            for this line item, excluding all tax and discounts.
+          nullable: true
+          type: integer
         description:
           description: Description of the item being credited.
           maxLength: 5000
@@ -5350,6 +5368,12 @@ components:
         unit_amount_decimal:
           description: Same as `unit_amount`, but contains a decimal value with at
             most 12 decimal places.
+          format: decimal
+          nullable: true
+          type: string
+        unit_amount_excluding_tax:
+          description: The amount in %s representing the unit amount being credited
+            for this line item, excluding all tax and discounts.
           format: decimal
           nullable: true
           type: string
@@ -9669,6 +9693,12 @@ components:
             the invoice before any invoice level discount or exclusive tax is applied.
             Item discounts are already incorporated
           type: integer
+        subtotal_excluding_tax:
+          description: The integer amount in %s representing the subtotal of the invoice
+            before any invoice level discount or tax is applied. Item discounts are
+            already incorporated
+          nullable: true
+          type: integer
         tax:
           description: The amount of tax on this invoice. This is the sum of all the
             tax amounts on this invoice.
@@ -9696,6 +9726,11 @@ components:
             "$ref": "#/components/schemas/discounts_resource_discount_amount"
           nullable: true
           type: array
+        total_excluding_tax:
+          description: The integer amount in %s representing the total amount of the
+            invoice including all discounts but excluding all tax.
+          nullable: true
+          type: integer
         total_tax_amounts:
           description: The aggregate amounts calculated per tax rate for all line
             items.
@@ -10445,6 +10480,7 @@ components:
             - konbini
             - link
             - paynow
+            - promptpay
             - sepa_debit
             - sofort
             - us_bank_account
@@ -14780,6 +14816,11 @@ components:
         amount:
           description: The amount, in %s.
           type: integer
+        amount_excluding_tax:
+          description: The integer amount in %s representing the amount for this line
+            item, excluding all tax and discounts.
+          nullable: true
+          type: integer
         currency:
           description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
             in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
@@ -14890,6 +14931,12 @@ components:
           enum:
           - invoiceitem
           - subscription
+          type: string
+        unit_amount_excluding_tax:
+          description: The amount in %s representing the unit amount for this line
+            item, excluding all tax and discounts.
+          format: decimal
+          nullable: true
           type: string
       required:
       - amount
@@ -15540,6 +15587,18 @@ components:
       title: orders_payment_method_options_afterpay_clearpay
       type: object
       x-expandableFields: []
+    orders_v2_resource_automatic_payment_methods:
+      description: ''
+      properties:
+        enabled:
+          description: Whether this Order has been opted into managing payment method
+            types via the [Stripe Dashboard](https://dashboard.stripe.com/settings/payment_methods).
+          type: boolean
+      required:
+      - enabled
+      title: OrdersV2ResourceAutomaticPaymentMethods
+      type: object
+      x-expandableFields: []
     orders_v2_resource_automatic_tax:
       description: ''
       properties:
@@ -15715,6 +15774,12 @@ components:
             Stripe account.
           nullable: true
           type: integer
+        automatic_payment_methods:
+          anyOf:
+          - "$ref": "#/components/schemas/orders_v2_resource_automatic_payment_methods"
+          description: Indicates whether order has been opted into using [Stripe Dashboard](https://dashboard.stripe.com/settings/payment_methods)
+            to manage payment method types.
+          nullable: true
         payment_method_options:
           anyOf:
           - "$ref": "#/components/schemas/orders_v2_resource_payment_method_options"
@@ -15722,8 +15787,9 @@ components:
             PaymentIntent.
           nullable: true
         payment_method_types:
-          description: The list of payment method types (e.g., card) to provide to
-            the order's PaymentIntent.
+          description: The list of [payment method types](https://stripe.com/docs/payments/payment-methods/overview)
+            to provide to the order's PaymentIntent. Do not include this attribute
+            if you prefer to manage your payment methods from the [Stripe Dashboard](https://dashboard.stripe.com/settings/payment_methods).
           items:
             enum:
             - acss_debit
@@ -15780,6 +15846,7 @@ components:
       title: OrdersV2ResourcePaymentSettings
       type: object
       x-expandableFields:
+      - automatic_payment_methods
       - payment_method_options
       - transfer_data
     orders_v2_resource_shipping_cost:
@@ -16249,69 +16316,6 @@ components:
       title: outbound_transfers_payment_method_details_us_bank_account
       type: object
       x-expandableFields: []
-    outbound_transfers_resource_status_transitions:
-      description: ''
-      properties:
-        canceled_at:
-          description: Timestamp describing when an OutboundTransfer changed status
-            to `canceled`
-          format: unix-time
-          nullable: true
-          type: integer
-        failed_at:
-          description: Timestamp describing when an OutboundTransfer changed status
-            to `failed`
-          format: unix-time
-          nullable: true
-          type: integer
-        posted_at:
-          description: Timestamp describing when an OutboundTransfer changed status
-            to `posted`
-          format: unix-time
-          nullable: true
-          type: integer
-        returned_at:
-          description: Timestamp describing when an OutboundTransfer changed status
-            to `returned`
-          format: unix-time
-          nullable: true
-          type: integer
-      title: OutboundTransfersResourceStatusTransitions
-      type: object
-      x-expandableFields: []
-    outbound_transfers_resource_treasury_returned_details:
-      description: ''
-      properties:
-        code:
-          description: Reason for the return.
-          enum:
-          - account_closed
-          - account_frozen
-          - bank_account_restricted
-          - bank_ownership_changed
-          - declined
-          - incorrect_account_holder_name
-          - invalid_account_number
-          - invalid_currency
-          - no_account
-          - other
-          type: string
-        transaction:
-          anyOf:
-          - maxLength: 5000
-            type: string
-          - "$ref": "#/components/schemas/treasury.transaction"
-          description: The Transaction associated with this object.
-          x-expansionResources:
-            oneOf:
-            - "$ref": "#/components/schemas/treasury.transaction"
-      required:
-      - code
-      - transaction
-      title: OutboundTransfersResourceTreasuryReturnedDetails
-      type: object
-      x-expandableFields:
-      - transaction
     package_dimensions:
       description: ''
       properties:
@@ -16793,6 +16797,8 @@ components:
           "$ref": "#/components/schemas/payment_intent_next_action_display_oxxo_details"
         paynow_display_qr_code:
           "$ref": "#/components/schemas/payment_intent_next_action_paynow_display_qr_code"
+        promptpay_display_qr_code:
+          "$ref": "#/components/schemas/payment_intent_next_action_promptpay_display_qr_code"
         redirect_to_url:
           "$ref": "#/components/schemas/payment_intent_next_action_redirect_to_url"
         type:
@@ -16827,6 +16833,7 @@ components:
       - konbini_display_details
       - oxxo_display_details
       - paynow_display_qr_code
+      - promptpay_display_qr_code
       - redirect_to_url
       - verify_with_microdeposits
       - wechat_pay_display_qr_code
@@ -17114,6 +17121,37 @@ components:
       title: PaymentIntentNextActionPaynowDisplayQrCode
       type: object
       x-expandableFields: []
+    payment_intent_next_action_promptpay_display_qr_code:
+      description: ''
+      properties:
+        data:
+          description: The raw data string used to generate QR code, it should be
+            used together with QR code library.
+          maxLength: 5000
+          type: string
+        hosted_instructions_url:
+          description: The URL to the hosted PromptPay instructions page, which allows
+            customers to view the PromptPay QR code.
+          maxLength: 5000
+          type: string
+        image_url_png:
+          description: ​​The image_url_png string used to render QR code, can be used
+            as <img src="…" />
+          maxLength: 5000
+          type: string
+        image_url_svg:
+          description: ​​The image_url_svg string used to render QR code, can be used
+            as <img src="…" />
+          maxLength: 5000
+          type: string
+      required:
+      - data
+      - hosted_instructions_url
+      - image_url_png
+      - image_url_svg
+      title: PaymentIntentNextActionPromptpayDisplayQrCode
+      type: object
+      x-expandableFields: []
     payment_intent_next_action_redirect_to_url:
       description: ''
       properties:
@@ -17334,6 +17372,10 @@ components:
           anyOf:
           - "$ref": "#/components/schemas/payment_method_options_paynow"
           - "$ref": "#/components/schemas/payment_intent_type_specific_payment_method_options_client"
+        promptpay:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_options_promptpay"
+          - "$ref": "#/components/schemas/payment_intent_type_specific_payment_method_options_client"
         sepa_debit:
           anyOf:
           - "$ref": "#/components/schemas/payment_intent_payment_method_options_sepa_debit"
@@ -17376,6 +17418,7 @@ components:
       - oxxo
       - p24
       - paynow
+      - promptpay
       - sepa_debit
       - sofort
       - us_bank_account
@@ -18437,6 +18480,8 @@ components:
           "$ref": "#/components/schemas/payment_method_p24"
         paynow:
           "$ref": "#/components/schemas/payment_method_paynow"
+        promptpay:
+          "$ref": "#/components/schemas/payment_method_promptpay"
         radar_options:
           "$ref": "#/components/schemas/radar_radar_options"
         sepa_debit:
@@ -18471,6 +18516,7 @@ components:
           - oxxo
           - p24
           - paynow
+          - promptpay
           - sepa_debit
           - sofort
           - us_bank_account
@@ -18516,6 +18562,7 @@ components:
       - oxxo
       - p24
       - paynow
+      - promptpay
       - radar_options
       - sepa_debit
       - sofort
@@ -18972,6 +19019,8 @@ components:
           "$ref": "#/components/schemas/payment_method_details_p24"
         paynow:
           "$ref": "#/components/schemas/payment_method_details_paynow"
+        promptpay:
+          "$ref": "#/components/schemas/payment_method_details_promptpay"
         sepa_debit:
           "$ref": "#/components/schemas/payment_method_details_sepa_debit"
         sofort:
@@ -19022,6 +19071,7 @@ components:
       - oxxo
       - p24
       - paynow
+      - promptpay
       - sepa_debit
       - sofort
       - stripe_account
@@ -20275,6 +20325,17 @@ components:
       title: payment_method_details_paynow
       type: object
       x-expandableFields: []
+    payment_method_details_promptpay:
+      description: ''
+      properties:
+        reference:
+          description: Bill reference generated by PromptPay
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_promptpay
+      type: object
+      x-expandableFields: []
     payment_method_details_sepa_debit:
       description: ''
       properties:
@@ -21188,6 +21249,22 @@ components:
       title: payment_method_options_paypal
       type: object
       x-expandableFields: []
+    payment_method_options_promptpay:
+      description: ''
+      properties:
+        setup_future_usage:
+          description: |-
+            Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+            Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+            When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+          enum:
+          - none
+          type: string
+      title: payment_method_options_promptpay
+      type: object
+      x-expandableFields: []
     payment_method_options_sofort:
       description: ''
       properties:
@@ -21296,6 +21373,12 @@ components:
       description: ''
       properties: {}
       title: payment_method_paynow
+      type: object
+      x-expandableFields: []
+    payment_method_promptpay:
+      description: ''
+      properties: {}
+      title: payment_method_promptpay
       type: object
       x-expandableFields: []
     payment_method_sepa_debit:
@@ -28968,6 +29051,7 @@ components:
             - konbini
             - link
             - paynow
+            - promptpay
             - sepa_debit
             - sofort
             - us_bank_account
@@ -31352,7 +31436,7 @@ components:
           type: string
         returned_details:
           anyOf:
-          - "$ref": "#/components/schemas/outbound_transfers_resource_treasury_returned_details"
+          - "$ref": "#/components/schemas/treasury_outbound_transfers_resource_returned_details"
           description: Details about a returned OutboundTransfer. Only set when the
             status is `returned`.
           nullable: true
@@ -31376,7 +31460,7 @@ components:
           - returned
           type: string
         status_transitions:
-          "$ref": "#/components/schemas/outbound_transfers_resource_status_transitions"
+          "$ref": "#/components/schemas/treasury_outbound_transfers_resource_status_transitions"
         transaction:
           anyOf:
           - maxLength: 5000
@@ -31403,7 +31487,7 @@ components:
       - status
       - status_transitions
       - transaction
-      title: OutboundTransfersResourceTreasuryOutboundTransfer
+      title: TreasuryOutboundTransfersResourceOutboundTransfer
       type: object
       x-expandableFields:
       - destination_payment_method_details
@@ -31853,6 +31937,69 @@ components:
       - flow_details
       - transaction
       x-resourceId: treasury.transaction_entry
+    treasury_outbound_transfers_resource_returned_details:
+      description: ''
+      properties:
+        code:
+          description: Reason for the return.
+          enum:
+          - account_closed
+          - account_frozen
+          - bank_account_restricted
+          - bank_ownership_changed
+          - declined
+          - incorrect_account_holder_name
+          - invalid_account_number
+          - invalid_currency
+          - no_account
+          - other
+          type: string
+        transaction:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/treasury.transaction"
+          description: The Transaction associated with this object.
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/treasury.transaction"
+      required:
+      - code
+      - transaction
+      title: TreasuryOutboundTransfersResourceReturnedDetails
+      type: object
+      x-expandableFields:
+      - transaction
+    treasury_outbound_transfers_resource_status_transitions:
+      description: ''
+      properties:
+        canceled_at:
+          description: Timestamp describing when an OutboundTransfer changed status
+            to `canceled`
+          format: unix-time
+          nullable: true
+          type: integer
+        failed_at:
+          description: Timestamp describing when an OutboundTransfer changed status
+            to `failed`
+          format: unix-time
+          nullable: true
+          type: integer
+        posted_at:
+          description: Timestamp describing when an OutboundTransfer changed status
+            to `posted`
+          format: unix-time
+          nullable: true
+          type: integer
+        returned_at:
+          description: Timestamp describing when an OutboundTransfer changed status
+            to `returned`
+          format: unix-time
+          nullable: true
+          type: integer
+      title: TreasuryOutboundTransfersResourceStatusTransitions
+      type: object
+      x-expandableFields: []
     ufa_resource_billing_details:
       description: ''
       properties:
@@ -32642,6 +32789,12 @@ paths:
                       title: capability_param
                       type: object
                     paynow_payments:
+                      properties:
+                        requested:
+                          type: boolean
+                      title: capability_param
+                      type: object
+                    promptpay_payments:
                       properties:
                         requested:
                           type: boolean
@@ -36647,6 +36800,12 @@ paths:
                           type: boolean
                       title: capability_param
                       type: object
+                    promptpay_payments:
+                      properties:
+                        requested:
+                          type: boolean
+                      title: capability_param
+                      type: object
                     sepa_debit_payments:
                       properties:
                         requested:
@@ -37743,6 +37902,12 @@ paths:
                       title: capability_param
                       type: object
                     paynow_payments:
+                      properties:
+                        requested:
+                          type: boolean
+                      title: capability_param
+                      type: object
+                    promptpay_payments:
                       properties:
                         requested:
                           type: boolean
@@ -46465,6 +46630,7 @@ paths:
                     - oxxo
                     - p24
                     - paynow
+                    - promptpay
                     - sepa_debit
                     - sofort
                     - us_bank_account
@@ -51440,6 +51606,7 @@ paths:
           - oxxo
           - p24
           - paynow
+          - promptpay
           - sepa_debit
           - sofort
           - us_bank_account
@@ -52742,6 +52909,7 @@ paths:
                           - konbini
                           - link
                           - paynow
+                          - promptpay
                           - sepa_debit
                           - sofort
                           - us_bank_account
@@ -53501,6 +53669,7 @@ paths:
                           - konbini
                           - link
                           - paynow
+                          - promptpay
                           - sepa_debit
                           - sofort
                           - us_bank_account
@@ -57439,6 +57608,9 @@ paths:
               payment_settings:
                 explode: true
                 style: deepObject
+              rendering_options:
+                explode: true
+                style: deepObject
               transfer_data:
                 explode: true
                 style: deepObject
@@ -57740,6 +57912,7 @@ paths:
                           - konbini
                           - link
                           - paynow
+                          - promptpay
                           - sepa_debit
                           - sofort
                           - us_bank_account
@@ -57767,6 +57940,21 @@ paths:
                   - include
                   - include_and_require
                   type: string
+                rendering_options:
+                  anyOf:
+                  - properties:
+                      amount_tax_display:
+                        enum:
+                        - ''
+                        - exclude_tax
+                        - include_inclusive_tax
+                        type: string
+                    title: rendering_options_param
+                    type: object
+                  - enum:
+                    - ''
+                    type: string
+                  description: Options for invoice PDF rendering.
                 statement_descriptor:
                   description: Extra information about a charge for the customer's
                     credit card statement. It must contain at least one letter. If
@@ -59318,6 +59506,9 @@ paths:
               payment_settings:
                 explode: true
                 style: deepObject
+              rendering_options:
+                explode: true
+                style: deepObject
               transfer_data:
                 explode: true
                 style: deepObject
@@ -59624,6 +59815,7 @@ paths:
                           - konbini
                           - link
                           - paynow
+                          - promptpay
                           - sepa_debit
                           - sofort
                           - us_bank_account
@@ -59636,6 +59828,21 @@ paths:
                         type: string
                   title: payment_settings
                   type: object
+                rendering_options:
+                  anyOf:
+                  - properties:
+                      amount_tax_display:
+                        enum:
+                        - ''
+                        - exclude_tax
+                        - include_inclusive_tax
+                        type: string
+                    title: rendering_options_param
+                    type: object
+                  - enum:
+                    - ''
+                    type: string
+                  description: Options for invoice PDF rendering.
                 statement_descriptor:
                   description: Extra information about a charge for the customer's
                     credit card statement. It must contain at least one letter. If
@@ -69884,6 +70091,10 @@ paths:
                       properties: {}
                       title: param
                       type: object
+                    promptpay:
+                      properties: {}
+                      title: param
+                      type: object
                     radar_options:
                       properties:
                         session:
@@ -69937,6 +70148,7 @@ paths:
                       - oxxo
                       - p24
                       - paynow
+                      - promptpay
                       - sepa_debit
                       - sofort
                       - us_bank_account
@@ -70539,6 +70751,18 @@ paths:
                         - ''
                         type: string
                     paynow:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            enum:
+                            - none
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                    promptpay:
                       anyOf:
                       - properties:
                           setup_future_usage:
@@ -71375,6 +71599,10 @@ paths:
                       properties: {}
                       title: param
                       type: object
+                    promptpay:
+                      properties: {}
+                      title: param
+                      type: object
                     radar_options:
                       properties:
                         session:
@@ -71428,6 +71656,7 @@ paths:
                       - oxxo
                       - p24
                       - paynow
+                      - promptpay
                       - sepa_debit
                       - sofort
                       - us_bank_account
@@ -72030,6 +72259,18 @@ paths:
                         - ''
                         type: string
                     paynow:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            enum:
+                            - none
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                    promptpay:
                       anyOf:
                       - properties:
                           setup_future_usage:
@@ -72953,6 +73194,10 @@ paths:
                       properties: {}
                       title: param
                       type: object
+                    promptpay:
+                      properties: {}
+                      title: param
+                      type: object
                     radar_options:
                       properties:
                         session:
@@ -73006,6 +73251,7 @@ paths:
                       - oxxo
                       - p24
                       - paynow
+                      - promptpay
                       - sepa_debit
                       - sofort
                       - us_bank_account
@@ -73608,6 +73854,18 @@ paths:
                         - ''
                         type: string
                     paynow:
+                      anyOf:
+                      - properties:
+                          setup_future_usage:
+                            enum:
+                            - none
+                            type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                    promptpay:
                       anyOf:
                       - properties:
                           setup_future_usage:
@@ -75330,6 +75588,7 @@ paths:
           - oxxo
           - p24
           - paynow
+          - promptpay
           - sepa_debit
           - sofort
           - us_bank_account
@@ -75471,6 +75730,9 @@ paths:
                 explode: true
                 style: deepObject
               paynow:
+                explode: true
+                style: deepObject
+              promptpay:
                 explode: true
                 style: deepObject
               radar_options:
@@ -75873,6 +76135,12 @@ paths:
                   properties: {}
                   title: param
                   type: object
+                promptpay:
+                  description: If this is a `promptpay` PaymentMethod, this hash contains
+                    details about the PromptPay payment method.
+                  properties: {}
+                  title: param
+                  type: object
                 radar_options:
                   description: Options to configure Radar. See [Radar Session](https://stripe.com/docs/radar/radar-session)
                     for more information.
@@ -75937,6 +76205,7 @@ paths:
                   - oxxo
                   - p24
                   - paynow
+                  - promptpay
                   - sepa_debit
                   - sofort
                   - us_bank_account
@@ -83634,6 +83903,10 @@ paths:
                       properties: {}
                       title: param
                       type: object
+                    promptpay:
+                      properties: {}
+                      title: param
+                      type: object
                     radar_options:
                       properties:
                         session:
@@ -83687,6 +83960,7 @@ paths:
                       - oxxo
                       - p24
                       - paynow
+                      - promptpay
                       - sepa_debit
                       - sofort
                       - us_bank_account
@@ -84375,6 +84649,10 @@ paths:
                       properties: {}
                       title: param
                       type: object
+                    promptpay:
+                      properties: {}
+                      title: param
+                      type: object
                     radar_options:
                       properties:
                         session:
@@ -84428,6 +84706,7 @@ paths:
                       - oxxo
                       - p24
                       - paynow
+                      - promptpay
                       - sepa_debit
                       - sofort
                       - us_bank_account
@@ -85120,6 +85399,10 @@ paths:
                       properties: {}
                       title: param
                       type: object
+                    promptpay:
+                      properties: {}
+                      title: param
+                      type: object
                     radar_options:
                       properties:
                         session:
@@ -85173,6 +85456,7 @@ paths:
                       - oxxo
                       - p24
                       - paynow
+                      - promptpay
                       - sepa_debit
                       - sofort
                       - us_bank_account
@@ -89949,6 +90233,7 @@ paths:
                           - konbini
                           - link
                           - paynow
+                          - promptpay
                           - sepa_debit
                           - sofort
                           - us_bank_account
@@ -90795,6 +91080,7 @@ paths:
                           - konbini
                           - link
                           - paynow
+                          - promptpay
                           - sepa_debit
                           - sofort
                           - us_bank_account
@@ -98186,7 +98472,7 @@ paths:
                 - has_more
                 - object
                 - url
-                title: OutboundTransfersResourceTreasuryOutboundTransferList
+                title: TreasuryOutboundTransfersResourceOutboundTransferList
                 type: object
                 x-expandableFields:
                 - data
