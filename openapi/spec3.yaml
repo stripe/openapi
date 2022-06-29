@@ -1937,6 +1937,9 @@ components:
       properties:
         enabled:
           description: Whether Stripe automatically computes tax on this invoice.
+            Note that incompatible invoice items (invoice items with manually specified
+            [tax rates](https://stripe.com/docs/api/tax_rates), negative amounts,
+            or `tax_behavior=unspecified`) cannot be added to automatic tax invoices.
           type: boolean
         status:
           description: The status of the most recent automated tax calculation for
@@ -3946,8 +3949,8 @@ components:
           anyOf:
           - "$ref": "#/components/schemas/payment_pages_checkout_session_customer_details"
           description: The customer details including the customer's tax exempt status
-            and the customer's tax IDs. Only present on Sessions in `payment` or `subscription`
-            mode.
+            and the customer's tax IDs. Only the customer's email is present on Sessions
+            in `setup` mode.
           nullable: true
         customer_email:
           description: |-
@@ -16101,89 +16104,6 @@ components:
       title: outbound_payments_payment_method_details_us_bank_account
       type: object
       x-expandableFields: []
-    outbound_payments_resource_treasury_outbound_payment_resource_end_user_details:
-      description: ''
-      properties:
-        ip_address:
-          description: IP address of the user initiating the OutboundPayment. Set
-            if `present` is set to `true`. IP address collection is required for risk
-            and compliance reasons. This will be used to help determine if the OutboundPayment
-            is authorized or should be blocked.
-          maxLength: 5000
-          nullable: true
-          type: string
-        present:
-          description: "`true`` if the OutboundPayment creation request is being made
-            on behalf of an end user by a platform. Otherwise, `false`."
-          type: boolean
-      required:
-      - present
-      title: OutboundPaymentsResourceTreasuryOutboundPaymentResourceEndUserDetails
-      type: object
-      x-expandableFields: []
-    outbound_payments_resource_treasury_outbound_payment_resource_status_transitions:
-      description: ''
-      properties:
-        canceled_at:
-          description: Timestamp describing when an OutboundPayment changed status
-            to `canceled`.
-          format: unix-time
-          nullable: true
-          type: integer
-        failed_at:
-          description: Timestamp describing when an OutboundPayment changed status
-            to `failed`.
-          format: unix-time
-          nullable: true
-          type: integer
-        posted_at:
-          description: Timestamp describing when an OutboundPayment changed status
-            to `posted`.
-          format: unix-time
-          nullable: true
-          type: integer
-        returned_at:
-          description: Timestamp describing when an OutboundPayment changed status
-            to `returned`.
-          format: unix-time
-          nullable: true
-          type: integer
-      title: OutboundPaymentsResourceTreasuryOutboundPaymentResourceStatusTransitions
-      type: object
-      x-expandableFields: []
-    outbound_payments_resource_treasury_returned_status:
-      description: ''
-      properties:
-        code:
-          description: Reason for the return.
-          enum:
-          - account_closed
-          - account_frozen
-          - bank_account_restricted
-          - bank_ownership_changed
-          - declined
-          - incorrect_account_holder_name
-          - invalid_account_number
-          - invalid_currency
-          - no_account
-          - other
-          type: string
-        transaction:
-          anyOf:
-          - maxLength: 5000
-            type: string
-          - "$ref": "#/components/schemas/treasury.transaction"
-          description: The Transaction associated with this object.
-          x-expansionResources:
-            oneOf:
-            - "$ref": "#/components/schemas/treasury.transaction"
-      required:
-      - code
-      - transaction
-      title: OutboundPaymentsResourceTreasuryReturnedStatus
-      type: object
-      x-expandableFields:
-      - transaction
     outbound_transfers_payment_method_details:
       description: ''
       properties:
@@ -17822,7 +17742,29 @@ components:
             in your [payment method settings](https://dashboard.stripe.com/settings/payment_methods).
           items:
             enum:
+            - affirm
+            - afterpay_clearpay
+            - alipay
+            - au_becs_debit
+            - bacs_debit
+            - bancontact
+            - boleto
             - card
+            - eps
+            - fpx
+            - giropay
+            - grabpay
+            - ideal
+            - klarna
+            - konbini
+            - oxxo
+            - p24
+            - paynow
+            - promptpay
+            - sepa_debit
+            - sofort
+            - us_bank_account
+            - wechat_pay
             type: string
             x-stripeBypassValidation: true
           nullable: true
@@ -24285,107 +24227,6 @@ components:
       title: RadarReviewResourceSession
       type: object
       x-expandableFields: []
-    received_credits_resource_reversal_details:
-      description: ''
-      properties:
-        deadline:
-          description: Time before which a ReceivedCredit can be reversed.
-          format: unix-time
-          nullable: true
-          type: integer
-        restricted_reason:
-          description: Set if a ReceivedCredit cannot be reversed.
-          enum:
-          - already_reversed
-          - deadline_passed
-          - network_restricted
-          - other
-          - source_flow_restricted
-          nullable: true
-          type: string
-      title: ReceivedCreditsResourceReversalDetails
-      type: object
-      x-expandableFields: []
-    received_credits_resource_status_transitions:
-      description: ''
-      properties:
-        posted_at:
-          description: Timestamp describing when the CreditReversal changed status
-            to `posted`
-          format: unix-time
-          nullable: true
-          type: integer
-      title: ReceivedCreditsResourceStatusTransitions
-      type: object
-      x-expandableFields: []
-    received_credits_resource_treasury_linked_flows:
-      description: ''
-      properties:
-        credit_reversal:
-          description: The CreditReversal created as a result of this ReceivedCredit
-            being reversed.
-          maxLength: 5000
-          nullable: true
-          type: string
-        issuing_authorization:
-          description: Set if the ReceivedCredit was created due to an [Issuing Authorization](https://stripe.com/docs/api#issuing_authorizations)
-            object.
-          maxLength: 5000
-          nullable: true
-          type: string
-        issuing_transaction:
-          description: Set if the ReceivedCredit is also viewable as an [Issuing transaction](https://stripe.com/docs/api#issuing_transactions)
-            object.
-          maxLength: 5000
-          nullable: true
-          type: string
-        source_flow:
-          description: ID of the source flow. Set if `network` is `stripe` and the
-            source flow is visible to the merchant. Examples of source flows include
-            OutboundPayments, payouts, or CreditReversals.
-          maxLength: 5000
-          nullable: true
-          type: string
-        source_flow_details:
-          anyOf:
-          - "$ref": "#/components/schemas/received_credits_resource_treasury_source_flows_details"
-          description: The expandable object of the source flow.
-          nullable: true
-        source_flow_type:
-          description: The type of flow that originated the ReceivedCredit (for example,
-            `outbound_payment`).
-          maxLength: 5000
-          nullable: true
-          type: string
-      title: ReceivedCreditsResourceTreasuryLinkedFlows
-      type: object
-      x-expandableFields:
-      - source_flow_details
-    received_credits_resource_treasury_source_flows_details:
-      description: ''
-      properties:
-        credit_reversal:
-          "$ref": "#/components/schemas/treasury.credit_reversal"
-        outbound_payment:
-          "$ref": "#/components/schemas/treasury.outbound_payment"
-        payout:
-          "$ref": "#/components/schemas/payout"
-        type:
-          description: The type of the source flow that originated the ReceivedCredit.
-          enum:
-          - credit_reversal
-          - other
-          - outbound_payment
-          - payout
-          type: string
-      required:
-      - type
-      title: ReceivedCreditsResourceTreasurySourceFlowsDetails
-      type: object
-      x-expandableFields:
-      - credit_reversal
-      - outbound_payment
-      - payout
     received_payment_method_details_financial_account:
       description: ''
       properties:
@@ -30600,7 +30441,7 @@ components:
           - processing
           type: string
         status_transitions:
-          "$ref": "#/components/schemas/received_credits_resource_status_transitions"
+          "$ref": "#/components/schemas/treasury_received_credits_resource_status_transitions"
         transaction:
           anyOf:
           - maxLength: 5000
@@ -30623,7 +30464,7 @@ components:
       - received_credit
       - status
       - status_transitions
-      title: ReceivedCreditsResourceTreasuryCreditReversal
+      title: TreasuryReceivedCreditsResourceCreditReversal
       type: object
       x-expandableFields:
       - status_transitions
@@ -31088,7 +30929,7 @@ components:
           nullable: true
         end_user_details:
           anyOf:
-          - "$ref": "#/components/schemas/outbound_payments_resource_treasury_outbound_payment_resource_end_user_details"
+          - "$ref": "#/components/schemas/treasury_outbound_payments_resource_outbound_payment_resource_end_user_details"
           description: Details about the end user.
           nullable: true
         expected_arrival_date:
@@ -31131,7 +30972,7 @@ components:
           type: string
         returned_details:
           anyOf:
-          - "$ref": "#/components/schemas/outbound_payments_resource_treasury_returned_status"
+          - "$ref": "#/components/schemas/treasury_outbound_payments_resource_returned_status"
           description: Details about a returned OutboundPayment. Only set when the
             status is `returned`.
           nullable: true
@@ -31155,7 +30996,7 @@ components:
           - returned
           type: string
         status_transitions:
-          "$ref": "#/components/schemas/outbound_payments_resource_treasury_outbound_payment_resource_status_transitions"
+          "$ref": "#/components/schemas/treasury_outbound_payments_resource_outbound_payment_resource_status_transitions"
         transaction:
           anyOf:
           - maxLength: 5000
@@ -31180,7 +31021,7 @@ components:
       - status
       - status_transitions
       - transaction
-      title: OutboundPaymentsResourceTreasuryOutboundPayment
+      title: TreasuryOutboundPaymentsResourceOutboundPayment
       type: object
       x-expandableFields:
       - destination_payment_method_details
@@ -31358,6 +31199,13 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        hosted_regulatory_receipt_url:
+          description: A [hosted transaction receipt](https://stripe.com/docs/treasury/moving-money/regulatory-receipts)
+            URL that is provided when money movement is considered regulated under
+            Stripe's money transmission licenses.
+          maxLength: 5000
+          nullable: true
+          type: string
         id:
           description: Unique identifier for the object.
           maxLength: 5000
@@ -31365,7 +31213,7 @@ components:
         initiating_payment_method_details:
           "$ref": "#/components/schemas/treasury_shared_resource_initiating_payment_method_details_initiating_payment_method_details"
         linked_flows:
-          "$ref": "#/components/schemas/received_credits_resource_treasury_linked_flows"
+          "$ref": "#/components/schemas/treasury_received_credits_resource_linked_flows"
         livemode:
           description: Has the value `true` if the object exists in live mode or the
             value `false` if the object exists in test mode.
@@ -31387,7 +31235,7 @@ components:
           type: string
         reversal_details:
           anyOf:
-          - "$ref": "#/components/schemas/received_credits_resource_reversal_details"
+          - "$ref": "#/components/schemas/treasury_received_credits_resource_reversal_details"
           description: Details describing when a ReceivedCredit may be reversed.
           nullable: true
         status:
@@ -31421,7 +31269,7 @@ components:
       - network
       - object
       - status
-      title: ReceivedCreditsResourceTreasuryReceivedCredit
+      title: TreasuryReceivedCreditsResourceReceivedCredit
       type: object
       x-expandableFields:
       - initiating_payment_method_details
@@ -31462,6 +31310,13 @@ components:
           type: string
         financial_account:
           description: The FinancialAccount that funds were pulled from.
+          maxLength: 5000
+          nullable: true
+          type: string
+        hosted_regulatory_receipt_url:
+          description: A [hosted transaction receipt](https://stripe.com/docs/treasury/moving-money/regulatory-receipts)
+            URL that is provided when money movement is considered regulated under
+            Stripe's money transmission licenses.
           maxLength: 5000
           nullable: true
           type: string
@@ -31837,6 +31692,89 @@ components:
       title: TreasuryInboundTransfersResourceInboundTransferResourceStatusTransitions
       type: object
       x-expandableFields: []
+    treasury_outbound_payments_resource_outbound_payment_resource_end_user_details:
+      description: ''
+      properties:
+        ip_address:
+          description: IP address of the user initiating the OutboundPayment. Set
+            if `present` is set to `true`. IP address collection is required for risk
+            and compliance reasons. This will be used to help determine if the OutboundPayment
+            is authorized or should be blocked.
+          maxLength: 5000
+          nullable: true
+          type: string
+        present:
+          description: "`true`` if the OutboundPayment creation request is being made
+            on behalf of an end user by a platform. Otherwise, `false`."
+          type: boolean
+      required:
+      - present
+      title: TreasuryOutboundPaymentsResourceOutboundPaymentResourceEndUserDetails
+      type: object
+      x-expandableFields: []
+    treasury_outbound_payments_resource_outbound_payment_resource_status_transitions:
+      description: ''
+      properties:
+        canceled_at:
+          description: Timestamp describing when an OutboundPayment changed status
+            to `canceled`.
+          format: unix-time
+          nullable: true
+          type: integer
+        failed_at:
+          description: Timestamp describing when an OutboundPayment changed status
+            to `failed`.
+          format: unix-time
+          nullable: true
+          type: integer
+        posted_at:
+          description: Timestamp describing when an OutboundPayment changed status
+            to `posted`.
+          format: unix-time
+          nullable: true
+          type: integer
+        returned_at:
+          description: Timestamp describing when an OutboundPayment changed status
+            to `returned`.
+          format: unix-time
+          nullable: true
+          type: integer
+      title: TreasuryOutboundPaymentsResourceOutboundPaymentResourceStatusTransitions
+      type: object
+      x-expandableFields: []
+    treasury_outbound_payments_resource_returned_status:
+      description: ''
+      properties:
+        code:
+          description: Reason for the return.
+          enum:
+          - account_closed
+          - account_frozen
+          - bank_account_restricted
+          - bank_ownership_changed
+          - declined
+          - incorrect_account_holder_name
+          - invalid_account_number
+          - invalid_currency
+          - no_account
+          - other
+          type: string
+        transaction:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/treasury.transaction"
+          description: The Transaction associated with this object.
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/treasury.transaction"
+      required:
+      - code
+      - transaction
+      title: TreasuryOutboundPaymentsResourceReturnedStatus
+      type: object
+      x-expandableFields:
+      - transaction
     treasury_outbound_transfers_resource_returned_details:
       description: ''
       properties:
@@ -31898,6 +31836,107 @@ components:
           nullable: true
           type: integer
       title: TreasuryOutboundTransfersResourceStatusTransitions
+      type: object
+      x-expandableFields: []
+    treasury_received_credits_resource_linked_flows:
+      description: ''
+      properties:
+        credit_reversal:
+          description: The CreditReversal created as a result of this ReceivedCredit
+            being reversed.
+          maxLength: 5000
+          nullable: true
+          type: string
+        issuing_authorization:
+          description: Set if the ReceivedCredit was created due to an [Issuing Authorization](https://stripe.com/docs/api#issuing_authorizations)
+            object.
+          maxLength: 5000
+          nullable: true
+          type: string
+        issuing_transaction:
+          description: Set if the ReceivedCredit is also viewable as an [Issuing transaction](https://stripe.com/docs/api#issuing_transactions)
+            object.
+          maxLength: 5000
+          nullable: true
+          type: string
+        source_flow:
+          description: ID of the source flow. Set if `network` is `stripe` and the
+            source flow is visible to the user. Examples of source flows include OutboundPayments,
+            payouts, or CreditReversals.
+          maxLength: 5000
+          nullable: true
+          type: string
+        source_flow_details:
+          anyOf:
+          - "$ref": "#/components/schemas/treasury_received_credits_resource_source_flows_details"
+          description: The expandable object of the source flow.
+          nullable: true
+        source_flow_type:
+          description: The type of flow that originated the ReceivedCredit (for example,
+            `outbound_payment`).
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: TreasuryReceivedCreditsResourceLinkedFlows
+      type: object
+      x-expandableFields:
+      - source_flow_details
+    treasury_received_credits_resource_reversal_details:
+      description: ''
+      properties:
+        deadline:
+          description: Time before which a ReceivedCredit can be reversed.
+          format: unix-time
+          nullable: true
+          type: integer
+        restricted_reason:
+          description: Set if a ReceivedCredit cannot be reversed.
+          enum:
+          - already_reversed
+          - deadline_passed
+          - network_restricted
+          - other
+          - source_flow_restricted
+          nullable: true
+          type: string
+      title: TreasuryReceivedCreditsResourceReversalDetails
+      type: object
+      x-expandableFields: []
+    treasury_received_credits_resource_source_flows_details:
+      description: ''
+      properties:
+        credit_reversal:
+          "$ref": "#/components/schemas/treasury.credit_reversal"
+        outbound_payment:
+          "$ref": "#/components/schemas/treasury.outbound_payment"
+        payout:
+          "$ref": "#/components/schemas/payout"
+        type:
+          description: The type of the source flow that originated the ReceivedCredit.
+          enum:
+          - credit_reversal
+          - other
+          - outbound_payment
+          - payout
+          type: string
+      required:
+      - type
+      title: TreasuryReceivedCreditsResourceSourceFlowsDetails
+      type: object
+      x-expandableFields:
+      - credit_reversal
+      - outbound_payment
+      - payout
+    treasury_received_credits_resource_status_transitions:
+      description: ''
+      properties:
+        posted_at:
+          description: Timestamp describing when the CreditReversal changed status
+            to `posted`
+          format: unix-time
+          nullable: true
+          type: integer
+      title: TreasuryReceivedCreditsResourceStatusTransitions
       type: object
       x-expandableFields: []
     treasury_received_debits_resource_debit_reversal_linked_flows:
@@ -74687,7 +74726,29 @@ paths:
                     (20+ payment methods [supported](https://stripe.com/docs/payments/payment-methods/integration-options#payment-method-product-support)).
                   items:
                     enum:
+                    - affirm
+                    - afterpay_clearpay
+                    - alipay
+                    - au_becs_debit
+                    - bacs_debit
+                    - bancontact
+                    - boleto
                     - card
+                    - eps
+                    - fpx
+                    - giropay
+                    - grabpay
+                    - ideal
+                    - klarna
+                    - konbini
+                    - oxxo
+                    - p24
+                    - paynow
+                    - promptpay
+                    - sepa_debit
+                    - sofort
+                    - us_bank_account
+                    - wechat_pay
                     type: string
                     x-stripeBypassValidation: true
                   type: array
@@ -75215,7 +75276,29 @@ paths:
                   anyOf:
                   - items:
                       enum:
+                      - affirm
+                      - afterpay_clearpay
+                      - alipay
+                      - au_becs_debit
+                      - bacs_debit
+                      - bancontact
+                      - boleto
                       - card
+                      - eps
+                      - fpx
+                      - giropay
+                      - grabpay
+                      - ideal
+                      - klarna
+                      - konbini
+                      - oxxo
+                      - p24
+                      - paynow
+                      - promptpay
+                      - sepa_debit
+                      - sofort
+                      - us_bank_account
+                      - wechat_pay
                       type: string
                       x-stripeBypassValidation: true
                     type: array
@@ -93684,6 +93767,182 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
           description: Error response.
+  "/v1/test_helpers/issuing/cards/{card}/shipping/deliver":
+    post:
+      description: "<p>Updates the shipping status of the specified Issuing <code>Card</code>
+        object to <code>delivered</code>.</p>"
+      operationId: PostTestHelpersIssuingCardsCardShippingDeliver
+      parameters:
+      - in: path
+        name: card
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/issuing.card"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/test_helpers/issuing/cards/{card}/shipping/fail":
+    post:
+      description: "<p>Updates the shipping status of the specified Issuing <code>Card</code>
+        object to <code>failure</code>.</p>"
+      operationId: PostTestHelpersIssuingCardsCardShippingFail
+      parameters:
+      - in: path
+        name: card
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/issuing.card"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/test_helpers/issuing/cards/{card}/shipping/return":
+    post:
+      description: "<p>Updates the shipping status of the specified Issuing <code>Card</code>
+        object to <code>returned</code>.</p>"
+      operationId: PostTestHelpersIssuingCardsCardShippingReturn
+      parameters:
+      - in: path
+        name: card
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/issuing.card"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
+  "/v1/test_helpers/issuing/cards/{card}/shipping/ship":
+    post:
+      description: "<p>Updates the shipping status of the specified Issuing <code>Card</code>
+        object to <code>shipped</code>.</p>"
+      operationId: PostTestHelpersIssuingCardsCardShippingShip
+      parameters:
+      - in: path
+        name: card
+        required: true
+        schema:
+          maxLength: 5000
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/issuing.card"
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+          description: Error response.
   "/v1/test_helpers/refunds/{refund}/expire":
     post:
       description: "<p>Expire a refund with a status of <code>requires_action</code>.</p>"
@@ -94603,7 +94862,6 @@ paths:
                   - ach
                   - us_domestic_wire
                   type: string
-                  x-stripeBypassValidation: true
               required:
               - amount
               - currency
@@ -96708,7 +96966,7 @@ paths:
                 - has_more
                 - object
                 - url
-                title: ReceivedCreditsResourceTreasuryCreditReversalList
+                title: TreasuryReceivedCreditsResourceCreditReversalList
                 type: object
                 x-expandableFields:
                 - data
@@ -98168,7 +98426,7 @@ paths:
                 - has_more
                 - object
                 - url
-                title: OutboundPaymentsResourceTreasuryOutboundPaymentList
+                title: TreasuryOutboundPaymentsResourceOutboundPaymentList
                 type: object
                 x-expandableFields:
                 - data
@@ -98911,7 +99169,7 @@ paths:
                 - has_more
                 - object
                 - url
-                title: ReceivedCreditsResourceTreasuryReceivedCreditList
+                title: TreasuryReceivedCreditsResourceReceivedCreditList
                 type: object
                 x-expandableFields:
                 - data
@@ -100021,7 +100279,6 @@ paths:
                     - treasury.outbound_transfer.returned
                     - treasury.received_credit.created
                     - treasury.received_credit.failed
-                    - treasury.received_credit.reversed
                     - treasury.received_credit.succeeded
                     - treasury.received_debit.created
                     type: string
@@ -100404,7 +100661,6 @@ paths:
                     - treasury.outbound_transfer.returned
                     - treasury.received_credit.created
                     - treasury.received_credit.failed
-                    - treasury.received_credit.reversed
                     - treasury.received_credit.succeeded
                     - treasury.received_debit.created
                     type: string
