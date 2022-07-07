@@ -4978,6 +4978,13 @@ components:
             off.
           nullable: true
           type: string
+        currency_options:
+          additionalProperties:
+            "$ref": "#/components/schemas/coupon_currency_option"
+          description: Coupons defined in each available currency option. Each key
+            must be a three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html)
+            and a [supported currency](https://stripe.com/docs/currencies).
+          type: object
         duration:
           description: One of `forever`, `once`, and `repeating`. Describes how long
             a customer who applies this coupon will get the discount.
@@ -5055,6 +5062,7 @@ components:
       type: object
       x-expandableFields:
       - applies_to
+      - currency_options
       x-resourceId: coupon
     coupon_applies_to:
       description: ''
@@ -5068,6 +5076,18 @@ components:
       required:
       - products
       title: CouponAppliesTo
+      type: object
+      x-expandableFields: []
+    coupon_currency_option:
+      description: ''
+      properties:
+        amount_off:
+          description: Amount (in the `currency` specified) that will be taken off
+            the subtotal of any invoices for this customer.
+          type: integer
+      required:
+      - amount_off
+      title: CouponCurrencyOption
       type: object
       x-expandableFields: []
     credit_note:
@@ -5423,6 +5443,48 @@ components:
       type: object
       x-expandableFields:
       - tax_rate
+    currency_option:
+      description: ''
+      properties:
+        custom_unit_amount:
+          anyOf:
+          - "$ref": "#/components/schemas/custom_unit_amount"
+          description: When set, provides configuration for the amount to be adjusted
+            by the customer during Checkout Sessions and Payment Links.
+          nullable: true
+        tax_behavior:
+          description: Specifies whether the price is considered inclusive of taxes
+            or exclusive of taxes. One of `inclusive`, `exclusive`, or `unspecified`.
+            Once specified as either `inclusive` or `exclusive`, it cannot be changed.
+          enum:
+          - exclusive
+          - inclusive
+          - unspecified
+          nullable: true
+          type: string
+        tiers:
+          description: Each element represents a pricing tier. This parameter requires
+            `billing_scheme` to be set to `tiered`. See also the documentation for
+            `billing_scheme`.
+          items:
+            "$ref": "#/components/schemas/price_tier"
+          type: array
+        unit_amount:
+          description: The unit amount in %s to be charged, represented as a whole
+            integer if possible. Only set if `billing_scheme=per_unit`.
+          nullable: true
+          type: integer
+        unit_amount_decimal:
+          description: The unit amount in %s to be charged, represented as a decimal
+            string with at most 12 decimal places. Only set if `billing_scheme=per_unit`.
+          format: decimal
+          nullable: true
+          type: string
+      title: CurrencyOption
+      type: object
+      x-expandableFields:
+      - custom_unit_amount
+      - tiers
     custom_unit_amount:
       description: ''
       properties:
@@ -21472,29 +21534,31 @@ components:
         address:
           anyOf:
           - "$ref": "#/components/schemas/address"
-          description: 'The customer''s address at the time of checkout. Note: This
-            property is populated only for sessions on or after March 30, 2022.'
+          description: 'The customer''s address after a completed Checkout Session.
+            Note: This property is populated only for sessions on or after March 30,
+            2022.'
           nullable: true
         email:
           description: |-
-            The email associated with the Customer, if one exists, on the Checkout Session at the time of checkout or at time of session expiry.
+            The email associated with the Customer, if one exists, on the Checkout Session after a completed Checkout Session or at time of session expiry.
             Otherwise, if the customer has consented to promotional content, this value is the most recent valid email provided by the customer on the Checkout form.
           maxLength: 5000
           nullable: true
           type: string
         name:
-          description: 'The customer''s name at the time of checkout. Note: This property
-            is populated only for sessions on or after March 30, 2022.'
+          description: 'The customer''s name after a completed Checkout Session. Note:
+            This property is populated only for sessions on or after March 30, 2022.'
           maxLength: 5000
           nullable: true
           type: string
         phone:
-          description: The customer's phone number at the time of checkout
+          description: The customer's phone number after a completed Checkout Session.
           maxLength: 5000
           nullable: true
           type: string
         tax_exempt:
-          description: The customer’s tax exempt status at time of checkout.
+          description: The customer’s tax exempt status after a completed Checkout
+            Session.
           enum:
           - exempt
           - none
@@ -21502,7 +21566,7 @@ components:
           nullable: true
           type: string
         tax_ids:
-          description: The customer’s tax IDs at time of checkout.
+          description: The customer’s tax IDs after a completed Checkout Session.
           items:
             "$ref": "#/components/schemas/payment_pages_checkout_session_tax_id"
           nullable: true
@@ -22961,6 +23025,13 @@ components:
           description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
             in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
           type: string
+        currency_options:
+          additionalProperties:
+            "$ref": "#/components/schemas/currency_option"
+          description: Prices defined in each available currency option. Each key
+            must be a three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html)
+            and a [supported currency](https://stripe.com/docs/currencies).
+          type: object
         custom_unit_amount:
           anyOf:
           - "$ref": "#/components/schemas/custom_unit_amount"
@@ -23082,6 +23153,7 @@ components:
       title: Price
       type: object
       x-expandableFields:
+      - currency_options
       - custom_unit_amount
       - product
       - recurring
@@ -23336,9 +23408,28 @@ components:
       - customer
       - restrictions
       x-resourceId: promotion_code
+    promotion_code_currency_option:
+      description: ''
+      properties:
+        minimum_amount:
+          description: Minimum amount required to redeem this Promotion Code into
+            a Coupon (e.g., a purchase must be $100 or more to work).
+          type: integer
+      required:
+      - minimum_amount
+      title: PromotionCodeCurrencyOption
+      type: object
+      x-expandableFields: []
     promotion_codes_resource_restrictions:
       description: ''
       properties:
+        currency_options:
+          additionalProperties:
+            "$ref": "#/components/schemas/promotion_code_currency_option"
+          description: Promotion code restrictions defined in each available currency
+            option. Each key must be a three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html)
+            and a [supported currency](https://stripe.com/docs/currencies).
+          type: object
         first_time_transaction:
           description: A Boolean indicating if the Promotion Code should only be redeemed
             for Customers without any successful payments or invoices
@@ -23358,7 +23449,8 @@ components:
       - first_time_transaction
       title: PromotionCodesResourceRestrictions
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - currency_options
     quote:
       description: |-
         A Quote is a way to model prices that you'd like to provide to a customer.
@@ -26256,6 +26348,26 @@ components:
       - fixed_amount
       - tax_code
       x-resourceId: shipping_rate
+    shipping_rate_currency_option:
+      description: ''
+      properties:
+        amount:
+          description: A non-negative integer in cents representing how much to charge.
+          type: integer
+        tax_behavior:
+          description: Specifies whether the rate is considered inclusive of taxes
+            or exclusive of taxes. One of `inclusive`, `exclusive`, or `unspecified`.
+          enum:
+          - exclusive
+          - inclusive
+          - unspecified
+          type: string
+      required:
+      - amount
+      - tax_behavior
+      title: ShippingRateCurrencyOption
+      type: object
+      x-expandableFields: []
     shipping_rate_delivery_estimate:
       description: ''
       properties:
@@ -26307,12 +26419,20 @@ components:
           description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
             in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
           type: string
+        currency_options:
+          additionalProperties:
+            "$ref": "#/components/schemas/shipping_rate_currency_option"
+          description: Shipping rates defined in each available currency option. Each
+            key must be a three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html)
+            and a [supported currency](https://stripe.com/docs/currencies).
+          type: object
       required:
       - amount
       - currency
       title: ShippingRateFixedAmount
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+      - currency_options
     sigma_scheduled_query_run_error:
       description: ''
       properties:
@@ -27738,6 +27858,10 @@ components:
             the Unix epoch.
           format: unix-time
           type: integer
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+          type: string
         current_period_end:
           description: End of the current period that the subscription has been invoiced
             for. At the end of this period, a new invoice will be created.
@@ -28500,6 +28624,10 @@ components:
             oneOf:
             - "$ref": "#/components/schemas/coupon"
             - "$ref": "#/components/schemas/deleted_coupon"
+        currency:
+          description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+            in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+          type: string
         default_payment_method:
           anyOf:
           - maxLength: 5000
@@ -46086,6 +46214,10 @@ paths:
                       type: string
                   title: consent_collection_params
                   type: object
+                currency:
+                  description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                    in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+                  type: string
                 customer:
                   description: |-
                     ID of an existing Customer, if one exists. In `payment` mode, the customer’s most recent card
@@ -47096,6 +47228,22 @@ paths:
                                 type: integer
                               currency:
                                 type: string
+                              currency_options:
+                                additionalProperties:
+                                  properties:
+                                    amount:
+                                      type: integer
+                                    tax_behavior:
+                                      enum:
+                                      - exclusive
+                                      - inclusive
+                                      - unspecified
+                                      type: string
+                                  required:
+                                  - amount
+                                  title: currency_option
+                                  type: object
+                                type: object
                             required:
                             - amount
                             - currency
@@ -47702,6 +47850,9 @@ paths:
               applies_to:
                 explode: true
                 style: deepObject
+              currency_options:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -47730,6 +47881,20 @@ paths:
                   description: Three-letter [ISO code for the currency](https://stripe.com/docs/currencies)
                     of the `amount_off` parameter (required if `amount_off` is passed).
                   type: string
+                currency_options:
+                  additionalProperties:
+                    properties:
+                      amount_off:
+                        type: integer
+                    required:
+                    - amount_off
+                    title: currency_option
+                    type: object
+                  description: Coupons defined in each available currency option (only
+                    supported if `amount_off` is passed). Each key must be a three-letter
+                    [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html)
+                    and a [supported currency](https://stripe.com/docs/currencies).
+                  type: object
                 duration:
                   description: Specifies how long the discount will be in effect if
                     used on a subscription. Can be `forever`, `once`, or `repeating`.
@@ -47906,6 +48071,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              currency_options:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -47915,6 +48083,20 @@ paths:
             schema:
               additionalProperties: false
               properties:
+                currency_options:
+                  additionalProperties:
+                    properties:
+                      amount_off:
+                        type: integer
+                    required:
+                    - amount_off
+                    title: currency_option
+                    type: object
+                  description: Coupons defined in each available currency option (only
+                    supported if the coupon is amount-based). Each key must be a three-letter
+                    [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html)
+                    and a [supported currency](https://stripe.com/docs/currencies).
+                  type: object
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -52730,6 +52912,10 @@ paths:
                     A coupon applied to a subscription will only affect invoices created
                     for that particular subscription.
                   maxLength: 5000
+                  type: string
+                currency:
+                  description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                    in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
                   type: string
                 days_until_due:
                   description: Number of days a customer has to pay invoices generated
@@ -58273,6 +58459,14 @@ paths:
           maxLength: 5000
           type: string
         style: form
+      - description: The currency to preview this invoice in. Defaults to that of
+          `customer` if not specified.
+        in: query
+        name: currency
+        required: false
+        schema:
+          type: string
+        style: form
       - description: The identifier of the customer whose upcoming invoice you'd like
           to retrieve.
         in: query
@@ -58877,6 +59071,14 @@ paths:
         required: false
         schema:
           maxLength: 5000
+          type: string
+        style: form
+      - description: The currency to preview this invoice in. Defaults to that of
+          `customer` if not specified.
+        in: query
+        name: currency
+        required: false
+        schema:
           type: string
         style: form
       - description: The identifier of the customer whose upcoming invoice you'd like
@@ -68275,6 +68477,22 @@ paths:
                                 type: integer
                               currency:
                                 type: string
+                              currency_options:
+                                additionalProperties:
+                                  properties:
+                                    amount:
+                                      type: integer
+                                    tax_behavior:
+                                      enum:
+                                      - exclusive
+                                      - inclusive
+                                      - unspecified
+                                      type: string
+                                  required:
+                                  - amount
+                                  title: currency_option
+                                  type: object
+                                type: object
                             required:
                             - amount
                             - currency
@@ -69192,6 +69410,22 @@ paths:
                                 type: integer
                               currency:
                                 type: string
+                              currency_options:
+                                additionalProperties:
+                                  properties:
+                                    amount:
+                                      type: integer
+                                    tax_behavior:
+                                      enum:
+                                      - exclusive
+                                      - inclusive
+                                      - unspecified
+                                      type: string
+                                  required:
+                                  - amount
+                                  title: currency_option
+                                  type: object
+                                type: object
                             required:
                             - amount
                             - currency
@@ -74663,6 +74897,11 @@ paths:
                       type: string
                   title: consent_collection_params
                   type: object
+                currency:
+                  description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                    in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies)
+                    and supported by each line item's price.
+                  type: string
                 customer_creation:
                   description: Configures whether [checkout sessions](https://stripe.com/docs/api/checkout/sessions)
                     created by this payment link create a [Customer](https://stripe.com/docs/api/customers).
@@ -77947,6 +78186,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              currency_options:
+                explode: true
+                style: deepObject
               custom_unit_amount:
                 explode: true
                 style: deepObject
@@ -77992,6 +78234,65 @@ paths:
                   description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
                     in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
                   type: string
+                currency_options:
+                  additionalProperties:
+                    properties:
+                      custom_unit_amount:
+                        properties:
+                          enabled:
+                            type: boolean
+                          maximum:
+                            type: integer
+                          minimum:
+                            type: integer
+                          preset:
+                            type: integer
+                        required:
+                        - enabled
+                        title: custom_unit_amount
+                        type: object
+                      tax_behavior:
+                        enum:
+                        - exclusive
+                        - inclusive
+                        - unspecified
+                        type: string
+                      tiers:
+                        items:
+                          properties:
+                            flat_amount:
+                              type: integer
+                            flat_amount_decimal:
+                              format: decimal
+                              type: string
+                            unit_amount:
+                              type: integer
+                            unit_amount_decimal:
+                              format: decimal
+                              type: string
+                            up_to:
+                              anyOf:
+                              - enum:
+                                - inf
+                                maxLength: 5000
+                                type: string
+                              - type: integer
+                          required:
+                          - up_to
+                          title: tier
+                          type: object
+                        type: array
+                      unit_amount:
+                        type: integer
+                      unit_amount_decimal:
+                        format: decimal
+                        type: string
+                    title: currency_option
+                    type: object
+                  description: Prices defined in each available currency option. Each
+                    key must be a three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html)
+                    and a [supported currency](https://stripe.com/docs/currencies).
+                  type: object
                 custom_unit_amount:
                   description: When set, provides configuration for the amount to
                     be adjusted by the customer during Checkout Sessions and Payment
@@ -78353,6 +78654,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              currency_options:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -78366,6 +78670,69 @@ paths:
                   description: Whether the price can be used for new purchases. Defaults
                     to `true`.
                   type: boolean
+                currency_options:
+                  anyOf:
+                  - additionalProperties:
+                      properties:
+                        custom_unit_amount:
+                          properties:
+                            enabled:
+                              type: boolean
+                            maximum:
+                              type: integer
+                            minimum:
+                              type: integer
+                            preset:
+                              type: integer
+                          required:
+                          - enabled
+                          title: custom_unit_amount
+                          type: object
+                        tax_behavior:
+                          enum:
+                          - exclusive
+                          - inclusive
+                          - unspecified
+                          type: string
+                        tiers:
+                          items:
+                            properties:
+                              flat_amount:
+                                type: integer
+                              flat_amount_decimal:
+                                format: decimal
+                                type: string
+                              unit_amount:
+                                type: integer
+                              unit_amount_decimal:
+                                format: decimal
+                                type: string
+                              up_to:
+                                anyOf:
+                                - enum:
+                                  - inf
+                                  maxLength: 5000
+                                  type: string
+                                - type: integer
+                            required:
+                            - up_to
+                            title: tier
+                            type: object
+                          type: array
+                        unit_amount:
+                          type: integer
+                        unit_amount_decimal:
+                          format: decimal
+                          type: string
+                      title: currency_option
+                      type: object
+                    type: object
+                  - enum:
+                    - ''
+                    type: string
+                  description: Prices defined in each available currency option. Each
+                    key must be a three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html)
+                    and a [supported currency](https://stripe.com/docs/currencies).
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -78616,6 +78983,62 @@ paths:
                   properties:
                     currency:
                       type: string
+                    currency_options:
+                      additionalProperties:
+                        properties:
+                          custom_unit_amount:
+                            properties:
+                              enabled:
+                                type: boolean
+                              maximum:
+                                type: integer
+                              minimum:
+                                type: integer
+                              preset:
+                                type: integer
+                            required:
+                            - enabled
+                            title: custom_unit_amount
+                            type: object
+                          tax_behavior:
+                            enum:
+                            - exclusive
+                            - inclusive
+                            - unspecified
+                            type: string
+                          tiers:
+                            items:
+                              properties:
+                                flat_amount:
+                                  type: integer
+                                flat_amount_decimal:
+                                  format: decimal
+                                  type: string
+                                unit_amount:
+                                  type: integer
+                                unit_amount_decimal:
+                                  format: decimal
+                                  type: string
+                                up_to:
+                                  anyOf:
+                                  - enum:
+                                    - inf
+                                    maxLength: 5000
+                                    type: string
+                                  - type: integer
+                              required:
+                              - up_to
+                              title: tier
+                              type: object
+                            type: array
+                          unit_amount:
+                            type: integer
+                          unit_amount_decimal:
+                            format: decimal
+                            type: string
+                        title: currency_option
+                        type: object
+                      type: object
                     recurring:
                       properties:
                         interval:
@@ -79304,6 +79727,14 @@ paths:
                   description: Settings that restrict the redemption of the promotion
                     code.
                   properties:
+                    currency_options:
+                      additionalProperties:
+                        properties:
+                          minimum_amount:
+                            type: integer
+                        title: currency_option
+                        type: object
+                      type: object
                     first_time_transaction:
                       type: boolean
                     minimum_amount:
@@ -79398,6 +79829,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              restrictions:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -79425,6 +79859,20 @@ paths:
                     additional information about the object in a structured format.
                     Individual keys can be unset by posting an empty value to them.
                     All keys can be unset by posting an empty value to `metadata`.
+                restrictions:
+                  description: Settings that restrict the redemption of the promotion
+                    code.
+                  properties:
+                    currency_options:
+                      additionalProperties:
+                        properties:
+                          minimum_amount:
+                            type: integer
+                        title: currency_option
+                        type: object
+                      type: object
+                  title: restrictions_params
+                  type: object
               type: object
         required: false
       responses:
@@ -86181,6 +86629,22 @@ paths:
                       type: integer
                     currency:
                       type: string
+                    currency_options:
+                      additionalProperties:
+                        properties:
+                          amount:
+                            type: integer
+                          tax_behavior:
+                            enum:
+                            - exclusive
+                            - inclusive
+                            - unspecified
+                            type: string
+                        required:
+                        - amount
+                        title: currency_option
+                        type: object
+                      type: object
                   required:
                   - amount
                   - currency
@@ -86294,6 +86758,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              fixed_amount:
+                explode: true
+                style: deepObject
               metadata:
                 explode: true
                 style: deepObject
@@ -86310,6 +86777,26 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                fixed_amount:
+                  description: Describes a fixed amount to charge for shipping. Must
+                    be present if type is `fixed_amount`.
+                  properties:
+                    currency_options:
+                      additionalProperties:
+                        properties:
+                          amount:
+                            type: integer
+                          tax_behavior:
+                            enum:
+                            - exclusive
+                            - inclusive
+                            - unspecified
+                            type: string
+                        title: currency_option_update
+                        type: object
+                      type: object
+                  title: fixed_amount_update
+                  type: object
                 metadata:
                   anyOf:
                   - additionalProperties:
@@ -86323,6 +86810,15 @@ paths:
                     additional information about the object in a structured format.
                     Individual keys can be unset by posting an empty value to them.
                     All keys can be unset by posting an empty value to `metadata`.
+                tax_behavior:
+                  description: Specifies whether the rate is considered inclusive
+                    of taxes or exclusive of taxes. One of `inclusive`, `exclusive`,
+                    or `unspecified`.
+                  enum:
+                  - exclusive
+                  - inclusive
+                  - unspecified
+                  type: string
               type: object
         required: false
       responses:
@@ -89076,6 +89572,8 @@ paths:
                       coupon:
                         maxLength: 5000
                         type: string
+                      currency:
+                        type: string
                       default_payment_method:
                         maxLength: 5000
                         type: string
@@ -89481,6 +89979,8 @@ paths:
                         type: string
                       coupon:
                         maxLength: 5000
+                        type: string
+                      currency:
                         type: string
                       default_payment_method:
                         maxLength: 5000
@@ -90145,6 +90645,10 @@ paths:
                     A coupon applied to a subscription will only affect invoices created
                     for that particular subscription.
                   maxLength: 5000
+                  type: string
+                currency:
+                  description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
+                    in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
                   type: string
                 customer:
                   description: The identifier of the customer to subscribe.
