@@ -15103,6 +15103,11 @@ components:
           - "$ref": "#/components/schemas/orders_v2_resource_billing_details"
           description: Customer billing details associated with the order.
           nullable: true
+        client_permissions:
+          anyOf:
+          - "$ref": "#/components/schemas/orders_v2_resource_client_permissions"
+          description: The fields on the Order that can be updated from the client
+          nullable: true
         client_secret:
           description: "The client secret of this Order. Used for client-side retrieval
             using a publishable key. \n\nThe client secret can be used to complete
@@ -15259,6 +15264,7 @@ components:
       - application
       - automatic_tax
       - billing_details
+      - client_permissions
       - customer
       - discounts
       - line_items
@@ -15387,6 +15393,36 @@ components:
       required:
       - capture_method
       title: OrdersV2ResourceCardPaymentMethodOptions
+      type: object
+      x-expandableFields: []
+    orders_v2_resource_client_permissions:
+      description: ''
+      properties:
+        billing_details:
+          description: Allows or disallows billing details to be set on an Order with
+            a publishable key and Order client_secret
+          enum:
+          - allow
+          - disallow
+          nullable: true
+          type: string
+        promotion_codes:
+          description: Allows or disallows promotion codes to be set on an Order with
+            a publishable key and Order client_secret
+          enum:
+          - allow
+          - disallow
+          nullable: true
+          type: string
+        shipping_details:
+          description: Allows or disallows shipping details to be set on an Order
+            with a publishable key and Order client_secret
+          enum:
+          - allow
+          - disallow
+          nullable: true
+          type: string
+      title: OrdersV2ResourceClientPermissions
       type: object
       x-expandableFields: []
     orders_v2_resource_payment:
@@ -15887,6 +15923,7 @@ components:
           enum:
           - us_bank_account
           type: string
+          x-stripeBypassValidation: true
         us_bank_account:
           "$ref": "#/components/schemas/outbound_transfers_payment_method_details_us_bank_account"
       required:
@@ -29562,6 +29599,9 @@ components:
       description: Represents a reader action to process a setup intent
       properties:
         generated_card:
+          description: ID of a card PaymentMethod generated from the card_present
+            PaymentMethod that may be attached to a Customer for future transactions.
+            Only present if it was possible to generate a card PaymentMethod.
           maxLength: 5000
           type: string
         setup_intent:
@@ -30997,6 +31037,7 @@ components:
         destination_payment_method:
           description: The PaymentMethod used as the payment instrument for an OutboundTransfer.
           maxLength: 5000
+          nullable: true
           type: string
         destination_payment_method_details:
           "$ref": "#/components/schemas/outbound_transfers_payment_method_details"
@@ -31079,7 +31120,6 @@ components:
       - cancelable
       - created
       - currency
-      - destination_payment_method
       - destination_payment_method_details
       - expected_arrival_date
       - financial_account
@@ -67636,6 +67676,9 @@ paths:
               billing_details:
                 explode: true
                 style: deepObject
+              client_permissions:
+                explode: true
+                style: deepObject
               discounts:
                 explode: true
                 style: deepObject
@@ -67713,6 +67756,28 @@ paths:
                   description: Billing details for the customer. If a customer is
                     provided, this will be automatically populated with values from
                     that customer if override values are not provided.
+                client_permissions:
+                  description: The fields on the order that are allowed to be updated
+                    from your frontend application with a publishable key and order
+                    client secret.
+                  properties:
+                    billing_details:
+                      enum:
+                      - allow
+                      - disallow
+                      type: string
+                    promotion_codes:
+                      enum:
+                      - allow
+                      - disallow
+                      type: string
+                    shipping_details:
+                      enum:
+                      - allow
+                      - disallow
+                      type: string
+                  title: client_permissions
+                  type: object
                 currency:
                   description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
                     in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
@@ -68560,6 +68625,9 @@ paths:
               billing_details:
                 explode: true
                 style: deepObject
+              client_permissions:
+                explode: true
+                style: deepObject
               discounts:
                 explode: true
                 style: deepObject
@@ -68637,6 +68705,28 @@ paths:
                   description: Billing details for the customer. If a customer is
                     provided, this will be automatically populated with values from
                     that customer if override values are not provided.
+                client_permissions:
+                  description: The fields on the order that are allowed to be updated
+                    from your frontend application with a publishable key and order
+                    client secret.
+                  properties:
+                    billing_details:
+                      enum:
+                      - allow
+                      - disallow
+                      type: string
+                    promotion_codes:
+                      enum:
+                      - allow
+                      - disallow
+                      type: string
+                    shipping_details:
+                      enum:
+                      - allow
+                      - disallow
+                      type: string
+                  title: client_permissions
+                  type: object
                 currency:
                   description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
                     in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
@@ -93961,7 +94051,7 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/customer_balance_transaction"
+                "$ref": "#/components/schemas/customer_cash_balance_transaction"
           description: Successful response.
         default:
           content:
@@ -99138,7 +99228,6 @@ paths:
               required:
               - amount
               - currency
-              - destination_payment_method
               - financial_account
               type: object
         required: true
