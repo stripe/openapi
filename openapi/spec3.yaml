@@ -2312,6 +2312,8 @@ components:
           description: Has the value `true` if the object exists in live mode or the
             value `false` if the object exists in test mode.
           type: boolean
+        login_page:
+          "$ref": "#/components/schemas/portal_login_page"
         metadata:
           additionalProperties:
             maxLength: 500
@@ -2340,6 +2342,7 @@ components:
       - id
       - is_default
       - livemode
+      - login_page
       - object
       - updated
       title: PortalConfiguration
@@ -2348,6 +2351,7 @@ components:
       - application
       - business_profile
       - features
+      - login_page
       x-resourceId: billing_portal.configuration
     billing_portal.session:
       description: |-
@@ -2718,18 +2722,6 @@ components:
           enum:
           - card
           type: string
-        recipient:
-          anyOf:
-          - maxLength: 5000
-            type: string
-          - "$ref": "#/components/schemas/recipient"
-          description: The recipient that this card belongs to. This attribute will
-            not be in the card object if the card belongs to a customer or account
-            instead.
-          nullable: true
-          x-expansionResources:
-            oneOf:
-            - "$ref": "#/components/schemas/recipient"
         status:
           description: For external accounts, possible values are `new` and `errored`.
             If a transfer fails, the status is set to `errored` and transfers are
@@ -2757,7 +2749,6 @@ components:
       x-expandableFields:
       - account
       - customer
-      - recipient
       x-resourceId: card
     card_generated_from_payment_method_details:
       description: ''
@@ -3201,7 +3192,6 @@ components:
       - object
       - paid
       - refunded
-      - refunds
       - status
       title: Charge
       type: object
@@ -19585,8 +19575,8 @@ components:
           description: The customer's bank. Should be one of `arzte_und_apotheker_bank`,
             `austrian_anadi_bank_ag`, `bank_austria`, `bankhaus_carl_spangler`, `bankhaus_schelhammer_und_schattera_ag`,
             `bawag_psk_ag`, `bks_bank_ag`, `brull_kallmus_bank_ag`, `btv_vier_lander_bank`,
-            `capital_bank_grawe_gruppe_ag`, `dolomitenbank`, `easybank_ag`, `erste_bank_und_sparkassen`,
-            `hypo_alpeadriabank_international_ag`, `hypo_noe_lb_fur_niederosterreich_u_wien`,
+            `capital_bank_grawe_gruppe_ag`, `deutsche_bank_ag`, `dolomitenbank`, `easybank_ag`,
+            `erste_bank_und_sparkassen`, `hypo_alpeadriabank_international_ag`, `hypo_noe_lb_fur_niederosterreich_u_wien`,
             `hypo_oberosterreich_salzburg_steiermark`, `hypo_tirol_bank_ag`, `hypo_vorarlberg_bank_ag`,
             `hypo_bank_burgenland_aktiengesellschaft`, `marchfelder_bank`, `oberbank_ag`,
             `raiffeisen_bankengruppe_osterreich`, `schoellerbank_ag`, `sparda_bank_wien`,
@@ -19602,6 +19592,7 @@ components:
           - brull_kallmus_bank_ag
           - btv_vier_lander_bank
           - capital_bank_grawe_gruppe_ag
+          - deutsche_bank_ag
           - dolomitenbank
           - easybank_ag
           - erste_bank_und_sparkassen
@@ -20304,8 +20295,8 @@ components:
           description: The customer's bank. Should be one of `arzte_und_apotheker_bank`,
             `austrian_anadi_bank_ag`, `bank_austria`, `bankhaus_carl_spangler`, `bankhaus_schelhammer_und_schattera_ag`,
             `bawag_psk_ag`, `bks_bank_ag`, `brull_kallmus_bank_ag`, `btv_vier_lander_bank`,
-            `capital_bank_grawe_gruppe_ag`, `dolomitenbank`, `easybank_ag`, `erste_bank_und_sparkassen`,
-            `hypo_alpeadriabank_international_ag`, `hypo_noe_lb_fur_niederosterreich_u_wien`,
+            `capital_bank_grawe_gruppe_ag`, `deutsche_bank_ag`, `dolomitenbank`, `easybank_ag`,
+            `erste_bank_und_sparkassen`, `hypo_alpeadriabank_international_ag`, `hypo_noe_lb_fur_niederosterreich_u_wien`,
             `hypo_oberosterreich_salzburg_steiermark`, `hypo_tirol_bank_ag`, `hypo_vorarlberg_bank_ag`,
             `hypo_bank_burgenland_aktiengesellschaft`, `marchfelder_bank`, `oberbank_ag`,
             `raiffeisen_bankengruppe_osterreich`, `schoellerbank_ag`, `sparda_bank_wien`,
@@ -20321,6 +20312,7 @@ components:
           - brull_kallmus_bank_ag
           - btv_vier_lander_bank
           - capital_bank_grawe_gruppe_ag
+          - deutsche_bank_ag
           - dolomitenbank
           - easybank_ag
           - erste_bank_und_sparkassen
@@ -22722,6 +22714,27 @@ components:
       title: PortalInvoiceList
       type: object
       x-expandableFields: []
+    portal_login_page:
+      description: ''
+      properties:
+        enabled:
+          description: |-
+            If `true`, a shareable `url` will be generated that will take your customers to a hosted login page for the customer portal.
+
+            If `false`, the previously generated `url`, if any, will be deactivated.
+          type: boolean
+        url:
+          description: A shareable URL to the hosted portal login page. Your customers
+            will be able to log in with their [email](https://stripe.com/docs/api/customers/object#customer_object-email)
+            and receive a link to their customer portal.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+      - enabled
+      title: PortalLoginPage
+      type: object
+      x-expandableFields: []
     portal_payment_method_update:
       description: ''
       properties:
@@ -23747,6 +23760,13 @@ components:
     quotes_resource_subscription_data:
       description: ''
       properties:
+        description:
+          description: The subscription's description, meant to be displayable to
+            the customer. Use this field to optionally store an explanation of the
+            subscription.
+          maxLength: 5000
+          nullable: true
+          type: string
         effective_date:
           description: When creating a new subscription, the date of which the subscription
             schedule will start after the quote is accepted. This date is ignored
@@ -24208,147 +24228,6 @@ components:
       title: received_payment_method_details_financial_account
       type: object
       x-expandableFields: []
-    recipient:
-      description: |-
-        With `Recipient` objects, you can transfer money from your Stripe account to a
-        third-party bank account or debit card. The API allows you to create, delete,
-        and update your recipients. You can retrieve individual recipients as well as
-        a list of all your recipients.
-
-        **`Recipient` objects have been deprecated in favor of
-        [Connect](https://stripe.com/docs/connect), specifically Connect's much more powerful
-        [Account objects](https://stripe.com/docs/api#account). Stripe accounts that don't already use
-        recipients can no longer begin doing so. Please use `Account` objects
-        instead.**
-      properties:
-        active_account:
-          anyOf:
-          - "$ref": "#/components/schemas/bank_account"
-          description: Hash describing the current account on the recipient, if there
-            is one.
-          nullable: true
-        cards:
-          description: ''
-          nullable: true
-          properties:
-            data:
-              items:
-                "$ref": "#/components/schemas/card"
-              type: array
-            has_more:
-              description: True if this list has another page of items after this
-                one that can be fetched.
-              type: boolean
-            object:
-              description: String representing the object's type. Objects of the same
-                type share the same value. Always has the value `list`.
-              enum:
-              - list
-              type: string
-            url:
-              description: The URL where this list can be accessed.
-              maxLength: 5000
-              type: string
-          required:
-          - data
-          - has_more
-          - object
-          - url
-          title: CardList
-          type: object
-          x-expandableFields:
-          - data
-        created:
-          description: Time at which the object was created. Measured in seconds since
-            the Unix epoch.
-          format: unix-time
-          type: integer
-        default_card:
-          anyOf:
-          - maxLength: 5000
-            type: string
-          - "$ref": "#/components/schemas/card"
-          description: The default card to use for creating transfers to this recipient.
-          nullable: true
-          x-expansionResources:
-            oneOf:
-            - "$ref": "#/components/schemas/card"
-        description:
-          description: An arbitrary string attached to the object. Often useful for
-            displaying to users.
-          maxLength: 5000
-          nullable: true
-          type: string
-        email:
-          maxLength: 5000
-          nullable: true
-          type: string
-        id:
-          description: Unique identifier for the object.
-          maxLength: 5000
-          type: string
-        livemode:
-          description: Has the value `true` if the object exists in live mode or the
-            value `false` if the object exists in test mode.
-          type: boolean
-        metadata:
-          additionalProperties:
-            maxLength: 500
-            type: string
-          description: Set of [key-value pairs](https://stripe.com/docs/api/metadata)
-            that you can attach to an object. This can be useful for storing additional
-            information about the object in a structured format.
-          type: object
-        migrated_to:
-          anyOf:
-          - maxLength: 5000
-            type: string
-          - "$ref": "#/components/schemas/account"
-          description: 'The ID of the [Custom account](https://stripe.com/docs/connect/custom-accounts)
-            this recipient was migrated to. If set, the recipient can no longer be
-            updated, nor can transfers be made to it: use the Custom account instead.'
-          nullable: true
-          x-expansionResources:
-            oneOf:
-            - "$ref": "#/components/schemas/account"
-        name:
-          description: Full, legal name of the recipient.
-          maxLength: 5000
-          nullable: true
-          type: string
-        object:
-          description: String representing the object's type. Objects of the same
-            type share the same value.
-          enum:
-          - recipient
-          type: string
-        rolled_back_from:
-          anyOf:
-          - maxLength: 5000
-            type: string
-          - "$ref": "#/components/schemas/account"
-          x-expansionResources:
-            oneOf:
-            - "$ref": "#/components/schemas/account"
-        type:
-          description: Type of the recipient, one of `individual` or `corporation`.
-          maxLength: 5000
-          type: string
-      required:
-      - created
-      - id
-      - livemode
-      - metadata
-      - object
-      - type
-      title: TransferRecipient
-      type: object
-      x-expandableFields:
-      - active_account
-      - cards
-      - default_card
-      - migrated_to
-      - rolled_back_from
     recurring:
       description: ''
       properties:
@@ -28576,6 +28455,12 @@ components:
             "$ref": "#/components/schemas/tax_rate"
           nullable: true
           type: array
+        description:
+          description: Subscription description, meant to be displayable to the customer.
+            Use this field to optionally store an explanation of the subscription.
+          maxLength: 5000
+          nullable: true
+          type: string
         end_date:
           description: The end of this phase of the subscription schedule.
           format: unix-time
@@ -28695,6 +28580,12 @@ components:
           x-expansionResources:
             oneOf:
             - "$ref": "#/components/schemas/payment_method"
+        description:
+          description: Subscription description, meant to be displayable to the customer.
+            Use this field to optionally store an explanation of the subscription.
+          maxLength: 5000
+          nullable: true
+          type: string
         invoice_settings:
           anyOf:
           - "$ref": "#/components/schemas/invoice_setting_subscription_schedule_setting"
@@ -30690,7 +30581,6 @@ components:
             type: string
           type: array
       required:
-      - active_features
       - balance
       - country
       - created
@@ -30698,8 +30588,6 @@ components:
       - id
       - livemode
       - object
-      - pending_features
-      - restricted_features
       - status
       - status_details
       - supported_currencies
@@ -43546,6 +43434,9 @@ paths:
               features:
                 explode: true
                 style: deepObject
+              login_page:
+                explode: true
+                style: deepObject
               metadata:
                 explode: true
                 style: deepObject
@@ -43724,6 +43615,16 @@ paths:
                       type: object
                   title: features_creation_param
                   type: object
+                login_page:
+                  description: The hosted login page for this configuration. Learn
+                    more about the portal login page in our [integration docs](https://stripe.com/docs/billing/subscriptions/integrating-customer-portal#share).
+                  properties:
+                    enabled:
+                      type: boolean
+                  required:
+                  - enabled
+                  title: login_page_create_param
+                  type: object
                 metadata:
                   additionalProperties:
                     type: string
@@ -43823,6 +43724,9 @@ paths:
                 explode: true
                 style: deepObject
               features:
+                explode: true
+                style: deepObject
+              login_page:
                 explode: true
                 style: deepObject
               metadata:
@@ -44005,6 +43909,16 @@ paths:
                       title: subscription_update_updating_param
                       type: object
                   title: features_updating_param
+                  type: object
+                login_page:
+                  description: The hosted login page for this configuration. Learn
+                    more about the portal login page in our [integration docs](https://stripe.com/docs/billing/subscriptions/integrating-customer-portal#share).
+                  properties:
+                    enabled:
+                      type: boolean
+                  required:
+                  - enabled
+                  title: login_page_update_param
                   type: object
                 metadata:
                   anyOf:
@@ -70333,6 +70247,7 @@ paths:
                           - brull_kallmus_bank_ag
                           - btv_vier_lander_bank
                           - capital_bank_grawe_gruppe_ag
+                          - deutsche_bank_ag
                           - dolomitenbank
                           - easybank_ag
                           - erste_bank_und_sparkassen
@@ -71866,6 +71781,7 @@ paths:
                           - brull_kallmus_bank_ag
                           - btv_vier_lander_bank
                           - capital_bank_grawe_gruppe_ag
+                          - deutsche_bank_ag
                           - dolomitenbank
                           - easybank_ag
                           - erste_bank_und_sparkassen
@@ -73484,6 +73400,7 @@ paths:
                           - brull_kallmus_bank_ag
                           - btv_vier_lander_bank
                           - capital_bank_grawe_gruppe_ag
+                          - deutsche_bank_ag
                           - dolomitenbank
                           - easybank_ag
                           - erste_bank_und_sparkassen
@@ -76488,6 +76405,7 @@ paths:
                       - brull_kallmus_bank_ag
                       - btv_vier_lander_bank
                       - capital_bank_grawe_gruppe_ag
+                      - deutsche_bank_ag
                       - dolomitenbank
                       - easybank_ag
                       - erste_bank_und_sparkassen
@@ -80402,6 +80320,9 @@ paths:
                     is created if `subscription_data[effective_date]` is present and
                     in the future, otherwise a subscription is created.
                   properties:
+                    description:
+                      maxLength: 500
+                      type: string
                     effective_date:
                       anyOf:
                       - enum:
@@ -80753,6 +80674,9 @@ paths:
                     is created if `subscription_data[effective_date]` is present and
                     in the future, otherwise a subscription is created.
                   properties:
+                    description:
+                      maxLength: 500
+                      type: string
                     effective_date:
                       anyOf:
                       - enum:
@@ -84098,6 +84022,7 @@ paths:
                           - brull_kallmus_bank_ag
                           - btv_vier_lander_bank
                           - capital_bank_grawe_gruppe_ag
+                          - deutsche_bank_ag
                           - dolomitenbank
                           - easybank_ag
                           - erste_bank_und_sparkassen
@@ -84871,6 +84796,7 @@ paths:
                           - brull_kallmus_bank_ag
                           - btv_vier_lander_bank
                           - capital_bank_grawe_gruppe_ag
+                          - deutsche_bank_ag
                           - dolomitenbank
                           - easybank_ag
                           - erste_bank_und_sparkassen
@@ -85648,6 +85574,7 @@ paths:
                           - brull_kallmus_bank_ag
                           - btv_vier_lander_bank
                           - capital_bank_grawe_gruppe_ag
+                          - deutsche_bank_ag
                           - dolomitenbank
                           - easybank_ag
                           - erste_bank_und_sparkassen
@@ -89182,6 +89109,9 @@ paths:
                     default_payment_method:
                       maxLength: 5000
                       type: string
+                    description:
+                      maxLength: 500
+                      type: string
                     invoice_settings:
                       properties:
                         days_until_due:
@@ -89344,6 +89274,9 @@ paths:
                         - enum:
                           - ''
                           type: string
+                      description:
+                        maxLength: 500
+                        type: string
                       end_date:
                         format: unix-time
                         type: integer
@@ -89599,6 +89532,9 @@ paths:
                     default_payment_method:
                       maxLength: 5000
                       type: string
+                    description:
+                      maxLength: 500
+                      type: string
                     invoice_settings:
                       properties:
                         days_until_due:
@@ -89750,6 +89686,9 @@ paths:
                         - enum:
                           - ''
                           type: string
+                      description:
+                        maxLength: 500
+                        type: string
                       end_date:
                         anyOf:
                         - type: integer
