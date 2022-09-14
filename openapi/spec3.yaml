@@ -4219,6 +4219,16 @@ components:
       title: CheckoutPaynowPaymentMethodOptions
       type: object
       x-expandableFields: []
+    checkout_pix_payment_method_options:
+      description: ''
+      properties:
+        expires_after_seconds:
+          description: The number of seconds after which Pix payment will expire.
+          nullable: true
+          type: integer
+      title: CheckoutPixPaymentMethodOptions
+      type: object
+      x-expandableFields: []
     checkout_sepa_debit_payment_method_options:
       description: ''
       properties:
@@ -4280,6 +4290,8 @@ components:
           "$ref": "#/components/schemas/checkout_p24_payment_method_options"
         paynow:
           "$ref": "#/components/schemas/checkout_paynow_payment_method_options"
+        pix:
+          "$ref": "#/components/schemas/checkout_pix_payment_method_options"
         sepa_debit:
           "$ref": "#/components/schemas/checkout_sepa_debit_payment_method_options"
         sofort:
@@ -4309,6 +4321,7 @@ components:
       - oxxo
       - p24
       - paynow
+      - pix
       - sepa_debit
       - sofort
       - us_bank_account
@@ -9180,6 +9193,12 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        from_invoice:
+          anyOf:
+          - "$ref": "#/components/schemas/invoices_from_invoice"
+          description: Details of the invoice that was cloned. See the [revision documentation](https://stripe.com/docs/invoicing/invoice-revisions)
+            for more details.
+          nullable: true
         hosted_invoice_url:
           description: The URL for the hosted invoice page, which allows customers
             to view and pay an invoice. If the invoice has not been finalized yet,
@@ -9203,6 +9222,16 @@ components:
           description: The error encountered during the previous attempt to finalize
             the invoice. This field is cleared when the invoice is successfully finalized.
           nullable: true
+        latest_revision:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/invoice"
+          description: The ID of the most recent non-draft revision of this invoice
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/invoice"
         lines:
           description: 'The individual line items that make up the invoice. `lines`
             is sorted as follows: invoice items in reverse chronological order, followed
@@ -9491,7 +9520,9 @@ components:
       - default_tax_rates
       - discount
       - discounts
+      - from_invoice
       - last_finalization_error
+      - latest_revision
       - lines
       - on_behalf_of
       - payment_intent
@@ -10072,6 +10103,29 @@ components:
       - tax_rates
       - test_clock
       x-resourceId: invoiceitem
+    invoices_from_invoice:
+      description: ''
+      properties:
+        action:
+          description: The relation between this invoice and the cloned invoice
+          maxLength: 5000
+          type: string
+        invoice:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/invoice"
+          description: The invoice that was cloned.
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/invoice"
+      required:
+      - action
+      - invoice
+      title: InvoicesFromInvoice
+      type: object
+      x-expandableFields:
+      - invoice
     invoices_line_items_credited_items:
       description: ''
       properties:
@@ -16500,6 +16554,8 @@ components:
           "$ref": "#/components/schemas/payment_intent_next_action_display_oxxo_details"
         paynow_display_qr_code:
           "$ref": "#/components/schemas/payment_intent_next_action_paynow_display_qr_code"
+        pix_display_qr_code:
+          "$ref": "#/components/schemas/payment_intent_next_action_pix_display_qr_code"
         promptpay_display_qr_code:
           "$ref": "#/components/schemas/payment_intent_next_action_promptpay_display_qr_code"
         redirect_to_url:
@@ -16536,6 +16592,7 @@ components:
       - konbini_display_details
       - oxxo_display_details
       - paynow_display_qr_code
+      - pix_display_qr_code
       - promptpay_display_qr_code
       - redirect_to_url
       - verify_with_microdeposits
@@ -16824,6 +16881,33 @@ components:
       title: PaymentIntentNextActionPaynowDisplayQrCode
       type: object
       x-expandableFields: []
+    payment_intent_next_action_pix_display_qr_code:
+      description: ''
+      properties:
+        data:
+          description: The raw data string used to generate QR code, it should be
+            used together with QR code library.
+          maxLength: 5000
+          type: string
+        expires_at:
+          description: The date (unix timestamp) when the PIX expires.
+          type: integer
+        hosted_instructions_url:
+          description: The URL to the hosted pix instructions page, which allows customers
+            to view the pix QR code.
+          maxLength: 5000
+          type: string
+        image_url_png:
+          description: "​​The image_url_png string used to render png QR code"
+          maxLength: 5000
+          type: string
+        image_url_svg:
+          description: "​​The image_url_svg string used to render svg QR code"
+          maxLength: 5000
+          type: string
+      title: PaymentIntentNextActionPixDisplayQrCode
+      type: object
+      x-expandableFields: []
     payment_intent_next_action_promptpay_display_qr_code:
       description: ''
       properties:
@@ -17079,6 +17163,10 @@ components:
           anyOf:
           - "$ref": "#/components/schemas/payment_method_options_paynow"
           - "$ref": "#/components/schemas/payment_intent_type_specific_payment_method_options_client"
+        pix:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_method_options_pix"
+          - "$ref": "#/components/schemas/payment_intent_type_specific_payment_method_options_client"
         promptpay:
           anyOf:
           - "$ref": "#/components/schemas/payment_method_options_promptpay"
@@ -17126,6 +17214,7 @@ components:
       - oxxo
       - p24
       - paynow
+      - pix
       - promptpay
       - sepa_debit
       - sofort
@@ -17630,6 +17719,7 @@ components:
             - oxxo
             - p24
             - paynow
+            - pix
             - promptpay
             - sepa_debit
             - sofort
@@ -18242,6 +18332,8 @@ components:
           "$ref": "#/components/schemas/payment_method_p24"
         paynow:
           "$ref": "#/components/schemas/payment_method_paynow"
+        pix:
+          "$ref": "#/components/schemas/payment_method_pix"
         promptpay:
           "$ref": "#/components/schemas/payment_method_promptpay"
         radar_options:
@@ -18279,6 +18371,7 @@ components:
           - oxxo
           - p24
           - paynow
+          - pix
           - promptpay
           - sepa_debit
           - sofort
@@ -18326,6 +18419,7 @@ components:
       - oxxo
       - p24
       - paynow
+      - pix
       - promptpay
       - radar_options
       - sepa_debit
@@ -18791,6 +18885,8 @@ components:
           "$ref": "#/components/schemas/payment_method_details_p24"
         paynow:
           "$ref": "#/components/schemas/payment_method_details_paynow"
+        pix:
+          "$ref": "#/components/schemas/payment_method_details_pix"
         promptpay:
           "$ref": "#/components/schemas/payment_method_details_promptpay"
         sepa_debit:
@@ -18844,6 +18940,7 @@ components:
       - oxxo
       - p24
       - paynow
+      - pix
       - promptpay
       - sepa_debit
       - sofort
@@ -20105,6 +20202,17 @@ components:
       title: payment_method_details_paynow
       type: object
       x-expandableFields: []
+    payment_method_details_pix:
+      description: ''
+      properties:
+        bank_transaction_id:
+          description: Unique transaction id generated by BCB
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: payment_method_details_pix
+      type: object
+      x-expandableFields: []
     payment_method_details_promptpay:
       description: ''
       properties:
@@ -21030,6 +21138,21 @@ components:
       title: payment_method_options_paypal
       type: object
       x-expandableFields: []
+    payment_method_options_pix:
+      description: ''
+      properties:
+        expires_after_seconds:
+          description: The number of seconds (between 10 and 1209600) after which
+            Pix payment will expire.
+          nullable: true
+          type: integer
+        expires_at:
+          description: The timestamp at which the Pix expires.
+          nullable: true
+          type: integer
+      title: payment_method_options_pix
+      type: object
+      x-expandableFields: []
     payment_method_options_promptpay:
       description: ''
       properties:
@@ -21154,6 +21277,12 @@ components:
       description: ''
       properties: {}
       title: payment_method_paynow
+      type: object
+      x-expandableFields: []
+    payment_method_pix:
+      description: ''
+      properties: {}
+      title: payment_method_pix
       type: object
       x-expandableFields: []
     payment_method_promptpay:
@@ -30385,6 +30514,11 @@ components:
         amount:
           description: Amount (in cents) transferred.
           type: integer
+        created:
+          description: Time at which the object was created. Measured in seconds since
+            the Unix epoch.
+          format: unix-time
+          type: integer
         currency:
           description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
             in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
@@ -30459,6 +30593,7 @@ components:
             - "$ref": "#/components/schemas/treasury.transaction"
       required:
       - amount
+      - created
       - currency
       - id
       - livemode
@@ -46453,6 +46588,12 @@ paths:
                           type: boolean
                       title: payment_method_options_param
                       type: object
+                    pix:
+                      properties:
+                        expires_after_seconds:
+                          type: integer
+                      title: payment_method_options_param
+                      type: object
                     sepa_debit:
                       properties:
                         setup_future_usage:
@@ -46559,6 +46700,7 @@ paths:
                     - oxxo
                     - p24
                     - paynow
+                    - pix
                     - promptpay
                     - sepa_debit
                     - sofort
@@ -51735,6 +51877,7 @@ paths:
           - oxxo
           - p24
           - paynow
+          - pix
           - promptpay
           - sepa_debit
           - sofort
@@ -57773,6 +57916,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              from_invoice:
+                explode: true
+                style: deepObject
               metadata:
                 explode: true
                 style: deepObject
@@ -57924,6 +58070,24 @@ paths:
                   description: Footer to be displayed on the invoice.
                   maxLength: 5000
                   type: string
+                from_invoice:
+                  description: Revise an existing invoice. The new invoice will be
+                    created in `status=draft`. See the [revision documentation](https://stripe.com/docs/invoicing/invoice-revisions)
+                    for more details.
+                  properties:
+                    action:
+                      enum:
+                      - revision
+                      maxLength: 5000
+                      type: string
+                    invoice:
+                      maxLength: 5000
+                      type: string
+                  required:
+                  - action
+                  - invoice
+                  title: from_invoice
+                  type: object
                 metadata:
                   anyOf:
                   - additionalProperties:
@@ -70440,6 +70604,10 @@ paths:
                       properties: {}
                       title: param
                       type: object
+                    pix:
+                      properties: {}
+                      title: param
+                      type: object
                     promptpay:
                       properties: {}
                       title: param
@@ -70498,6 +70666,7 @@ paths:
                       - oxxo
                       - p24
                       - paynow
+                      - pix
                       - promptpay
                       - sepa_debit
                       - sofort
@@ -71128,6 +71297,19 @@ paths:
                             enum:
                             - none
                             type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                    pix:
+                      anyOf:
+                      - properties:
+                          expires_after_seconds:
+                            type: integer
+                          expires_at:
+                            format: unix-time
+                            type: integer
                         title: payment_method_options_param
                         type: object
                       - enum:
@@ -71982,6 +72164,10 @@ paths:
                       properties: {}
                       title: param
                       type: object
+                    pix:
+                      properties: {}
+                      title: param
+                      type: object
                     promptpay:
                       properties: {}
                       title: param
@@ -72040,6 +72226,7 @@ paths:
                       - oxxo
                       - p24
                       - paynow
+                      - pix
                       - promptpay
                       - sepa_debit
                       - sofort
@@ -72670,6 +72857,19 @@ paths:
                             enum:
                             - none
                             type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                    pix:
+                      anyOf:
+                      - properties:
+                          expires_after_seconds:
+                            type: integer
+                          expires_at:
+                            format: unix-time
+                            type: integer
                         title: payment_method_options_param
                         type: object
                       - enum:
@@ -73609,6 +73809,10 @@ paths:
                       properties: {}
                       title: param
                       type: object
+                    pix:
+                      properties: {}
+                      title: param
+                      type: object
                     promptpay:
                       properties: {}
                       title: param
@@ -73667,6 +73871,7 @@ paths:
                       - oxxo
                       - p24
                       - paynow
+                      - pix
                       - promptpay
                       - sepa_debit
                       - sofort
@@ -74297,6 +74502,19 @@ paths:
                             enum:
                             - none
                             type: string
+                        title: payment_method_options_param
+                        type: object
+                      - enum:
+                        - ''
+                        type: string
+                    pix:
+                      anyOf:
+                      - properties:
+                          expires_after_seconds:
+                            type: integer
+                          expires_at:
+                            format: unix-time
+                            type: integer
                         title: payment_method_options_param
                         type: object
                       - enum:
@@ -75063,6 +75281,7 @@ paths:
                     - oxxo
                     - p24
                     - paynow
+                    - pix
                     - promptpay
                     - sepa_debit
                     - sofort
@@ -75630,6 +75849,7 @@ paths:
                       - oxxo
                       - p24
                       - paynow
+                      - pix
                       - promptpay
                       - sepa_debit
                       - sofort
@@ -76105,6 +76325,7 @@ paths:
           - oxxo
           - p24
           - paynow
+          - pix
           - promptpay
           - sepa_debit
           - sofort
@@ -76250,6 +76471,9 @@ paths:
                 explode: true
                 style: deepObject
               paynow:
+                explode: true
+                style: deepObject
+              pix:
                 explode: true
                 style: deepObject
               promptpay:
@@ -76662,6 +76886,12 @@ paths:
                   properties: {}
                   title: param
                   type: object
+                pix:
+                  description: If this is a `pix` PaymentMethod, this hash contains
+                    details about the Pix payment method.
+                  properties: {}
+                  title: param
+                  type: object
                 promptpay:
                   description: If this is a `promptpay` PaymentMethod, this hash contains
                     details about the PromptPay payment method.
@@ -76733,6 +76963,7 @@ paths:
                   - oxxo
                   - p24
                   - paynow
+                  - pix
                   - promptpay
                   - sepa_debit
                   - sofort
@@ -84242,6 +84473,10 @@ paths:
                       properties: {}
                       title: param
                       type: object
+                    pix:
+                      properties: {}
+                      title: param
+                      type: object
                     promptpay:
                       properties: {}
                       title: param
@@ -84300,6 +84535,7 @@ paths:
                       - oxxo
                       - p24
                       - paynow
+                      - pix
                       - promptpay
                       - sepa_debit
                       - sofort
@@ -85016,6 +85252,10 @@ paths:
                       properties: {}
                       title: param
                       type: object
+                    pix:
+                      properties: {}
+                      title: param
+                      type: object
                     promptpay:
                       properties: {}
                       title: param
@@ -85074,6 +85314,7 @@ paths:
                       - oxxo
                       - p24
                       - paynow
+                      - pix
                       - promptpay
                       - sepa_debit
                       - sofort
@@ -85794,6 +86035,10 @@ paths:
                       properties: {}
                       title: param
                       type: object
+                    pix:
+                      properties: {}
+                      title: param
+                      type: object
                     promptpay:
                       properties: {}
                       title: param
@@ -85852,6 +86097,7 @@ paths:
                       - oxxo
                       - p24
                       - paynow
+                      - pix
                       - promptpay
                       - sepa_debit
                       - sofort
