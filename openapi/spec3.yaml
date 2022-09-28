@@ -3389,6 +3389,11 @@ components:
           description: When set, provides configuration for the Checkout Session to
             gather active consent from customers.
           nullable: true
+        created:
+          description: Time at which the object was created. Measured in seconds since
+            the Unix epoch.
+          format: unix-time
+          type: integer
         currency:
           description: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),
             in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
@@ -3700,6 +3705,7 @@ components:
       required:
       - automatic_tax
       - cancel_url
+      - created
       - expires_at
       - id
       - livemode
@@ -19439,7 +19445,6 @@ components:
         incremental_authorization_supported:
           description: Whether this [PaymentIntent](https://stripe.com/docs/api/payment_intents)
             is eligible for incremental authorizations. Request support using [request_incremental_authorization_support](https://stripe.com/docs/api/payment_intents/create#create_payment_intent-payment_method_options-card_present-request_incremental_authorization_support).
-          nullable: true
           type: boolean
         last4:
           description: The last four digits of the card.
@@ -19456,7 +19461,6 @@ components:
         overcapture_supported:
           description: Defines whether the authorized amount can be over-captured
             or not
-          nullable: true
           type: boolean
         read_method:
           description: How card details were read in this transaction.
@@ -19477,6 +19481,8 @@ components:
       required:
       - exp_month
       - exp_year
+      - incremental_authorization_supported
+      - overcapture_supported
       title: payment_method_details_card_present
       type: object
       x-expandableFields:
@@ -21159,6 +21165,16 @@ components:
           description: The timestamp at which the Pix expires.
           nullable: true
           type: integer
+        setup_future_usage:
+          description: |-
+            Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+            Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete. If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.
+
+            When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+          enum:
+          - none
+          type: string
       title: payment_method_options_pix
       type: object
       x-expandableFields: []
@@ -47129,24 +47145,6 @@ paths:
                     description:
                       maxLength: 500
                       type: string
-                    items:
-                      items:
-                        properties:
-                          plan:
-                            maxLength: 5000
-                            type: string
-                          quantity:
-                            type: integer
-                          tax_rates:
-                            items:
-                              maxLength: 5000
-                              type: string
-                            type: array
-                        required:
-                        - plan
-                        title: subscription_data_item_param
-                        type: object
-                      type: array
                     metadata:
                       additionalProperties:
                         type: string
@@ -71335,6 +71333,10 @@ paths:
                           expires_at:
                             format: unix-time
                             type: integer
+                          setup_future_usage:
+                            enum:
+                            - none
+                            type: string
                         title: payment_method_options_param
                         type: object
                       - enum:
@@ -72895,6 +72897,10 @@ paths:
                           expires_at:
                             format: unix-time
                             type: integer
+                          setup_future_usage:
+                            enum:
+                            - none
+                            type: string
                         title: payment_method_options_param
                         type: object
                       - enum:
@@ -74540,6 +74546,10 @@ paths:
                           expires_at:
                             format: unix-time
                             type: integer
+                          setup_future_usage:
+                            enum:
+                            - none
+                            type: string
                         title: payment_method_options_param
                         type: object
                       - enum:
