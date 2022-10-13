@@ -1059,6 +1059,7 @@ components:
           enum:
           - invalid_address_city_state_postal_code
           - invalid_dob_age_under_18
+          - invalid_representative_country
           - invalid_street_address
           - invalid_tos_acceptance
           - invalid_value_other
@@ -1099,6 +1100,7 @@ components:
           - verification_failed_keyed_match
           - verification_failed_name_match
           - verification_failed_other
+          - verification_failed_residential_address
           - verification_failed_tax_id_match
           - verification_failed_tax_id_not_issued
           - verification_missing_executives
@@ -1330,6 +1332,10 @@ components:
           description: If the error is specific to the type of payment method, the
             payment method type that had a problem. This field is only populated for
             invoice-related errors.
+          maxLength: 5000
+          type: string
+        request_log_url:
+          description: A URL to the request log entry in your dashboard.
           maxLength: 5000
           type: string
         setup_intent:
@@ -4567,6 +4573,7 @@ components:
           - once
           - repeating
           type: string
+          x-stripeBypassValidation: true
         duration_in_months:
           description: If `duration` is `repeating`, the number of months the coupon
             applies. Null if coupon `duration` is `forever` or `once`.
@@ -10450,6 +10457,12 @@ components:
             that you can attach to an object. This can be useful for storing additional
             information about the object in a structured format.
           type: object
+        network_data:
+          anyOf:
+          - "$ref": "#/components/schemas/issuing_authorization_network_data"
+          description: Details about the authorization, such as identifiers, set by
+            the card network.
+          nullable: true
         object:
           description: String representing the object's type. Objects of the same
             type share the same value.
@@ -10525,6 +10538,7 @@ components:
       - card
       - cardholder
       - merchant_data
+      - network_data
       - pending_request
       - request_history
       - transactions
@@ -11207,6 +11221,21 @@ components:
       - category_code
       - network_id
       title: IssuingAuthorizationMerchantData
+      type: object
+      x-expandableFields: []
+    issuing_authorization_network_data:
+      description: ''
+      properties:
+        acquiring_institution_id:
+          description: ID from the network that identifies the acquiring financial
+            institution. For Visa and Mastercard credit transactions this is as 6
+            digit code. For Maestro debit transactions this is a 9 digit code. Uncommonly,
+            acquiring institution ID is not provided. When this occurs, the value
+            will be null.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: IssuingAuthorizationNetworkData
       type: object
       x-expandableFields: []
     issuing_authorization_pending_request:
@@ -42375,9 +42404,8 @@ paths:
                     All keys can be unset by posting an empty value to `metadata`.
                   type: object
                 mode:
-                  description: The mode of the Checkout Session. Required when using
-                    prices or `setup` mode. Pass `subscription` if the Checkout Session
-                    includes at least one recurring item.
+                  description: The mode of the Checkout Session. Pass `subscription`
+                    if the Checkout Session includes at least one recurring item.
                   enum:
                   - payment
                   - setup
@@ -43865,13 +43893,13 @@ paths:
                   type: object
                 duration:
                   description: Specifies how long the discount will be in effect if
-                    used on a subscription. Can be `forever`, `once`, or `repeating`.
-                    Defaults to `once`.
+                    used on a subscription. Defaults to `once`.
                   enum:
                   - forever
                   - once
                   - repeating
                   type: string
+                  x-stripeBypassValidation: true
                 duration_in_months:
                   description: Required only if `duration` is `repeating`, in which
                     case it must be a positive integer that specifies the number of
