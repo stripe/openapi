@@ -24507,6 +24507,10 @@ components:
         but not yet refunded. Funds will be refunded to the credit or debit card that
         was originally charged.
 
+        Stripe Tax users with recurring payments and invoices can create [Credit Notes](https://stripe.com/docs/api/credit_notes),
+        which reduce overall tax liability because tax is correctly recalculated and
+        apportioned to the related invoice.
+
         Related guide: [Refunds](https://stripe.com/docs/refunds).
       properties:
         amount:
@@ -28050,6 +28054,17 @@ components:
           enum:
           - subscription
           type: string
+        on_behalf_of:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/account"
+          description: The account (if any) the charge was made on behalf of for charges
+            associated with this subscription. See the Connect documentation for details.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/account"
         pause_collection:
           anyOf:
           - "$ref": "#/components/schemas/subscriptions_resource_pause_collection"
@@ -28190,6 +28205,7 @@ components:
       - discount
       - items
       - latest_invoice
+      - on_behalf_of
       - pause_collection
       - payment_settings
       - pending_invoice_item_interval
@@ -28727,6 +28743,18 @@ components:
             current phase's `metadata`.
           nullable: true
           type: object
+        on_behalf_of:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/account"
+          description: The account (if any) the charge was made on behalf of for charges
+            associated with the schedule's subscription. See the Connect documentation
+            for details.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/account"
         proration_behavior:
           description: If the subscription schedule will prorate when transitioning
             to this phase. Possible values are `create_prorations` and `none`.
@@ -28769,6 +28797,7 @@ components:
       - default_tax_rates
       - invoice_settings
       - items
+      - on_behalf_of
       - transfer_data
     subscription_schedules_resource_default_settings:
       description: ''
@@ -28832,6 +28861,18 @@ components:
           - "$ref": "#/components/schemas/invoice_setting_subscription_schedule_setting"
           description: The subscription schedule's default invoice settings.
           nullable: true
+        on_behalf_of:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/account"
+          description: The account (if any) the charge was made on behalf of for charges
+            associated with the schedule's subscription. See the Connect documentation
+            for details.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/account"
         transfer_data:
           anyOf:
           - "$ref": "#/components/schemas/subscription_transfer_data"
@@ -28848,6 +28889,7 @@ components:
       - billing_thresholds
       - default_payment_method
       - invoice_settings
+      - on_behalf_of
       - transfer_data
     subscription_schedules_resource_default_settings_automatic_tax:
       description: ''
@@ -43345,6 +43387,8 @@ paths:
                       additionalProperties:
                         type: string
                       type: object
+                    on_behalf_of:
+                      type: string
                     transfer_data:
                       properties:
                         amount_percent:
@@ -53493,6 +53537,9 @@ paths:
               price_data:
                 explode: true
                 style: deepObject
+              tax_code:
+                explode: true
+                style: deepObject
               tax_rates:
                 explode: true
                 style: deepObject
@@ -53626,6 +53673,24 @@ paths:
                     been accrued within the context of a particular subscription.
                   maxLength: 5000
                   type: string
+                tax_behavior:
+                  description: Specifies whether the price is considered inclusive
+                    of taxes or exclusive of taxes. One of `inclusive`, `exclusive`,
+                    or `unspecified`. Once specified as either `inclusive` or `exclusive`,
+                    it cannot be changed.
+                  enum:
+                  - exclusive
+                  - inclusive
+                  - unspecified
+                  type: string
+                tax_code:
+                  anyOf:
+                  - type: string
+                  - enum:
+                    - ''
+                    type: string
+                  description: A [tax code](https://stripe.com/docs/tax/tax-categories)
+                    ID.
                 tax_rates:
                   description: The tax rates which apply to the invoice item. When
                     set, the `default_tax_rates` on the invoice do not apply to this
@@ -53776,6 +53841,9 @@ paths:
               price_data:
                 explode: true
                 style: deepObject
+              tax_code:
+                explode: true
+                style: deepObject
               tax_rates:
                 explode: true
                 style: deepObject
@@ -53884,6 +53952,24 @@ paths:
                   description: Non-negative integer. The quantity of units for the
                     invoice item.
                   type: integer
+                tax_behavior:
+                  description: Specifies whether the price is considered inclusive
+                    of taxes or exclusive of taxes. One of `inclusive`, `exclusive`,
+                    or `unspecified`. Once specified as either `inclusive` or `exclusive`,
+                    it cannot be changed.
+                  enum:
+                  - exclusive
+                  - inclusive
+                  - unspecified
+                  type: string
+                tax_code:
+                  anyOf:
+                  - type: string
+                  - enum:
+                    - ''
+                    type: string
+                  description: A [tax code](https://stripe.com/docs/tax/tax-categories)
+                    ID.
                 tax_rates:
                   anyOf:
                   - items:
@@ -55024,6 +55110,18 @@ paths:
                 type: object
               quantity:
                 type: integer
+              tax_behavior:
+                enum:
+                - exclusive
+                - inclusive
+                - unspecified
+                type: string
+              tax_code:
+                anyOf:
+                - type: string
+                - enum:
+                  - ''
+                  type: string
               tax_rates:
                 anyOf:
                 - items:
@@ -55652,6 +55750,18 @@ paths:
                 type: object
               quantity:
                 type: integer
+              tax_behavior:
+                enum:
+                - exclusive
+                - inclusive
+                - unspecified
+                type: string
+              tax_code:
+                anyOf:
+                - type: string
+                - enum:
+                  - ''
+                  type: string
               tax_rates:
                 anyOf:
                 - items:
@@ -57160,9 +57270,10 @@ paths:
           description: Error response.
   "/v1/issuing/authorizations/{authorization}/approve":
     post:
-      description: <p>Approves a pending Issuing <code>Authorization</code> object.
-        This request should be made within the timeout window of the <a href="/docs/issuing/controls/real-time-authorizations">real-time
-        authorization</a> flow.</p>
+      description: "<p>Approves a pending Issuing <code>Authorization</code> object.
+        This request should be made within the timeout window of the <a href=\"/docs/issuing/controls/real-time-authorizations\">real-time
+        authorization</a> flow. \nYou can also respond directly to the webhook request
+        to approve an authorization (preferred). More details can be found <a href=\"https://site-admin.stripe.com/docs/issuing/controls/real-time-authorizations#authorization-handling\">here</a>.</p>"
       operationId: PostIssuingAuthorizationsAuthorizationApprove
       parameters:
       - in: path
@@ -57227,9 +57338,9 @@ paths:
           description: Error response.
   "/v1/issuing/authorizations/{authorization}/decline":
     post:
-      description: <p>Declines a pending Issuing <code>Authorization</code> object.
-        This request should be made within the timeout window of the <a href="/docs/issuing/controls/real-time-authorizations">real
-        time authorization</a> flow.</p>
+      description: |-
+        <p>Declines a pending Issuing <code>Authorization</code> object. This request should be made within the timeout window of the <a href="/docs/issuing/controls/real-time-authorizations">real time authorization</a> flow.
+        You can also respond directly to the webhook request to decline an authorization (preferred). More details can be found <a href="https://site-admin.stripe.com/docs/issuing/controls/real-time-authorizations#authorization-handling">here</a>.</p>
       operationId: PostIssuingAuthorizationsAuthorizationDecline
       parameters:
       - in: path
@@ -85695,6 +85806,12 @@ paths:
                           type: integer
                       title: subscription_schedules_param
                       type: object
+                    on_behalf_of:
+                      anyOf:
+                      - type: string
+                      - enum:
+                        - ''
+                        type: string
                     transfer_data:
                       anyOf:
                       - properties:
@@ -85940,6 +86057,8 @@ paths:
                         additionalProperties:
                           type: string
                         type: object
+                      on_behalf_of:
+                        type: string
                       proration_behavior:
                         enum:
                         - always_invoice
@@ -86118,6 +86237,12 @@ paths:
                           type: integer
                       title: subscription_schedules_param
                       type: object
+                    on_behalf_of:
+                      anyOf:
+                      - type: string
+                      - enum:
+                        - ''
+                        type: string
                     transfer_data:
                       anyOf:
                       - properties:
@@ -86356,6 +86481,8 @@ paths:
                         additionalProperties:
                           type: string
                         type: object
+                      on_behalf_of:
+                        type: string
                       proration_behavior:
                         enum:
                         - always_invoice
@@ -86778,6 +86905,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              on_behalf_of:
+                explode: true
+                style: deepObject
               payment_settings:
                 explode: true
                 style: deepObject
@@ -87067,6 +87197,14 @@ paths:
                   description: Indicates if a customer is on or off-session while
                     an invoice payment is attempted.
                   type: boolean
+                on_behalf_of:
+                  anyOf:
+                  - type: string
+                  - enum:
+                    - ''
+                    type: string
+                  description: The account on behalf of which to charge, for each
+                    of the subscription's invoices.
                 payment_behavior:
                   description: |-
                     Only applies to subscriptions with `collection_method=charge_automatically`.
@@ -87620,6 +87758,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              on_behalf_of:
+                explode: true
+                style: deepObject
               pause_collection:
                 explode: true
                 style: deepObject
@@ -87913,6 +88054,14 @@ paths:
                   description: Indicates if a customer is on or off-session while
                     an invoice payment is attempted.
                   type: boolean
+                on_behalf_of:
+                  anyOf:
+                  - type: string
+                  - enum:
+                    - ''
+                    type: string
+                  description: The account on behalf of which to charge, for each
+                    of the subscription's invoices.
                 pause_collection:
                   anyOf:
                   - properties:
