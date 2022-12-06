@@ -2405,6 +2405,11 @@ components:
           description: The ID of the customer for this session.
           maxLength: 5000
           type: string
+        flow:
+          anyOf:
+          - "$ref": "#/components/schemas/portal_flow"
+          description: Information about a specific flow for the customer to go through.
+          nullable: true
         id:
           description: Unique identifier for the object.
           maxLength: 5000
@@ -2506,6 +2511,7 @@ components:
       type: object
       x-expandableFields:
       - configuration
+      - flow
       x-resourceId: billing_portal.session
     capability:
       description: |-
@@ -22211,6 +22217,31 @@ components:
       title: PlatformTax
       type: object
       x-expandableFields: []
+    portal_after_completion_hosted_confirmation:
+      description: ''
+      properties:
+        custom_message:
+          description: A custom message to display to the customer after the flow
+            is completed.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: PortalAfterCompletionHostedConfirmation
+      type: object
+      x-expandableFields: []
+    portal_after_completion_redirect:
+      description: ''
+      properties:
+        return_url:
+          description: The URL the customer will be redirected to after the flow is
+            completed.
+          maxLength: 5000
+          type: string
+      required:
+      - return_url
+      title: PortalAfterCompletionRedirect
+      type: object
+      x-expandableFields: []
     portal_business_profile:
       description: ''
       properties:
@@ -22288,6 +22319,70 @@ components:
       - subscription_cancel
       - subscription_pause
       - subscription_update
+    portal_flow:
+      description: ''
+      properties:
+        after_completion:
+          "$ref": "#/components/schemas/portal_flow_after_completion"
+        subscription_cancel:
+          anyOf:
+          - "$ref": "#/components/schemas/portal_flow_subscription_cancel"
+          description: Configuration when `flow.type=subscription_cancel`.
+          nullable: true
+        type:
+          description: Type of flow that the customer will go through.
+          enum:
+          - payment_method_update
+          - subscription_cancel
+          type: string
+          x-stripeBypassValidation: true
+      required:
+      - after_completion
+      - type
+      title: PortalFlow
+      type: object
+      x-expandableFields:
+      - after_completion
+      - subscription_cancel
+    portal_flow_after_completion:
+      description: ''
+      properties:
+        hosted_confirmation:
+          anyOf:
+          - "$ref": "#/components/schemas/portal_after_completion_hosted_confirmation"
+          description: Configuration when `after_completion.type=hosted_confirmation`.
+          nullable: true
+        redirect:
+          anyOf:
+          - "$ref": "#/components/schemas/portal_after_completion_redirect"
+          description: Configuration when `after_completion.type=redirect`.
+          nullable: true
+        type:
+          description: The specified type of behavior after the flow is completed.
+          enum:
+          - hosted_confirmation
+          - portal_homepage
+          - redirect
+          type: string
+      required:
+      - type
+      title: PortalFlowAfterCompletion
+      type: object
+      x-expandableFields:
+      - hosted_confirmation
+      - redirect
+    portal_flow_subscription_cancel:
+      description: ''
+      properties:
+        subscription:
+          description: The ID of the subscription to be canceled.
+          maxLength: 5000
+          type: string
+      required:
+      - subscription
+      title: PortalFlowSubscriptionCancel
+      type: object
+      x-expandableFields: []
     portal_invoice_list:
       description: ''
       properties:
@@ -39649,6 +39744,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              flow_data:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -39668,6 +39766,56 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                flow_data:
+                  description: Information about a specific flow for the customer
+                    to go through.
+                  properties:
+                    after_completion:
+                      properties:
+                        hosted_confirmation:
+                          properties:
+                            custom_message:
+                              maxLength: 500
+                              type: string
+                          title: after_completion_hosted_confirmation_param
+                          type: object
+                        redirect:
+                          properties:
+                            return_url:
+                              type: string
+                          required:
+                          - return_url
+                          title: after_completion_redirect_param
+                          type: object
+                        type:
+                          enum:
+                          - hosted_confirmation
+                          - portal_homepage
+                          - redirect
+                          type: string
+                      required:
+                      - type
+                      title: flow_data_after_completion_param
+                      type: object
+                    subscription_cancel:
+                      properties:
+                        subscription:
+                          maxLength: 5000
+                          type: string
+                      required:
+                      - subscription
+                      title: flow_data_subscription_cancel_param
+                      type: object
+                    type:
+                      enum:
+                      - payment_method_update
+                      - subscription_cancel
+                      type: string
+                      x-stripeBypassValidation: true
+                  required:
+                  - type
+                  title: flow_data_param
+                  type: object
                 locale:
                   description: The IETF language tag of the locale Customer Portal
                     is displayed in. If blank or auto, the customer’s `preferred_locales`
