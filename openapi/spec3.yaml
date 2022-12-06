@@ -407,6 +407,15 @@ components:
           - inactive
           - pending
           type: string
+        india_international_payments:
+          description: The status of the india_international_payments capability of
+            the account, or whether the account can process international charges
+            (non INR) in India.
+          enum:
+          - active
+          - inactive
+          - pending
+          type: string
         jcb_payments:
           description: The status of the JCB payments capability of the account, or
             whether the account (Japan only) can directly process JCB credit card
@@ -3461,6 +3470,21 @@ components:
             in Stripe.js.
           maxLength: 5000
           type: string
+        invoice:
+          anyOf:
+          - maxLength: 5000
+            type: string
+          - "$ref": "#/components/schemas/invoice"
+          description: ID of the invoice created by the Checkout Session, if it exists.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+            - "$ref": "#/components/schemas/invoice"
+        invoice_creation:
+          anyOf:
+          - "$ref": "#/components/schemas/payment_pages_checkout_session_invoice_creation"
+          description: Details on the state of invoice creation for the Checkout Session.
+          nullable: true
         line_items:
           description: The line items purchased by the customer.
           properties:
@@ -3736,6 +3760,8 @@ components:
       - custom_text
       - customer
       - customer_details
+      - invoice
+      - invoice_creation
       - line_items
       - payment_intent
       - payment_link
@@ -10462,11 +10488,12 @@ components:
             non-null during an `issuing_authorization.request` webhook.
           nullable: true
         request_history:
-          description: History of every time `pending_request` was approved/denied,
-            either by you directly or by Stripe (e.g. based on your `spending_controls`).
-            If the merchant changes the authorization by performing an [incremental
-            authorization](https://stripe.com/docs/issuing/purchases/authorizations),
-            you can look at this field to see the previous requests for the authorization.
+          description: History of every time a `pending_request` authorization was
+            approved/declined, either by you directly or by Stripe (e.g. based on
+            your spending_controls). If the merchant changes the authorization by
+            performing an incremental authorization, you can look at this field to
+            see the previous requests for the authorization. This field can be helpful
+            in determining why a given authorization was approved/declined.
           items:
             "$ref": "#/components/schemas/issuing_authorization_request"
           type: array
@@ -10492,8 +10519,9 @@ components:
         verification_data:
           "$ref": "#/components/schemas/issuing_authorization_verification_data"
         wallet:
-          description: The digital wallet used for this authorization. One of `apple_pay`,
-            `google_pay`, or `samsung_pay`.
+          description: The digital wallet used for this transaction. One of `apple_pay`,
+            `google_pay`, or `samsung_pay`. Will populate as `null` when no digital
+            wallet was utilized.
           maxLength: 5000
           nullable: true
           type: string
@@ -10547,6 +10575,7 @@ components:
           - stolen
           nullable: true
           type: string
+          x-stripeBypassValidation: true
         cardholder:
           "$ref": "#/components/schemas/issuing.cardholder"
         created:
@@ -11189,7 +11218,8 @@ components:
           nullable: true
           type: string
         network_id:
-          description: Identifier assigned to the seller by the card brand
+          description: Identifier assigned to the seller by the card network. Different
+            card networks may assign different network_id fields to the same merchant.
           maxLength: 5000
           type: string
         postal_code:
@@ -11213,11 +11243,9 @@ components:
       description: ''
       properties:
         acquiring_institution_id:
-          description: ID from the network that identifies the acquiring financial
-            institution. For Visa and Mastercard credit transactions this is as 6
-            digit code. For Maestro debit transactions this is a 9 digit code. Uncommonly,
-            acquiring institution ID is not provided. When this occurs, the value
-            will be null.
+          description: Identifier assigned to the acquirer by the card network. Sometimes
+            this value is not provided by the network; in this case, the value will
+            be `null`.
           maxLength: 5000
           nullable: true
           type: string
@@ -11302,7 +11330,8 @@ components:
           maxLength: 5000
           type: string
         reason:
-          description: The reason for the approval or decline.
+          description: When an authorization is approved or declined by you or by
+            Stripe, this field provides additional detail on the reason for the outcome.
           enum:
           - account_disabled
           - card_active
@@ -16786,6 +16815,7 @@ components:
             account.
           enum:
           - manual
+          - manual_preferred
           type: string
         installments:
           "$ref": "#/components/schemas/payment_flows_installment_options"
@@ -20881,6 +20911,76 @@ components:
       x-expandableFields:
       - address
       - tax_ids
+    payment_pages_checkout_session_invoice_creation:
+      description: ''
+      properties:
+        enabled:
+          description: Indicates whether invoice creation is enabled for the Checkout
+            Session.
+          type: boolean
+        invoice_data:
+          "$ref": "#/components/schemas/payment_pages_checkout_session_invoice_settings"
+      required:
+      - enabled
+      - invoice_data
+      title: PaymentPagesCheckoutSessionInvoiceCreation
+      type: object
+      x-expandableFields:
+      - invoice_data
+    payment_pages_checkout_session_invoice_settings:
+      description: ''
+      properties:
+        account_tax_ids:
+          description: The account tax IDs associated with the invoice.
+          items:
+            anyOf:
+            - maxLength: 5000
+              type: string
+            - "$ref": "#/components/schemas/tax_id"
+            - "$ref": "#/components/schemas/deleted_tax_id"
+            x-expansionResources:
+              oneOf:
+              - "$ref": "#/components/schemas/tax_id"
+              - "$ref": "#/components/schemas/deleted_tax_id"
+          nullable: true
+          type: array
+        custom_fields:
+          description: Custom fields displayed on the invoice.
+          items:
+            "$ref": "#/components/schemas/invoice_setting_custom_field"
+          nullable: true
+          type: array
+        description:
+          description: An arbitrary string attached to the object. Often useful for
+            displaying to users.
+          maxLength: 5000
+          nullable: true
+          type: string
+        footer:
+          description: Footer displayed on the invoice.
+          maxLength: 5000
+          nullable: true
+          type: string
+        metadata:
+          additionalProperties:
+            maxLength: 500
+            type: string
+          description: Set of [key-value pairs](https://stripe.com/docs/api/metadata)
+            that you can attach to an object. This can be useful for storing additional
+            information about the object in a structured format.
+          nullable: true
+          type: object
+        rendering_options:
+          anyOf:
+          - "$ref": "#/components/schemas/invoice_setting_rendering_options"
+          description: Options for invoice PDF rendering.
+          nullable: true
+      title: PaymentPagesCheckoutSessionInvoiceSettings
+      type: object
+      x-expandableFields:
+      - account_tax_ids
+      - custom_fields
+      - rendering_options
     payment_pages_checkout_session_phone_number_collection:
       description: ''
       properties:
@@ -27707,6 +27807,15 @@ components:
           description: Define thresholds at which an invoice will be sent, and the
             related subscription advanced to a new billing period
           nullable: true
+        metadata:
+          additionalProperties:
+            maxLength: 500
+            type: string
+          description: Set of [key-value pairs](https://stripe.com/docs/api/metadata)
+            that you can attach to an item. Metadata on this item will update the
+            underlying subscription item's `metadata` when the phase is entered.
+          nullable: true
+          type: object
         price:
           anyOf:
           - maxLength: 5000
@@ -32506,6 +32615,12 @@ paths:
                           type: boolean
                       title: capability_param
                       type: object
+                    india_international_payments:
+                      properties:
+                        requested:
+                          type: boolean
+                      title: capability_param
+                      type: object
                     jcb_payments:
                       properties:
                         requested:
@@ -33568,6 +33683,12 @@ paths:
                       title: capability_param
                       type: object
                     ideal_payments:
+                      properties:
+                        requested:
+                          type: boolean
+                      title: capability_param
+                      type: object
+                    india_international_payments:
                       properties:
                         requested:
                           type: boolean
@@ -41261,6 +41382,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              invoice_creation:
+                explode: true
+                style: deepObject
               line_items:
                 explode: true
                 style: deepObject
@@ -41486,6 +41610,71 @@ paths:
                     from creation.
                   format: unix-time
                   type: integer
+                invoice_creation:
+                  description: Generate a post-purchase Invoice for one-time payments.
+                  properties:
+                    enabled:
+                      type: boolean
+                    invoice_data:
+                      properties:
+                        account_tax_ids:
+                          anyOf:
+                          - items:
+                              maxLength: 5000
+                              type: string
+                            type: array
+                          - enum:
+                            - ''
+                            type: string
+                        custom_fields:
+                          anyOf:
+                          - items:
+                              properties:
+                                name:
+                                  maxLength: 30
+                                  type: string
+                                value:
+                                  maxLength: 30
+                                  type: string
+                              required:
+                              - name
+                              - value
+                              title: custom_field_params
+                              type: object
+                            type: array
+                          - enum:
+                            - ''
+                            type: string
+                        description:
+                          maxLength: 1500
+                          type: string
+                        footer:
+                          maxLength: 5000
+                          type: string
+                        metadata:
+                          additionalProperties:
+                            type: string
+                          type: object
+                        rendering_options:
+                          anyOf:
+                          - properties:
+                              amount_tax_display:
+                                enum:
+                                - ''
+                                - exclude_tax
+                                - include_inclusive_tax
+                                type: string
+                            title: rendering_options_param
+                            type: object
+                          - enum:
+                            - ''
+                            type: string
+                      title: invoice_data_params
+                      type: object
+                  required:
+                  - enabled
+                  title: invoice_creation_params
+                  type: object
                 line_items:
                   description: |-
                     A list of items the customer is purchasing. Use this parameter to pass one-time or recurring [Prices](https://stripe.com/docs/api/prices).
@@ -52791,6 +52980,10 @@ paths:
                 period:
                   description: The period associated with this invoice item. When
                     set to different values, the period will be rendered on the invoice.
+                    If you have [Stripe Revenue Recognition](https://stripe.com/docs/revenue-recognition)
+                    enabled, the period will be used to recognize and defer revenue.
+                    See the [Revenue Recognition documentation](https://stripe.com/docs/revenue-recognition/methodology/subscriptions-and-invoicing)
+                    for details.
                   properties:
                     end:
                       format: unix-time
@@ -53079,6 +53272,10 @@ paths:
                 period:
                   description: The period associated with this invoice item. When
                     set to different values, the period will be rendered on the invoice.
+                    If you have [Stripe Revenue Recognition](https://stripe.com/docs/revenue-recognition)
+                    enabled, the period will be used to recognize and defer revenue.
+                    See the [Revenue Recognition documentation](https://stripe.com/docs/revenue-recognition/methodology/subscriptions-and-invoicing)
+                    for details.
                   properties:
                     end:
                       format: unix-time
@@ -53811,10 +54008,8 @@ paths:
                 subscription:
                   description: The ID of the subscription to invoice, if any. If set,
                     the created invoice will only include pending invoice items for
-                    that subscription and pending invoice items not associated with
-                    any subscription if `pending_invoice_items_behavior` is `include`.
-                    The subscription's billing cycle and regular subscription events
-                    won't be affected.
+                    that subscription. The subscription's billing cycle and regular
+                    subscription events won't be affected.
                   maxLength: 5000
                   type: string
                 transfer_data:
@@ -60265,6 +60460,7 @@ paths:
                   - lost
                   - stolen
                   type: string
+                  x-stripeBypassValidation: true
                 expand:
                   description: Specifies which fields in the response should be expanded.
                   items:
@@ -82442,6 +82638,10 @@ paths:
                               - enum:
                                 - ''
                                 type: string
+                            metadata:
+                              additionalProperties:
+                                type: string
+                              type: object
                             price:
                               maxLength: 5000
                               type: string
@@ -82866,6 +83066,10 @@ paths:
                               - enum:
                                 - ''
                                 type: string
+                            metadata:
+                              additionalProperties:
+                                type: string
+                              type: object
                             price:
                               maxLength: 5000
                               type: string
