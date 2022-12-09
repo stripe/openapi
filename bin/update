@@ -54,6 +54,10 @@ class SystemUtils
     `(cd #{codegen_dir} && bin/diff_spec.js --repo #{target_dir} --old #{current_version_number})`
   end
 
+  def merge_spec(codegen_dir, from, to)
+    `(cd #{codegen_dir} && yarn gen:merge-spec #{from} #{to})`
+  end
+
   def git_current_branch(dir)
     `cd #{dir} && git rev-parse --abbrev-ref HEAD`.strip
   end
@@ -161,7 +165,19 @@ class Updater
     out.puts "--> Pulling from origin"
     out.puts utils.git_pull_origin_master
 
-    ["fixtures3", "spec3", "spec3.sdk", "spec3.beta.sdk"].each do |file|
+    ["spec3", "spec3.sdk", "spec3.beta.sdk"].each do |file|
+      source = File.join(SOURCE_DIR, "openapi", file, "yaml", "spec.yaml")
+      target = File.join(TARGET_DIR, "openapi", file + ".yaml")
+
+      out.puts "--> Merging spec #{source} to #{target}"
+      out.puts utils.merge_spec(CODEGEN_DIR, source, target)
+
+      out.puts "--> Rewriting #{source} as JSON"
+      utils.write_file(File.join(TARGET_DIR, "openapi", file + ".json"),
+                       JSON.pretty_generate(YAML.load(File.read(target))))
+    end
+
+    ["fixtures3"].each do |file|
       source = File.join(SOURCE_DIR, "openapi", file + ".yaml")
       target = File.join(TARGET_DIR, "openapi", file + ".yaml")
 
@@ -254,7 +270,19 @@ else
 
       utils.expect(:git_pull_origin_master, "")
 
-      ["fixtures3", "spec3", "spec3.sdk",  "spec3.beta.sdk"].each do |file|
+      ["spec3", "spec3.sdk", "spec3.beta.sdk"].each do |file|
+        source = File.join(Updater::SOURCE_DIR, "openapi", file, "yaml", "spec.yaml")
+        target = File.join(Updater::TARGET_DIR, "openapi", file + ".yaml")
+
+        utils.expect(:merge_spec, "", [Updater::CODEGEN_DIR, source, target])
+
+        json_data = JSON.pretty_generate(YAML.load(File.read(target)))
+        json_target = File.join(Updater::TARGET_DIR, "openapi", file + ".json")
+
+        utils.expect(:write_file, "", [json_target, json_data])
+      end
+
+      ["fixtures3"].each do |file|
         source = File.join(Updater::SOURCE_DIR, "openapi", file + ".yaml")
         target = File.join(Updater::TARGET_DIR, "openapi", file + ".yaml")
 
@@ -354,7 +382,19 @@ else
 
       utils.expect(:git_pull_origin_master, "")
 
-      ["fixtures3", "spec3", "spec3.sdk", "spec3.beta.sdk"].each do |file|
+      ["spec3", "spec3.sdk", "spec3.beta.sdk"].each do |file|
+        source = File.join(Updater::SOURCE_DIR, "openapi", file, "yaml", "spec.yaml")
+        target = File.join(Updater::TARGET_DIR, "openapi", file + ".yaml")
+
+        utils.expect(:merge_spec, "", [Updater::CODEGEN_DIR, source, target])
+
+        json_data = JSON.pretty_generate(YAML.load(File.read(target)))
+        json_target = File.join(Updater::TARGET_DIR, "openapi", file + ".json")
+
+        utils.expect(:write_file, "", [json_target, json_data])
+      end
+
+      ["fixtures3"].each do |file|
         source = File.join(Updater::SOURCE_DIR, "openapi", file + ".yaml")
         target = File.join(Updater::TARGET_DIR, "openapi", file + ".yaml")
 
