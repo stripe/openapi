@@ -14876,6 +14876,7 @@ components:
             numbers, special characters (except periods, commas, hyphens, spaces
             and apostrophes) or non-latin letters.
           maxLength: 5000
+          nullable: true
           type: string
         last_name:
           description: >-
@@ -14883,15 +14884,13 @@ components:
             numbers, special characters (except periods, commas, hyphens, spaces
             and apostrophes) or non-latin letters.
           maxLength: 5000
+          nullable: true
           type: string
         verification:
           anyOf:
             - $ref: '#/components/schemas/issuing_cardholder_verification'
           description: Government-issued ID document for this cardholder.
           nullable: true
-      required:
-        - first_name
-        - last_name
       title: IssuingCardholderIndividual
       type: object
       x-expandableFields:
@@ -18976,6 +18975,11 @@ components:
           description: Unique identifier for the object.
           maxLength: 5000
           type: string
+        invoice_creation:
+          anyOf:
+            - $ref: '#/components/schemas/payment_links_resource_invoice_creation'
+          description: Configuration for creating invoice for payment mode payment links.
+          nullable: true
         line_items:
           description: The line items representing what is being sold.
           properties:
@@ -19163,6 +19167,7 @@ components:
         - automatic_tax
         - consent_collection
         - custom_text
+        - invoice_creation
         - line_items
         - on_behalf_of
         - payment_intent_data
@@ -19294,6 +19299,81 @@ components:
       title: PaymentLinksResourceCustomTextPosition
       type: object
       x-expandableFields: []
+    payment_links_resource_invoice_creation:
+      description: ''
+      properties:
+        enabled:
+          description: Enable creating an invoice on successful payment.
+          type: boolean
+        invoice_data:
+          anyOf:
+            - $ref: '#/components/schemas/payment_links_resource_invoice_settings'
+          description: >-
+            Configuration for the invoice. Default invoice values will be used
+            if unspecified.
+          nullable: true
+      required:
+        - enabled
+      title: PaymentLinksResourceInvoiceCreation
+      type: object
+      x-expandableFields:
+        - invoice_data
+    payment_links_resource_invoice_settings:
+      description: ''
+      properties:
+        account_tax_ids:
+          description: The account tax IDs associated with the invoice.
+          items:
+            anyOf:
+              - maxLength: 5000
+                type: string
+              - $ref: '#/components/schemas/tax_id'
+              - $ref: '#/components/schemas/deleted_tax_id'
+            x-expansionResources:
+              oneOf:
+                - $ref: '#/components/schemas/tax_id'
+                - $ref: '#/components/schemas/deleted_tax_id'
+          nullable: true
+          type: array
+        custom_fields:
+          description: A list of up to 4 custom fields to be displayed on the invoice.
+          items:
+            $ref: '#/components/schemas/invoice_setting_custom_field'
+          nullable: true
+          type: array
+        description:
+          description: >-
+            An arbitrary string attached to the object. Often useful for
+            displaying to users.
+          maxLength: 5000
+          nullable: true
+          type: string
+        footer:
+          description: Footer to be displayed on the invoice.
+          maxLength: 5000
+          nullable: true
+          type: string
+        metadata:
+          additionalProperties:
+            maxLength: 500
+            type: string
+          description: >-
+            Set of [key-value pairs](https://stripe.com/docs/api/metadata) that
+            you can attach to an object. This can be useful for storing
+            additional information about the object in a structured format.
+          nullable: true
+          type: object
+        rendering_options:
+          anyOf:
+            - $ref: '#/components/schemas/invoice_setting_rendering_options'
+          description: Options for invoice PDF rendering.
+          nullable: true
+      title: PaymentLinksResourceInvoiceSettings
+      type: object
+      x-expandableFields:
+        - account_tax_ids
+        - custom_fields
+        - rendering_options
     payment_links_resource_payment_intent_data:
       description: ''
       properties:
@@ -30792,10 +30872,10 @@ components:
             - incomplete
             - incomplete_expired
             - past_due
+            - paused
             - trialing
             - unpaid
           type: string
-          x-stripeBypassValidation: true
         test_clock:
           anyOf:
             - maxLength: 5000
@@ -30819,6 +30899,12 @@ components:
           format: unix-time
           nullable: true
           type: integer
+        trial_settings:
+          anyOf:
+            - $ref: >-
+                #/components/schemas/subscriptions_trials_resource_trial_settings
+          description: Settings related to subscription trials.
+          nullable: true
         trial_start:
           description: If the subscription has a trial, the beginning of that trial.
           format: unix-time
@@ -30863,6 +30949,7 @@ components:
         - schedule
         - test_clock
         - transfer_data
+        - trial_settings
       x-resourceId: subscription
     subscription_automatic_tax:
       description: ''
@@ -31865,6 +31952,32 @@ components:
       type: object
       x-expandableFields:
         - subscription_items
+    subscriptions_trials_resource_end_behavior:
+      description: Defines how a subscription behaves when a free trial ends.
+      properties:
+        missing_payment_method:
+          description: >-
+            Indicates how the subscription should change when the trial ends if
+            the user did not provide a payment method.
+          enum:
+            - cancel
+            - create_invoice
+            - pause
+          type: string
+      required:
+        - missing_payment_method
+      title: SubscriptionsTrialsResourceEndBehavior
+      type: object
+      x-expandableFields: []
+    subscriptions_trials_resource_trial_settings:
+      description: Configures how this subscription behaves during the trial period.
+      properties:
+        end_behavior:
+          $ref: '#/components/schemas/subscriptions_trials_resource_end_behavior'
+      title: SubscriptionsTrialsResourceTrialSettings
+      type: object
+      x-expandableFields:
+        - end_behavior
     tax_code:
       description: >-
         [Tax codes](https://stripe.com/docs/tax/tax-categories) classify goods
@@ -47391,6 +47504,24 @@ paths:
                       type: integer
                     trial_period_days:
                       type: integer
+                    trial_settings:
+                      properties:
+                        end_behavior:
+                          properties:
+                            missing_payment_method:
+                              enum:
+                                - cancel
+                                - create_invoice
+                                - pause
+                              type: string
+                          required:
+                            - missing_payment_method
+                          title: end_behavior
+                          type: object
+                      required:
+                        - end_behavior
+                      title: trial_settings_config
+                      type: object
                   title: subscription_data_params
                   type: object
                 success_url:
@@ -53345,6 +53476,9 @@ paths:
               trial_end:
                 explode: true
                 style: deepObject
+              trial_settings:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -53982,6 +54116,25 @@ paths:
                     subscriptions](https://stripe.com/docs/billing/subscriptions/trials)
                     to learn more.
                   type: integer
+                trial_settings:
+                  description: Settings related to subscription trials.
+                  properties:
+                    end_behavior:
+                      properties:
+                        missing_payment_method:
+                          enum:
+                            - cancel
+                            - create_invoice
+                            - pause
+                          type: string
+                      required:
+                        - missing_payment_method
+                      title: end_behavior
+                      type: object
+                  required:
+                    - end_behavior
+                  title: trial_settings_config
+                  type: object
               type: object
         required: false
       responses:
@@ -54200,6 +54353,9 @@ paths:
                 explode: true
                 style: deepObject
               trial_end:
+                explode: true
+                style: deepObject
+              trial_settings:
                 explode: true
                 style: deepObject
             schema:
@@ -54861,6 +55017,25 @@ paths:
                     subscriptions](https://stripe.com/docs/billing/subscriptions/trials)
                     to learn more.
                   type: boolean
+                trial_settings:
+                  description: Settings related to subscription trials.
+                  properties:
+                    end_behavior:
+                      properties:
+                        missing_payment_method:
+                          enum:
+                            - cancel
+                            - create_invoice
+                            - pause
+                          type: string
+                      required:
+                        - missing_payment_method
+                      title: end_behavior
+                      type: object
+                  required:
+                    - end_behavior
+                  title: trial_settings_config
+                  type: object
               type: object
         required: false
       responses:
@@ -60223,6 +60398,19 @@ paths:
             format: unix-time
             type: integer
           style: form
+        - description: >-
+            For paused subscriptions, setting `subscription_resume_at` to `now`
+            will preview the invoice that will be generated if the subscription
+            is resumed.
+          in: query
+          name: subscription_resume_at
+          required: false
+          schema:
+            enum:
+              - now
+            maxLength: 5000
+            type: string
+          style: form
         - description: Date a subscription is intended to start (can be future or past)
           in: query
           name: subscription_start_date
@@ -60916,6 +61104,19 @@ paths:
           schema:
             format: unix-time
             type: integer
+          style: form
+        - description: >-
+            For paused subscriptions, setting `subscription_resume_at` to `now`
+            will preview the invoice that will be generated if the subscription
+            is resumed.
+          in: query
+          name: subscription_resume_at
+          required: false
+          schema:
+            enum:
+              - now
+            maxLength: 5000
+            type: string
           style: form
         - description: Date a subscription is intended to start (can be future or past)
           in: query
@@ -62696,9 +62897,6 @@ paths:
                           type: object
                       title: person_verification_param
                       type: object
-                  required:
-                    - first_name
-                    - last_name
                   title: individual_param
                   type: object
                 metadata:
@@ -63873,9 +64071,6 @@ paths:
                           type: object
                       title: person_verification_param
                       type: object
-                  required:
-                    - first_name
-                    - last_name
                   title: individual_param
                   type: object
                 metadata:
@@ -74772,6 +74967,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              invoice_creation:
+                explode: true
+                style: deepObject
               line_items:
                 explode: true
                 style: deepObject
@@ -74938,6 +75136,75 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                invoice_creation:
+                  description: Generate a post-purchase Invoice for one-time payments.
+                  properties:
+                    enabled:
+                      type: boolean
+                    invoice_data:
+                      properties:
+                        account_tax_ids:
+                          anyOf:
+                            - items:
+                                maxLength: 5000
+                                type: string
+                              type: array
+                            - enum:
+                                - ''
+                              type: string
+                        custom_fields:
+                          anyOf:
+                            - items:
+                                properties:
+                                  name:
+                                    maxLength: 30
+                                    type: string
+                                  value:
+                                    maxLength: 30
+                                    type: string
+                                required:
+                                  - name
+                                  - value
+                                title: custom_field_params
+                                type: object
+                              type: array
+                            - enum:
+                                - ''
+                              type: string
+                        description:
+                          maxLength: 1500
+                          type: string
+                        footer:
+                          maxLength: 5000
+                          type: string
+                        metadata:
+                          anyOf:
+                            - additionalProperties:
+                                type: string
+                              type: object
+                            - enum:
+                                - ''
+                              type: string
+                        rendering_options:
+                          anyOf:
+                            - properties:
+                                amount_tax_display:
+                                  enum:
+                                    - ''
+                                    - exclude_tax
+                                    - include_inclusive_tax
+                                  type: string
+                              title: rendering_options_param
+                              type: object
+                            - enum:
+                                - ''
+                              type: string
+                      title: invoice_settings_params
+                      type: object
+                  required:
+                    - enabled
+                  title: invoice_creation_create_params
+                  type: object
                 line_items:
                   description: >-
                     The line items representing what is being sold. Each line
@@ -75479,6 +75746,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              invoice_creation:
+                explode: true
+                style: deepObject
               line_items:
                 explode: true
                 style: deepObject
@@ -75595,6 +75865,75 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                invoice_creation:
+                  description: Generate a post-purchase Invoice for one-time payments.
+                  properties:
+                    enabled:
+                      type: boolean
+                    invoice_data:
+                      properties:
+                        account_tax_ids:
+                          anyOf:
+                            - items:
+                                maxLength: 5000
+                                type: string
+                              type: array
+                            - enum:
+                                - ''
+                              type: string
+                        custom_fields:
+                          anyOf:
+                            - items:
+                                properties:
+                                  name:
+                                    maxLength: 30
+                                    type: string
+                                  value:
+                                    maxLength: 30
+                                    type: string
+                                required:
+                                  - name
+                                  - value
+                                title: custom_field_params
+                                type: object
+                              type: array
+                            - enum:
+                                - ''
+                              type: string
+                        description:
+                          maxLength: 1500
+                          type: string
+                        footer:
+                          maxLength: 5000
+                          type: string
+                        metadata:
+                          anyOf:
+                            - additionalProperties:
+                                type: string
+                              type: object
+                            - enum:
+                                - ''
+                              type: string
+                        rendering_options:
+                          anyOf:
+                            - properties:
+                                amount_tax_display:
+                                  enum:
+                                    - ''
+                                    - exclude_tax
+                                    - include_inclusive_tax
+                                  type: string
+                              title: rendering_options_param
+                              type: object
+                            - enum:
+                                - ''
+                              type: string
+                      title: invoice_settings_params
+                      type: object
+                  required:
+                    - enabled
+                  title: invoice_creation_update_params
+                  type: object
                 line_items:
                   description: >-
                     The line items representing what is being sold. Each line
@@ -90601,10 +90940,10 @@ paths:
               - incomplete
               - incomplete_expired
               - past_due
+              - paused
               - trialing
               - unpaid
             type: string
-            x-stripeBypassValidation: true
           style: form
         - description: >-
             Filter for subscriptions that are associated with the specified test
@@ -90730,6 +91069,9 @@ paths:
                 explode: true
                 style: deepObject
               trial_end:
+                explode: true
+                style: deepObject
+              trial_settings:
                 explode: true
                 style: deepObject
             schema:
@@ -91390,6 +91732,25 @@ paths:
                     subscriptions](https://stripe.com/docs/billing/subscriptions/trials)
                     to learn more.
                   type: integer
+                trial_settings:
+                  description: Settings related to subscription trials.
+                  properties:
+                    end_behavior:
+                      properties:
+                        missing_payment_method:
+                          enum:
+                            - cancel
+                            - create_invoice
+                            - pause
+                          type: string
+                      required:
+                        - missing_payment_method
+                      title: end_behavior
+                      type: object
+                  required:
+                    - end_behavior
+                  title: trial_settings_config
+                  type: object
               required:
                 - customer
               type: object
@@ -91701,6 +92062,9 @@ paths:
                 explode: true
                 style: deepObject
               trial_end:
+                explode: true
+                style: deepObject
+              trial_settings:
                 explode: true
                 style: deepObject
             schema:
@@ -92380,6 +92744,25 @@ paths:
                     subscriptions](https://stripe.com/docs/billing/subscriptions/trials)
                     to learn more.
                   type: boolean
+                trial_settings:
+                  description: Settings related to subscription trials.
+                  properties:
+                    end_behavior:
+                      properties:
+                        missing_payment_method:
+                          enum:
+                            - cancel
+                            - create_invoice
+                            - pause
+                          type: string
+                      required:
+                        - missing_payment_method
+                      title: end_behavior
+                      type: object
+                  required:
+                    - end_behavior
+                  title: trial_settings_config
+                  type: object
               type: object
         required: false
       responses:
@@ -92422,6 +92805,93 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deleted_discount'
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+          description: Error response.
+  /v1/subscriptions/{subscription}/resume:
+    post:
+      description: >-
+        <p>Initiates resumption of a paused subscription, optionally resetting
+        the billing cycle anchor and creating prorations. If a resumption
+        invoice is generated, it must be paid or marked uncollectible before the
+        subscription will be unpaused. If payment succeeds the subscription will
+        become <code>active</code>, and if payment fails the subscription will
+        be <code>past_due</code>. The resumption invoice will void automatically
+        if not paid by the expiration date.</p>
+      operationId: PostSubscriptionsSubscriptionResume
+      parameters:
+        - in: path
+          name: subscription
+          required: true
+          schema:
+            maxLength: 5000
+            type: string
+          style: simple
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              expand:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                billing_cycle_anchor:
+                  description: >-
+                    Either `now` or `unchanged`. Setting the value to `now`
+                    resets the subscription's billing cycle anchor to the
+                    current time (in UTC). Setting the value to `unchanged`
+                    advances the subscription's billing cycle anchor to the
+                    period that surrounds the current time. For more
+                    information, see the billing cycle
+                    [documentation](https://stripe.com/docs/billing/subscriptions/billing-cycle).
+                  enum:
+                    - now
+                    - unchanged
+                  maxLength: 5000
+                  type: string
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                proration_behavior:
+                  description: >-
+                    Determines how to handle
+                    [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations)
+                    when the billing cycle changes (e.g., when switching plans,
+                    resetting `billing_cycle_anchor=now`, or starting a trial),
+                    or if an item's `quantity` changes. The default value is
+                    `create_prorations`.
+                  enum:
+                    - always_invoice
+                    - create_prorations
+                    - none
+                  type: string
+                proration_date:
+                  description: >-
+                    If set, the proration will be calculated as though the
+                    subscription was resumed at the given time. This can be used
+                    to apply exactly the same proration that was previewed with
+                    [upcoming
+                    invoice](https://stripe.com/docs/api#retrieve_customer_invoice)
+                    endpoint.
+                  format: unix-time
+                  type: integer
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/subscription'
           description: Successful response.
         default:
           content:
@@ -101475,8 +101945,10 @@ paths:
                       - customer.source.updated
                       - customer.subscription.created
                       - customer.subscription.deleted
+                      - customer.subscription.paused
                       - customer.subscription.pending_update_applied
                       - customer.subscription.pending_update_expired
+                      - customer.subscription.resumed
                       - customer.subscription.trial_will_end
                       - customer.subscription.updated
                       - customer.tax_id.created
@@ -101866,8 +102338,10 @@ paths:
                       - customer.source.updated
                       - customer.subscription.created
                       - customer.subscription.deleted
+                      - customer.subscription.paused
                       - customer.subscription.pending_update_applied
                       - customer.subscription.pending_update_expired
+                      - customer.subscription.resumed
                       - customer.subscription.trial_will_end
                       - customer.subscription.updated
                       - customer.tax_id.created
