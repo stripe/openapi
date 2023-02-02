@@ -5571,6 +5571,9 @@ components:
             The integer amount in %s representing the total amount of the credit
             note, including tax.
           type: integer
+        amount_shipping:
+          description: This is the sum of all the shipping amounts.
+          type: integer
         created:
           description: >-
             Time at which the object was created. Measured in seconds since the
@@ -5723,6 +5726,13 @@ components:
           x-expansionResources:
             oneOf:
               - $ref: '#/components/schemas/refund'
+        shipping_cost:
+          anyOf:
+            - $ref: '#/components/schemas/invoices_shipping_cost'
+          description: >-
+            The details of the cost of shipping, including the ShippingRate
+            applied to the invoice.
+          nullable: true
         status:
           description: >-
             Status of this credit note, one of `issued` or `void`. Learn more
@@ -5776,6 +5786,7 @@ components:
           type: integer
       required:
         - amount
+        - amount_shipping
         - created
         - currency
         - customer
@@ -5802,6 +5813,7 @@ components:
         - invoice
         - lines
         - refund
+        - shipping_cost
         - tax_amounts
       x-resourceId: credit_note
     credit_note_line_item:
@@ -6742,6 +6754,7 @@ components:
           enum:
             - applied_to_payment
             - funded
+            - funding_reversed
             - refunded_from_payment
             - return_canceled
             - return_initiated
@@ -10324,6 +10337,9 @@ components:
         amount_remaining:
           description: The difference between amount_due and amount_paid, in %s.
           type: integer
+        amount_shipping:
+          description: This is the sum of all the shipping amounts.
+          type: integer
         application:
           anyOf:
             - maxLength: 5000
@@ -10802,6 +10818,21 @@ components:
             - $ref: '#/components/schemas/invoice_setting_rendering_options'
           description: Options for invoice PDF rendering.
           nullable: true
+        shipping_cost:
+          anyOf:
+            - $ref: '#/components/schemas/invoices_shipping_cost'
+          description: >-
+            The details of the cost of shipping, including the ShippingRate
+            applied on the invoice.
+          nullable: true
+        shipping_details:
+          anyOf:
+            - $ref: '#/components/schemas/shipping'
+          description: >-
+            Shipping details for the invoice. The Invoice PDF will use the
+            `shipping_details` value if it is set, otherwise the PDF will render
+            the shipping address from the customer.
+          nullable: true
         starting_balance:
           description: >-
             Starting customer balance before the invoice is finalized. If the
@@ -10921,6 +10952,7 @@ components:
         - amount_due
         - amount_paid
         - amount_remaining
+        - amount_shipping
         - attempt_count
         - attempted
         - automatic_tax
@@ -10969,6 +11001,8 @@ components:
         - payment_settings
         - quote
         - rendering_options
+        - shipping_cost
+        - shipping_details
         - status_transitions
         - subscription
         - test_clock
@@ -11846,6 +11880,44 @@ components:
       title: InvoicesResourceInvoiceTaxID
       type: object
       x-expandableFields: []
+    invoices_shipping_cost:
+      description: ''
+      properties:
+        amount_subtotal:
+          description: Total shipping cost before any taxes are applied.
+          type: integer
+        amount_tax:
+          description: >-
+            Total tax amount applied due to shipping costs. If no tax was
+            applied, defaults to 0.
+          type: integer
+        amount_total:
+          description: Total shipping cost after taxes are applied.
+          type: integer
+        shipping_rate:
+          anyOf:
+            - maxLength: 5000
+              type: string
+            - $ref: '#/components/schemas/shipping_rate'
+          description: The ID of the ShippingRate for this invoice.
+          nullable: true
+          x-expansionResources:
+            oneOf:
+              - $ref: '#/components/schemas/shipping_rate'
+        taxes:
+          description: The taxes applied to the shipping rate.
+          items:
+            $ref: '#/components/schemas/line_items_tax_amount'
+          type: array
+      required:
+        - amount_subtotal
+        - amount_tax
+        - amount_total
+      title: InvoicesShippingCost
+      type: object
+      x-expandableFields:
+        - shipping_rate
+        - taxes
     invoices_status_transitions:
       description: ''
       properties:
@@ -45914,6 +45986,14 @@ paths:
             maxLength: 5000
             type: string
           style: form
+        - description: Only return the Checkout Sessions for the Payment Link specified.
+          in: query
+          name: payment_link
+          required: false
+          schema:
+            maxLength: 5000
+            type: string
+          style: form
         - description: >-
             A cursor for use in pagination. `starting_after` is an object ID
             that defines your place in the list. For instance, if you make a
@@ -48561,6 +48641,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              shipping_cost:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -48663,6 +48746,16 @@ paths:
                     representing the amount to refund. If set, a refund will be
                     created for the charge associated with the invoice.
                   type: integer
+                shipping_cost:
+                  description: >-
+                    When shipping_cost contains the shipping_rate from the
+                    invoice, the shipping_cost is included in the credit note.
+                  properties:
+                    shipping_rate:
+                      maxLength: 5000
+                      type: string
+                  title: credit_note_shipping_cost
+                  type: object
               required:
                 - invoice
               type: object
@@ -48829,6 +48922,21 @@ paths:
           schema:
             type: integer
           style: form
+        - description: >-
+            When shipping_cost contains the shipping_rate from the invoice, the
+            shipping_cost is included in the credit note.
+          explode: true
+          in: query
+          name: shipping_cost
+          required: false
+          schema:
+            properties:
+              shipping_rate:
+                maxLength: 5000
+                type: string
+            title: credit_note_shipping_cost
+            type: object
+          style: deepObject
       requestBody:
         content:
           application/x-www-form-urlencoded:
@@ -49026,6 +49134,21 @@ paths:
           schema:
             type: integer
           style: form
+        - description: >-
+            When shipping_cost contains the shipping_rate from the invoice, the
+            shipping_cost is included in the credit note.
+          explode: true
+          in: query
+          name: shipping_cost
+          required: false
+          schema:
+            properties:
+              shipping_rate:
+                maxLength: 5000
+                type: string
+            title: credit_note_shipping_cost
+            type: object
+          style: deepObject
         - description: >-
             A cursor for use in pagination. `starting_after` is an object ID
             that defines your place in the list. For instance, if you make a
@@ -59194,6 +59317,12 @@ paths:
               rendering_options:
                 explode: true
                 style: deepObject
+              shipping_cost:
+                explode: true
+                style: deepObject
+              shipping_details:
+                explode: true
+                style: deepObject
               transfer_data:
                 explode: true
                 style: deepObject
@@ -59617,6 +59746,143 @@ paths:
                         - ''
                       type: string
                   description: Options for invoice PDF rendering.
+                shipping_cost:
+                  description: Settings for the cost of shipping for this invoice.
+                  properties:
+                    shipping_rate:
+                      maxLength: 5000
+                      type: string
+                    shipping_rate_data:
+                      properties:
+                        delivery_estimate:
+                          properties:
+                            maximum:
+                              properties:
+                                unit:
+                                  enum:
+                                    - business_day
+                                    - day
+                                    - hour
+                                    - month
+                                    - week
+                                  type: string
+                                value:
+                                  type: integer
+                              required:
+                                - unit
+                                - value
+                              title: delivery_estimate_bound
+                              type: object
+                            minimum:
+                              properties:
+                                unit:
+                                  enum:
+                                    - business_day
+                                    - day
+                                    - hour
+                                    - month
+                                    - week
+                                  type: string
+                                value:
+                                  type: integer
+                              required:
+                                - unit
+                                - value
+                              title: delivery_estimate_bound
+                              type: object
+                          title: delivery_estimate
+                          type: object
+                        display_name:
+                          maxLength: 100
+                          type: string
+                        fixed_amount:
+                          properties:
+                            amount:
+                              type: integer
+                            currency:
+                              type: string
+                            currency_options:
+                              additionalProperties:
+                                properties:
+                                  amount:
+                                    type: integer
+                                  tax_behavior:
+                                    enum:
+                                      - exclusive
+                                      - inclusive
+                                      - unspecified
+                                    type: string
+                                required:
+                                  - amount
+                                title: currency_option
+                                type: object
+                              type: object
+                          required:
+                            - amount
+                            - currency
+                          title: fixed_amount
+                          type: object
+                        metadata:
+                          additionalProperties:
+                            type: string
+                          type: object
+                        tax_behavior:
+                          enum:
+                            - exclusive
+                            - inclusive
+                            - unspecified
+                          type: string
+                        tax_code:
+                          type: string
+                        type:
+                          enum:
+                            - fixed_amount
+                          type: string
+                      required:
+                        - display_name
+                      title: method_params
+                      type: object
+                  title: shipping_cost
+                  type: object
+                shipping_details:
+                  description: >-
+                    Shipping details for the invoice. The Invoice PDF will use
+                    the `shipping_details` value if it is set, otherwise the PDF
+                    will render the shipping address from the customer.
+                  properties:
+                    address:
+                      properties:
+                        city:
+                          maxLength: 5000
+                          type: string
+                        country:
+                          maxLength: 5000
+                          type: string
+                        line1:
+                          maxLength: 5000
+                          type: string
+                        line2:
+                          maxLength: 5000
+                          type: string
+                        postal_code:
+                          maxLength: 5000
+                          type: string
+                        state:
+                          maxLength: 5000
+                          type: string
+                      title: optional_fields_address
+                      type: object
+                    name:
+                      maxLength: 5000
+                      type: string
+                    phone:
+                      maxLength: 5000
+                      type: string
+                  required:
+                    - address
+                    - name
+                  title: recipient_shipping_with_optional_fields_address
+                  type: object
                 statement_descriptor:
                   description: >-
                     Extra information about a charge for the customer's credit
@@ -60386,11 +60652,11 @@ paths:
             If previewing an update to a subscription, and doing proration,
             `subscription_proration_date` forces the proration to be calculated
             as though the update was done at the specified time. The time given
-            must be within the current subscription period, and cannot be before
-            the subscription was on its current plan. If set, `subscription`,
-            and one of `subscription_items`, or `subscription_trial_end` are
-            required. Also, `subscription_proration_behavior` cannot be set to
-            'none'.
+            must be within the current subscription period and within the
+            current phase of the schedule backing this subscription, if the
+            schedule exists. If set, `subscription`, and one of
+            `subscription_items`, or `subscription_trial_end` are required.
+            Also, `subscription_proration_behavior` cannot be set to 'none'.
           in: query
           name: subscription_proration_date
           required: false
@@ -61093,11 +61359,11 @@ paths:
             If previewing an update to a subscription, and doing proration,
             `subscription_proration_date` forces the proration to be calculated
             as though the update was done at the specified time. The time given
-            must be within the current subscription period, and cannot be before
-            the subscription was on its current plan. If set, `subscription`,
-            and one of `subscription_items`, or `subscription_trial_end` are
-            required. Also, `subscription_proration_behavior` cannot be set to
-            'none'.
+            must be within the current subscription period and within the
+            current phase of the schedule backing this subscription, if the
+            schedule exists. If set, `subscription`, and one of
+            `subscription_items`, or `subscription_trial_end` are required.
+            Also, `subscription_proration_behavior` cannot be set to 'none'.
           in: query
           name: subscription_proration_date
           required: false
@@ -61350,6 +61616,12 @@ paths:
                 explode: true
                 style: deepObject
               rendering_options:
+                explode: true
+                style: deepObject
+              shipping_cost:
+                explode: true
+                style: deepObject
+              shipping_details:
                 explode: true
                 style: deepObject
               transfer_data:
@@ -61739,6 +62011,151 @@ paths:
                         - ''
                       type: string
                   description: Options for invoice PDF rendering.
+                shipping_cost:
+                  anyOf:
+                    - properties:
+                        shipping_rate:
+                          maxLength: 5000
+                          type: string
+                        shipping_rate_data:
+                          properties:
+                            delivery_estimate:
+                              properties:
+                                maximum:
+                                  properties:
+                                    unit:
+                                      enum:
+                                        - business_day
+                                        - day
+                                        - hour
+                                        - month
+                                        - week
+                                      type: string
+                                    value:
+                                      type: integer
+                                  required:
+                                    - unit
+                                    - value
+                                  title: delivery_estimate_bound
+                                  type: object
+                                minimum:
+                                  properties:
+                                    unit:
+                                      enum:
+                                        - business_day
+                                        - day
+                                        - hour
+                                        - month
+                                        - week
+                                      type: string
+                                    value:
+                                      type: integer
+                                  required:
+                                    - unit
+                                    - value
+                                  title: delivery_estimate_bound
+                                  type: object
+                              title: delivery_estimate
+                              type: object
+                            display_name:
+                              maxLength: 100
+                              type: string
+                            fixed_amount:
+                              properties:
+                                amount:
+                                  type: integer
+                                currency:
+                                  type: string
+                                currency_options:
+                                  additionalProperties:
+                                    properties:
+                                      amount:
+                                        type: integer
+                                      tax_behavior:
+                                        enum:
+                                          - exclusive
+                                          - inclusive
+                                          - unspecified
+                                        type: string
+                                    required:
+                                      - amount
+                                    title: currency_option
+                                    type: object
+                                  type: object
+                              required:
+                                - amount
+                                - currency
+                              title: fixed_amount
+                              type: object
+                            metadata:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            tax_behavior:
+                              enum:
+                                - exclusive
+                                - inclusive
+                                - unspecified
+                              type: string
+                            tax_code:
+                              type: string
+                            type:
+                              enum:
+                                - fixed_amount
+                              type: string
+                          required:
+                            - display_name
+                          title: method_params
+                          type: object
+                      title: shipping_cost
+                      type: object
+                    - enum:
+                        - ''
+                      type: string
+                  description: Settings for the cost of shipping for this invoice.
+                shipping_details:
+                  anyOf:
+                    - properties:
+                        address:
+                          properties:
+                            city:
+                              maxLength: 5000
+                              type: string
+                            country:
+                              maxLength: 5000
+                              type: string
+                            line1:
+                              maxLength: 5000
+                              type: string
+                            line2:
+                              maxLength: 5000
+                              type: string
+                            postal_code:
+                              maxLength: 5000
+                              type: string
+                            state:
+                              maxLength: 5000
+                              type: string
+                          title: optional_fields_address
+                          type: object
+                        name:
+                          maxLength: 5000
+                          type: string
+                        phone:
+                          maxLength: 5000
+                          type: string
+                      required:
+                        - address
+                        - name
+                      title: recipient_shipping_with_optional_fields_address
+                      type: object
+                    - enum:
+                        - ''
+                      type: string
+                  description: >-
+                    Shipping details for the invoice. The Invoice PDF will use
+                    the `shipping_details` value if it is set, otherwise the PDF
+                    will render the shipping address from the customer.
                 statement_descriptor:
                   description: >-
                     Extra information about a charge for the customer's credit
@@ -83504,6 +83921,7 @@ paths:
                         - America/Cayman
                         - America/Chicago
                         - America/Chihuahua
+                        - America/Ciudad_Juarez
                         - America/Coral_Harbour
                         - America/Cordoba
                         - America/Costa_Rica
