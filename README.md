@@ -67,28 +67,6 @@ definitions:
           - "$ref": "#/definitions/balance_transaction"
 ```
 
-### `x-polymorphicResources`
-
-Some API responses are "polymorphic" in that they might return multiple types
-of resources which is a case that OpenAPI can't handle. In these cases the spec
-will reference a "synthetic" resource which is an aggregate of the properties
-common to all the possible resources. It will also include the field
-`x-polymorphicResources` which references those resources more precisely.
-
-For example:
-
-``` yaml
-definitions:
-  ...
-  external_account_source:
-    properties:
-      ...
-    x-polymorphicResources:
-      oneOf:
-      - "$ref": "#/definitions/bank_account"
-      - "$ref": "#/definitions/card"
-```
-
 ### `x-resourceId` and Fixtures
 
 Resources include `x-resourceId` which is a canonical name for each resource.
