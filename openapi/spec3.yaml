@@ -5,16 +5,22 @@ components:
         This is an object representing a Stripe account. You can retrieve it to
         see
 
-        properties on the account like its current e-mail address or if the
+        properties on the account like its current requirements or if the
         account is
 
-        enabled yet to make live charges.
+        enabled to make live charges or receive payouts.
 
 
-        Some properties, marked below, are available only to platforms that want
-        to
+        For Custom accounts, the properties below are always returned. For other
+        accounts, some properties are returned until that
 
-        [create and manage Express or Custom
+        account has started to go through Connect Onboarding. Once you create an
+        [Account Link](https://stripe.com/docs/api/account_links)
+
+        for a Standard or Express account, some parameters are no longer
+        returned. These are marked as **Custom Only** or **Custom and Express**
+
+        below. Learn about the differences [between
         accounts](https://stripe.com/docs/connect/accounts).
       properties:
         business_profile:
@@ -2726,7 +2732,11 @@ components:
         flow:
           anyOf:
             - $ref: '#/components/schemas/portal_flows_flow'
-          description: Information about a specific flow for the customer to go through.
+          description: >-
+            Information about a specific flow for the customer to go through.
+            See the
+            [docs](https://stripe.com/docs/customer-management/portal-deep-links)
+            to learn more about using customer portal deep links and flows.
           nullable: true
         id:
           description: Unique identifier for the object.
@@ -3804,9 +3814,9 @@ components:
         [Subscription](https://stripe.com/docs/api/subscriptions).
 
 
-        You can create a Checkout Session on your server and pass its ID to the
+        You can create a Checkout Session on your server and redirect to its URL
 
-        client to begin Checkout.
+        to begin Checkout.
 
 
         Related guide: [Checkout
@@ -3951,11 +3961,7 @@ components:
           format: unix-time
           type: integer
         id:
-          description: >-
-            Unique identifier for the object. Used to pass to
-            `redirectToCheckout`
-
-            in Stripe.js.
+          description: Unique identifier for the object.
           maxLength: 5000
           type: string
         invoice:
@@ -9117,12 +9123,18 @@ components:
           type: string
         interval_end:
           description: >-
-            Ending timestamp of data to be included in the report run
-            (exclusive).
+            Ending timestamp of data to be included in the report run. Can be
+            any UTC timestamp between 1 second after the user specified
+            `interval_start` and 1 second before this report's last
+            `data_available_end` value.
           format: unix-time
           type: integer
         interval_start:
-          description: Starting timestamp of data to be included in the report run.
+          description: >-
+            Starting timestamp of data to be included in the report run. Can be
+            any UTC timestamp between 1 second after this report's
+            `data_available_start` and 1 second before the user specified
+            `interval_end` value.
           format: unix-time
           type: integer
         payout:
@@ -10662,8 +10674,10 @@ components:
         lines:
           description: >-
             The individual line items that make up the invoice. `lines` is
-            sorted as follows: invoice items in reverse chronological order,
-            followed by the subscription, if any.
+            sorted as follows: (1) pending invoice items (including prorations)
+            in reverse chronological order, (2) subscription items in reverse
+            chronological order, and (3) invoice items added after invoice
+            creation in chronological order.
           properties:
             data:
               description: Details about each object.
@@ -11428,20 +11442,35 @@ components:
         - destination
     invoiceitem:
       description: >-
+        Invoice Items represent the component lines of an
+        [invoice](https://stripe.com/docs/api/invoices). An invoice item is
+        added to an
+
+        invoice by creating or updating it with an `invoice` field, at which
+        point it will be included as
+
+        [an invoice line item](https://stripe.com/docs/api/invoices/line_item)
+        within
+
+        [invoice.lines](https://stripe.com/docs/api/invoices/object#invoice_object-lines).
+
+
+        Invoice Items can be created before you are ready to actually send the
+        invoice. This can be particularly useful when combined
+
+        with a [subscription](https://stripe.com/docs/api/subscriptions).
         Sometimes you want to add a charge or credit to a customer, but actually
+        charge
 
-        charge or credit the customer's card only at the end of a regular
-        billing
+        or credit the customer’s card only at the end of a regular billing
+        cycle. This is useful for combining several charges
 
-        cycle. This is useful for combining several charges (to minimize
-
-        per-transaction fees), or for having Stripe tabulate your usage-based
-        billing
-
-        totals.
+        (to minimize per-transaction fees), or for having Stripe tabulate your
+        usage-based billing totals.
 
 
-        Related guide: [Subscription
+        Related guides: [Integrate with the Invoicing
+        API](https://stripe.com/docs/invoicing/integration), [Subscription
         Invoices](https://stripe.com/docs/billing/invoices/subscription#adding-upcoming-invoice-items).
       properties:
         amount:
@@ -16524,8 +16553,8 @@ components:
           type: string
         subscription_item:
           description: >-
-            The subscription item that generated this invoice item. Left empty
-            if the line item is not an explicit result of a subscription.
+            The subscription item that generated this line item. Left empty if
+            the line item is not an explicit result of a subscription.
           maxLength: 5000
           type: string
         tax_amounts:
@@ -27100,7 +27129,8 @@ components:
           description: >-
             If the refund failed, the reason for refund failure if known.
             Possible values are `lost_or_stolen_card`,
-            `expired_or_canceled_card`, or `unknown`.
+            `expired_or_canceled_card`, `charge_for_pending_refund_disputed`,
+            `insufficient_funds`, `declined`, `merchant_request` or `unknown`.
           maxLength: 5000
           type: string
         id:
@@ -32046,6 +32076,8 @@ components:
       properties:
         end_behavior:
           $ref: '#/components/schemas/subscriptions_trials_resource_end_behavior'
+      required:
+        - end_behavior
       title: SubscriptionsTrialsResourceTrialSettings
       type: object
       x-expandableFields:
@@ -36574,6 +36606,16 @@ paths:
         To do this, you’ll first need to <a
         href="https://dashboard.stripe.com/account/applications/settings">register
         your platform</a>.</p>
+
+
+        <p>If you’ve already collected information for your connected accounts,
+        you <a href="/docs/connect/best-practices#onboarding">can pre-fill that
+        information</a> when
+
+        creating the account. Connect Onboarding won’t ask for the pre-filled
+        information during account onboarding.
+
+        You can pre-fill any information on the account.</p>
       operationId: PostAccounts
       requestBody:
         content:
@@ -37720,14 +37762,27 @@ paths:
       description: >-
         <p>Updates a <a href="/docs/connect/accounts">connected account</a> by
         setting the values of the parameters passed. Any parameters not provided
-        are left unchanged. Most parameters can be changed only for Custom
-        accounts. (These are marked <strong>Custom Only</strong> below.)
-        Parameters marked <strong>Custom and Express</strong> are not supported
-        for Standard accounts.</p>
+        are
+
+        left unchanged.</p>
+
+
+        <p>For Custom accounts, you can update any information on the account.
+        For other accounts, you can update all information until that
+
+        account has started to go through Connect Onboarding. Once you create an
+        <a href="/docs/api/account_links">Account Link</a>
+
+        for a Standard or Express account, some parameters can no longer be
+        changed. These are marked as <strong>Custom Only</strong> or
+        <strong>Custom and Express</strong>
+
+        below.</p>
 
 
         <p>To update your own account, use the <a
         href="https://dashboard.stripe.com/account">Dashboard</a>. Refer to our
+
         <a href="/docs/connect/updating-accounts">Connect</a> documentation to
         learn more about updating accounts.</p>
       operationId: PostAccountsAccount
@@ -44186,7 +44241,10 @@ paths:
                 flow_data:
                   description: >-
                     Information about a specific flow for the customer to go
-                    through.
+                    through. See the
+                    [docs](https://stripe.com/docs/customer-management/portal-deep-links)
+                    to learn more about using customer portal deep links and
+                    flows.
                   properties:
                     after_completion:
                       properties:
@@ -53649,7 +53707,7 @@ paths:
                           - enum:
                               - ''
                             type: string
-                    title: subscription_create_add_invoice_item_entry
+                    title: add_invoice_item_entry
                     type: object
                   type: array
                 application_fee_percent:
@@ -91539,7 +91597,7 @@ paths:
                           - enum:
                               - ''
                             type: string
-                    title: subscription_create_add_invoice_item_entry
+                    title: add_invoice_item_entry
                     type: object
                   type: array
                 application_fee_percent:
