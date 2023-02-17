@@ -12321,7 +12321,10 @@ components:
         spending_controls:
           $ref: '#/components/schemas/issuing_card_authorization_controls'
         status:
-          description: Whether authorizations can be approved on this card.
+          description: >-
+            Whether authorizations can be approved on this card. May be blocked
+            from activating cards depending on past-due Cardholder requirements.
+            Defaults to `inactive`.
           enum:
             - active
             - canceled
@@ -14927,6 +14930,20 @@ components:
       type: object
       x-expandableFields:
         - spending_limits
+    issuing_cardholder_card_issuing:
+      description: ''
+      properties:
+        user_terms_acceptance:
+          anyOf:
+            - $ref: '#/components/schemas/issuing_cardholder_user_terms_acceptance'
+          description: >-
+            Information about cardholder acceptance of [Authorized User
+            Terms](https://stripe.com/docs/issuing/cards).
+          nullable: true
+      title: IssuingCardholderCardIssuing
+      type: object
+      x-expandableFields:
+        - user_terms_acceptance
     issuing_cardholder_company:
       description: ''
       properties:
@@ -14975,6 +14992,11 @@ components:
     issuing_cardholder_individual:
       description: ''
       properties:
+        card_issuing:
+          anyOf:
+            - $ref: '#/components/schemas/issuing_cardholder_card_issuing'
+          description: Information related to the card_issuing program for this cardholder.
+          nullable: true
         dob:
           anyOf:
             - $ref: '#/components/schemas/issuing_cardholder_individual_dob'
@@ -14982,17 +15004,19 @@ components:
           nullable: true
         first_name:
           description: >-
-            The first name of this cardholder. This field cannot contain any
-            numbers, special characters (except periods, commas, hyphens, spaces
-            and apostrophes) or non-latin letters.
+            The first name of this cardholder. Required before activating Cards.
+            This field cannot contain any numbers, special characters (except
+            periods, commas, hyphens, spaces and apostrophes) or non-latin
+            letters.
           maxLength: 5000
           nullable: true
           type: string
         last_name:
           description: >-
-            The last name of this cardholder. This field cannot contain any
-            numbers, special characters (except periods, commas, hyphens, spaces
-            and apostrophes) or non-latin letters.
+            The last name of this cardholder. Required before activating Cards.
+            This field cannot contain any numbers, special characters (except
+            periods, commas, hyphens, spaces and apostrophes) or non-latin
+            letters.
           maxLength: 5000
           nullable: true
           type: string
@@ -15004,6 +15028,7 @@ components:
       title: IssuingCardholderIndividual
       type: object
       x-expandableFields:
+        - card_issuing
         - dob
         - verification
     issuing_cardholder_individual_dob:
@@ -15381,6 +15406,33 @@ components:
         - amount
         - interval
       title: IssuingCardholderSpendingLimit
+      type: object
+      x-expandableFields: []
+    issuing_cardholder_user_terms_acceptance:
+      description: ''
+      properties:
+        date:
+          description: >-
+            The Unix timestamp marking when the cardholder accepted the
+            Authorized User Terms. Required for Celtic Spend Card users.
+          format: unix-time
+          nullable: true
+          type: integer
+        ip:
+          description: >-
+            The IP address from which the cardholder accepted the Authorized
+            User Terms. Required for Celtic Spend Card users.
+          maxLength: 5000
+          nullable: true
+          type: string
+        user_agent:
+          description: >-
+            The user agent of the browser from which the cardholder accepted the
+            Authorized User Terms.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: IssuingCardholderUserTermsAcceptance
       type: object
       x-expandableFields: []
     issuing_cardholder_verification:
@@ -64752,7 +64804,10 @@ paths:
                     - inactive
                   type: string
                 type:
-                  description: One of `individual` or `company`.
+                  description: >-
+                    One of `individual` or `company`. See [Choose a cardholder
+                    type](https://stripe.com/docs/issuing/other/choose-cardholder)
+                    for more details.
                   enum:
                     - company
                     - individual
@@ -67182,8 +67237,9 @@ paths:
                   type: object
                 status:
                   description: >-
-                    Whether authorizations can be approved on this card.
-                    Defaults to `inactive`.
+                    Whether authorizations can be approved on this card. May be
+                    blocked from activating cards depending on past-due
+                    Cardholder requirements. Defaults to `inactive`.
                   enum:
                     - active
                     - inactive
@@ -68269,8 +68325,10 @@ paths:
                 status:
                   description: >-
                     Dictates whether authorizations can be approved on this
-                    card. If this card is being canceled because it was lost or
-                    stolen, this information should be provided as
+                    card. May be blocked from activating cards depending on
+                    past-due Cardholder requirements. Defaults to `inactive`. If
+                    this card is being canceled because it was lost or stolen,
+                    this information should be provided as
                     `cancellation_reason`.
                   enum:
                     - active
@@ -96686,7 +96744,7 @@ paths:
               additionalProperties: false
               properties:
                 card_present:
-                  description: Simulated data for the card_present payment method
+                  description: Simulated data for the card_present payment method.
                   properties:
                     number:
                       maxLength: 5000
@@ -96700,7 +96758,7 @@ paths:
                     type: string
                   type: array
                 interac_present:
-                  description: Simulated data for the interac_present payment method
+                  description: Simulated data for the interac_present payment method.
                   properties:
                     number:
                       maxLength: 5000
@@ -96708,11 +96766,12 @@ paths:
                   title: interac_present
                   type: object
                 type:
-                  description: Simulated payment type
+                  description: Simulated payment type.
                   enum:
                     - card_present
                     - interac_present
                   type: string
+                  x-stripeBypassValidation: true
               type: object
         required: false
       responses:
