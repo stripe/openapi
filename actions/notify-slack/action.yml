@@ -1,0 +1,32 @@
+name: 'Notify Slack'
+description: 'Sends a slack notification when workflow succeeds or fails'
+inputs:
+  action:
+    description: 'What is the operation being performed'
+    required: true
+  send_on_success:
+    description: 'Whether to send notification on success'
+    required: true
+  bot_token:
+    description: 'Slack bot token'
+    required: true
+    
+runs:
+  using: "composite"
+  steps:
+    - name: Post to a Slack channel
+      uses: slackapi/slack-github-action@v1.23.0
+      with:
+        channel-id: 'developer-sdks-team-bots'
+        slack-message: "${{ inputs.action }} failed (${{ job.status }}_!\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+      env:
+        SLACK_BOT_TOKEN: ${{ inputs.bot_token }}
+      if: job.status != 'success'
+    - name: Post to a Slack channel
+      uses: slackapi/slack-github-action@v1.23.0
+      with:
+        channel-id: 'developer-sdks-team-bots'
+        slack-message: "${{ inputs.action }} succeeded!\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+      env:
+        SLACK_BOT_TOKEN: ${{ inputs.bot_token }}
+      if: job.status == 'success' && inputs.send_on_success == true
