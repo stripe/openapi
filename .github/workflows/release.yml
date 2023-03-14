@@ -1,16 +1,29 @@
-name: Publish
+name: Release
 
 on:
   workflow_dispatch: {}
   push:
-    branches:
-      - trigger
     tags:
       - v[0-9]+
 
 jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Extract tag message
+      run: |
+        git fetch --tags --force
+        echo "$(git tag -l --format='%(contents:body)' ${{ github.ref_name }})" > "${{ runner.temp }}/release_notes.md"
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body_path: ${{ runner.temp }}/release_notes.md
+
   publish:
-    name: Publish
+    needs: [release]
+    name: Publish spec to other repositories
     runs-on: ubuntu-latest
     steps:
 
@@ -28,6 +41,16 @@ jobs:
       with:
         app_id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
         private_key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+
+    - name: Trigger generated code update
+      run: |
+        curl --fail-with-body \
+          -XPOST \
+          -H 'Authorization: token ${{ steps.gh-api-token.outputs.token }}' \
+          -H "Accept: application/vnd.github.everest-preview+json" \
+          -H "Content-Type: application/json" \
+          https://api.github.com/repos/stripe/sdk-codegen/actions/workflows/codegen.yml/dispatches \
+          --data '{"ref":"master"}'
 
     # Fetch repositories to modify
     - uses: actions/checkout@v3
@@ -87,16 +110,6 @@ jobs:
         commit-message: Update OpenAPI for ${{ github.sha }}
         committer: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
         author: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
-            
-    - name: Trigger generated code update
-      run: |
-        curl --fail-with-body \
-          -XPOST \
-          -H 'Authorization: token ${{ steps.gh-api-token.outputs.token }}' \
-          -H "Accept: application/vnd.github.everest-preview+json" \
-          -H "Content-Type: application/json" \
-          https://api.github.com/repos/stripe/sdk-codegen/actions/workflows/codegen.yml/dispatches \
-          --data '{"ref":"master"}'
 
     - uses: ./actions/notify-slack
       if: always()
