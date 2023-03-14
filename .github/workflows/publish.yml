@@ -3,6 +3,8 @@ name: Publish
 on:
   workflow_dispatch: {}
   push:
+    branches:
+      - trigger
     tags:
       - v[0-9]+
 
@@ -27,61 +29,65 @@ jobs:
         app_id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
         private_key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
 
-    # Fetch repositories to modify
-    - uses: actions/checkout@v3
-      with:
-        token: ${{ steps.gh-api-token.outputs.token }}
-        repository: stripe/stripe-mock
-        path: stripe-mock
-    - uses: actions/checkout@v3
-      with:
-        token: ${{ steps.gh-api-token.outputs.token }}
-        repository: stripe/stripe-cli
-        path: stripe-cli
+    - name: Trigger generated code update
+      run: |
+        curl -XPOST -u ":${{ steps.gh-api-token.outputs.token }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/stripe/sdk-codegen/actions/workflows/codegen.yml/dispatches --data '{}'
 
-    - run: |
-        rm -f ./api/openapi-spec/spec3.sdk.json 
-        cp ../openapi/spec3.sdk.json ./api/openapi-spec/spec3.sdk.json 
-        go generate ./...
-      working-directory: ./stripe-cli
-    - run: |
-        rm -f ./stripe-mock/embedded/openapi/spec3.json
-        rm -f ./stripe-mock/embedded/openapi/fixtures3.json
-        cp openapi/spec3.json stripe-mock/embedded/openapi/spec3.json
-        cp openapi/fixtures3.json stripe-mock/embedded/openapi/fixtures3.json
+    # # Fetch repositories to modify
+    # - uses: actions/checkout@v3
+    #   with:
+    #     token: ${{ steps.gh-api-token.outputs.token }}
+    #     repository: stripe/stripe-mock
+    #     path: stripe-mock
+    # - uses: actions/checkout@v3
+    #   with:
+    #     token: ${{ steps.gh-api-token.outputs.token }}
+    #     repository: stripe/stripe-cli
+    #     path: stripe-cli
 
-    # Create pull request on stripe-mock
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v4
-      with:
-        path: stripe-mock
-        title: OpenAPI Update
-        body: |
-          Automated OpenAPI update for https://github.com/stripe/openapi/commit/${{ github.sha }}
+    # - run: |
+    #     rm -f ./api/openapi-spec/spec3.sdk.json 
+    #     cp ../openapi/spec3.sdk.json ./api/openapi-spec/spec3.sdk.json 
+    #     go generate ./...
+    #   working-directory: ./stripe-cli
+    # - run: |
+    #     rm -f ./stripe-mock/embedded/openapi/spec3.json
+    #     rm -f ./stripe-mock/embedded/openapi/fixtures3.json
+    #     cp openapi/spec3.json stripe-mock/embedded/openapi/spec3.json
+    #     cp openapi/fixtures3.json stripe-mock/embedded/openapi/fixtures3.json
 
-          [→ Debug this workflow](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
-        branch: update-openapi
-        token: ${{ steps.gh-api-token.outputs.token }}
-        delete-branch: true
-        commit-message: Update OpenAPI for ${{ github.sha }}
-        committer: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
-        author: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
+    # # Create pull request on stripe-mock
+    # - name: Create Pull Request
+    #   uses: peter-evans/create-pull-request@v4
+    #   with:
+    #     path: stripe-mock
+    #     title: OpenAPI Update
+    #     body: |
+    #       Automated OpenAPI update for https://github.com/stripe/openapi/commit/${{ github.sha }}
 
-    # Create pull request on openapi
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v4
-      with:
-        path: stripe-cli
-        title: OpenAPI Update
-        body: |
-          Automated OpenAPI update for https://github.com/stripe/openapi/commit/${{ github.sha }}
+    #       [→ Debug this workflow](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+    #     branch: update-openapi
+    #     token: ${{ steps.gh-api-token.outputs.token }}
+    #     delete-branch: true
+    #     commit-message: Update OpenAPI for ${{ github.sha }}
+    #     committer: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
+    #     author: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
 
-          This pull request was initiated by @${{ github.actor }}
+    # # Create pull request on openapi
+    # - name: Create Pull Request
+    #   uses: peter-evans/create-pull-request@v4
+    #   with:
+    #     path: stripe-cli
+    #     title: OpenAPI Update
+    #     body: |
+    #       Automated OpenAPI update for https://github.com/stripe/openapi/commit/${{ github.sha }}
 
-          [→ Debug this workflow](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
-        branch: update-openapi
-        token: ${{ steps.gh-api-token.outputs.token }}
-        delete-branch: true
-        commit-message: Update OpenAPI for ${{ github.sha }}
-        committer: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
-        author: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
+    #       This pull request was initiated by @${{ github.actor }}
+
+    #       [→ Debug this workflow](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+    #     branch: update-openapi
+    #     token: ${{ steps.gh-api-token.outputs.token }}
+    #     delete-branch: true
+    #     commit-message: Update OpenAPI for ${{ github.sha }}
+    #     committer: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
+    #     author: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
