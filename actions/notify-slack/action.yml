@@ -7,6 +7,9 @@ inputs:
   send_on_success:
     description: 'Whether to send notification on success'
     required: true
+  send_on_cancelled:
+    description: 'Whether to send notification on cancelled'
+    required: true
   bot_token:
     description: 'Slack bot token'
     required: true
@@ -24,7 +27,9 @@ runs:
           <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|Commit>
       env:
         SLACK_BOT_TOKEN: ${{ inputs.bot_token }}
-      if: job.status != 'success'
+      if: >
+        (job.status != 'success' && job.status != 'cancelled') ||
+        (job.status == 'cancelled' && inputs.send_on_cancelled == 'true')
 
     - name: Post to a Slack channel
       uses: slackapi/slack-github-action@v1.23.0
