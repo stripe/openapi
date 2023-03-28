@@ -1,0 +1,74 @@
+name: Reusable workflow example
+
+on: 
+  workflow_call:
+    inputs:
+      source_repository:
+        required: true
+        type: string
+      source_branch:
+        required: true
+        type: string
+      destination_repository:
+        required: true
+        type: string
+      destination_branch:
+        required: true
+        type: string
+    secrets:
+      app_id:
+        required: true
+      private_key:
+        required: true
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Fetch app installation token
+      uses: tibdex/github-app-token@v1
+      id: gh-api-token
+      with:
+        app_id: ${{ secrets.app_id }}
+        private_key: ${{ secrets.private_key }}
+        repository: ${{ inputs.destination_repository }}
+
+    - uses: actions/checkout@v3
+      name: Checkout ${{ inputs.destination_repository }}/${{ inputs.destination_branch }}
+      with:
+        fetch-depth: 0
+        repository: ${{ inputs.destination_repository }}
+        ref: ${{ inputs.destination_branch }}
+        path: repo
+        token: ${{ steps.gh-api-token.outputs.token }}
+
+    - name: Fetch upstream and attempt merge
+      run: |
+        git remote add upstream ${{ github.event.pull_request.base.repo.html_url }}
+        git fetch upstream
+        git merge upstream/${{ inputs.source_branch }} --no-commit
+      working-directory: repo
+
+    - name: Attempt merge
+      run: |
+        yarn merge ../../repo
+      working-directory: tools/automerge
+
+    # - name: Create Pull Request
+    #   uses: peter-evans/create-pull-request@v4
+    #   with:
+    #     path: repo
+    #     title: Merge upstream to ${{ inputs.destination_branch }}
+    #     body: |
+    #       Automated OpenAPI update for https://github.com/stripe/openapi/commit/${{ github.sha }}
+
+    #       This pull request was initiated by @${{ github.actor }}
+
+    #       [→ Debug this workflow](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+    #     branch: update-openapi
+    #     token: ${{ steps.gh-api-token.outputs.token }}
+    #     delete-branch: true
+    #     commit-message: Update OpenAPI for ${{ github.sha }}
+    #     committer: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
+    #     author: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
+
