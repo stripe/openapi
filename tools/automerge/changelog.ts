@@ -1,4 +1,4 @@
-import { compareVersions } from 'compare-versions';
+import { compareVersions } from "compare-versions";
 
 type ChangelogEntry = {
   version: string;
@@ -49,9 +49,8 @@ export const mergeChangelogs = (
     let insert_index = to.findIndex(
       (e) => compareVersions(e.version, version) < 0
     );
-    
-    if (insert_index == -1)
-    {
+
+    if (insert_index == -1) {
       insert_index = to.length;
     }
 

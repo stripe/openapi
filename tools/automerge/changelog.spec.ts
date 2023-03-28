@@ -1,4 +1,8 @@
-import { changelogEntries, formatChangelog, mergeChangelogs } from "./changelog.js";
+import {
+  changelogEntries,
+  formatChangelog,
+  mergeChangelogs,
+} from "./changelog.js";
 
 describe("changelogs", () => {
   test("roundtrip", () => {
@@ -31,8 +35,7 @@ describe("changelogs", () => {
   });
 
   test("merge", () => {
-    const contents1 =
-`# Changelog
+    const contents1 = `# Changelog
 
 ## 2 - 12.04.2022
   - Entry 0
@@ -50,8 +53,7 @@ describe("changelogs", () => {
   - Entry 7
 `;
 
-    const contents2 = 
-`# Changelog
+    const contents2 = `# Changelog
 
 ## 1.2.4 - 12.04.2022
   - Entry 1
@@ -62,8 +64,7 @@ describe("changelogs", () => {
   - Entry 3
 `;
 
-    const expected = 
-`# Changelog
+    const expected = `# Changelog
 
 ## 2 - 12.04.2022
   - Entry 0
@@ -85,7 +86,10 @@ describe("changelogs", () => {
 `;
     expect(
       formatChangelog(
-        mergeChangelogs(changelogEntries(contents1), changelogEntries(contents2))
+        mergeChangelogs(
+          changelogEntries(contents1),
+          changelogEntries(contents2)
+        )
       )
     ).toEqual(expected);
   });

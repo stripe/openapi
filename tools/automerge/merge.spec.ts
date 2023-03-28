@@ -18,21 +18,19 @@ describe("mergeFile", () => {
     "version": "0.11.0",
 }`;
     expect(
-      
-        render(mergeFile(
-        readChunks(input),
-        {
+      render(
+        mergeFile(readChunks(input), {
           name: /project.json/,
           strategy: "ours",
           patterns: [],
-        },
-      ), 'both')
+        }),
+        "both"
+      )
     ).toEqual(expected);
   });
 
   it("merges changelogs", () => {
-    const input = 
-`# Changelog
+    const input = `# Changelog
 
 <<<<<<< HEAD
 ## 0.11.0 - 2023-03-01
@@ -43,8 +41,7 @@ describe("mergeFile", () => {
 >>>>>>> upstream/master
 `;
 
-    const expected =
-`# Changelog
+    const expected = `# Changelog
 
 ## 11.16.0 - 2023-03-23
 * [#1730](https://github.com/stripe/stripe-node/pull/1730) Update generated code
@@ -54,14 +51,14 @@ describe("mergeFile", () => {
 
 `;
     expect(
-      render(mergeFile(
-        readChunks(input),
-        {
+      render(
+        mergeFile(readChunks(input), {
           name: /CHANGELOG.md/,
           strategy: "changelog",
           patterns: [],
-        },
-      ), 'both')
+        }),
+        "both"
+      )
     ).toEqual(expected);
   });
 
@@ -93,22 +90,22 @@ describe("mergeFile", () => {
 >>>>>>> upstream/master
 }`;
     expect(
-      
-        render(mergeFile(
-        readChunks(input),
-        {
+      render(
+        mergeFile(readChunks(input), {
           name: /project.json/,
           strategy: "chunks",
           patterns: [
             {
-                pattern: new RegExp(
-`\\s+"name": ".*?",
-\\s+"version": ".*?",`),
-                strategy: 'ours'
-            }
+              pattern: new RegExp(
+                `\\s+"name": ".*?",
+\\s+"version": ".*?",`
+              ),
+              strategy: "ours",
+            },
           ],
-        },
-      ), 'both')
+        }),
+        "both"
+      )
     ).toEqual(expected);
   });
 });

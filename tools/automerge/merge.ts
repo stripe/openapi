@@ -4,7 +4,7 @@ import {
   mergeChangelogs,
 } from "./changelog.js";
 
-import colors from '@colors/colors'
+import colors from "@colors/colors";
 
 declare global {
   interface Array<T> {

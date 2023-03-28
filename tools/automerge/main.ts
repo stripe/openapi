@@ -6,9 +6,17 @@ import { execSync } from "child_process";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import * as yaml from "js-yaml";
-import { MergeConfig, MergeConfigRaw, mergeFile, readChunks, Status, File, render } from "./merge.js";
+import {
+  MergeConfig,
+  MergeConfigRaw,
+  mergeFile,
+  readChunks,
+  Status,
+  File,
+  render,
+} from "./merge.js";
 import yargs from "yargs";
-import { hideBin } from 'yargs/helpers'
+import { hideBin } from "yargs/helpers";
 
 const merge = (repo: string, file: string, dryRun: boolean) => {
   let config: MergeConfig = {
@@ -26,7 +34,7 @@ const merge = (repo: string, file: string, dryRun: boolean) => {
     config = {
       files: (raw.files ?? []).map((f) => ({
         name: globToRegExp(f.name),
-        strategy: f.strategy ?? 'chunks',
+        strategy: f.strategy ?? "chunks",
         patterns: (f.patterns ?? []).map((p) => ({
           pattern: new RegExp(p.pattern),
           strategy: p.strategy,
@@ -56,66 +64,61 @@ const merge = (repo: string, file: string, dryRun: boolean) => {
       return null;
     })
     .filter(Boolean)
-    .filter(f => fileGlob.test(f.path));
+    .filter((f) => fileGlob.test(f.path));
 
   for (const file of files) {
     const fullPath = join(repo, file.path);
-    const diff = readChunks(readFileSync(fullPath, {
-      encoding: 'utf8'
-    }));
- 
-    console.log('Processing ' + file.path);
+    const diff = readChunks(
+      readFileSync(fullPath, {
+        encoding: "utf8",
+      })
+    );
+
+    console.log("Processing " + file.path);
 
     const fileConfig = config.files.find((f) => f.name.test(file.path)) ?? null;
     const result = mergeFile(diff, fileConfig);
-    const fullyMerged = result.every(c => c.type == 'text');
+    const fullyMerged = result.every((c) => c.type == "text");
 
     if (dryRun) {
-      console.log(' Not writing contents to ' + file.path);
-    }
-    else {
-      writeFileSync(fullPath, render(result, 'both'));
+      console.log(" Not writing contents to " + file.path);
+    } else {
+      writeFileSync(fullPath, render(result, "both"));
     }
 
-    if (fullyMerged)
-    {
-      if (dryRun)
-      {
-        console.log(' Not git adding ' + file.path);
-      }
-      else
-      {
-        try 
-        {
+    if (fullyMerged) {
+      if (dryRun) {
+        console.log(" Not git adding " + file.path);
+      } else {
+        try {
           execSync("git add " + file.path, {
             cwd: repo,
           });
-        }
-        catch (e: any)
-        {
-          console.error('Failed to add ' + e.message);
+        } catch (e: any) {
+          console.error("Failed to add " + e.message);
         }
       }
     }
   }
 };
-const yarg = yargs(hideBin(process.argv))
+const yarg = yargs(hideBin(process.argv));
 const args = yarg
-  .scriptName('automerge')
-  .usage('$0 [args]')
-  .option('repo', {
+  .scriptName("automerge")
+  .usage("$0 [args]")
+  .option("repo", {
     require: true,
-    type: 'string',
+    type: "string",
   })
-  .option('dry-run', {
+  .option("dry-run", {
     require: false,
-    type: 'boolean',
-    default: false
+    type: "boolean",
+    default: false,
   })
-  .option('file', {
+  .option("file", {
     require: false,
-    type: 'string',
-    default: '*'
-  }).parseSync();
+    type: "string",
+    default: "*",
+  })
+  .parseSync();
 
 merge(args.repo, args.file, args.dryRun);
