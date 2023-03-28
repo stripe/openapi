@@ -23,7 +23,7 @@ const merge = (
   file: string,
   dryRun: boolean,
   configPath: string | null
-) => {
+): boolean => {
   let config: MergeConfig = {
     files: [],
   };
@@ -74,6 +74,7 @@ const merge = (
     .filter((f) => f.after != Status.Untracked)
     .filter((f) => fileGlob.test(f.path));
 
+  let mergedAll = true;
   for (const file of files) {
     const fullPath = join(repo, file.path);
     const diff = readChunks(
@@ -107,7 +108,12 @@ const merge = (
         }
       }
     }
+    else
+    {
+      mergedAll = false;
+    }
   }
+  return mergedAll;
 };
 const yarg = yargs(hideBin(process.argv));
 const args = yarg
@@ -134,4 +140,4 @@ const args = yarg
   })
   .parseSync();
 
-merge(args.repo, args.file, args.dryRun, args.config);
+process.exit(merge(args.repo, args.file, args.dryRun, args.config) ? 0 : 1);
