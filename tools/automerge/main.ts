@@ -18,11 +18,16 @@ import {
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-const merge = (repo: string, file: string, dryRun: boolean) => {
+const merge = (
+  repo: string,
+  file: string,
+  dryRun: boolean,
+  configPath: string | null
+) => {
   let config: MergeConfig = {
     files: [],
   };
-  const configPath = join(".mergeconfig.yaml");
+  configPath = configPath ?? join(repo, ".mergeconfig.yaml");
 
   if (existsSync(configPath)) {
     const raw = yaml.load(
@@ -41,6 +46,8 @@ const merge = (repo: string, file: string, dryRun: boolean) => {
         })),
       })),
     };
+  } else {
+    throw new Error("Config not found at " + configPath);
   }
 
   const status = execSync("git status --porcelain", {
@@ -64,6 +71,7 @@ const merge = (repo: string, file: string, dryRun: boolean) => {
       return null;
     })
     .filter(Boolean)
+    .filter((f) => f.after != Status.Untracked)
     .filter((f) => fileGlob.test(f.path));
 
   for (const file of files) {
@@ -119,6 +127,11 @@ const args = yarg
     type: "string",
     default: "*",
   })
+  .option("config", {
+    require: false,
+    type: "string",
+    default: null,
+  })
   .parseSync();
 
-merge(args.repo, args.file, args.dryRun);
+merge(args.repo, args.file, args.dryRun, args.config);

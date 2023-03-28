@@ -24,6 +24,7 @@ export enum Status {
   Deleted = "D",
   Updated = "U",
   Added = "A",
+  Untracked = "?",
 }
 
 export type File = {
