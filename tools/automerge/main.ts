@@ -3,12 +3,14 @@
 import globToRegExp from "glob-to-regexp";
 
 import { execSync } from "child_process";
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import * as yaml from "js-yaml";
-import { MergeConfig, MergeConfigRaw, mergeFile, readChunks, Status, File } from "./merge.js";
+import { MergeConfig, MergeConfigRaw, mergeFile, readChunks, Status, File, render } from "./merge.js";
+import yargs from "yargs";
+import { hideBin } from 'yargs/helpers'
 
-const merge = (repo: string) => {
+const merge = (repo: string, file: string, dryRun: boolean) => {
   let config: MergeConfig = {
     files: [],
   };
@@ -37,6 +39,7 @@ const merge = (repo: string) => {
     encoding: "utf8",
     cwd: repo,
   });
+  const fileGlob = globToRegExp(file);
   const files: Array<File> = status
     .split("\n")
     .map((l) => {
@@ -52,16 +55,67 @@ const merge = (repo: string) => {
 
       return null;
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter(f => fileGlob.test(f.path));
 
   for (const file of files) {
-    const diff = readChunks(readFileSync(join(repo, file.path), {
+    const fullPath = join(repo, file.path);
+    const diff = readChunks(readFileSync(fullPath, {
       encoding: 'utf8'
     }));
  
+    console.log('Processing ' + file.path);
+
     const fileConfig = config.files.find((f) => f.name.test(file.path)) ?? null;
-    mergeFile(diff, fileConfig, file.path)
+    const result = mergeFile(diff, fileConfig);
+    const fullyMerged = result.every(c => c.type == 'text');
+
+    if (dryRun) {
+      console.log(' Not writing contents to ' + file.path);
+    }
+    else {
+      writeFileSync(fullPath, render(result, 'both'));
+    }
+
+    if (fullyMerged)
+    {
+      if (dryRun)
+      {
+        console.log(' Not git adding ' + file.path);
+      }
+      else
+      {
+        try 
+        {
+          execSync("git add " + file.path, {
+            cwd: repo,
+          });
+        }
+        catch (e: any)
+        {
+          console.error('Failed to add ' + e.message);
+        }
+      }
+    }
   }
 };
+const yarg = yargs(hideBin(process.argv))
+const args = yarg
+  .scriptName('automerge')
+  .usage('$0 [args]')
+  .option('repo', {
+    require: true,
+    type: 'string',
+  })
+  .option('dry-run', {
+    require: false,
+    type: 'boolean',
+    default: false
+  })
+  .option('file', {
+    require: false,
+    type: 'string',
+    default: '*'
+  }).parseSync();
 
-merge(process.argv[process.argv.length - 1]);
+merge(args.repo, args.file, args.dryRun);

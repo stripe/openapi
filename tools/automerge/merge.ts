@@ -1,9 +1,10 @@
-import { readFileSync } from "fs";
 import {
   changelogEntries,
   formatChangelog,
   mergeChangelogs,
 } from "./changelog.js";
+
+import colors from '@colors/colors'
 
 declare global {
   interface Array<T> {
@@ -140,13 +141,12 @@ export const render = (
 
 export const mergeFile = (
   diff: Array<Chunk>,
-  config: MergeConfig["files"][0] | null,
-  path: string
+  config: MergeConfig["files"][0] | null
 ): Array<Chunk> => {
   const ours = render(diff, "ours");
   const theirs = render(diff, "theirs");
   if (ours.includes("File generated from our OpenAPI spec")) {
-    console.log("Generated file");
+    console.log(" Generated file, taking ours");
     return [
       {
         type: "text" as const,
@@ -156,7 +156,7 @@ export const mergeFile = (
   }
   if (config) {
     if (config.strategy == "chunks") {
-      console.log(`Merging chunks in ${path}.`);
+      console.log(` Merging chunks`);
       const mergeResult: Array<Chunk> = diff.map((d): Chunk => {
         if (d.type == "text") {
           return d;
@@ -165,7 +165,7 @@ export const mergeFile = (
         const pattern = config.patterns.find((p) => p.pattern.test(d.theirs));
         if (pattern) {
           if (pattern.strategy == "ours") {
-            console.log(`Using `, d.ours);
+            console.log(`  Takind ours for `, d.ours);
             return {
               type: "text" as const,
               text: d.ours,
@@ -175,11 +175,12 @@ export const mergeFile = (
           throw new Error("Unknown merge strategy " + pattern.strategy);
         }
 
-        console.log(`Don't know how to merge ${path} chunk: `, d);
+        console.warn(colors.red(`  Don't know how to merge chunk: `), d);
         return d;
       });
       return mergeResult;
     } else if (config.strategy == "changelog") {
+      console.log(" Merging changelogs");
       return [
         {
           type: "text" as const,
@@ -189,6 +190,7 @@ export const mergeFile = (
         },
       ];
     } else if (config.strategy == "ours") {
+      console.log(" Taking ours");
       return [
         {
           type: "text" as const,
@@ -198,6 +200,6 @@ export const mergeFile = (
     }
   }
 
-  console.log(`Don't know how to merge ${path}`);
+  console.warn(colors.red(` Don't know how to merge`));
   return diff;
 };

@@ -26,7 +26,6 @@ describe("mergeFile", () => {
           strategy: "ours",
           patterns: [],
         },
-        "project.json"
       ), 'both')
     ).toEqual(expected);
   });
@@ -62,7 +61,6 @@ describe("mergeFile", () => {
           strategy: "changelog",
           patterns: [],
         },
-        "CHANGELOG.md"
       ), 'both')
     ).toEqual(expected);
   });
@@ -110,7 +108,6 @@ describe("mergeFile", () => {
             }
           ],
         },
-        "project.json"
       ), 'both')
     ).toEqual(expected);
   });
