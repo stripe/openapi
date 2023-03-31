@@ -1,0 +1,48 @@
+name: 'Enables PR auto merge'
+description: 'Enables PR auto merge'
+inputs:
+  pr_url:
+    description: 'The pull request url'
+    required: true
+  mode:
+    description: 'SQUASH or MERGE'
+    required: true
+    default: 'SQUASH'
+  repo:
+    description: 'repository path'
+    required: true
+  github_token:
+    description: 'GitHub auth token'
+    required: true
+    
+runs:
+  using: "composite"
+  steps:
+    - name: Enable pull request auto-merge
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      continue-on-error: true
+      working-directory: ${{ inputs.repo }}
+      run: |
+        set -e -o pipefail
+
+        if [ "${{ inputs.pr_url }}" == "" ]; then
+          echo "PR URL is required"
+          exit 1
+        fi
+
+        PR_ID=$(gh pr view ${{ inputs.pr_url }} --json id --jq ".id")
+
+        gh api graphql -f query='
+          mutation($pull: ID!) {
+            enablePullRequestAutoMerge(input: {pullRequestId: $pull, mergeMethod: ${{ inputs.mode }}}) {
+              pullRequest {
+                id
+                number
+                autoMergeRequest {
+                  mergeMethod
+                }
+              }
+            }
+          }' -f pull=$PR_ID
