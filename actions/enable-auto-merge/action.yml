@@ -1,0 +1,34 @@
+name: 'Enables PR auto merge'
+description: 'Enables PR auto merge'
+inputs:
+  pr_id:
+    description: 'The pull request GraphQL ID'
+    required: true
+  mode:
+    description: 'SQUASH or MERGE'
+    required: true
+    default: 'SQUASH'
+  github_token:
+    description: 'GitHub auth token'
+    required: true
+    
+runs:
+  using: "composite"
+  steps:
+    - name: Enable pull request auto-merge
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: |
+        gh api graphql -f query='
+          mutation($pull: ID!) {
+            enablePullRequestAutoMerge(input: {pullRequestId: $pull, mergeMethod: $method}) {
+              pullRequest {
+                id
+                number
+                autoMergeRequest {
+                  mergeMethod
+                }
+              }
+            }
+          }' -f pull=${{ inputs.pr_id }} -f method=${{ inputs.mode }}
