@@ -26679,13 +26679,25 @@ components:
             - $ref: '#/components/schemas/portal_flows_flow_subscription_cancel'
           description: Configuration when `flow.type=subscription_cancel`.
           nullable: true
+        subscription_update:
+          anyOf:
+            - $ref: '#/components/schemas/portal_flows_flow_subscription_update'
+          description: Configuration when `flow.type=subscription_update`.
+          nullable: true
+        subscription_update_confirm:
+          anyOf:
+            - $ref: >-
+                #/components/schemas/portal_flows_flow_subscription_update_confirm
+          description: Configuration when `flow.type=subscription_update_confirm`.
+          nullable: true
         type:
           description: Type of flow that the customer will go through.
           enum:
             - payment_method_update
             - subscription_cancel
+            - subscription_update
+            - subscription_update_confirm
           type: string
-          x-stripeBypassValidation: true
       required:
         - after_completion
         - type
@@ -26694,6 +26706,8 @@ components:
       x-expandableFields:
         - after_completion
         - subscription_cancel
+        - subscription_update
+        - subscription_update_confirm
     portal_flows_flow_after_completion:
       description: ''
       properties:
@@ -26732,6 +26746,94 @@ components:
       required:
         - subscription
       title: PortalFlowsFlowSubscriptionCancel
+      type: object
+      x-expandableFields: []
+    portal_flows_flow_subscription_update:
+      description: ''
+      properties:
+        subscription:
+          description: The ID of the subscription to be updated.
+          maxLength: 5000
+          type: string
+      required:
+        - subscription
+      title: PortalFlowsFlowSubscriptionUpdate
+      type: object
+      x-expandableFields: []
+    portal_flows_flow_subscription_update_confirm:
+      description: ''
+      properties:
+        discounts:
+          description: >-
+            The coupon or promotion code to apply to this subscription update.
+            Currently, only up to one may be specified.
+          items:
+            $ref: >-
+              #/components/schemas/portal_flows_subscription_update_confirm_discount
+          nullable: true
+          type: array
+        items:
+          description: >-
+            The [subscription
+            item](https://stripe.com/docs/api/subscription_items) to be updated
+            through this flow. Currently, only up to one may be specified and
+            subscriptions with multiple items are not updatable.
+          items:
+            $ref: '#/components/schemas/portal_flows_subscription_update_confirm_item'
+          type: array
+        subscription:
+          description: The ID of the subscription to be updated.
+          maxLength: 5000
+          type: string
+      required:
+        - items
+        - subscription
+      title: PortalFlowsFlowSubscriptionUpdateConfirm
+      type: object
+      x-expandableFields:
+        - discounts
+        - items
+    portal_flows_subscription_update_confirm_discount:
+      description: ''
+      properties:
+        coupon:
+          description: The ID of the coupon to apply to this subscription update.
+          maxLength: 5000
+          nullable: true
+          type: string
+        promotion_code:
+          description: The ID of a promotion code to apply to this subscription update.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: PortalFlowsSubscriptionUpdateConfirmDiscount
+      type: object
+      x-expandableFields: []
+    portal_flows_subscription_update_confirm_item:
+      description: ''
+      properties:
+        id:
+          description: >-
+            The ID of the [subscription
+            item](https://stripe.com/docs/api/subscriptions/object#subscription_object-items-data-id)
+            to be updated.
+          maxLength: 5000
+          nullable: true
+          type: string
+        price:
+          description: >-
+            The price the customer should subscribe to through this flow. The
+            price must also be included in the configuration's
+            [`features.subscription_update.products`](docs/api/customer_portal/configuration#portal_configuration_object-features-subscription_update-products).
+          maxLength: 5000
+          nullable: true
+          type: string
+        quantity:
+          description: >-
+            [Quantity](https://stripe.com/docs/subscriptions/quantities) for
+            this item that the customer should subscribe to through this flow.
+          type: integer
+      title: PortalFlowsSubscriptionUpdateConfirmItem
       type: object
       x-expandableFields: []
     portal_invoice_list:
@@ -46962,12 +47064,60 @@ paths:
                         - subscription
                       title: flow_data_subscription_cancel_param
                       type: object
+                    subscription_update:
+                      properties:
+                        subscription:
+                          maxLength: 5000
+                          type: string
+                      required:
+                        - subscription
+                      title: flow_data_subscription_update_param
+                      type: object
+                    subscription_update_confirm:
+                      properties:
+                        discounts:
+                          items:
+                            properties:
+                              coupon:
+                                maxLength: 5000
+                                type: string
+                              promotion_code:
+                                maxLength: 5000
+                                type: string
+                            title: subscription_update_confirm_discount_params
+                            type: object
+                          type: array
+                        items:
+                          items:
+                            properties:
+                              id:
+                                maxLength: 5000
+                                type: string
+                              price:
+                                maxLength: 5000
+                                type: string
+                              quantity:
+                                type: integer
+                            required:
+                              - id
+                            title: subscription_update_confirm_item_params
+                            type: object
+                          type: array
+                        subscription:
+                          maxLength: 5000
+                          type: string
+                      required:
+                        - items
+                        - subscription
+                      title: flow_data_subscription_update_confirm_param
+                      type: object
                     type:
                       enum:
                         - payment_method_update
                         - subscription_cancel
+                        - subscription_update
+                        - subscription_update_confirm
                       type: string
-                      x-stripeBypassValidation: true
                   required:
                     - type
                   title: flow_data_param
