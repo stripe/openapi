@@ -34244,6 +34244,60 @@ components:
       x-expandableFields:
         - tax_breakdown
       x-resourceId: tax.calculation_line_item
+    tax.settings:
+      description: >-
+        You can use Tax `Settings` to manage configurations used by Stripe Tax
+        calculations.
+
+
+        Related guide: [Using the Settings
+        API](https://stripe.com/docs/tax/settings-api)
+      properties:
+        defaults:
+          $ref: '#/components/schemas/tax_product_resource_tax_settings_defaults'
+        head_office:
+          anyOf:
+            - $ref: >-
+                #/components/schemas/tax_product_resource_tax_settings_head_office
+          description: The place where your business is located.
+          nullable: true
+        livemode:
+          description: >-
+            Has the value `true` if the object exists in live mode or the value
+            `false` if the object exists in test mode.
+          type: boolean
+        object:
+          description: >-
+            String representing the object's type. Objects of the same type
+            share the same value.
+          enum:
+            - tax.settings
+          type: string
+        status:
+          description: >-
+            The `active` status indicates you have all required settings to
+            calculate tax. A status can transition out of `active` when new
+            required settings are introduced.
+          enum:
+            - active
+            - pending
+          type: string
+        status_details:
+          $ref: >-
+            #/components/schemas/tax_product_resource_tax_settings_status_details
+      required:
+        - defaults
+        - livemode
+        - object
+        - status
+        - status_details
+      title: TaxProductResourceTaxSettings
+      type: object
+      x-expandableFields:
+        - defaults
+        - head_office
+        - status_details
+      x-resourceId: tax.settings
     tax.transaction:
       description: >-
         A Tax Transaction records the tax collected from or refunded to your
@@ -35183,6 +35237,81 @@ components:
       required:
         - percentage_decimal
       title: TaxProductResourceTaxRateDetails
+      type: object
+      x-expandableFields: []
+    tax_product_resource_tax_settings_defaults:
+      description: ''
+      properties:
+        tax_behavior:
+          description: >-
+            Default [tax
+            behavior](https://stripe.com/docs/tax/products-prices-tax-categories-tax-behavior#tax-behavior)
+            used to specify whether the price is considered inclusive of taxes
+            or exclusive of taxes. If the item's price has a tax behavior set,
+            it will take precedence over the default tax behavior.
+          enum:
+            - exclusive
+            - inclusive
+            - inferred_by_currency
+          nullable: true
+          type: string
+        tax_code:
+          description: >-
+            Default [tax code](https://stripe.com/docs/tax/tax-categories) used
+            to classify your products and prices.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: TaxProductResourceTaxSettingsDefaults
+      type: object
+      x-expandableFields: []
+    tax_product_resource_tax_settings_head_office:
+      description: ''
+      properties:
+        address:
+          $ref: '#/components/schemas/address'
+      required:
+        - address
+      title: TaxProductResourceTaxSettingsHeadOffice
+      type: object
+      x-expandableFields:
+        - address
+    tax_product_resource_tax_settings_status_details:
+      description: ''
+      properties:
+        active:
+          $ref: >-
+            #/components/schemas/tax_product_resource_tax_settings_status_details_resource_active
+        pending:
+          $ref: >-
+            #/components/schemas/tax_product_resource_tax_settings_status_details_resource_pending
+      title: TaxProductResourceTaxSettingsStatusDetails
+      type: object
+      x-expandableFields:
+        - active
+        - pending
+    tax_product_resource_tax_settings_status_details_resource_active:
+      description: ''
+      properties: {}
+      title: TaxProductResourceTaxSettingsStatusDetailsResourceActive
+      type: object
+      x-expandableFields: []
+    tax_product_resource_tax_settings_status_details_resource_pending:
+      description: ''
+      properties:
+        missing_fields:
+          description: >-
+            The list of missing fields that are required to perform
+            calculations. It includes the entry `head_office` when the status is
+            `pending`. It is recommended to set the optional values even if they
+            aren't listed as required for calculating taxes. Calculations can
+            fail if missing fields aren't explicitly provided on every call.
+          items:
+            maxLength: 5000
+            type: string
+          nullable: true
+          type: array
+      title: TaxProductResourceTaxSettingsStatusDetailsResourcePending
       type: object
       x-expandableFields: []
     tax_product_resource_tax_transaction_line_item_resource_reversal:
@@ -98291,6 +98420,129 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
           description: Error response.
+  /v1/tax/settings:
+    get:
+      description: <p>Retrieves Tax <code>Settings</code> for a merchant.</p>
+      operationId: GetTaxSettings
+      parameters:
+        - description: Specifies which fields in the response should be expanded.
+          explode: true
+          in: query
+          name: expand
+          required: false
+          schema:
+            items:
+              maxLength: 5000
+              type: string
+            type: array
+          style: deepObject
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              additionalProperties: false
+              properties: {}
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tax.settings'
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+          description: Error response.
+    post:
+      description: >-
+        <p>Updates Tax <code>Settings</code> parameters used in tax
+        calculations. All parameters are editable but none can be removed once
+        set.</p>
+      operationId: PostTaxSettings
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding:
+              defaults:
+                explode: true
+                style: deepObject
+              expand:
+                explode: true
+                style: deepObject
+              head_office:
+                explode: true
+                style: deepObject
+            schema:
+              additionalProperties: false
+              properties:
+                defaults:
+                  description: Default configuration to be used on Stripe Tax calculations.
+                  properties:
+                    tax_behavior:
+                      enum:
+                        - exclusive
+                        - inclusive
+                        - inferred_by_currency
+                      type: string
+                    tax_code:
+                      type: string
+                  title: defaults_param
+                  type: object
+                expand:
+                  description: Specifies which fields in the response should be expanded.
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
+                head_office:
+                  description: The place where your business is located.
+                  properties:
+                    address:
+                      properties:
+                        city:
+                          maxLength: 5000
+                          type: string
+                        country:
+                          maxLength: 5000
+                          type: string
+                        line1:
+                          maxLength: 5000
+                          type: string
+                        line2:
+                          maxLength: 5000
+                          type: string
+                        postal_code:
+                          maxLength: 5000
+                          type: string
+                        state:
+                          maxLength: 5000
+                          type: string
+                      title: validated_country_address
+                      type: object
+                  required:
+                    - address
+                  title: head_office_param
+                  type: object
+              type: object
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tax.settings'
+          description: Successful response.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+          description: Error response.
   /v1/tax/transactions/create_from_calculation:
     post:
       description: <p>Creates a Tax <code>Transaction</code> from a calculation.</p>
@@ -107931,6 +108183,7 @@ paths:
                       - subscription_schedule.expiring
                       - subscription_schedule.released
                       - subscription_schedule.updated
+                      - tax.settings.updated
                       - tax_rate.created
                       - tax_rate.updated
                       - terminal.reader.action_failed
@@ -108325,6 +108578,7 @@ paths:
                       - subscription_schedule.expiring
                       - subscription_schedule.released
                       - subscription_schedule.updated
+                      - tax.settings.updated
                       - tax_rate.created
                       - tax_rate.updated
                       - terminal.reader.action_failed
