@@ -1,0 +1,114 @@
+name: Publish  
+  
+on:  
+  push: {}  
+  
+jobs:
+  publish:
+    name: Publish spec to other repositories
+    runs-on: ubuntu-latest
+    steps:
+
+    # Fetch this repository
+    - uses: actions/checkout@v2
+
+    # Set up GO
+    - uses: actions/setup-go@v2
+      with:
+        go-version: 1.19
+
+    # Fetch app installation token
+    - uses: tibdex/github-app-token@v1.5.2
+      id: gh-api-token
+      with:
+        app_id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
+        private_key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+
+    - name: Trigger generated code update
+      run: |
+        curl --fail-with-body \
+          -XPOST \
+          -H 'Authorization: token ${{ steps.gh-api-token.outputs.token }}' \
+          -H "Accept: application/vnd.github.everest-preview+json" \
+          -H "Content-Type: application/json" \
+          https://api.github.com/repos/stripe/sdk-codegen/actions/workflows/codegen.yml/dispatches \
+          --data '{"ref":"master"}'
+
+    # Fetch repositories to modify
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ steps.gh-api-token.outputs.token }}
+        repository: stripe/stripe-mock
+        path: stripe-mock
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ steps.gh-api-token.outputs.token }}
+        repository: stripe/stripe-cli
+        path: stripe-cli
+
+    - run: |
+        rm -f ./api/openapi-spec/spec3.sdk.json 
+        cp ../openapi/spec3.sdk.json ./api/openapi-spec/spec3.sdk.json 
+        go generate ./...
+      working-directory: ./stripe-cli
+    - run: |
+        rm -f ./stripe-mock/embedded/openapi/spec3.json
+        rm -f ./stripe-mock/embedded/openapi/spec3.beta.sdk.json
+
+        rm -f ./stripe-mock/embedded/openapi/fixtures3.json
+        rm -f ./stripe-mock/embedded/openapi/fixtures3.beta.json
+
+        cp openapi/spec3.json stripe-mock/embedded/openapi/spec3.json
+        cp openapi/spec3.beta.sdk.json stripe-mock/embedded/openapi/spec3.beta.sdk.json
+
+        cp openapi/fixtures3.json stripe-mock/embedded/openapi/fixtures3.json
+        cp openapi/fixtures3.beta.json stripe-mock/embedded/openapi/fixtures3.beta.json
+
+    - name: Create Pull Request on stripe-mock
+      id: cpr
+      uses: peter-evans/create-pull-request@v4
+      with:
+        path: stripe-mock
+        title: OpenAPI Update
+        body: |
+          Automated OpenAPI update for https://github.com/stripe/openapi/commit/${{ github.sha }}
+
+          [→ Debug this workflow](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        branch: update-openapi
+        token: ${{ steps.gh-api-token.outputs.token }}
+        delete-branch: true
+        commit-message: Update OpenAPI for ${{ github.sha }}
+        committer: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
+        author: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
+
+    - uses: stripe/openapi/actions/enable-auto-merge@master
+      name: Enable auto-merge for stripe-mock
+      with:
+        pr_url: "${{ steps.cpr.outputs.pull-request-url }}"
+        github_token: ${{ steps.gh-api-token.outputs.token }}
+        repo: "./stripe-mock"
+
+    - name: Create pull request on stripe-cli
+      uses: peter-evans/create-pull-request@v4
+      with:
+        path: stripe-cli
+        title: OpenAPI Update
+        body: |
+          Automated OpenAPI update for https://github.com/stripe/openapi/commit/${{ github.sha }}
+
+          This pull request was initiated by @${{ github.actor }}
+
+          [→ Debug this workflow](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        branch: update-openapi
+        token: ${{ steps.gh-api-token.outputs.token }}
+        delete-branch: true
+        commit-message: Update OpenAPI for ${{ github.sha }}
+        committer: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
+        author: "Stripe OpenAPI <105521251+stripe-openapi[bot]@users.noreply.github.com>"
+
+    - uses: ./actions/notify-slack
+      if: always()
+      with:
+        action: 'Publishing the OpenAPI spec to other repositories'
+        send_on_success: false
+        bot_token: ${{ secrets.SLACK_BOT_TOKEN }}
