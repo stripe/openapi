@@ -1,0 +1,38 @@
+name: 'Approve'
+description: 'Approves a PR'
+inputs:
+  pr_url_or_branch:
+    description: 'The pull request url or a branch name'
+    required: true
+  repo:
+    description: 'repository path'
+    required: true
+  github_app_id:
+    description: 'GitHub Approver App ID'
+    required: true
+  github_app_private_key:
+    description: 'GitHub Approver App ID'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Fetch approver app installation token
+      uses: tibdex/github-app-token@v1
+      id: gh-approver-api-token
+      with:
+        app_id: ${{ inputs.github_app_id }}
+        private_key: ${{ inputs.github_app_private_key }}
+    - run: |
+        set -e -x -o pipefail
+
+        PR_STATUS=$(gh pr view --json reviewDecision -q ".reviewDecision" ${{ inputs.pr_url_or_branch }} )
+        if [ "$PR_STATUS" == "REVIEW_REQUIRED" ]; then
+          gh pr review --approve ${{ inputs.pr_url_or_branch }}
+        fi
+      working-directory: ${{ inputs.repo }}
+      name: Auto-approve
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ steps.gh-approver-api-token.outputs.token }}
