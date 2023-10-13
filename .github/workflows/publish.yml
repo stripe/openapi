@@ -2,37 +2,22 @@ name: Publish
   
 on:  
   workflow_dispatch: {}
+  release:
+    types: 
+      - created
   push:
     branches:
       - master
-    tags:
-      - v[0-9]+
-  
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: true
 
 jobs:
-  publish:
-    name: Publish spec to other repositories
+  # Trigger generated code updates only after a release was created
+  # Generated code pipeline relies on latest release to pick up the spec
+  publish-latest-release:
+    if: >-
+      (github.event_name == 'workflow_dispatch') || (github.event_name == 'release')
+    name: Trigger generated code update
     runs-on: ubuntu-latest
     steps:
-
-    # Fetch this repository
-    - uses: actions/checkout@v2
-
-    # Set up GO
-    - uses: actions/setup-go@v2
-      with:
-        go-version: 1.19
-
-    # Fetch app installation token
-    - uses: tibdex/github-app-token@v1.5.2
-      id: gh-api-token
-      with:
-        app_id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
-        private_key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
-
     - name: Trigger generated code update
       run: |
         curl --fail-with-body \
@@ -42,6 +27,30 @@ jobs:
           -H "Content-Type: application/json" \
           https://api.github.com/repos/stripe/sdk-codegen/actions/workflows/codegen.yml/dispatches \
           --data '{"ref":"master"}'
+    - uses: ./actions/notify-slack
+      if: always()
+      with:
+        action: 'Publishing the OpenAPI spec to other repositories'
+        send_on_success: false
+        bot_token: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  # stripe-mock and stripe-cli are updated with latest versions of files straight from master
+  publish-latest-master:
+    if: >-
+      (github.event_name == 'workflow_dispatch') || (github.event_name == 'push')
+    name: Publish spec to stripe-cli & stripe-mock
+    runs-on: ubuntu-latest
+    steps:
+
+    # Fetch this repository
+    - uses: actions/checkout@v2
+
+    # Fetch app installation token
+    - uses: tibdex/github-app-token@v1.5.2
+      id: gh-api-token
+      with:
+        app_id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
+        private_key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
 
     # Fetch repositories to modify
     - uses: actions/checkout@v3
@@ -49,17 +58,7 @@ jobs:
         token: ${{ steps.gh-api-token.outputs.token }}
         repository: stripe/stripe-mock
         path: stripe-mock
-    - uses: actions/checkout@v3
-      with:
-        token: ${{ steps.gh-api-token.outputs.token }}
-        repository: stripe/stripe-cli
-        path: stripe-cli
 
-    - run: |
-        rm -f ./api/openapi-spec/spec3.sdk.json 
-        cp ../openapi/spec3.sdk.json ./api/openapi-spec/spec3.sdk.json 
-        go generate ./...
-      working-directory: ./stripe-cli
     - run: |
         rm -f ./stripe-mock/embedded/openapi/spec3.json
         rm -f ./stripe-mock/embedded/openapi/spec3.beta.sdk.json
@@ -107,6 +106,25 @@ jobs:
         github_app_id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APPROVER_APP_ID }}
         github_app_private_key: ${{ secrets.GH_APP_STRIPE_OPENAPI_APPROVER_PRIVATE_KEY }}
 
+    # Set up GO
+    - uses: actions/setup-go@v2
+      with:
+        go-version: 1.19
+
+    - name: Checkout stripe-cli
+      uses: actions/checkout@v3
+      with:
+        token: ${{ steps.gh-api-token.outputs.token }}
+        repository: stripe/stripe-cli
+        path: stripe-cli
+
+    - name: Update generated code in stripe-cli
+      run: |
+        rm -f ./api/openapi-spec/spec3.sdk.json 
+        cp ../openapi/spec3.sdk.json ./api/openapi-spec/spec3.sdk.json 
+        go generate ./...
+      working-directory: ./stripe-cli
+      
     - name: Create pull request on stripe-cli
       uses: peter-evans/create-pull-request@v4
       with:
