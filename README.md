@@ -22,6 +22,10 @@ longer receiving updates. It is available on
 [old versions](https://github.com/stripe/openapi/tree/v83) of this repository.
 
 
+The specs provided in this repository do not explicity target the
+OpenAPI-generator.  They are instead generated via a custom closed-source
+generator.
+
 ## Vendor Extensions
 
 The specification ships with a few vendor-specific fields to help represent
