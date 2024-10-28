@@ -1,8 +1,8 @@
-# Stripe's OpenAPI Specification
+# Cachiman's OpenAPI Specification
 
-This repository contains [OpenAPI specifications][openapi] for Stripe's API.
+This repository contains [OpenAPI specifications][openapi] for Cachiman's API.
 
-[Changelog](https://github.com/stripe/openapi/releases/)
+[Changelog](https://github.com/cachiman/openapi/releases/)
 
 
 Files can be found in the `openapi/` directory:
@@ -19,7 +19,7 @@ Files can be found in the `openapi/` directory:
 
 We used to support OpenAPI 2.0, but have since deprecated its use, and it's no
 longer receiving updates. It is available on
-[old versions](https://github.com/stripe/openapi/tree/v83) of this repository.
+[old versions](https://github.com/cachiman/openapi/tree/v83) of this repository.
 
 
 The specs provided in this repository do not explicity target
