@@ -1,6 +1,7 @@
 * Change type of `Account.future_requirements.disabled_reason` and `Account.requirements.disabled_reason` from `string` to `enum`
 * Change `AccountSession.components.account_management.features.disable_stripe_user_authentication`, `AccountSession.components.account_onboarding.features.disable_stripe_user_authentication`, `AccountSession.components.balances.features.disable_stripe_user_authentication`, `AccountSession.components.notification_banner.features.disable_stripe_user_authentication`, and `AccountSession.components.payouts.features.disable_stripe_user_authentication` to be required
 * Add support for `mandate_options` on `Checkout.Session#create.payment_method_options.bacs_debit` and `Checkout.Session.payment_method_options.bacs_debit`
+* Add support for `request_extended_authorization`, `request_incremental_authorization`, `request_multicapture`, and `request_overcapture` on `Checkout.Session#create.payment_method_options.card` and `Checkout.Session.payment_method_options.card`
 * Add support for `capture_method` on `Checkout.Session#create.payment_method_options.kakao_pay`, `Checkout.Session#create.payment_method_options.kr_card`, `Checkout.Session#create.payment_method_options.naver_pay`, `Checkout.Session#create.payment_method_options.payco`, and `Checkout.Session#create.payment_method_options.samsung_pay`
 * Add support for `merchant_amount` and `merchant_currency` on `Issuing.Authorization.testHelpers#create`
 * Change `Issuing.Authorization.testHelpers#create.amount` to be optional
