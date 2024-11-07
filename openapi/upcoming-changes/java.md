@@ -1,3 +1,4 @@
+* Add support for `respond` test helper method on resource `Issuing.Authorization`
 * Add support for `adaptive_pricing` on `Checkout.Session` and `checkout.SessionCreateParams`
 * Add support for `mandate_options` on `Checkout.Session.payment_method_options.bacs_debit`, `Checkout.Session.payment_method_options.sepa_debit`, `checkout.SessionCreateParams.payment_method_options.bacs_debit`, and `checkout.SessionCreateParams.payment_method_options.sepa_debit`
 * Add support for `request_extended_authorization`, `request_incremental_authorization`, `request_multicapture`, and `request_overcapture` on `Checkout.Session.payment_method_options.card` and `checkout.SessionCreateParams.payment_method_options.card`
@@ -7,5 +8,6 @@
 * Add support for new value `service_tax` on enums `InvoiceAddLinesParams.lines[].tax_amounts[].tax_rate_data.tax_type`, `InvoiceUpdateLinesParams.lines[].tax_amounts[].tax_rate_data.tax_type`, `TaxRateCreateParams.tax_type`, and `TaxRateUpdateParams.tax_type`
 * Add support for `merchant_amount` and `merchant_currency` on `issuing.AuthorizationCreateParams`
 * Change `issuing.AuthorizationCreateParams.amount` to be optional
+* Add support for `fraud_challenges` and `verified_by_fraud_challenge` on `Issuing.Authorization`
 * Add support for new value `link` on enums `PaymentIntentConfirmParams.payment_method_options.card.network`, `PaymentIntentCreateParams.payment_method_options.card.network`, `PaymentIntentUpdateParams.payment_method_options.card.network`, `SetupIntentConfirmParams.payment_method_options.card.network`, `SetupIntentCreateParams.payment_method_options.card.network`, `SetupIntentUpdateParams.payment_method_options.card.network`, `SubscriptionCreateParams.payment_settings.payment_method_options.card.network`, and `SubscriptionUpdateParams.payment_settings.payment_method_options.card.network`
 * Add support for `submit_type` on `PaymentLinkUpdateParams`
