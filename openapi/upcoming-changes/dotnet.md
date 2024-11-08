@@ -7,3 +7,4 @@
 * Add support for `MerchantAmount` and `MerchantCurrency` on `Issuing.TestHelpersAuthorizationCreateOptions`
 * Add support for `FraudChallenges` and `VerifiedByFraudChallenge` on `IssuingAuthorization`
 * Add support for `SubmitType` on `PaymentLinkUpdateOptions`
+* Add support for `TraceId` on `Payout`
