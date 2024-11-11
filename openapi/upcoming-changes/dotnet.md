@@ -8,3 +8,4 @@
 * Add support for `FraudChallenges` and `VerifiedByFraudChallenge` on `IssuingAuthorization`
 * Add support for `SubmitType` on `PaymentLinkUpdateOptions`
 * Add support for `TraceId` on `Payout`
+* Add support for `NetworkDeclineCode` on `RefundDestinationDetailsBlik` and `RefundDestinationDetailsSwish`

@@ -14,3 +14,4 @@
 * Add support for new value `link` on enums `PaymentIntentConfirmParams.payment_method_options.card.network`, `PaymentIntentCreateParams.payment_method_options.card.network`, `PaymentIntentUpdateParams.payment_method_options.card.network`, `SetupIntentConfirmParams.payment_method_options.card.network`, `SetupIntentCreateParams.payment_method_options.card.network`, `SetupIntentUpdateParams.payment_method_options.card.network`, `SubscriptionCreateParams.payment_settings.payment_method_options.card.network`, and `SubscriptionUpdateParams.payment_settings.payment_method_options.card.network`
 * Add support for `submit_type` on `PaymentLinkUpdateParams`
 * Add support for `trace_id` on `Payout`
+* Add support for `network_decline_code` on `Refund.destination_details.blik` and `Refund.destination_details.swish`
