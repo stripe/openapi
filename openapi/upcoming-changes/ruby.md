@@ -1,1 +1,1 @@
-* Add support for `respond` test helper method on resource `Issuing.Authorization`
+* Release specs are identical.
