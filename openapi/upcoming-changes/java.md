@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for `authorizer` on `AccountPersonsParams.relationship` and `TokenCreateParams.person.relationship`
