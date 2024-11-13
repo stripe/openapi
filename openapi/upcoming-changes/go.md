@@ -1,1 +1,1 @@
-* Add support for `AccountHolderAddress` and `BankAddress` on `FundingInstructionsBankTransferFinancialAddressesIban` and `PaymentIntentNextActionDisplayBankTransferInstructionsFinancialAddressesIban`
+* Add support for `AccountHolderAddress` and `BankAddress` on `FundingInstructionsBankTransferFinancialAddressesIban`, `FundingInstructionsBankTransferFinancialAddressesZengin`, `PaymentIntentNextActionDisplayBankTransferInstructionsFinancialAddressesIban`, and `PaymentIntentNextActionDisplayBankTransferInstructionsFinancialAddressesZengin`
