@@ -1,3 +1,1 @@
-* Add support for `authorizer` on `Account#persons.relationship` and `Token#create.person.relationship`
 * Add support for `account_holder_address` and `bank_address` on `FundingInstructions.bank_transfer.financial_addresses[].iban` and `PaymentIntent.next_action.display_bank_transfer_instructions.financial_addresses[].iban`
-* Add support for new value `2024-11-20.acacia` on enum `WebhookEndpoint#create.api_version`

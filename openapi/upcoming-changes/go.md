@@ -1,2 +1,1 @@
-* Add support for `Authorizer` on `AccountPersonsRelationshipParams` and `TokenPersonRelationshipParams`
 * Add support for `AccountHolderAddress` and `BankAddress` on `FundingInstructionsBankTransferFinancialAddressesIban` and `PaymentIntentNextActionDisplayBankTransferInstructionsFinancialAddressesIban`
