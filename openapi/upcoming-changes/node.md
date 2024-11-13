@@ -1,1 +1,2 @@
 * Add support for `authorizer` on `AccountPersonsParams.relationship` and `TokenCreateParams.person.relationship`
+* Add support for new value `2024-11-20.acacia` on enum `WebhookEndpointCreateParams.api_version`
