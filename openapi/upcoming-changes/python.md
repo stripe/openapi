@@ -13,4 +13,5 @@
 * Add support for `trial_period_days` on parameter class `stripe.PaymentLink.ModifyParamsSubscriptionData`
 * Add support for `payout_minimum_balance_hold` on enum `stripe.BalanceTransaction.type`
 * Add support for `payout_minimum_balance_release` on enum `stripe.BalanceTransaction.type`
+* Add support for `request_signature` on enums `stripe.forwarding.Request.replacements` and `stripe.forwarding.Request.CreateParams.replacements`
 * Change type of `schedule_at_period_end` on  `stripe.billing_portal.Configuration.Features.SubscriptionUpdate` from `Optional[ScheduleAtPeriodEnd]` to `ScheduleAtPeriodEnd`
