@@ -1,5 +1,7 @@
 * Add support for `network_advice_code` and `network_decline_code` on `Charge.outcome`, `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`
 * Add support for new values `payout_minimum_balance_hold` and `payout_minimum_balance_release` on enum `BalanceTransaction.type`
+* Add support for `credits_application_invoice_voided` on `Billing.CreditBalanceTransaction.credit`
+* Change type of `Billing.CreditBalanceTransaction.credit.type` from `literal('credits_granted')` to `enum('credits_application_invoice_voided'|'credits_granted')`
 * Change `BillingPortal.Configuration.features.subscription_update.schedule_at_period_end`, `Issuing.Authorization.verified_by_fraud_challenge`, and `LineItem.description` to be required
 * Add support for `funding` on `Charge.payment_method_details.amazon_pay` and `Charge.payment_method_details.revolut_pay`
 * Add support for `amount_requested` and `partial_authorization` on `Charge.payment_method_details.card`
