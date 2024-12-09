@@ -1,3 +1,4 @@
+* Add support for `regulated_status` on resource `stripe.Card` and resource classes `stripe.Charge.PaymentMethodDetails.Card`, `stripe.ConfirmationToken.PaymentMethodPreview.Card`, and `stripe.PaymentMethod.Card`
 * Add support for `network_advice_code` on resource classes `stripe.Charge.Outcome`, `stripe.Invoice.LastFinalizationError`, `stripe.PaymentIntent.LastPaymentError`, `stripe.SetupAttempt.SetupError`, and `stripe.SetupIntent.LastSetupError`
 * Add support for `network_decline_code` on resource classes `stripe.Charge.Outcome`, `stripe.Invoice.LastFinalizationError`, `stripe.PaymentIntent.LastPaymentError`, `stripe.SetupAttempt.SetupError`, and `stripe.SetupIntent.LastSetupError`
 * Add support for `funding` on resource classes `stripe.Charge.PaymentMethodDetails.AmazonPay` and `stripe.Charge.PaymentMethodDetails.RevolutPay`
