@@ -11,3 +11,4 @@
 * Add support for `disabled_reason` on `Invoice.automatic_tax`, `Subscription.automatic_tax`, `SubscriptionSchedule.default_settings.automatic_tax`, and `SubscriptionSchedule.phases[].automatic_tax`
 * Add support for `tax_id` on `Issuing.Authorization.merchant_data` and `Issuing.Transaction.merchant_data`
 * Add support for `trial_period_days` on `PaymentLinkUpdateParams.subscription_data`
+* Add support for new value `2024-12-18.acacia` on enum `WebhookEndpointCreateParams.api_version`

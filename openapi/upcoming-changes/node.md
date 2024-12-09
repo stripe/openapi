@@ -15,3 +15,4 @@
 * Add support for `tax_id` on `Issuing.Authorization.merchant_data` and `Issuing.Transaction.merchant_data`
 * Change type of `LineItem.description` from `string` to `string | null`
 * Add support for `trial_period_days` on `PaymentLinkUpdateParams.subscription_data`
+* Add support for new value `2024-12-18.acacia` on enum `WebhookEndpointCreateParams.api_version`
