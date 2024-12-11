@@ -1,1 +1,1 @@
-* Add support for `network_transaction_id` on `Charge.payment_method_details.card`
+* Release specs are identical.

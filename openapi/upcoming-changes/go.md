@@ -1,1 +1,1 @@
-* Add support for `NetworkTransactionID` on `ChargePaymentMethodDetailsCard`
+* Release specs are identical.

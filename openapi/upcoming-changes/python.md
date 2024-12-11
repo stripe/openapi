@@ -1,1 +1,0 @@
-* Add support for `network_transaction_id` on resource class `stripe.Charge.PaymentMethodDetails.Card`
