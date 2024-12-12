@@ -1,0 +1,1 @@
+* Add support for `allow_redisplay` on resources `stripe.Card` and `stripe.Source`

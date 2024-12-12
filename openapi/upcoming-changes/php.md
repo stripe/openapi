@@ -1,0 +1,1 @@
+* Add support for `allow_redisplay` on `Card` and `Source`
