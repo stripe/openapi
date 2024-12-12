@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Change `Account.business_profile.annual_revenue` and `Account.business_profile.estimated_worker_count` to be optional
