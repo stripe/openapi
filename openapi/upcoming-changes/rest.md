@@ -6,4 +6,5 @@
 * Add support for new value `al_tin` on enums `Customer#create.tax_id_data[].type`, `Invoice#create_preview.customer_details.tax_ids[].type`, `Invoice#upcoming.customer_details.tax_ids[].type`, `Invoice#upcomingLines.customer_details.tax_ids[].type`, `Tax.Calculation#create.customer_details.tax_ids[].type`, and `TaxId#create.type`
 * Add support for `visa_compliance` on `Dispute#update.evidence.enhanced_evidence`, `Dispute.evidence.enhanced_evidence`, and `Dispute.evidence_details.enhanced_eligibility`
 * Change `Payout.trace_id` to be required
+* Add support for `al`, `am`, `ao`, `ba`, `bb`, `bs`, `cd`, `gn`, `kh`, `me`, `mk`, `mr`, `np`, `pe`, `sn`, `sr`, `tj`, `ug`, `uy`, `zm`, and `zw` on `Tax.Registration#create.country_options` and `Tax.Registration.country_options`
 * Add support for new value `2024-12-18.acacia` on enum `WebhookEndpoint#create.api_version`
