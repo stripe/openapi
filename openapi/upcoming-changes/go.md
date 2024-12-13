@@ -1,1 +1,2 @@
 * Add support for `AllowRedisplay` on `Card` and `Source`
+* Add support for new value `al_tin` on enums `CheckoutSessionCustomerDetailsTaxIdsType`, `InvoiceCustomerTaxIdsType`, `TaxCalculationCustomerDetailsTaxIdsType`, `TaxIdType`, and `TaxTransactionCustomerDetailsTaxIdsType`
