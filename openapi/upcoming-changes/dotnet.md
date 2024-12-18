@@ -1,4 +1,5 @@
 * Add support for `Close` method on resource `Treasury.FinancialAccount`
+* Add support for `AdviceCode` on `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
 * Add support for `Nickname` on `Treasury.FinancialAccountCreateOptions`, `Treasury.FinancialAccountUpdateOptions`, and `TreasuryFinancialAccount`
 * Add support for `ForwardingSettings` on `Treasury.FinancialAccountUpdateOptions`
 * Add support for `IsDefault` on `TreasuryFinancialAccount`
