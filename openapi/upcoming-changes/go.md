@@ -1,5 +1,6 @@
 * Add support for `Close` method on resource `Treasury.FinancialAccount`
 * Add support for `AdviceCode` on `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
+* Add support for `Country` on `ChargePaymentMethodDetailsPaypal`, `ConfirmationTokenPaymentMethodPreviewPaypal`, and `PaymentMethodPaypal`
 * Add support for `Nickname` on `TreasuryFinancialAccountParams` and `TreasuryFinancialAccount`
 * Add support for `ForwardingSettings` on `TreasuryFinancialAccountParams`
 * Add support for `IsDefault` on `TreasuryFinancialAccount`
