@@ -1,4 +1,5 @@
 * Add support for `Close` method on resource `Treasury.FinancialAccount`
+* Add support for `OwnershipExemptionReason` on `AccountCompanyOptions`, `AccountCompany`, and `TokenAccountCompanyOptions`
 * Add support for `DirectorshipDeclaration` on `AccountCompany`
 * Add support for `AdviceCode` on `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
 * Add support for `Country` on `ChargePaymentMethodDetailsPaypal`, `ConfirmationTokenPaymentMethodPreviewPaypal`, and `PaymentMethodPaypal`
