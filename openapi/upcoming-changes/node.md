@@ -5,6 +5,7 @@
 * Remove support for value `always_invoice` from enums `BillingPortal.Configuration.features.subscription_cancel.proration_behavior`, `BillingPortal.ConfigurationCreateParams.features.subscription_cancel.proration_behavior`, and `BillingPortal.ConfigurationUpdateParams.features.subscription_cancel.proration_behavior`
 * Add support for `country` on `Charge.payment_method_details.paypal`, `ConfirmationToken.payment_method_preview.paypal`, and `PaymentMethod.paypal`
 * Change `Charge.payment_method_details.card.network_transaction_id`, `CreditNote.pretax_credit_amounts`, `Invoice.total_pretax_credit_amounts`, `Issuing.Authorization.merchant_data.tax_id`, and `Issuing.Transaction.merchant_data.tax_id` to be required
+* Add support for `phone_number_collection` on `PaymentLinkUpdateParams`
 * Add support for `nickname` on `Treasury.FinancialAccountCreateParams`, `Treasury.FinancialAccountUpdateParams`, and `Treasury.FinancialAccount`
 * Add support for `forwarding_settings` on `Treasury.FinancialAccountUpdateParams`
 * Add support for `is_default` on `Treasury.FinancialAccount`

@@ -4,6 +4,7 @@
 * Add support for `AdviceCode` on `ChargeOutcome`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
 * Remove support for value `always_invoice` from enum `BillingPortalConfigurationFeaturesSubscriptionCancelProrationBehavior`
 * Add support for `Country` on `ChargePaymentMethodDetailsPaypal`, `ConfirmationTokenPaymentMethodPreviewPaypal`, and `PaymentMethodPaypal`
+* Add support for `PhoneNumberCollection` on `PaymentLinkParams`
 * Add support for `Nickname` on `TreasuryFinancialAccountParams` and `TreasuryFinancialAccount`
 * Add support for `ForwardingSettings` on `TreasuryFinancialAccountParams`
 * Add support for `IsDefault` on `TreasuryFinancialAccount`
