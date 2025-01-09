@@ -3,8 +3,8 @@
 * Add support for `directorship_declaration` on `Account.company`
 * Add support for `advice_code` on `Charge.outcome`, `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`
 * Remove support for value `always_invoice` from enums `BillingPortal.Configuration#create.features.subscription_cancel.proration_behavior`, `BillingPortal.Configuration#update.features.subscription_cancel.proration_behavior`, and `BillingPortal.Configuration.features.subscription_cancel.proration_behavior`
+* Change `Card.regulated_status`, `Charge.payment_method_details.card.network_transaction_id`, `Charge.payment_method_details.card.regulated_status`, `ConfirmationToken.payment_method_preview.card.regulated_status`, `CreditNote.pretax_credit_amounts`, `Invoice.total_pretax_credit_amounts`, `Issuing.Authorization.merchant_data.tax_id`, `Issuing.Transaction.merchant_data.tax_id`, and `PaymentMethod.card.regulated_status` to be required
 * Add support for `country` on `Charge.payment_method_details.paypal`, `ConfirmationToken.payment_method_preview.paypal`, and `PaymentMethod.paypal`
-* Change `Charge.payment_method_details.card.network_transaction_id`, `CreditNote.pretax_credit_amounts`, `Invoice.total_pretax_credit_amounts`, `Issuing.Authorization.merchant_data.tax_id`, and `Issuing.Transaction.merchant_data.tax_id` to be required
 * Add support for `phone_number_collection` on `PaymentLink#update`
 * Add support for `nickname` on `Treasury.FinancialAccount#create`, `Treasury.FinancialAccount#update`, and `Treasury.FinancialAccount`
 * Add support for `forwarding_settings` on `Treasury.FinancialAccount#update`
