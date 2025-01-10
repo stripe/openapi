@@ -4,6 +4,7 @@
 * Add support for `AdviceCode` on `ChargeOutcome`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
 * Add support for `Country` on `ChargePaymentMethodDetailsPaypal`, `ConfirmationTokenPaymentMethodPreviewPaypal`, and `PaymentMethodPaypal`
 * Add support for `PhoneNumberCollection` on `PaymentLinkUpdateOptions`
+* Add support for `Jpy` on `TerminalConfigurationTippingOptions` and `TerminalConfigurationTipping`
 * Add support for `Nickname` on `Treasury.FinancialAccountCreateOptions`, `Treasury.FinancialAccountUpdateOptions`, and `TreasuryFinancialAccount`
 * Add support for `ForwardingSettings` on `Treasury.FinancialAccountUpdateOptions`
 * Add support for `IsDefault` on `TreasuryFinancialAccount`
