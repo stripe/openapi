@@ -1,4 +1,5 @@
 * Add support for `Close` method on resource `Treasury.FinancialAccount`
+* Add support for `PayByBankPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
 * Add support for `OwnershipExemptionReason` on `AccountCompanyParams`, `AccountCompany`, and `TokenAccountCompanyParams`
 * Add support for `DirectorshipDeclaration` on `AccountCompany`
 * Add support for `FinancialAccount` on `AccountSessionComponentsParams`, `AccountSessionComponents`, and `TreasuryOutboundTransferDestinationPaymentMethodDetails`

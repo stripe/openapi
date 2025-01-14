@@ -1,3 +1,4 @@
+* Add support for `pay_by_bank_payments` on resource class `stripe.Account.Capabilities` and parameter class `stripe.Account.CreateParamsCapabilities`
 * Add support for `directorship_declaration` on resource class `stripe.Account.Company`
 * Add support for `ownership_exemption_reason` on resource class `stripe.Account.Company` and parameter classes `stripe.Account.CreateParamsCompany` and `stripe.Token.CreateParamsAccountCompany`
 * Add support for `financial_account` on resource classes `stripe.AccountSession.Components` and `stripe.treasury.OutboundTransfer.DestinationPaymentMethodDetails` and parameter class `stripe.AccountSession.CreateParamsComponents`

@@ -1,4 +1,5 @@
 * Add support for `close` method on resource `Treasury.FinancialAccount`
+* Add support for `pay_by_bank_payments` on `Account#create.capabilities`, `Account#update.capabilities`, and `Account.capabilities`
 * Add support for `ownership_exemption_reason` on `Account#create.company`, `Account#update.company`, `Account.company`, and `Token#create.account.company`
 * Add support for `directorship_declaration` on `Account.company`
 * Add support for `financial_account` on `AccountSession#create.components`, `AccountSession.components`, and `Treasury.OutboundTransfer.destination_payment_method_details`
