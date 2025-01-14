@@ -7,6 +7,7 @@
 * Add support for `AdviceCode` on `ChargeOutcome`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
 * Remove support for value `always_invoice` from enum `BillingPortalConfigurationFeaturesSubscriptionCancelProrationBehavior`
 * Add support for `Country` on `ChargePaymentMethodDetailsPaypal`, `ConfirmationTokenPaymentMethodPreviewPaypal`, and `PaymentMethodPaypal`
+* Add support for `Discounts` on `CheckoutSession`
 * Add support for new value `SD` on enums `CheckoutSessionShippingAddressCollectionAllowedCountries` and `PaymentLinkShippingAddressCollectionAllowedCountries`
 * Add support for `PhoneNumberCollection` on `PaymentLinkParams`
 * Add support for `Jpy` on `TerminalConfigurationTippingParams` and `TerminalConfigurationTipping`

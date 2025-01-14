@@ -9,6 +9,7 @@
 * Remove support for value `always_invoice` from enums `BillingPortal.Configuration.features.subscription_cancel.proration_behavior`, `BillingPortal.ConfigurationCreateParams.features.subscription_cancel.proration_behavior`, and `BillingPortal.ConfigurationUpdateParams.features.subscription_cancel.proration_behavior`
 * Add support for `country` on `Charge.payment_method_details.paypal`, `ConfirmationToken.payment_method_preview.paypal`, and `PaymentMethod.paypal`
 * Add support for new value `SD` on enums `Checkout.Session.shipping_address_collection.allowed_countries[]`, `Checkout.SessionCreateParams.shipping_address_collection.allowed_countries[]`, `PaymentLink.shipping_address_collection.allowed_countries[]`, `PaymentLinkCreateParams.shipping_address_collection.allowed_countries[]`, and `PaymentLinkUpdateParams.shipping_address_collection.allowed_countries[]`
+* Add support for `discounts` on `Checkout.Session`
 * Add support for `phone_number_collection` on `PaymentLinkUpdateParams`
 * Add support for `jpy` on `Terminal.Configuration.tipping`, `Terminal.ConfigurationCreateParams.tipping`, and `Terminal.ConfigurationUpdateParams.tipping`
 * Add support for `nickname` on `Treasury.FinancialAccountCreateParams`, `Treasury.FinancialAccountUpdateParams`, and `Treasury.FinancialAccount`
