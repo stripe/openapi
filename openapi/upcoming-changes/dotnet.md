@@ -1,6 +1,7 @@
 * Add support for `Close` method on resource `Treasury.FinancialAccount`
 * Add support for `PayByBankPayments` on `AccountCapabilitiesOptions` and `AccountCapabilities`
 * Add support for `DirectorshipDeclaration` and `OwnershipExemptionReason` on `AccountCompanyOptions`, `AccountCompany`, and `TokenAccountCompanyOptions`
+* Add support for `ProofOfUltimateBeneficialOwnership` on `AccountDocumentsOptions`
 * Add support for `FinancialAccount` on `AccountSessionComponentsOptions`, `AccountSessionComponents`, and `TreasuryOutboundTransferDestinationPaymentMethodDetails`
 * Add support for `FinancialAccountTransactions`, `IssuingCard`, and `IssuingCardsList` on `AccountSessionComponentsOptions` and `AccountSessionComponents`
 * Add support for `AdviceCode` on `ChargeOutcome`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
