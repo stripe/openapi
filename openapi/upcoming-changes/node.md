@@ -23,3 +23,4 @@
 * Change type of `Treasury.OutboundTransfer.destination_payment_method_details.type` from `literal('us_bank_account')` to `enum('financial_account'|'us_bank_account')`
 * Add support for new value `outbound_transfer` on enums `Treasury.ReceivedCredit.linked_flows.source_flow_details.type` and `Treasury.ReceivedCreditListParams.linked_flows.source_flow_type`
 * Add support for `outbound_transfer` on `Treasury.ReceivedCredit.linked_flows.source_flow_details`
+* Add support for new value `2025-01-27.acacia` on enum `WebhookEndpointCreateParams.api_version`
