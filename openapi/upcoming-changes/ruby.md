@@ -1,1 +1,1 @@
-* Add support for `close` method on resource `Treasury.FinancialAccount`
+* Release specs are identical.
