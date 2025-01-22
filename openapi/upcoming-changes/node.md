@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Change `Refund.destination_details.blik.network_decline_code` and `Refund.destination_details.swish.network_decline_code` to be required
