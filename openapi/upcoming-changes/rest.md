@@ -1,1 +1,1 @@
-* Change `Refund.destination_details.blik.network_decline_code` and `Refund.destination_details.swish.network_decline_code` to be required
+* Change `Checkout.Session.discounts`, `Refund.destination_details.blik.network_decline_code`, and `Refund.destination_details.swish.network_decline_code` to be required
