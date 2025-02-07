@@ -1,0 +1,1 @@
+* Add support for `collected_information` on `Checkout.Session`
