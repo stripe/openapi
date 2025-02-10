@@ -1,4 +1,5 @@
 * Add support for `prices` on `Billing.CreditBalanceSummaryRetrieveParams.filter.applicability_scope`, `Billing.CreditGrant.applicability_config.scope`, and `Billing.CreditGrantCreateParams.applicability_config.scope`
+* Add support for `priority` on `Billing.CreditGrantCreateParams` and `Billing.CreditGrant`
 * Change `Billing.CreditGrant.applicability_config.scope.price_type` to be optional
 * Add support for `restrictions` on `Checkout.Session.payment_method_options.card` and `Checkout.SessionCreateParams.payment_method_options.card`
 * Add support for `collected_information` on `Checkout.SessionUpdateParams` and `Checkout.Session`
