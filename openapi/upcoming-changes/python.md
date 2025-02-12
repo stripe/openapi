@@ -4,4 +4,5 @@
 * Add support for `restrictions` on parameter class `stripe.checkout.Session.CreateParamsPaymentMethodOptionsCard` and resource class `stripe.checkout.Session.PaymentMethodOptions.Card`
 * Add support for `collected_information` on parameter class `stripe.checkout.Session.ModifyParams` and resource `stripe.checkout.Session`
 * Change type of `political_exposure` on  `stripe.Account.CreatePersonParams`, `stripe.Account.ModifyPersonParams`, and `stripe.Token.CreateParamsPerson` from `str` to `Literal['existing', 'none']`
+* Change type of `price_type` on  `stripe.billing.CreditBalanceSummary.RetrieveParamsFilterApplicabilityScope` and `stripe.billing.CreditGrant.CreateParamsApplicabilityConfigScope` from `Literal['metered']` to `NotRequired[Literal['metered']]`
 * Change type of `price_type` on  `stripe.billing.CreditGrant.ApplicabilityConfig.Scope` from `Literal['metered']` to `Optional[Literal['metered']]`
