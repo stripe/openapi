@@ -6,3 +6,4 @@
 * Add support for `collected_information` on `Checkout.Session` and `checkout.SessionUpdateParams`
 * Add support for `metadata` on `ProductCreateParams.default_price_data`
 * Change type of `TokenCreateParams.person.political_exposure` from `string` to `enum('existing'|'none')`
+* Add support for new value `2025-02-24.acacia` on enum `WebhookEndpointCreateParams.api_version`

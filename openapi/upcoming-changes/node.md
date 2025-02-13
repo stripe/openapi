@@ -7,3 +7,4 @@
 * Change `Checkout.Session.discounts`, `Refund.destination_details.blik.network_decline_code`, and `Refund.destination_details.swish.network_decline_code` to be required
 * Add support for `metadata` on `ProductCreateParams.default_price_data`
 * Change type of `TokenCreateParams.person.political_exposure` from `string` to `enum('existing'|'none')`
+* Add support for new value `2025-02-24.acacia` on enum `WebhookEndpointCreateParams.api_version`

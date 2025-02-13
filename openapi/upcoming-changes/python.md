@@ -7,3 +7,4 @@
 * Change type of `political_exposure` on  `stripe.Account.CreatePersonParams`, `stripe.Account.ModifyPersonParams`, and `stripe.Token.CreateParamsPerson` from `str` to `Literal['existing', 'none']`
 * Change type of `price_type` on  `stripe.billing.CreditBalanceSummary.RetrieveParamsFilterApplicabilityScope` and `stripe.billing.CreditGrant.CreateParamsApplicabilityConfigScope` from `Literal['metered']` to `NotRequired[Literal['metered']]`
 * Change type of `price_type` on  `stripe.billing.CreditGrant.ApplicabilityConfig.Scope` from `Literal['metered']` to `Optional[Literal['metered']]`
+* Add support for `2025-02-24.acacia` on enum `stripe.WebhookEndpoint.CreateParams.api_version`
