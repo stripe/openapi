@@ -1,1 +1,2 @@
-* Change `Checkout.Session.collected_information.shipping_details` and `Checkout.Session.collected_information` to be required
+* Remove support for `carrier`, `phone`, and `tracking_number` on `Checkout.Session.collected_information.shipping_details`
+* Change `Checkout.Session.collected_information.shipping_details.address`, `Checkout.Session.collected_information.shipping_details.name`, `Checkout.Session.collected_information.shipping_details`, and `Checkout.Session.collected_information` to be required
