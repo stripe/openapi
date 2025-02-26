@@ -1,3 +1,4 @@
+* Add support for `wifi` on parameter classes `stripe.terminal.Configuration.CreateParams` and `stripe.terminal.Configuration.ModifyParams` and resource `stripe.terminal.Configuration`
 * Remove support for `carrier` on resource class `stripe.checkout.Session.CollectedInformation.ShippingDetails`
 * Remove support for `phone` on resource class `stripe.checkout.Session.CollectedInformation.ShippingDetails`
 * Remove support for `tracking_number` on resource class `stripe.checkout.Session.CollectedInformation.ShippingDetails`

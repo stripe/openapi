@@ -1,1 +1,2 @@
 * Remove support for `Carrier`, `Phone`, and `TrackingNumber` on `CheckoutSessionCollectedInformationShippingDetails`
+* Add support for `Wifi` on `TerminalConfigurationParams` and `TerminalConfiguration`

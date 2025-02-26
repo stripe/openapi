@@ -1,0 +1,1 @@
+* Add support for `wifi` on `Terminal.Configuration`
