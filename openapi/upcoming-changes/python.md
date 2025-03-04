@@ -4,6 +4,8 @@
 * Remove support for `tracking_number` on resource class `stripe.checkout.Session.CollectedInformation.ShippingDetails`
 * Change type of `address` on  `stripe.checkout.Session.CollectedInformation.ShippingDetails` from `Optional[Address]` to `Address`
 * Change type of `name` on  `stripe.checkout.Session.CollectedInformation.ShippingDetails` from `Optional[str]` to `str`
+* Add support for `checkout_session_subscription_payment` on enum `stripe.CustomerBalanceTransaction.type`
+* Add support for `checkout_session_subscription_payment_canceled` on enum `stripe.CustomerBalanceTransaction.type`
 * Add support for `setup_intent_mobile_wallet_unsupported` on enums `stripe.Invoice.LastFinalizationError.code`, `stripe.PaymentIntent.LastPaymentError.code`, `stripe.SetupAttempt.SetupError.code`, and `stripe.SetupIntent.LastSetupError.code`
 * Add support for `2025-03-01.dashboard` on enum `stripe.WebhookEndpoint.CreateParams.api_version`
 * Add support for `2025-03-31.basil` on enum `stripe.WebhookEndpoint.CreateParams.api_version`
