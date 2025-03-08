@@ -2,6 +2,7 @@
 * Remove support for `shipping_details` on `Checkout.Session`
 * Remove support for `carrier`, `phone`, and `tracking_number` on `Checkout.Session.collected_information.shipping_details`
 * Change `Checkout.Session.collected_information.shipping_details.address`, `Checkout.Session.collected_information.shipping_details.name`, `Checkout.Session.collected_information.shipping_details`, and `Checkout.Session.collected_information` to be required
+* Remove support for `plan` and `price` on `InvoiceItem`
 * Change `PaymentIntent#confirm.payment_method_options.wechat_pay.client`, `PaymentIntent#create.payment_method_options.wechat_pay.client`, and `PaymentIntent#update.payment_method_options.wechat_pay.client` to be optional
 * Remove support for `cancel_at_period_end` on `Subscription#create` and `Subscription#update`
 * Add support for `wifi` on `Terminal.Configuration#create`, `Terminal.Configuration#update`, and `Terminal.Configuration`
