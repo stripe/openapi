@@ -11,6 +11,7 @@
 * Add support for `checkout_session_subscription_payment` on enum `stripe.CustomerBalanceTransaction.type`
 * Add support for `checkout_session_subscription_payment_canceled` on enum `stripe.CustomerBalanceTransaction.type`
 * Add support for `setup_intent_mobile_wallet_unsupported` on enums `stripe.Invoice.LastFinalizationError.code`, `stripe.PaymentIntent.LastPaymentError.code`, `stripe.SetupAttempt.SetupError.code`, and `stripe.SetupIntent.LastSetupError.code`
+* Add support for `network_fallback` on enum `stripe.issuing.Authorization.RequestHistory.reason`
 * Add support for `2025-03-01.dashboard` on enum `stripe.WebhookEndpoint.CreateParams.api_version`
 * Add support for `2025-03-31.basil` on enum `stripe.WebhookEndpoint.CreateParams.api_version`
 * Change type of `client` on  `stripe.PaymentIntent.ConfirmParamsPaymentMethodOptionsWechatPay`, `stripe.PaymentIntent.CreateParamsPaymentMethodOptionsWechatPay`, and `stripe.PaymentIntent.ModifyParamsPaymentMethodOptionsWechatPay` from `Literal['android', 'ios', 'web']` to `NotRequired[Literal['android', 'ios', 'web']]`
