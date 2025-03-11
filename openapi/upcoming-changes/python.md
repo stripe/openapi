@@ -1,6 +1,7 @@
 * Add support for `wifi` on parameter classes `stripe.terminal.Configuration.CreateParams` and `stripe.terminal.Configuration.ModifyParams` and resource `stripe.terminal.Configuration`
 * Remove support for `plan` on resource `stripe.InvoiceItem`
 * Remove support for `price` on resource `stripe.InvoiceItem`
+* Remove support for `unit_amount` on resource `stripe.InvoiceItem`
 * Remove support for `cancel_at_period_end` on parameter classes `stripe.Subscription.CreateParams` and `stripe.Subscription.ModifyParams` and resource `stripe.Subscription`
 * Remove support for `carrier` on resource class `stripe.checkout.Session.CollectedInformation.ShippingDetails`
 * Remove support for `phone` on resource class `stripe.checkout.Session.CollectedInformation.ShippingDetails`
