@@ -2,6 +2,8 @@
 * Remove support for `plan` on resource `stripe.InvoiceItem`
 * Remove support for `price` on resource `stripe.InvoiceItem`
 * Remove support for `unit_amount` on resource `stripe.InvoiceItem`
+* Remove support for `amount_excluding_tax` on resource `stripe.InvoiceLineItem`
+* Remove support for `unit_amount_excluding_tax` on resource `stripe.InvoiceLineItem`
 * Remove support for `cancel_at_period_end` on parameter classes `stripe.Subscription.CreateParams` and `stripe.Subscription.ModifyParams` and resource `stripe.Subscription`
 * Remove support for `carrier` on resource class `stripe.checkout.Session.CollectedInformation.ShippingDetails`
 * Remove support for `phone` on resource class `stripe.checkout.Session.CollectedInformation.ShippingDetails`
