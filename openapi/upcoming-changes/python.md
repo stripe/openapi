@@ -1,4 +1,5 @@
 * Add support for `wifi` on parameter classes `stripe.terminal.Configuration.CreateParams` and `stripe.terminal.Configuration.ModifyParams` and resource `stripe.terminal.Configuration`
+* Remove support for `tax_amounts` on resource `stripe.CreditNote`
 * Remove support for `plan` on resource `stripe.InvoiceItem`
 * Remove support for `price` on resource `stripe.InvoiceItem`
 * Remove support for `unit_amount` on resource `stripe.InvoiceItem`

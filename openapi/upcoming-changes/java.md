@@ -1,5 +1,6 @@
 * Remove support for `shipping_details` on `Checkout.Session`
 * Remove support for `carrier`, `phone`, and `tracking_number` on `Checkout.Session.collected_information.shipping_details`
+* Remove support for `tax_amounts` on `CreditNote`
 * Remove support for `plan`, `price`, `unit_amount_decimal`, and `unit_amount` on `InvoiceItem`
 * Change `PaymentIntentConfirmParams.payment_method_options.wechat_pay.client`, `PaymentIntentCreateParams.payment_method_options.wechat_pay.client`, and `PaymentIntentUpdateParams.payment_method_options.wechat_pay.client` to be optional
 * Remove support for `cancel_at_period_end` on `SubscriptionCreateParams`, `SubscriptionUpdateParams`, and `Subscription`
