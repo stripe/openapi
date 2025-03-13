@@ -1,3 +1,5 @@
+* Add support for `invoices` on parameter class `stripe.Account.CreateParamsSettings`
+* Add support for `hosted_payment_method_save` on resource class `stripe.Account.Settings.Invoices`
 * Add support for `wifi` on parameter classes `stripe.terminal.Configuration.CreateParams` and `stripe.terminal.Configuration.ModifyParams` and resource `stripe.terminal.Configuration`
 * Remove support for `tax_amounts` on resource `stripe.CreditNote`
 * Remove support for `plan` on resource `stripe.InvoiceItem`

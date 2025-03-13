@@ -1,3 +1,5 @@
+* Add support for `HostedPaymentMethodSave` on `AccountSettingsInvoicesOptions` and `AccountSettingsInvoices`
+* Add support for `Invoices` on `AccountSettingsOptions`
 * Remove support for `ShippingDetails` on `CheckoutSession`
 * Remove support for `Carrier`, `Phone`, and `TrackingNumber` on `CheckoutSessionCollectedInformationShippingDetails`
 * Remove support for `TaxAmounts` on `CreditNote`

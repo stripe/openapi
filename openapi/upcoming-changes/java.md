@@ -1,3 +1,5 @@
+* Add support for `hosted_payment_method_save` on `Account.settings.invoices` and `AccountUpdateParams.settings.invoices`
+* Add support for `invoices` on `AccountCreateParams.settings`
 * Remove support for `shipping_details` on `Checkout.Session`
 * Remove support for `carrier`, `phone`, and `tracking_number` on `Checkout.Session.collected_information.shipping_details`
 * Remove support for `tax_amounts` on `CreditNote`
