@@ -3,7 +3,9 @@
 * Add support for new value `setup_intent_mobile_wallet_unsupported` on enums `InvoiceLastFinalizationErrorCode`, `PaymentIntentLastPaymentErrorCode`, `SetupAttemptSetupErrorCode`, `SetupIntentLastSetupErrorCode`, and `StripeErrorCode`
 * Remove support for `ShippingDetails` on `CheckoutSession`
 * Remove support for `Carrier`, `Phone`, and `TrackingNumber` on `CheckoutSessionCollectedInformationShippingDetails`
-* Remove support for `TaxAmounts` on `CreditNote`
+* Remove support for `TaxAmounts` on `CreditNoteLineItem` and `CreditNote`
+* Remove support for `AmountExcludingTax` and `UnitAmountExcludingTax` on `CreditNoteLineItem` and `InvoiceLineItem`
+* Add support for new values `checkout_session_subscription_payment_canceled` and `checkout_session_subscription_payment` on enum `CustomerBalanceTransactionType`
 * Remove support for `Coupon` on `InvoiceCreatePreviewParams`, `InvoiceCreatePreviewScheduleDetailsPhasesParams`, `InvoiceUpcomingLinesParams`, `InvoiceUpcomingLinesScheduleDetailsPhasesParams`, `InvoiceUpcomingParams`, `InvoiceUpcomingScheduleDetailsPhasesParams`, `SubscriptionParams`, `SubscriptionSchedulePhasesParams`, and `SubscriptionSchedulePhases`
 * Remove support for `Discount` on `Invoice` and `Subscription`
 * Remove support for `Plan`, `Price`, `UnitAmountDecimal`, and `UnitAmount` on `InvoiceItem`
