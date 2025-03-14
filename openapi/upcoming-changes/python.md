@@ -17,6 +17,7 @@
 * Remove support for `unit_amount_decimal` and `unit_amount` on `InvoiceItem`
 * Add support for new value `network_fallback` on enum `IssuingAuthorization.RequestHistory`
 * Change `PaymentIntent.ConfirmParamsPaymentMethodOptionWechatPay.client`, `PaymentIntent.CreateParamsPaymentMethodOptionWechatPay.client`, and `PaymentIntent.UpdateParamsPaymentMethodOptionWechatPay.client` to be optional
+* Add support for `default_value` on `PaymentLink.CreateParamsCustomFieldDropdown`, `PaymentLink.CreateParamsCustomFieldNumeric`, `PaymentLink.CreateParamsCustomFieldText`, `PaymentLink.CustomField.Dropdown`, `PaymentLink.CustomField.Numeric`, `PaymentLink.CustomField.Text`, `PaymentLink.UpdateParamsCustomFieldDropdown`, `PaymentLink.UpdateParamsCustomFieldNumeric`, and `PaymentLink.UpdateParamsCustomFieldText`
 * Remove support for `cancel_at_period_end` on `Subscription.CreateParams`, `Subscription.UpdateParams`, and `Subscription`
 * Remove support for `promotion_code` on `Subscription.CreateParams` and `Subscription.UpdateParams`
 * Add support for `wifi` on `TerminalConfiguration`, `terminal.Configuration.CreateParams`, and `terminal.Configuration.UpdateParams`

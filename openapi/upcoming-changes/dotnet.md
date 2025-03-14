@@ -9,6 +9,7 @@
 * Remove support for `Plan` and `Price` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `TaxRates` on `InvoiceLineItem`
 * Remove support for `UnitAmountDecimal` and `UnitAmount` on `InvoiceItem`
+* Add support for `DefaultValue` on `PaymentLinkCustomFieldsDropdownOptions`, `PaymentLinkCustomFieldsDropdown`, `PaymentLinkCustomFieldsNumericOptions`, `PaymentLinkCustomFieldsNumeric`, `PaymentLinkCustomFieldsTextOptions`, and `PaymentLinkCustomFieldsText`
 * Remove support for `CancelAtPeriodEnd` on `SubscriptionCreateOptions`, `SubscriptionUpdateOptions`, and `Subscription`
 * Remove support for `PromotionCode` on `SubscriptionCreateOptions` and `SubscriptionUpdateOptions`
 * Add support for `Wifi` on `Terminal.ConfigurationCreateOptions`, `Terminal.ConfigurationUpdateOptions`, and `TerminalConfiguration`

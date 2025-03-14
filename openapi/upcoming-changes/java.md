@@ -10,6 +10,7 @@
 * Remove support for `taxRates` on `InvoiceLineItem`
 * Remove support for `unitAmountDecimal` and `unitAmount` on `InvoiceItem`
 * Change `PaymentIntentConfirmParams.payment_method_options.wechat_pay.client`, `PaymentIntentCreateParams.payment_method_options.wechat_pay.client`, and `PaymentIntentUpdateParams.payment_method_options.wechat_pay.client` to be optional
+* Add support for `defaultValue` on `PaymentLink.custom_fields[].dropdown`, `PaymentLink.custom_fields[].numeric`, `PaymentLink.custom_fields[].text`, `PaymentLinkCreateParams.custom_fields[].dropdown`, `PaymentLinkCreateParams.custom_fields[].numeric`, `PaymentLinkCreateParams.custom_fields[].text`, `PaymentLinkUpdateParams.custom_fields[].dropdown`, `PaymentLinkUpdateParams.custom_fields[].numeric`, and `PaymentLinkUpdateParams.custom_fields[].text`
 * Remove support for `cancelAtPeriodEnd` on `SubscriptionCreateParams`, `SubscriptionUpdateParams`, and `Subscription`
 * Remove support for `promotionCode` on `SubscriptionCreateParams` and `SubscriptionUpdateParams`
 * Add support for `wifi` on `Terminal.Configuration`, `terminal.ConfigurationCreateParams`, and `terminal.ConfigurationUpdateParams`

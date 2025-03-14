@@ -12,6 +12,7 @@
 * Remove support for `TaxRates` on `InvoiceLineItem`
 * Remove support for `UnitAmountDecimal` and `UnitAmount` on `InvoiceItem`
 * Add support for new value `network_fallback` on enum `IssuingAuthorizationRequestHistory`
+* Add support for `DefaultValue` on `PaymentLinkCustomFieldsDropdownParams`, `PaymentLinkCustomFieldsDropdown`, `PaymentLinkCustomFieldsNumericParams`, `PaymentLinkCustomFieldsNumeric`, `PaymentLinkCustomFieldsTextParams`, and `PaymentLinkCustomFieldsText`
 * Remove support for `CancelAtPeriodEnd` on `SubscriptionParams` and `Subscription`
 * Remove support for `PromotionCode` on `SubscriptionParams`
 * Add support for `Wifi` on `TerminalConfigurationParams` and `TerminalConfiguration`
