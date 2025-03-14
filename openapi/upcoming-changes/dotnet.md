@@ -4,7 +4,7 @@
 * Remove support for `Carrier`, `Phone`, and `TrackingNumber` on `CheckoutSessionCollectedInformationShippingDetails`
 * Remove support for `TaxAmounts` on `CreditNoteLineItem`, `CreditNote`, and `InvoiceLineItem`
 * Remove support for `AmountExcludingTax` and `UnitAmountExcludingTax` on `CreditNoteLineItem` and `InvoiceLineItem`
-* Remove support for `Coupon` on `InvoiceCreatePreviewOptions`, `InvoiceScheduleDetailsPhasesOptions`, `InvoiceUpcomingLinesListOptions`, `InvoiceUpcomingLinesScheduleDetailsPhasesOptions`, `InvoiceUpcomingOptions`, `SubscriptionCreateOptions`, `SubscriptionSchedulePhasesOptions`, `SubscriptionSchedulePhases`, and `SubscriptionUpdateOptions`
+* Remove support for `Coupon` on `InvoiceCreatePreviewOptions`, `InvoiceScheduleDetailsPhasesOptions`, `InvoiceUpcomingLinesOptions`, `InvoiceUpcomingOptions`, `SubscriptionCreateOptions`, `SubscriptionSchedulePhasesOptions`, `SubscriptionSchedulePhases`, and `SubscriptionUpdateOptions`
 * Remove support for `Discount` on `Invoice` and `Subscription`
 * Remove support for `Plan` and `Price` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `TaxRates` on `InvoiceLineItem`
