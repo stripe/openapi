@@ -1,0 +1,1 @@
+* Remove support for `upcomingLines` and `upcoming` methods on resource `Invoice`
