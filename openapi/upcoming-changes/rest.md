@@ -1,26 +1,26 @@
 * Remove support for `upcomingLines` and `upcoming` methods on resource `Invoice`
-* Add support for `billie_payments` on `Account#create.capabilities`, `Account#update.capabilities`, and `Account.capabilities`
+* Add support for `billie_payments` and `satispay_payments` on `Account#create.capabilities`, `Account#update.capabilities`, and `Account.capabilities`
 * Add support for `hosted_payment_method_save` on `Account#update.settings.invoices` and `Account.settings.invoices`
 * Add support for `invoices` on `Account#create.settings`
 * Add support for new value `setup_intent_mobile_wallet_unsupported` on enums `Invoice.last_finalization_error.code`, `PaymentIntent.last_payment_error.code`, `SetupAttempt.setup_error.code`, `SetupIntent.last_setup_error.code`, and `StripeError.code`
-* Add support for `billie` on `Charge.payment_method_details`, `ConfirmationToken.payment_method_preview`, `ConfirmationToken.testHelpers#create.payment_method_data`, `PaymentIntent#confirm.payment_method_data`, `PaymentIntent#create.payment_method_data`, `PaymentIntent#update.payment_method_data`, `PaymentMethod#create`, `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, `PaymentMethodConfiguration`, `PaymentMethod`, `SetupIntent#confirm.payment_method_data`, `SetupIntent#create.payment_method_data`, and `SetupIntent#update.payment_method_data`
-* Add support for new value `billie` on enum `Checkout.Session#create.payment_method_types`
+* Add support for `billie` and `satispay` on `Charge.payment_method_details`, `ConfirmationToken.payment_method_preview`, `ConfirmationToken.testHelpers#create.payment_method_data`, `PaymentIntent#confirm.payment_method_data`, `PaymentIntent#create.payment_method_data`, `PaymentIntent#update.payment_method_data`, `PaymentMethod#create`, `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, `PaymentMethodConfiguration`, `PaymentMethod`, `SetupIntent#confirm.payment_method_data`, `SetupIntent#create.payment_method_data`, and `SetupIntent#update.payment_method_data`
+* Add support for new values `billie` and `satispay` on enum `Checkout.Session#create.payment_method_types`
 * Remove support for `shipping_details` on `Checkout.Session`
 * Remove support for `carrier`, `phone`, and `tracking_number` on `Checkout.Session.collected_information.shipping_details`
 * Change `Checkout.Session.collected_information` to be required
 * Change `Checkout.Session.collected_information.shipping_details` to be required
 * Change `Checkout.Session.collected_information.shipping_details.address` to be required
 * Change `Checkout.Session.collected_information.shipping_details.name` to be required
-* Add support for new value `billie` on enums `ConfirmationToken.testHelpers#create.payment_method_data.type`, `PaymentIntent#confirm.payment_method_data.type`, `PaymentIntent#create.payment_method_data.type`, `PaymentIntent#update.payment_method_data.type`, `SetupIntent#confirm.payment_method_data.type`, `SetupIntent#create.payment_method_data.type`, and `SetupIntent#update.payment_method_data.type`
+* Add support for new values `billie` and `satispay` on enums `ConfirmationToken.testHelpers#create.payment_method_data.type`, `PaymentIntent#confirm.payment_method_data.type`, `PaymentIntent#create.payment_method_data.type`, `PaymentIntent#update.payment_method_data.type`, `SetupIntent#confirm.payment_method_data.type`, `SetupIntent#create.payment_method_data.type`, and `SetupIntent#update.payment_method_data.type`
 * Add support for `buyer_id` on `ConfirmationToken.payment_method_preview.naver_pay` and `PaymentMethod.naver_pay`
-* Add support for new value `billie` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
+* Add support for new values `billie` and `satispay` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Remove support for `duration_in_months` on `Coupon#create`
 * Remove support for value `repeating` from enums `Coupon#create.duration` and `Coupon.duration`
 * Remove support for `tax_amounts` on `CreditNoteLineItem`, `CreditNote`, and `InvoiceLineItem`
 * Remove support for `amount_excluding_tax` and `unit_amount_excluding_tax` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Remove support for `coupon` on `Customer#create`, `Customer#update`, `Invoice#create_preview.schedule_details.phases[]`, `Invoice#create_preview`, `Subscription#create`, `Subscription#update`, `SubscriptionSchedule#create.phases[]`, `SubscriptionSchedule#update.phases[]`, and `SubscriptionSchedule.phases[]`
 * Remove support for `promotion_code` on `Customer#create`, `Customer#update`, `Subscription#create`, and `Subscription#update`
-* Add support for new value `billie` on enums `Customer#list_payment_methods.type`, `PaymentMethod#create.type`, and `PaymentMethod#list.type`
+* Add support for new values `billie` and `satispay` on enums `Customer#list_payment_methods.type`, `PaymentMethod#create.type`, and `PaymentMethod#list.type`
 * Add support for new values `checkout_session_subscription_payment_canceled` and `checkout_session_subscription_payment` on enum `CustomerBalanceTransaction.type`
 * Add support for `pricing` on `Invoice#add_lines.lines[]`, `Invoice#update_lines.lines[]`, `InvoiceItem#create`, `InvoiceItem#update`, and `InvoiceLineItem#update`
 * Remove support for `price` on `Invoice#add_lines.lines[]`, `Invoice#update_lines.lines[]`, `InvoiceItem#create`, `InvoiceItem#update`, `InvoiceItem`, `InvoiceLineItem#update`, and `InvoiceLineItem`
@@ -33,12 +33,13 @@
 * Remove support for `tax_rates` on `InvoiceLineItem`
 * Remove support for `unit_amount` on `InvoiceItem#create`, `InvoiceItem#update`, and `InvoiceItem`
 * Remove support for `subscription_item`, `subscription`, and `unit_amount_decimal` on `InvoiceItem`
+* Add support for new value `expired` on enums `Issuing.Authorization#list.status` and `Issuing.Authorization.status`
 * Add support for new value `network_fallback` on enum `Issuing.Authorization.request_history[].reason`
 * Add support for `naver_pay` on `Mandate.payment_method_details` and `SetupAttempt.payment_method_details`
 * Add support for `setup_future_usage` on `PaymentIntent#confirm.payment_method_options.naver_pay`, `PaymentIntent#create.payment_method_options.naver_pay`, `PaymentIntent#update.payment_method_options.naver_pay`, and `PaymentIntent.payment_method_options.naver_pay`
 * Change `PaymentIntent#confirm.payment_method_options.wechat_pay.client`, `PaymentIntent#create.payment_method_options.wechat_pay.client`, and `PaymentIntent#update.payment_method_options.wechat_pay.client` to be optional
 * Add support for `default_value` on `PaymentLink#create.custom_fields[].dropdown`, `PaymentLink#create.custom_fields[].numeric`, `PaymentLink#create.custom_fields[].text`, `PaymentLink#update.custom_fields[].dropdown`, `PaymentLink#update.custom_fields[].numeric`, `PaymentLink#update.custom_fields[].text`, `PaymentLink.custom_fields[].dropdown`, `PaymentLink.custom_fields[].numeric`, and `PaymentLink.custom_fields[].text`
-* Add support for new value `billie` on enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`
+* Add support for new values `billie` and `satispay` on enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`
 * Remove support for `naver_pay` on `PaymentMethod#update`
 * Remove support for `cancel_at_period_end` on `Subscription#create`, `Subscription#update`, and `Subscription`
 * Change type of `Subscription#create.cancel_at` and `Subscription#update.cancel_at` from `DateTime` to `DateTime | literal('min_period_end')`
