@@ -39,6 +39,7 @@
 * Change `PaymentIntent#confirm.payment_method_options.wechat_pay.client`, `PaymentIntent#create.payment_method_options.wechat_pay.client`, and `PaymentIntent#update.payment_method_options.wechat_pay.client` to be optional
 * Add support for `default_value` on `PaymentLink#create.custom_fields[].dropdown`, `PaymentLink#create.custom_fields[].numeric`, `PaymentLink#create.custom_fields[].text`, `PaymentLink#update.custom_fields[].dropdown`, `PaymentLink#update.custom_fields[].numeric`, `PaymentLink#update.custom_fields[].text`, `PaymentLink.custom_fields[].dropdown`, `PaymentLink.custom_fields[].numeric`, and `PaymentLink.custom_fields[].text`
 * Add support for new value `billie` on enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`
+* Remove support for `naver_pay` on `PaymentMethod#update`
 * Remove support for `cancel_at_period_end` on `Subscription#create`, `Subscription#update`, and `Subscription`
 * Change type of `Subscription#create.cancel_at` and `Subscription#update.cancel_at` from `DateTime` to `DateTime | literal('min_period_end')`
 * Remove support for `current_period_end` and `current_period_start` on `Subscription`

@@ -24,6 +24,7 @@
 * Add support for `NaverPay` on `MandatePaymentMethodDetails` and `SetupAttemptPaymentMethodDetails`
 * Add support for `SetupFutureUsage` on `PaymentIntentPaymentMethodOptionsNaverPayOptions` and `PaymentIntentPaymentMethodOptionsNaverPay`
 * Add support for `DefaultValue` on `PaymentLinkCustomFieldsDropdownOptions`, `PaymentLinkCustomFieldsDropdown`, `PaymentLinkCustomFieldsNumericOptions`, `PaymentLinkCustomFieldsNumeric`, `PaymentLinkCustomFieldsTextOptions`, and `PaymentLinkCustomFieldsText`
+* Remove support for `NaverPay` on `PaymentMethodUpdateOptions`
 * Remove support for `CancelAtPeriodEnd` on `SubscriptionCreateOptions`, `SubscriptionUpdateOptions`, and `Subscription`
 * Change type of `SubscriptionCreateOptions.CancelAt` and `SubscriptionUpdateOptions.CancelAt` from `DateTime` to `DateTime | literal('min_period_end')`
 * Remove support for `CurrentPeriodEnd` and `CurrentPeriodStart` on `Subscription`
