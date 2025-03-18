@@ -19,8 +19,8 @@
 * Remove support for `Price` on `InvoiceAddLinesLinesParams`, `InvoiceItemParams`, `InvoiceItem`, `InvoiceLineItemParams`, `InvoiceLineItem`, and `InvoiceUpdateLinesLinesParams`
 * Add support for `TaxabilityReason` on `InvoiceAddLinesLinesTaxAmountsParams`, `InvoiceLineItemTaxAmountsParams`, and `InvoiceUpdateLinesLinesTaxAmountsParams`
 * Add support for `JurisdictionLevel` on `InvoiceAddLinesLinesTaxAmountsTaxRateDataParams`, `InvoiceLineItemTaxAmountsTaxRateDataParams`, and `InvoiceUpdateLinesLinesTaxAmountsTaxRateDataParams`
+* Remove support for `Charge`, `PaymentIntent`, `Quote`, `SubscriptionDetails`, `SubscriptionProrationDate`, `Tax`, and `TotalTaxAmounts` on `Invoice`
 * Remove support for `Discount` on `Invoice` and `Subscription`
-* Remove support for `Quote`, `SubscriptionDetails`, `SubscriptionProrationDate`, `Tax`, and `TotalTaxAmounts` on `Invoice`
 * Remove support for `Plan` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `TaxRates` on `InvoiceLineItem`
 * Remove support for `UnitAmount` on `InvoiceItemParams` and `InvoiceItem`

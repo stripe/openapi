@@ -26,8 +26,8 @@
 * Remove support for `price` on `Invoice.AddLinesParamsLine`, `Invoice.UpdateLinesParamsLine`, `InvoiceItem.CreateParams`, `InvoiceItem.UpdateParams`, `InvoiceItem`, `InvoiceLineItem.UpdateParams`, and `InvoiceLineItem`
 * Add support for `taxability_reason` on `Invoice.AddLinesParamsLineTaxAmount`, `Invoice.UpdateLinesParamsLineTaxAmount`, and `InvoiceLineItem.UpdateParamsTaxAmount`
 * Add support for `jurisdiction_level` on `Invoice.AddLinesParamsLineTaxAmountTaxRateDatum`, `Invoice.UpdateLinesParamsLineTaxAmountTaxRateDatum`, and `InvoiceLineItem.UpdateParamsTaxAmountTaxRateDatum`
+* Remove support for `charge`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, and `total_tax_amounts` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
-* Remove support for `quote`, `subscription_details`, `subscription_proration_date`, `tax`, and `total_tax_amounts` on `Invoice`
 * Change `Invoice.subscription` to be optional
 * Remove support for `plan` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `tax_rates` on `InvoiceLineItem`

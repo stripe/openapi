@@ -6,8 +6,8 @@
 * Remove support for `tax_amounts` on `CreditNoteLineItem`, `CreditNote`, and `InvoiceLineItem`
 * Remove support for `amount_excluding_tax` and `unit_amount_excluding_tax` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Add support for new values `checkout_session_subscription_payment_canceled` and `checkout_session_subscription_payment` on enum `CustomerBalanceTransaction.type`
+* Remove support for `charge`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, and `total_tax_amounts` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
-* Remove support for `quote`, `subscription_details`, `subscription_proration_date`, `tax`, and `total_tax_amounts` on `Invoice`
 * Remove support for `plan` and `price` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `tax_rates` on `InvoiceLineItem`
 * Remove support for `subscription_item`, `subscription`, `unit_amount_decimal`, and `unit_amount` on `InvoiceItem`

@@ -26,8 +26,8 @@
 * Remove support for `price` on `InvoiceAddLinesParams.lines[]`, `InvoiceItemCreateParams`, `InvoiceItemUpdateParams`, `InvoiceItem`, `InvoiceLineItemUpdateParams`, `InvoiceLineItem`, and `InvoiceUpdateLinesParams.lines[]`
 * Add support for `taxability_reason` on `InvoiceAddLinesParams.lines[].tax_amounts[]`, `InvoiceLineItemUpdateParams.tax_amounts[]`, and `InvoiceUpdateLinesParams.lines[].tax_amounts[]`
 * Add support for `jurisdiction_level` on `InvoiceAddLinesParams.lines[].tax_amounts[].tax_rate_data`, `InvoiceLineItemUpdateParams.tax_amounts[].tax_rate_data`, and `InvoiceUpdateLinesParams.lines[].tax_amounts[].tax_rate_data`
+* Remove support for `charge`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, and `total_tax_amounts` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
-* Remove support for `quote`, `subscription_details`, `subscription_proration_date`, `tax`, and `total_tax_amounts` on `Invoice`
 * Change `Invoice.subscription` to be optional
 * Remove support for `plan` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `tax_rates` on `InvoiceLineItem`
