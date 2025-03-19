@@ -30,9 +30,11 @@
 * Add support for new value `expired` on enum `IssuingAuthorization.Status`
 * Add support for `NaverPay` on `MandatePaymentMethodDetails` and `SetupAttemptPaymentMethodDetails`
 * Add support for `SetupFutureUsage` on `PaymentIntentConfirmPaymentMethodOptionsNaverPayParams`, `PaymentIntentPaymentMethodOptionsNaverPayParams`, and `PaymentIntentPaymentMethodOptionsNaverPay`
+* Add support for new value `expired` on enum `PaymentIntent.CancellationReason`
 * Add support for `DefaultValue` on `PaymentLinkCustomFieldsDropdownParams`, `PaymentLinkCustomFieldsDropdown`, `PaymentLinkCustomFieldsNumericParams`, `PaymentLinkCustomFieldsNumeric`, `PaymentLinkCustomFieldsTextParams`, and `PaymentLinkCustomFieldsText`
 * Add support for new values `billie` and `satispay` on enum `PaymentLink.PaymentMethodTypes`
 * Remove support for `NaverPay` on `PaymentMethodParams`
+* Add support for new value `canceled` on enum `Review.ClosedReason`
 * Change type of `SubscriptionParams.CancelAt` from `DateTime` to `DateTime | literal('min_period_end')`
 * Remove support for `CurrentPeriodEnd` and `CurrentPeriodStart` on `Subscription`
 * Add support for `Wifi` on `TerminalConfigurationParams` and `TerminalConfiguration`

@@ -39,9 +39,11 @@
 * Add support for `naver_pay` on `Mandate.PaymentMethodDetail` and `SetupAttempt.PaymentMethodDetail`
 * Add support for `setup_future_usage` on `PaymentIntent.ConfirmParamsPaymentMethodOptionNaverPay`, `PaymentIntent.CreateParamsPaymentMethodOptionNaverPay`, `PaymentIntent.PaymentMethodOption.NaverPay`, and `PaymentIntent.UpdateParamsPaymentMethodOptionNaverPay`
 * Change `PaymentIntent.ConfirmParamsPaymentMethodOptionWechatPay.client`, `PaymentIntent.CreateParamsPaymentMethodOptionWechatPay.client`, and `PaymentIntent.UpdateParamsPaymentMethodOptionWechatPay.client` to be optional
+* Add support for new value `expired` on enum `PaymentIntent.cancellation_reason`
 * Add support for `default_value` on `PaymentLink.CreateParamsCustomFieldDropdown`, `PaymentLink.CreateParamsCustomFieldNumeric`, `PaymentLink.CreateParamsCustomFieldText`, `PaymentLink.CustomField.Dropdown`, `PaymentLink.CustomField.Numeric`, `PaymentLink.CustomField.Text`, `PaymentLink.UpdateParamsCustomFieldDropdown`, `PaymentLink.UpdateParamsCustomFieldNumeric`, and `PaymentLink.UpdateParamsCustomFieldText`
 * Add support for new values `billie` and `satispay` on enums `PaymentLink.CreateParams.payment_method_types`, `PaymentLink.UpdateParams.payment_method_types`, and `PaymentLink.payment_method_types`
 * Remove support for `naver_pay` on `PaymentMethod.UpdateParams`
+* Add support for new value `canceled` on enum `Review.closed_reason`
 * Change type of `Subscription.CreateParams.cancel_at` and `Subscription.UpdateParams.cancel_at` from `DateTime` to `DateTime | literal('min_period_end')`
 * Remove support for `current_period_end` and `current_period_start` on `Subscription`
 * Add support for `wifi` on `TerminalConfiguration`, `terminal.Configuration.CreateParams`, and `terminal.Configuration.UpdateParams`
