@@ -20,6 +20,7 @@
 * Add support for `taxabilityReason` on `InvoiceAddLinesParams.lines[].tax_amounts[]`, `InvoiceLineItemUpdateParams.tax_amounts[]`, and `InvoiceUpdateLinesParams.lines[].tax_amounts[]`
 * Add support for `jurisdictionLevel` on `InvoiceAddLinesParams.lines[].tax_amounts[].tax_rate_data`, `InvoiceLineItemUpdateParams.tax_amounts[].tax_rate_data`, and `InvoiceUpdateLinesParams.lines[].tax_amounts[].tax_rate_data`
 * Remove support for `cancelAtPeriodEnd` on `InvoiceCreatePreviewParams.subscription_details`, `SubscriptionCreateParams`, `SubscriptionUpdateParams`, and `Subscription`
+* Change type of `InvoiceCreatePreviewParams.subscription_details.cancelAt`, `SubscriptionCreateParams.cancelAt`, and `SubscriptionUpdateParams.cancelAt` from `DateTime` to `DateTime | literal('min_period_end')`
 * Remove support for `charge`, `paymentIntent`, `quote`, `subscriptionDetails`, `subscriptionProrationDate`, `tax`, and `totalTaxAmounts` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
 * Remove support for `invoiceItem`, `prorationDetails`, `proration`, `taxRates`, and `type` on `InvoiceLineItem`
@@ -33,7 +34,6 @@
 * Add support for `defaultValue` on `PaymentLink.custom_fields[].dropdown`, `PaymentLink.custom_fields[].numeric`, `PaymentLink.custom_fields[].text`, `PaymentLinkCreateParams.custom_fields[].dropdown`, `PaymentLinkCreateParams.custom_fields[].numeric`, `PaymentLinkCreateParams.custom_fields[].text`, `PaymentLinkUpdateParams.custom_fields[].dropdown`, `PaymentLinkUpdateParams.custom_fields[].numeric`, and `PaymentLinkUpdateParams.custom_fields[].text`
 * Add support for new values `billie` and `satispay` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
 * Remove support for `naverPay` on `PaymentMethodUpdateParams`
-* Change type of `SubscriptionCreateParams.cancelAt` and `SubscriptionUpdateParams.cancelAt` from `DateTime` to `DateTime | literal('min_period_end')`
 * Remove support for `currentPeriodEnd` and `currentPeriodStart` on `Subscription`
 * Add support for `wifi` on `Terminal.Configuration`, `terminal.ConfigurationCreateParams`, and `terminal.ConfigurationUpdateParams`
 * Add support for new values `2025-03-01.dashboard` and `2025-03-31.basil` on enum `WebhookEndpointCreateParams.apiVersion`
