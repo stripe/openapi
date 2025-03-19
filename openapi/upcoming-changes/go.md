@@ -1,4 +1,8 @@
+* Remove support for resources `UsageRecordSummary` and `UsageRecord`
+* Remove support for `New` method on resource `UsageRecord`
+* Remove support for `List` method on resource `UsageRecordSummary`
 * Remove support for `UpcomingLines` and `Upcoming` methods on resource `Invoice`
+* Remove support for `UsageRecordSummaries` method on resource `SubscriptionItem`
 * Add support for `BilliePayments` and `SatispayPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
 * Add support for `HostedPaymentMethodSave` on `AccountSettingsInvoicesParams` and `AccountSettingsInvoices`
 * Add support for `Invoices` on `AccountSettingsParams`

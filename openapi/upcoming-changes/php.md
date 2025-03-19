@@ -1,3 +1,6 @@
+* Remove support for resources `UsageRecordSummary` and `UsageRecord`
+* Remove support for `create` method on resource `UsageRecord`
+* Remove support for `all` method on resource `UsageRecordSummary`
 * Remove support for `upcomingLines` and `upcoming` methods on resource `Invoice`
 * Add support for new value `setup_intent_mobile_wallet_unsupported` on enums `Invoice.last_finalization_error.code`, `PaymentIntent.last_payment_error.code`, `SetupAttempt.setup_error.code`, `SetupIntent.last_setup_error.code`, and `StripeError.code`
 * Remove support for `shipping_details` on `Checkout.Session`
