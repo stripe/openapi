@@ -37,7 +37,7 @@
 * Add support for `jurisdiction_level` on `Invoice#add_lines.lines[].tax_amounts[].tax_rate_data`, `Invoice#update_lines.lines[].tax_amounts[].tax_rate_data`, and `InvoiceLineItem#update.tax_amounts[].tax_rate_data`
 * Remove support for `cancel_at_period_end` on `Invoice#create_preview.subscription_details`, `Subscription#create`, `Subscription#update`, and `Subscription`
 * Change type of `Invoice#create_preview.subscription_details.cancel_at`, `Subscription#create.cancel_at`, and `Subscription#update.cancel_at` from `DateTime` to `DateTime | literal('min_period_end')`
-* Remove support for `charge`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, and `total_tax_amounts` on `Invoice`
+* Remove support for `charge`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, `total_tax_amounts`, and `transfer_data` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
 * Change `Invoice.subscription` to be optional
 * Remove support for `invoice_item`, `proration_details`, `proration`, `tax_rates`, and `type` on `InvoiceLineItem`
