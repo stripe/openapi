@@ -21,10 +21,10 @@
 * Add support for `JurisdictionLevel` on `InvoiceAddLinesLinesTaxAmountsTaxRateDataParams`, `InvoiceLineItemTaxAmountsTaxRateDataParams`, and `InvoiceUpdateLinesLinesTaxAmountsTaxRateDataParams`
 * Remove support for `Charge`, `PaymentIntent`, `Quote`, `SubscriptionDetails`, `SubscriptionProrationDate`, `Tax`, and `TotalTaxAmounts` on `Invoice`
 * Remove support for `Discount` on `Invoice` and `Subscription`
-* Remove support for `Plan` on `InvoiceItem` and `InvoiceLineItem`
-* Remove support for `TaxRates` on `InvoiceLineItem`
+* Remove support for `InvoiceItem`, `ProrationDetails`, `Proration`, `TaxRates`, and `Type` on `InvoiceLineItem`
+* Remove support for `Plan` and `SubscriptionItem` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `UnitAmount` on `InvoiceItemParams` and `InvoiceItem`
-* Remove support for `SubscriptionItem`, `Subscription`, and `UnitAmountDecimal` on `InvoiceItem`
+* Remove support for `Subscription` and `UnitAmountDecimal` on `InvoiceItem`
 * Add support for new value `network_fallback` on enum `IssuingAuthorizationRequestHistory.Reason`
 * Add support for new value `expired` on enum `IssuingAuthorization.Status`
 * Add support for `NaverPay` on `MandatePaymentMethodDetails` and `SetupAttemptPaymentMethodDetails`

@@ -29,10 +29,10 @@
 * Remove support for `charge`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, and `total_tax_amounts` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
 * Change `Invoice.subscription` to be optional
-* Remove support for `plan` on `InvoiceItem` and `InvoiceLineItem`
-* Remove support for `tax_rates` on `InvoiceLineItem`
+* Remove support for `invoice_item`, `proration_details`, `proration`, `tax_rates`, and `type` on `InvoiceLineItem`
+* Remove support for `plan` and `subscription_item` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `unit_amount` on `InvoiceItem.CreateParams`, `InvoiceItem.UpdateParams`, and `InvoiceItem`
-* Remove support for `subscription_item`, `subscription`, and `unit_amount_decimal` on `InvoiceItem`
+* Remove support for `subscription` and `unit_amount_decimal` on `InvoiceItem`
 * Add support for new value `expired` on enums `IssuingAuthorization.status` and `issuing.Authorization.ListParams.status`
 * Add support for new value `network_fallback` on enum `IssuingAuthorization.RequestHistory.reason`
 * Add support for `naver_pay` on `Mandate.PaymentMethodDetail` and `SetupAttempt.PaymentMethodDetail`

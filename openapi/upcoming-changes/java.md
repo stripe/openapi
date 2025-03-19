@@ -21,10 +21,10 @@
 * Add support for `jurisdictionLevel` on `InvoiceAddLinesParams.lines[].tax_amounts[].tax_rate_data`, `InvoiceLineItemUpdateParams.tax_amounts[].tax_rate_data`, and `InvoiceUpdateLinesParams.lines[].tax_amounts[].tax_rate_data`
 * Remove support for `charge`, `paymentIntent`, `quote`, `subscriptionDetails`, `subscriptionProrationDate`, `tax`, and `totalTaxAmounts` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
-* Remove support for `plan` on `InvoiceItem` and `InvoiceLineItem`
-* Remove support for `taxRates` on `InvoiceLineItem`
+* Remove support for `invoiceItem`, `prorationDetails`, `proration`, `taxRates`, and `type` on `InvoiceLineItem`
+* Remove support for `plan` and `subscriptionItem` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `unitAmount` on `InvoiceItemCreateParams`, `InvoiceItemUpdateParams`, and `InvoiceItem`
-* Remove support for `subscriptionItem`, `subscription`, and `unitAmountDecimal` on `InvoiceItem`
+* Remove support for `subscription` and `unitAmountDecimal` on `InvoiceItem`
 * Add support for new value `expired` on enum `issuing.AuthorizationListParams.status`
 * Add support for `naverPay` on `Mandate.payment_method_details` and `SetupAttempt.payment_method_details`
 * Add support for `setupFutureUsage` on `PaymentIntent.payment_method_options.naver_pay`, `PaymentIntentConfirmParams.payment_method_options.naver_pay`, `PaymentIntentCreateParams.payment_method_options.naver_pay`, and `PaymentIntentUpdateParams.payment_method_options.naver_pay`

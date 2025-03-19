@@ -8,9 +8,9 @@
 * Add support for new values `checkout_session_subscription_payment_canceled` and `checkout_session_subscription_payment` on enum `CustomerBalanceTransaction.type`
 * Remove support for `charge`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, and `total_tax_amounts` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
-* Remove support for `plan` and `price` on `InvoiceItem` and `InvoiceLineItem`
-* Remove support for `tax_rates` on `InvoiceLineItem`
-* Remove support for `subscription_item`, `subscription`, `unit_amount_decimal`, and `unit_amount` on `InvoiceItem`
+* Remove support for `invoice_item`, `proration_details`, `proration`, `tax_rates`, and `type` on `InvoiceLineItem`
+* Remove support for `plan`, `price`, and `subscription_item` on `InvoiceItem` and `InvoiceLineItem`
+* Remove support for `subscription`, `unit_amount_decimal`, and `unit_amount` on `InvoiceItem`
 * Add support for new value `network_fallback` on enum `Issuing.Authorization.request_history[].reason`
 * Add support for new value `expired` on enum `Issuing.Authorization.status`
 * Add support for new values `billie` and `satispay` on enum `PaymentLink.payment_method_types`
