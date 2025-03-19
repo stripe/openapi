@@ -20,7 +20,9 @@
 * Add support for new values `billie` and `satispay` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Remove support for `duration_in_months` on `Coupon#create`
 * Remove support for value `repeating` from enums `Coupon#create.duration` and `Coupon.duration`
+* Add support for `total_taxes` on `CreditNote` and `Invoice`
 * Remove support for `tax_amounts` on `CreditNoteLineItem`, `CreditNote`, and `InvoiceLineItem`
+* Add support for `taxes` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Remove support for `amount_excluding_tax` and `unit_amount_excluding_tax` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Remove support for `coupon` on `Customer#create`, `Customer#update`, `Invoice#create_preview.schedule_details.phases[]`, `Invoice#create_preview`, `Subscription#create`, `Subscription#update`, `SubscriptionSchedule#create.phases[]`, `SubscriptionSchedule#update.phases[]`, and `SubscriptionSchedule.phases[]`
 * Remove support for `promotion_code` on `Customer#create`, `Customer#update`, `Subscription#create`, and `Subscription#update`
