@@ -34,6 +34,7 @@
 * Remove support for `invoiceItem`, `prorationDetails`, `proration`, `taxRates`, and `type` on `InvoiceLineItem`
 * Remove support for `plan` and `subscriptionItem` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `unitAmount` on `InvoiceItemCreateParams`, `InvoiceItemUpdateParams`, and `InvoiceItem`
+* Add support for `parent` on `InvoiceItem`
 * Remove support for `subscription` and `unitAmountDecimal` on `InvoiceItem`
 * Add support for new value `expired` on enum `issuing.AuthorizationListParams.status`
 * Add support for `naverPay` on `Mandate.payment_method_details` and `SetupAttempt.payment_method_details`

@@ -42,6 +42,7 @@
 * Remove support for `invoice_item`, `proration_details`, `proration`, `tax_rates`, and `type` on `InvoiceLineItem`
 * Remove support for `plan` and `subscription_item` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `unit_amount` on `InvoiceItem.CreateParams`, `InvoiceItem.UpdateParams`, and `InvoiceItem`
+* Add support for `parent` on `InvoiceItem`
 * Remove support for `subscription` and `unit_amount_decimal` on `InvoiceItem`
 * Add support for new value `expired` on enums `IssuingAuthorization.status` and `issuing.Authorization.ListParams.status`
 * Add support for new value `network_fallback` on enum `IssuingAuthorization.RequestHistory.reason`

@@ -18,6 +18,7 @@
 * Add support for new value `klarna` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
 * Remove support for `invoice_item`, `proration_details`, `proration`, `tax_rates`, and `type` on `InvoiceLineItem`
 * Remove support for `plan`, `price`, and `subscription_item` on `InvoiceItem` and `InvoiceLineItem`
+* Add support for `parent` on `InvoiceItem`
 * Remove support for `subscription`, `unit_amount_decimal`, and `unit_amount` on `InvoiceItem`
 * Add support for new value `network_fallback` on enum `Issuing.Authorization.request_history[].reason`
 * Add support for new value `expired` on enum `Issuing.Authorization.status`
