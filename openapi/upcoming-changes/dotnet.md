@@ -10,7 +10,9 @@
 * Remove support for `Carrier`, `Phone`, and `TrackingNumber` on `CheckoutSessionCollectedInformationShippingDetails`
 * Add support for `BuyerId` on `ConfirmationTokenPaymentMethodPreviewNaverPay`, `CustomerPaymentMethodNaverPay`, and `PaymentMethodNaverPay`
 * Remove support for `DurationInMonths` on `CouponCreateOptions`
+* Add support for `Refunds` on `CreditNote`
 * Add support for `TotalTaxes` on `CreditNote` and `Invoice`
+* Remove support for `Refund` on `CreditNote`
 * Remove support for `TaxAmounts` on `CreditNoteLineItem`, `CreditNote`, and `InvoiceLineItem`
 * Add support for `Taxes` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Remove support for `AmountExcludingTax` and `UnitAmountExcludingTax` on `CreditNoteLineItem` and `InvoiceLineItem`
