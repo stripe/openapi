@@ -4,6 +4,7 @@
 * Remove support for `upcomingLines` and `upcoming` methods on resource `Invoice`
 * Add support for new value `setup_intent_mobile_wallet_unsupported` on enums `Invoice.last_finalization_error.code`, `PaymentIntent.last_payment_error.code`, `SetupAttempt.setup_error.code`, `SetupIntent.last_setup_error.code`, and `StripeError.code`
 * Add support for `presentment_details` on `Charge`, `Checkout.Session`, `PaymentIntent`, and `Refund`
+* Add support for `permissions` on `Checkout.Session`
 * Remove support for `shipping_details` on `Checkout.Session`
 * Add support for new values `billie` and `satispay` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Remove support for value `repeating` from enum `Coupon.duration`
