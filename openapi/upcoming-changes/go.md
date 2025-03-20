@@ -52,4 +52,5 @@
 * Remove support for `AggregateUsage` on `PlanParams`, `Plan`, `PriceRecurringParams`, and `PriceRecurring`
 * Add support for new value `canceled` on enum `Review.ClosedReason`
 * Remove support for `CurrentPeriodEnd` and `CurrentPeriodStart` on `Subscription`
+* Add support for `CurrentPeriodEnd` and `CurrentPeriodStart` on `SubscriptionItem`
 * Add support for `Wifi` on `TerminalConfigurationParams` and `TerminalConfiguration`

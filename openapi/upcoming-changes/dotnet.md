@@ -41,4 +41,5 @@
 * Remove support for `NaverPay` on `PaymentMethodUpdateOptions`
 * Remove support for `AggregateUsage` on `PlanCreateOptions`, `Plan`, `PriceRecurringOptions`, and `PriceRecurring`
 * Remove support for `CurrentPeriodEnd` and `CurrentPeriodStart` on `Subscription`
+* Add support for `CurrentPeriodEnd` and `CurrentPeriodStart` on `SubscriptionItem`
 * Add support for `Wifi` on `Terminal.ConfigurationCreateOptions`, `Terminal.ConfigurationUpdateOptions`, and `TerminalConfiguration`

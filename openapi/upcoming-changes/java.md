@@ -49,5 +49,6 @@
 * Remove support for `naverPay` on `PaymentMethodUpdateParams`
 * Remove support for `aggregateUsage` on `PlanCreateParams`, `Plan`, `Price.recurring`, and `PriceCreateParams.recurring`
 * Remove support for `currentPeriodEnd` and `currentPeriodStart` on `Subscription`
+* Add support for `currentPeriodEnd` and `currentPeriodStart` on `SubscriptionItem`
 * Add support for `wifi` on `Terminal.Configuration`, `terminal.ConfigurationCreateParams`, and `terminal.ConfigurationUpdateParams`
 * Add support for new values `2025-03-01.dashboard` and `2025-03-31.basil` on enum `WebhookEndpointCreateParams.apiVersion`
