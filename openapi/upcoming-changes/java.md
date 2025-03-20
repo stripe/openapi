@@ -34,7 +34,7 @@
 * Change type of `InvoiceCreatePreviewParams.subscription_details.cancelAt`, `SubscriptionCreateParams.cancelAt`, and `SubscriptionUpdateParams.cancelAt` from `DateTime` to `DateTime | literal('min_period_end')`
 * Add support for `amountOverpaid` on `Invoice`
 * Add support for `parent` on `InvoiceItem` and `Invoice`
-* Remove support for `charge`, `paymentIntent`, `quote`, `subscriptionDetails`, `subscriptionProrationDate`, `tax`, `totalTaxAmounts`, and `transferData` on `Invoice`
+* Remove support for `charge`, `paid`, `paymentIntent`, `quote`, `subscriptionDetails`, `subscriptionProrationDate`, `tax`, `totalTaxAmounts`, and `transferData` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
 * Remove support for `invoiceItem`, `prorationDetails`, `proration`, `taxRates`, and `type` on `InvoiceLineItem`
 * Remove support for `plan` and `subscriptionItem` on `InvoiceItem` and `InvoiceLineItem`
