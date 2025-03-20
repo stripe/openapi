@@ -1,3 +1,4 @@
+* Add support for new resource `InvoicePayment`
 * Remove support for resources `UsageRecordSummary` and `UsageRecord`
 * Remove support for `create` method on resource `UsageRecord`
 * Remove support for `all` method on resource `UsageRecordSummary`
@@ -16,7 +17,7 @@
 * Add support for `taxes` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Remove support for `amount_excluding_tax` and `unit_amount_excluding_tax` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Add support for new values `checkout_session_subscription_payment_canceled` and `checkout_session_subscription_payment` on enum `CustomerBalanceTransaction.type`
-* Add support for `amount_overpaid` on `Invoice`
+* Add support for `amount_overpaid` and `payments` on `Invoice`
 * Add support for `parent` on `InvoiceItem`, `InvoiceLineItem`, and `Invoice`
 * Remove support for `application_fee_amount`, `charge`, `paid`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, `total_tax_amounts`, and `transfer_data` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`

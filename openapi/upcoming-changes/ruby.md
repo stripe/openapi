@@ -1,3 +1,4 @@
+* Add support for new resource `InvoicePayment`
 * Remove support for resources `SubscriptionItemUsageRecordSummary` and `SubscriptionItemUsageRecord`
 * Remove support for `create` method on resource `SubscriptionItemUsageRecord`
 * Remove support for `list` method on resource `SubscriptionItemUsageRecordSummary`
