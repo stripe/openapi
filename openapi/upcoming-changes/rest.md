@@ -11,6 +11,7 @@
 * Add support for `billie` and `satispay` on `Charge.payment_method_details`, `ConfirmationToken.payment_method_preview`, `ConfirmationToken.testHelpers#create.payment_method_data`, `PaymentIntent#confirm.payment_method_data`, `PaymentIntent#create.payment_method_data`, `PaymentIntent#update.payment_method_data`, `PaymentMethod#create`, `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, `PaymentMethodConfiguration`, `PaymentMethod`, `SetupIntent#confirm.payment_method_data`, `SetupIntent#create.payment_method_data`, and `SetupIntent#update.payment_method_data`
 * Add support for `permissions` on `Checkout.Session#create` and `Checkout.Session`
 * Add support for new values `billie` and `satispay` on enum `Checkout.Session#create.payment_method_types`
+* Add support for `shipping_options` on `Checkout.Session#update`
 * Remove support for `shipping_details` on `Checkout.Session`
 * Remove support for `carrier`, `phone`, and `tracking_number` on `Checkout.Session.collected_information.shipping_details`
 * Change `Checkout.Session.collected_information` to be required
@@ -41,7 +42,7 @@
 * Remove support for `cancel_at_period_end` on `Invoice#create_preview.subscription_details`, `Subscription#create`, `Subscription#update`, and `Subscription`
 * Change type of `Invoice#create_preview.subscription_details.cancel_at`, `Subscription#create.cancel_at`, and `Subscription#update.cancel_at` from `DateTime` to `DateTime | literal('min_period_end')`
 * Add support for `amount_overpaid` on `Invoice`
-* Add support for `parent` on `InvoiceItem` and `Invoice`
+* Add support for `parent` on `InvoiceItem`, `InvoiceLineItem`, and `Invoice`
 * Remove support for `application_fee_amount`, `charge`, `paid`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, `total_tax_amounts`, and `transfer_data` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
 * Change `Invoice.subscription` to be optional
