@@ -22,9 +22,9 @@
 * Add support for new values `billie` and `satispay` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Remove support for `duration_in_months` on `Coupon#create`
 * Remove support for value `repeating` from enums `Coupon#create.duration` and `Coupon.duration`
-* Add support for `refunds` on `CreditNote`
+* Add support for `refunds` on `CreditNote#create`, `CreditNote#preview_lines`, `CreditNote#preview`, and `CreditNote`
+* Remove support for `refund` on `CreditNote#create`, `CreditNote#preview_lines`, `CreditNote#preview`, and `CreditNote`
 * Add support for `total_taxes` on `CreditNote` and `Invoice`
-* Remove support for `refund` on `CreditNote`
 * Remove support for `tax_amounts` on `CreditNoteLineItem`, `CreditNote`, and `InvoiceLineItem`
 * Add support for `taxes` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Remove support for `amount_excluding_tax` and `unit_amount_excluding_tax` on `CreditNoteLineItem` and `InvoiceLineItem`

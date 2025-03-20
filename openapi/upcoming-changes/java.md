@@ -15,9 +15,9 @@
 * Add support for `buyerId` on `ConfirmationToken.payment_method_preview.naver_pay`, `CustomerPaymentMethod.naver_pay`, and `PaymentMethod.naver_pay`
 * Remove support for `durationInMonths` on `CouponCreateParams`
 * Remove support for value `repeating` from enum `CouponCreateParams.duration`
-* Add support for `refunds` on `CreditNote`
+* Add support for `refunds` on `CreditNoteCreateParams`, `CreditNotePreviewLinesListParams`, `CreditNotePreviewParams`, and `CreditNote`
+* Remove support for `refund` on `CreditNoteCreateParams`, `CreditNotePreviewLinesListParams`, `CreditNotePreviewParams`, and `CreditNote`
 * Add support for `totalTaxes` on `CreditNote` and `Invoice`
-* Remove support for `refund` on `CreditNote`
 * Remove support for `taxAmounts` on `CreditNoteLineItem`, `CreditNote`, and `InvoiceLineItem`
 * Add support for `taxes` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Remove support for `amountExcludingTax` and `unitAmountExcludingTax` on `CreditNoteLineItem` and `InvoiceLineItem`
