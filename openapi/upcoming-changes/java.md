@@ -6,6 +6,7 @@
 * Add support for `billiePayments` and `satispayPayments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
 * Add support for `hostedPaymentMethodSave` on `Account.settings.invoices` and `AccountUpdateParams.settings.invoices`
 * Add support for `invoices` on `AccountCreateParams.settings`
+* Add support for new value `last` on enum `billing.MeterCreateParams.default_aggregation.formula`
 * Add support for `presentmentDetails` on `Charge`, `Checkout.Session`, `PaymentIntent`, and `Refund`
 * Add support for `billie` and `satispay` on `Charge.payment_method_details`, `ConfirmationToken.payment_method_preview`, `ConfirmationTokenCreateParams.payment_method_data`, `CustomerPaymentMethod`, `PaymentIntentConfirmParams.payment_method_data`, `PaymentIntentCreateParams.payment_method_data`, `PaymentIntentUpdateParams.payment_method_data`, `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, `PaymentMethodConfiguration`, `PaymentMethodCreateParams`, `PaymentMethod`, `SetupIntentConfirmParams.payment_method_data`, `SetupIntentCreateParams.payment_method_data`, and `SetupIntentUpdateParams.payment_method_data`
 * Add support for `optionalItems` on `Checkout.Session`, `PaymentLinkCreateParams`, `PaymentLink`, and `checkout.SessionCreateParams`
@@ -54,4 +55,5 @@
 * Remove support for `currentPeriodEnd` and `currentPeriodStart` on `Subscription`
 * Add support for `currentPeriodEnd` and `currentPeriodStart` on `SubscriptionItem`
 * Add support for `wifi` on `Terminal.Configuration`, `terminal.ConfigurationCreateParams`, and `terminal.ConfigurationUpdateParams`
+* Add support for new value `invoice.overpaid` on enums `WebhookEndpointCreateParams.enabledEvents` and `WebhookEndpointUpdateParams.enabledEvents`
 * Add support for new values `2025-03-01.dashboard` and `2025-03-31.basil` on enum `WebhookEndpointCreateParams.apiVersion`

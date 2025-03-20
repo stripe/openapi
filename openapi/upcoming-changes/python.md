@@ -8,6 +8,7 @@
 * Add support for `invoices` on `Account.CreateParamsSetting`
 * Add support for new values `information_missing`, `invalid_signator`, `verification_failed_authorizer_authority`, and `verification_rejected_ownership_exemption_reason` on enums `Account.FutureRequirement.Error.code`, `Account.Requirement.Error.code`, `AccountCapability.FutureRequirement.Error.code`, `AccountCapability.Requirement.Error.code`, `AccountPerson.FutureRequirement.Error.code`, `AccountPerson.Requirement.Error.code`, `BankAccount.FutureRequirement.Error.code`, and `BankAccount.Requirement.Error.code`
 * Add support for new value `setup_intent_mobile_wallet_unsupported` on enums `Invoice.LastFinalizationError.code`, `PaymentIntent.LastPaymentError.code`, `SetupAttempt.SetupError.code`, `SetupIntent.LastSetupError.code`, and `StripeError.code`
+* Add support for new value `last` on enums `BillingMeter.DefaultAggregation.formula` and `billing.Meter.CreateParamsDefaultAggregation.formula`
 * Add support for `presentment_details` on `Charge`, `CheckoutSession`, `PaymentIntent`, and `Refund`
 * Add support for `billie` and `satispay` on `Charge.PaymentMethodDetail`, `ConfirmationToken.CreateParamsPaymentMethodDatum`, `ConfirmationToken.PaymentMethodPreview`, `CustomerPaymentMethod`, `PaymentIntent.ConfirmParamsPaymentMethodDatum`, `PaymentIntent.CreateParamsPaymentMethodDatum`, `PaymentIntent.UpdateParamsPaymentMethodDatum`, `PaymentMethod.CreateParams`, `PaymentMethodConfiguration.CreateParams`, `PaymentMethodConfiguration.UpdateParams`, `PaymentMethodConfiguration`, `PaymentMethod`, `SetupIntent.ConfirmParamsPaymentMethodDatum`, `SetupIntent.CreateParamsPaymentMethodDatum`, and `SetupIntent.UpdateParamsPaymentMethodDatum`
 * Add support for `optional_items` on `CheckoutSession`, `PaymentLink.CreateParams`, `PaymentLink`, and `checkout.Session.CreateParams`
@@ -35,6 +36,7 @@
 * Remove support for `promotion_code` on `Customer.CreateParams`, `Customer.UpdateParams`, `Subscription.CreateParams`, and `Subscription.UpdateParams`
 * Add support for new values `checkout_session_subscription_payment_canceled` and `checkout_session_subscription_payment` on enum `CustomerBalanceTransaction.type`
 * Add support for new values `billie` and `satispay` on enums `CustomerPaymentMethod.ListParams.type`, `PaymentMethod.CreateParams.type`, and `PaymentMethod.ListParams.type`
+* Add support for new value `invoice.overpaid` on enum `Event.type`
 * Add support for new value `klarna` on enums `Invoice.CreateParamsPaymentSetting.payment_method_types`, `Invoice.PaymentSetting.payment_method_types`, `Invoice.UpdateParamsPaymentSetting.payment_method_types`, `Subscription.CreateParamsPaymentSetting.payment_method_types`, `Subscription.PaymentSetting.payment_method_types`, and `Subscription.UpdateParamsPaymentSetting.payment_method_types`
 * Add support for `pricing` on `Invoice.AddLinesParamsLine`, `Invoice.UpdateLinesParamsLine`, `InvoiceItem.CreateParams`, `InvoiceItem.UpdateParams`, and `InvoiceLineItem.UpdateParams`
 * Remove support for `price` on `Invoice.AddLinesParamsLine`, `Invoice.UpdateLinesParamsLine`, `InvoiceItem.CreateParams`, `InvoiceItem.UpdateParams`, `InvoiceItem`, `InvoiceLineItem.UpdateParams`, and `InvoiceLineItem`
@@ -66,4 +68,5 @@
 * Remove support for `current_period_end` and `current_period_start` on `Subscription`
 * Add support for `current_period_end` and `current_period_start` on `SubscriptionItem`
 * Add support for `wifi` on `TerminalConfiguration`, `terminal.Configuration.CreateParams`, and `terminal.Configuration.UpdateParams`
+* Add support for new value `invoice.overpaid` on enums `WebhookEndpoint.CreateParams.enabled_events` and `WebhookEndpoint.UpdateParams.enabled_events`
 * Add support for new values `2025-03-01.dashboard` and `2025-03-31.basil` on enum `WebhookEndpoint.CreateParams.api_version`

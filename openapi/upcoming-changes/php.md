@@ -4,6 +4,7 @@
 * Remove support for `all` method on resource `UsageRecordSummary`
 * Remove support for `upcomingLines` and `upcoming` methods on resource `Invoice`
 * Add support for new value `setup_intent_mobile_wallet_unsupported` on enums `Invoice.last_finalization_error.code`, `PaymentIntent.last_payment_error.code`, `SetupAttempt.setup_error.code`, `SetupIntent.last_setup_error.code`, and `StripeError.code`
+* Add support for new value `last` on enum `Billing.Meter.default_aggregation.formula`
 * Add support for `presentment_details` on `Charge`, `Checkout.Session`, `PaymentIntent`, and `Refund`
 * Add support for `optional_items` on `Checkout.Session` and `PaymentLink`
 * Add support for `permissions` on `Checkout.Session`
@@ -17,6 +18,7 @@
 * Add support for `taxes` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Remove support for `amount_excluding_tax` and `unit_amount_excluding_tax` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Add support for new values `checkout_session_subscription_payment_canceled` and `checkout_session_subscription_payment` on enum `CustomerBalanceTransaction.type`
+* Add support for new value `invoice.overpaid` on enum `Event.type`
 * Add support for `amount_overpaid` and `payments` on `Invoice`
 * Add support for `parent` on `InvoiceItem`, `InvoiceLineItem`, and `Invoice`
 * Remove support for `application_fee_amount`, `charge`, `paid`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, `total_tax_amounts`, and `transfer_data` on `Invoice`
