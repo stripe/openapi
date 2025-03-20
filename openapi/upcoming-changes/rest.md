@@ -37,16 +37,17 @@
 * Remove support for `price` on `Invoice#add_lines.lines[]`, `Invoice#update_lines.lines[]`, `InvoiceItem#create`, `InvoiceItem#update`, `InvoiceItem`, `InvoiceLineItem#update`, and `InvoiceLineItem`
 * Add support for `taxability_reason` on `Invoice#add_lines.lines[].tax_amounts[]`, `Invoice#update_lines.lines[].tax_amounts[]`, and `InvoiceLineItem#update.tax_amounts[]`
 * Add support for `jurisdiction_level` on `Invoice#add_lines.lines[].tax_amounts[].tax_rate_data`, `Invoice#update_lines.lines[].tax_amounts[].tax_rate_data`, and `InvoiceLineItem#update.tax_amounts[].tax_rate_data`
+* Remove support for `billing_thresholds` on `Invoice#create_preview.schedule_details.phases[].items[]`, `Invoice#create_preview.schedule_details.phases[]`, `Invoice#create_preview.subscription_details.items[]`, `Subscription#create.items[]`, `Subscription#create`, `Subscription#update.items[]`, `Subscription#update`, `SubscriptionItem#create`, `SubscriptionItem#update`, `SubscriptionItem`, `SubscriptionSchedule#create.default_settings`, `SubscriptionSchedule#create.phases[].items[]`, `SubscriptionSchedule#create.phases[]`, `SubscriptionSchedule#update.default_settings`, `SubscriptionSchedule#update.phases[].items[]`, `SubscriptionSchedule#update.phases[]`, `SubscriptionSchedule.default_settings`, `SubscriptionSchedule.phases[].items[]`, `SubscriptionSchedule.phases[]`, and `Subscription`
 * Remove support for `cancel_at_period_end` on `Invoice#create_preview.subscription_details`, `Subscription#create`, `Subscription#update`, and `Subscription`
 * Change type of `Invoice#create_preview.subscription_details.cancel_at`, `Subscription#create.cancel_at`, and `Subscription#update.cancel_at` from `DateTime` to `DateTime | literal('min_period_end')`
 * Add support for `amount_overpaid` on `Invoice`
+* Add support for `parent` on `InvoiceItem` and `Invoice`
 * Remove support for `charge`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, `total_tax_amounts`, and `transfer_data` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
 * Change `Invoice.subscription` to be optional
 * Remove support for `invoice_item`, `proration_details`, `proration`, `tax_rates`, and `type` on `InvoiceLineItem`
 * Remove support for `plan` and `subscription_item` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `unit_amount` on `InvoiceItem#create`, `InvoiceItem#update`, and `InvoiceItem`
-* Add support for `parent` on `InvoiceItem`
 * Remove support for `subscription` and `unit_amount_decimal` on `InvoiceItem`
 * Add support for new value `expired` on enums `Issuing.Authorization#list.status` and `Issuing.Authorization.status`
 * Add support for new value `network_fallback` on enum `Issuing.Authorization.request_history[].reason`
@@ -57,6 +58,7 @@
 * Add support for `default_value` on `PaymentLink#create.custom_fields[].dropdown`, `PaymentLink#create.custom_fields[].numeric`, `PaymentLink#create.custom_fields[].text`, `PaymentLink#update.custom_fields[].dropdown`, `PaymentLink#update.custom_fields[].numeric`, `PaymentLink#update.custom_fields[].text`, `PaymentLink.custom_fields[].dropdown`, `PaymentLink.custom_fields[].numeric`, and `PaymentLink.custom_fields[].text`
 * Add support for new values `billie` and `satispay` on enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`
 * Remove support for `naver_pay` on `PaymentMethod#update`
+* Remove support for `aggregate_usage` on `Plan#create`, `Plan`, `Price#create.recurring`, and `Price.recurring`
 * Add support for new value `canceled` on enum `Review.closed_reason`
 * Remove support for `current_period_end` and `current_period_start` on `Subscription`
 * Add support for `wifi` on `Terminal.Configuration#create`, `Terminal.Configuration#update`, and `Terminal.Configuration`

@@ -16,18 +16,20 @@
 * Remove support for `amount_excluding_tax` and `unit_amount_excluding_tax` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Add support for new values `checkout_session_subscription_payment_canceled` and `checkout_session_subscription_payment` on enum `CustomerBalanceTransaction.type`
 * Add support for `amount_overpaid` on `Invoice`
+* Add support for `parent` on `InvoiceItem` and `Invoice`
 * Remove support for `charge`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, `total_tax_amounts`, and `transfer_data` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
 * Add support for new value `klarna` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
 * Remove support for `invoice_item`, `proration_details`, `proration`, `tax_rates`, and `type` on `InvoiceLineItem`
 * Remove support for `plan`, `price`, and `subscription_item` on `InvoiceItem` and `InvoiceLineItem`
-* Add support for `parent` on `InvoiceItem`
 * Remove support for `subscription`, `unit_amount_decimal`, and `unit_amount` on `InvoiceItem`
 * Add support for new value `network_fallback` on enum `Issuing.Authorization.request_history[].reason`
 * Add support for new value `expired` on enum `Issuing.Authorization.status`
 * Add support for new value `expired` on enum `PaymentIntent.cancellation_reason`
 * Add support for new values `billie` and `satispay` on enum `PaymentLink.payment_method_types`
 * Add support for `billie` and `satispay` on `PaymentMethodConfiguration` and `PaymentMethod`
+* Remove support for `aggregate_usage` on `Plan`
 * Add support for new value `canceled` on enum `Review.closed_reason`
+* Remove support for `billing_thresholds` on `SubscriptionItem` and `Subscription`
 * Remove support for `cancel_at_period_end`, `current_period_end`, and `current_period_start` on `Subscription`
 * Add support for `wifi` on `Terminal.Configuration`

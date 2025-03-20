@@ -36,16 +36,17 @@
 * Remove support for `price` on `Invoice.AddLinesParamsLine`, `Invoice.UpdateLinesParamsLine`, `InvoiceItem.CreateParams`, `InvoiceItem.UpdateParams`, `InvoiceItem`, `InvoiceLineItem.UpdateParams`, and `InvoiceLineItem`
 * Add support for `taxability_reason` on `Invoice.AddLinesParamsLineTaxAmount`, `Invoice.UpdateLinesParamsLineTaxAmount`, and `InvoiceLineItem.UpdateParamsTaxAmount`
 * Add support for `jurisdiction_level` on `Invoice.AddLinesParamsLineTaxAmountTaxRateDatum`, `Invoice.UpdateLinesParamsLineTaxAmountTaxRateDatum`, and `InvoiceLineItem.UpdateParamsTaxAmountTaxRateDatum`
+* Remove support for `billing_thresholds` on `Invoice.CreatePreviewParamsScheduleDetailPhaseItem`, `Invoice.CreatePreviewParamsScheduleDetailPhase`, `Invoice.CreatePreviewParamsSubscriptionDetailItem`, `Subscription.CreateParamsItem`, `Subscription.CreateParams`, `Subscription.UpdateParamsItem`, `Subscription.UpdateParams`, `SubscriptionItem.CreateParams`, `SubscriptionItem.UpdateParams`, `SubscriptionItem`, `SubscriptionSchedule.CreateParamsDefaultSetting`, `SubscriptionSchedule.CreateParamsPhaseItem`, `SubscriptionSchedule.CreateParamsPhase`, `SubscriptionSchedule.DefaultSetting`, `SubscriptionSchedule.Phase.Item`, `SubscriptionSchedule.Phase`, `SubscriptionSchedule.UpdateParamsDefaultSetting`, `SubscriptionSchedule.UpdateParamsPhaseItem`, `SubscriptionSchedule.UpdateParamsPhase`, and `Subscription`
 * Remove support for `cancel_at_period_end` on `Invoice.CreatePreviewParamsSubscriptionDetail`, `Subscription.CreateParams`, `Subscription.UpdateParams`, and `Subscription`
 * Change type of `Invoice.CreatePreviewParamsSubscriptionDetail.cancel_at`, `Subscription.CreateParams.cancel_at`, and `Subscription.UpdateParams.cancel_at` from `DateTime` to `DateTime | literal('min_period_end')`
 * Add support for `amount_overpaid` on `Invoice`
+* Add support for `parent` on `InvoiceItem` and `Invoice`
 * Remove support for `charge`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, `total_tax_amounts`, and `transfer_data` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
 * Change `Invoice.subscription` to be optional
 * Remove support for `invoice_item`, `proration_details`, `proration`, `tax_rates`, and `type` on `InvoiceLineItem`
 * Remove support for `plan` and `subscription_item` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `unit_amount` on `InvoiceItem.CreateParams`, `InvoiceItem.UpdateParams`, and `InvoiceItem`
-* Add support for `parent` on `InvoiceItem`
 * Remove support for `subscription` and `unit_amount_decimal` on `InvoiceItem`
 * Add support for new value `expired` on enums `IssuingAuthorization.status` and `issuing.Authorization.ListParams.status`
 * Add support for new value `network_fallback` on enum `IssuingAuthorization.RequestHistory.reason`
@@ -56,6 +57,7 @@
 * Add support for `default_value` on `PaymentLink.CreateParamsCustomFieldDropdown`, `PaymentLink.CreateParamsCustomFieldNumeric`, `PaymentLink.CreateParamsCustomFieldText`, `PaymentLink.CustomField.Dropdown`, `PaymentLink.CustomField.Numeric`, `PaymentLink.CustomField.Text`, `PaymentLink.UpdateParamsCustomFieldDropdown`, `PaymentLink.UpdateParamsCustomFieldNumeric`, and `PaymentLink.UpdateParamsCustomFieldText`
 * Add support for new values `billie` and `satispay` on enums `PaymentLink.CreateParams.payment_method_types`, `PaymentLink.UpdateParams.payment_method_types`, and `PaymentLink.payment_method_types`
 * Remove support for `naver_pay` on `PaymentMethod.UpdateParams`
+* Remove support for `aggregate_usage` on `Plan.CreateParams`, `Plan`, `Price.CreateParamsRecurring`, and `Price.Recurring`
 * Add support for new value `canceled` on enum `Review.closed_reason`
 * Remove support for `current_period_end` and `current_period_start` on `Subscription`
 * Add support for `wifi` on `TerminalConfiguration`, `terminal.Configuration.CreateParams`, and `terminal.Configuration.UpdateParams`
