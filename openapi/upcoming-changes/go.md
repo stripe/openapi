@@ -51,6 +51,7 @@
 * Add support for new value `expired` on enum `IssuingAuthorization.Status`
 * Add support for `NaverPay` on `MandatePaymentMethodDetails` and `SetupAttemptPaymentMethodDetails`
 * Add support for `SetupFutureUsage` on `PaymentIntentConfirmPaymentMethodOptionsNaverPayParams`, `PaymentIntentPaymentMethodOptionsNaverPayParams`, and `PaymentIntentPaymentMethodOptionsNaverPay`
+* Remove support for `Invoice` on `PaymentIntent`
 * Add support for new value `expired` on enum `PaymentIntent.CancellationReason`
 * Add support for `DefaultValue` on `PaymentLinkCustomFieldsDropdownParams`, `PaymentLinkCustomFieldsDropdown`, `PaymentLinkCustomFieldsNumericParams`, `PaymentLinkCustomFieldsNumeric`, `PaymentLinkCustomFieldsTextParams`, and `PaymentLinkCustomFieldsText`
 * Add support for new values `billie` and `satispay` on enum `PaymentLink.PaymentMethodTypes`

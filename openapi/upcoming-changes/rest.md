@@ -60,6 +60,7 @@
 * Add support for `naver_pay` on `Mandate.payment_method_details` and `SetupAttempt.payment_method_details`
 * Add support for `setup_future_usage` on `PaymentIntent#confirm.payment_method_options.naver_pay`, `PaymentIntent#create.payment_method_options.naver_pay`, `PaymentIntent#update.payment_method_options.naver_pay`, and `PaymentIntent.payment_method_options.naver_pay`
 * Change `PaymentIntent#confirm.payment_method_options.wechat_pay.client`, `PaymentIntent#create.payment_method_options.wechat_pay.client`, and `PaymentIntent#update.payment_method_options.wechat_pay.client` to be optional
+* Remove support for `invoice` on `PaymentIntent`
 * Add support for new value `expired` on enum `PaymentIntent.cancellation_reason`
 * Add support for `default_value` on `PaymentLink#create.custom_fields[].dropdown`, `PaymentLink#create.custom_fields[].numeric`, `PaymentLink#create.custom_fields[].text`, `PaymentLink#update.custom_fields[].dropdown`, `PaymentLink#update.custom_fields[].numeric`, `PaymentLink#update.custom_fields[].text`, `PaymentLink.custom_fields[].dropdown`, `PaymentLink.custom_fields[].numeric`, and `PaymentLink.custom_fields[].text`
 * Add support for new values `billie` and `satispay` on enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`

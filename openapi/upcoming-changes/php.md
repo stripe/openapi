@@ -29,6 +29,7 @@
 * Remove support for `subscription`, `unit_amount_decimal`, and `unit_amount` on `InvoiceItem`
 * Add support for new value `network_fallback` on enum `Issuing.Authorization.request_history[].reason`
 * Add support for new value `expired` on enum `Issuing.Authorization.status`
+* Remove support for `invoice` on `PaymentIntent`
 * Add support for new value `expired` on enum `PaymentIntent.cancellation_reason`
 * Add support for new values `billie` and `satispay` on enum `PaymentLink.payment_method_types`
 * Add support for `billie` and `satispay` on `PaymentMethodConfiguration` and `PaymentMethod`
