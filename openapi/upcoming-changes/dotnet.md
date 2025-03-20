@@ -7,6 +7,7 @@
 * Add support for `Invoices` on `AccountSettingsOptions`
 * Add support for `PresentmentDetails` on `Charge`, `CheckoutSession`, `PaymentIntent`, and `Refund`
 * Add support for `Billie` and `Satispay` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataOptions`, `ConfirmationTokenPaymentMethodPreview`, `CustomerPaymentMethod`, `PaymentIntentPaymentMethodDataOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, and `SetupIntentPaymentMethodDataOptions`
+* Add support for `OptionalItems` on `Checkout.SessionCreateOptions`, `CheckoutSession`, `PaymentLinkCreateOptions`, and `PaymentLink`
 * Add support for `Permissions` on `Checkout.SessionCreateOptions` and `CheckoutSession`
 * Add support for `ShippingOptions` on `Checkout.SessionUpdateOptions`
 * Remove support for `ShippingDetails` on `CheckoutSession`

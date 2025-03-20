@@ -10,6 +10,7 @@
 * Add support for new value `setup_intent_mobile_wallet_unsupported` on enums `Invoice.last_finalization_error.code`, `PaymentIntent.last_payment_error.code`, `SetupAttempt.setup_error.code`, `SetupIntent.last_setup_error.code`, and `StripeError.code`
 * Add support for `presentment_details` on `Charge`, `Checkout.Session`, `PaymentIntent`, and `Refund`
 * Add support for `billie` and `satispay` on `Charge.payment_method_details`, `ConfirmationToken.payment_method_preview`, `ConfirmationToken.testHelpers#create.payment_method_data`, `PaymentIntent#confirm.payment_method_data`, `PaymentIntent#create.payment_method_data`, `PaymentIntent#update.payment_method_data`, `PaymentMethod#create`, `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, `PaymentMethodConfiguration`, `PaymentMethod`, `SetupIntent#confirm.payment_method_data`, `SetupIntent#create.payment_method_data`, and `SetupIntent#update.payment_method_data`
+* Add support for `optional_items` on `Checkout.Session#create`, `Checkout.Session`, `PaymentLink#create`, and `PaymentLink`
 * Add support for `permissions` on `Checkout.Session#create` and `Checkout.Session`
 * Add support for new values `billie` and `satispay` on enum `Checkout.Session#create.payment_method_types`
 * Add support for `shipping_options` on `Checkout.Session#update`
