@@ -1,6 +1,6 @@
 * Add support for new resource `InvoicePayment`
 * Remove support for resources `SubscriptionItemUsageRecordSummary` and `SubscriptionItemUsageRecord`
-* Add support for `Get` method on resource `InvoicePayment`
+* Add support for `Get` and `List` methods on resource `InvoicePayment`
 * Remove support for `Create` method on resource `SubscriptionItemUsageRecord`
 * Remove support for `List` method on resource `SubscriptionItemUsageRecordSummary`
 * Remove support for `UpcomingLines` and `Upcoming` methods on resource `Invoice`
@@ -9,6 +9,7 @@
 * Add support for `Invoices` on `AccountSettingsOptions`
 * Add support for `PresentmentDetails` on `Charge`, `CheckoutSession`, `PaymentIntent`, and `Refund`
 * Add support for `Billie` and `Satispay` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataOptions`, `ConfirmationTokenPaymentMethodPreview`, `CustomerPaymentMethod`, `PaymentIntentPaymentMethodDataOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, and `SetupIntentPaymentMethodDataOptions`
+* Add support for `NzBankAccount` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataOptions`, `ConfirmationTokenPaymentMethodPreview`, `CustomerPaymentMethod`, `MandatePaymentMethodDetails`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, `SetupAttemptPaymentMethodDetails`, and `SetupIntentPaymentMethodDataOptions`
 * Add support for `OptionalItems` on `Checkout.SessionCreateOptions`, `CheckoutSession`, `PaymentLinkCreateOptions`, and `PaymentLink`
 * Add support for `Permissions` on `Checkout.SessionCreateOptions` and `CheckoutSession`
 * Add support for `ShippingOptions` on `Checkout.SessionUpdateOptions`
@@ -45,6 +46,7 @@
 * Add support for `DefaultValue` on `PaymentLinkCustomFieldsDropdownOptions`, `PaymentLinkCustomFieldsDropdown`, `PaymentLinkCustomFieldsNumericOptions`, `PaymentLinkCustomFieldsNumeric`, `PaymentLinkCustomFieldsTextOptions`, and `PaymentLinkCustomFieldsText`
 * Remove support for `NaverPay` on `PaymentMethodUpdateOptions`
 * Remove support for `AggregateUsage` on `PlanCreateOptions`, `Plan`, `PriceRecurringOptions`, and `PriceRecurring`
+* Add support for `NzBankTransfer` on `RefundDestinationDetails`
 * Remove support for `CurrentPeriodEnd` and `CurrentPeriodStart` on `Subscription`
 * Add support for `CurrentPeriodEnd` and `CurrentPeriodStart` on `SubscriptionItem`
 * Add support for `Wifi` on `Terminal.ConfigurationCreateOptions`, `Terminal.ConfigurationUpdateOptions`, and `TerminalConfiguration`

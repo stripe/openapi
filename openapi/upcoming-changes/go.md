@@ -1,6 +1,6 @@
 * Add support for new resource `InvoicePayment`
 * Remove support for resources `UsageRecordSummary` and `UsageRecord`
-* Add support for `Get` method on resource `InvoicePayment`
+* Add support for `Get` and `List` methods on resource `InvoicePayment`
 * Remove support for `New` method on resource `UsageRecord`
 * Remove support for `List` method on resource `UsageRecordSummary`
 * Remove support for `UpcomingLines` and `Upcoming` methods on resource `Invoice`
@@ -13,6 +13,7 @@
 * Add support for new value `last` on enum `BillingMeterDefaultAggregation.Formula`
 * Add support for `PresentmentDetails` on `Charge`, `CheckoutSession`, `PaymentIntent`, and `Refund`
 * Add support for `Billie` and `Satispay` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `SetupIntentConfirmPaymentMethodDataParams`, and `SetupIntentPaymentMethodDataParams`
+* Add support for `NzBankAccount` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `MandatePaymentMethodDetails`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentIntentPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `SetupAttemptPaymentMethodDetails`, `SetupIntentConfirmPaymentMethodDataParams`, and `SetupIntentPaymentMethodDataParams`
 * Add support for `OptionalItems` on `CheckoutSessionParams`, `CheckoutSession`, `PaymentLinkParams`, and `PaymentLink`
 * Add support for `Permissions` on `CheckoutSessionParams` and `CheckoutSession`
 * Add support for `ShippingOptions` on `CheckoutSessionParams`
@@ -20,7 +21,7 @@
 * Remove support for `Carrier`, `Phone`, and `TrackingNumber` on `CheckoutSessionCollectedInformationShippingDetails`
 * Add support for new value `custom` on enum `CheckoutSession.UIMode`
 * Add support for `BuyerID` on `ConfirmationTokenPaymentMethodPreviewNaverPay` and `PaymentMethodNaverPay`
-* Add support for new values `billie` and `satispay` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
+* Add support for new values `billie`, `nz_bank_account`, and `satispay` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
 * Remove support for `DurationInMonths` on `CouponParams`
 * Remove support for value `repeating` from enum `Coupon.Duration`
 * Add support for `Refunds` on `CreditNoteParams`, `CreditNotePreviewLinesParams`, `CreditNotePreviewParams`, and `CreditNote`
@@ -44,7 +45,7 @@
 * Add support for `Parent` on `InvoiceItem`, `InvoiceLineItem`, and `Invoice`
 * Remove support for `ApplicationFeeAmount`, `Charge`, `PaidOutOfBand`, `Paid`, `PaymentIntent`, `Quote`, `SubscriptionDetails`, `SubscriptionProrationDate`, `Tax`, `TotalTaxAmounts`, and `TransferData` on `Invoice`
 * Remove support for `Discount` on `Invoice` and `Subscription`
-* Add support for new value `klarna` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
+* Add support for new values `klarna` and `nz_bank_account` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
 * Remove support for `InvoiceItem`, `ProrationDetails`, `Proration`, `TaxRates`, and `Type` on `InvoiceLineItem`
 * Remove support for `Plan` and `SubscriptionItem` on `InvoiceItem` and `InvoiceLineItem`
 * Remove support for `UnitAmount` on `InvoiceItemParams` and `InvoiceItem`
@@ -59,6 +60,7 @@
 * Add support for new values `billie` and `satispay` on enum `PaymentLink.PaymentMethodTypes`
 * Remove support for `NaverPay` on `PaymentMethodParams`
 * Remove support for `AggregateUsage` on `PlanParams`, `Plan`, `PriceRecurringParams`, and `PriceRecurring`
+* Add support for `NzBankTransfer` on `RefundDestinationDetails`
 * Add support for new value `canceled` on enum `Review.ClosedReason`
 * Remove support for `CurrentPeriodEnd` and `CurrentPeriodStart` on `Subscription`
 * Add support for `CurrentPeriodEnd` and `CurrentPeriodStart` on `SubscriptionItem`

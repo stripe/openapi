@@ -1,6 +1,6 @@
 * Add support for new resource `InvoicePayment`
 * Remove support for resources `UsageRecordSummary` and `UsageRecord`
-* Add support for `retrieve` method on resource `InvoicePayment`
+* Add support for `list` and `retrieve` methods on resource `InvoicePayment`
 * Remove support for `create` method on resource `UsageRecord`
 * Remove support for `list` method on resource `UsageRecordSummary`
 * Remove support for `upcomingLines` and `upcoming` methods on resource `Invoice`
@@ -13,6 +13,7 @@
 * Add support for new value `last` on enums `Billing.Meter#create.default_aggregation.formula` and `Billing.Meter.default_aggregation.formula`
 * Add support for `presentment_details` on `Charge`, `Checkout.Session`, `PaymentIntent`, and `Refund`
 * Add support for `billie` and `satispay` on `Charge.payment_method_details`, `ConfirmationToken.payment_method_preview`, `ConfirmationToken.testHelpers#create.payment_method_data`, `PaymentIntent#confirm.payment_method_data`, `PaymentIntent#create.payment_method_data`, `PaymentIntent#update.payment_method_data`, `PaymentMethod#create`, `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, `PaymentMethodConfiguration`, `PaymentMethod`, `SetupIntent#confirm.payment_method_data`, `SetupIntent#create.payment_method_data`, and `SetupIntent#update.payment_method_data`
+* Add support for `nz_bank_account` on `Charge.payment_method_details`, `ConfirmationToken.payment_method_preview`, `ConfirmationToken.testHelpers#create.payment_method_data`, `Mandate.payment_method_details`, `PaymentIntent#confirm.payment_method_data`, `PaymentIntent#confirm.payment_method_options`, `PaymentIntent#create.payment_method_data`, `PaymentIntent#create.payment_method_options`, `PaymentIntent#update.payment_method_data`, `PaymentIntent#update.payment_method_options`, `PaymentIntent.payment_method_options`, `PaymentMethod#create`, `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, `PaymentMethodConfiguration`, `PaymentMethod`, `SetupAttempt.payment_method_details`, `SetupIntent#confirm.payment_method_data`, `SetupIntent#create.payment_method_data`, and `SetupIntent#update.payment_method_data`
 * Add support for `optional_items` on `Checkout.Session#create`, `Checkout.Session`, `PaymentLink#create`, and `PaymentLink`
 * Add support for `permissions` on `Checkout.Session#create` and `Checkout.Session`
 * Add support for new values `billie` and `satispay` on enum `Checkout.Session#create.payment_method_types`
@@ -24,9 +25,9 @@
 * Change `Checkout.Session.collected_information.shipping_details` to be required
 * Change `Checkout.Session.collected_information.shipping_details.address` to be required
 * Change `Checkout.Session.collected_information.shipping_details.name` to be required
-* Add support for new values `billie` and `satispay` on enums `ConfirmationToken.testHelpers#create.payment_method_data.type`, `PaymentIntent#confirm.payment_method_data.type`, `PaymentIntent#create.payment_method_data.type`, `PaymentIntent#update.payment_method_data.type`, `SetupIntent#confirm.payment_method_data.type`, `SetupIntent#create.payment_method_data.type`, and `SetupIntent#update.payment_method_data.type`
+* Add support for new values `billie`, `nz_bank_account`, and `satispay` on enums `ConfirmationToken.testHelpers#create.payment_method_data.type`, `PaymentIntent#confirm.payment_method_data.type`, `PaymentIntent#create.payment_method_data.type`, `PaymentIntent#update.payment_method_data.type`, `SetupIntent#confirm.payment_method_data.type`, `SetupIntent#create.payment_method_data.type`, and `SetupIntent#update.payment_method_data.type`
 * Add support for `buyer_id` on `ConfirmationToken.payment_method_preview.naver_pay` and `PaymentMethod.naver_pay`
-* Add support for new values `billie` and `satispay` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
+* Add support for new values `billie`, `nz_bank_account`, and `satispay` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Remove support for `duration_in_months` on `Coupon#create`
 * Remove support for value `repeating` from enums `Coupon#create.duration` and `Coupon.duration`
 * Add support for `refunds` on `CreditNote#create`, `CreditNote#preview_lines`, `CreditNote#preview`, and `CreditNote`
@@ -37,10 +38,10 @@
 * Remove support for `amount_excluding_tax` and `unit_amount_excluding_tax` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Remove support for `coupon` on `Customer#create`, `Customer#update`, `Invoice#create_preview.schedule_details.phases[]`, `Invoice#create_preview`, `Subscription#create`, `Subscription#update`, `SubscriptionSchedule#create.phases[]`, `SubscriptionSchedule#update.phases[]`, and `SubscriptionSchedule.phases[]`
 * Remove support for `promotion_code` on `Customer#create`, `Customer#update`, `Subscription#create`, and `Subscription#update`
-* Add support for new values `billie` and `satispay` on enums `Customer#list_payment_methods.type`, `PaymentMethod#create.type`, and `PaymentMethod#list.type`
+* Add support for new values `billie`, `nz_bank_account`, and `satispay` on enums `Customer#list_payment_methods.type`, `PaymentMethod#create.type`, and `PaymentMethod#list.type`
 * Add support for new values `checkout_session_subscription_payment_canceled` and `checkout_session_subscription_payment` on enum `CustomerBalanceTransaction.type`
 * Add support for new value `invoice.overpaid` on enum `Event.type`
-* Add support for new value `klarna` on enums `Invoice#create.payment_settings.payment_method_types`, `Invoice#update.payment_settings.payment_method_types`, `Invoice.payment_settings.payment_method_types`, `Subscription#create.payment_settings.payment_method_types`, `Subscription#update.payment_settings.payment_method_types`, and `Subscription.payment_settings.payment_method_types`
+* Add support for new values `klarna` and `nz_bank_account` on enums `Invoice#create.payment_settings.payment_method_types`, `Invoice#update.payment_settings.payment_method_types`, `Invoice.payment_settings.payment_method_types`, `Subscription#create.payment_settings.payment_method_types`, `Subscription#update.payment_settings.payment_method_types`, and `Subscription.payment_settings.payment_method_types`
 * Add support for `pricing` on `Invoice#add_lines.lines[]`, `Invoice#update_lines.lines[]`, `InvoiceItem#create`, `InvoiceItem#update`, and `InvoiceLineItem#update`
 * Remove support for `price` on `Invoice#add_lines.lines[]`, `Invoice#update_lines.lines[]`, `InvoiceItem#create`, `InvoiceItem#update`, `InvoiceItem`, `InvoiceLineItem#update`, and `InvoiceLineItem`
 * Add support for `taxability_reason` on `Invoice#add_lines.lines[].tax_amounts[]`, `Invoice#update_lines.lines[].tax_amounts[]`, and `InvoiceLineItem#update.tax_amounts[]`
@@ -68,6 +69,7 @@
 * Add support for new values `billie` and `satispay` on enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`
 * Remove support for `naver_pay` on `PaymentMethod#update`
 * Remove support for `aggregate_usage` on `Plan#create`, `Plan`, `Price#create.recurring`, and `Price.recurring`
+* Add support for `nz_bank_transfer` on `Refund.destination_details`
 * Add support for new value `canceled` on enum `Review.closed_reason`
 * Remove support for `current_period_end` and `current_period_start` on `Subscription`
 * Add support for `current_period_end` and `current_period_start` on `SubscriptionItem`
