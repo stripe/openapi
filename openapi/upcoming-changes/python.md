@@ -11,6 +11,7 @@
 * Add support for new values `forwarding_api_retryable_upstream_error` and `setup_intent_mobile_wallet_unsupported` on enums `Invoice.LastFinalizationError.code`, `PaymentIntent.LastPaymentError.code`, `SetupAttempt.SetupError.code`, `SetupIntent.LastSetupError.code`, and `StripeError.code`
 * Add support for new value `last` on enums `BillingMeter.DefaultAggregation.formula` and `billing.Meter.CreateParamsDefaultAggregation.formula`
 * Add support for `presentment_details` on `Charge`, `CheckoutSession`, `PaymentIntent`, and `Refund`
+* Remove support for `invoice` on `Charge` and `PaymentIntent`
 * Add support for `billie` and `satispay` on `Charge.PaymentMethodDetail`, `ConfirmationToken.CreateParamsPaymentMethodDatum`, `ConfirmationToken.PaymentMethodPreview`, `CustomerPaymentMethod`, `PaymentIntent.ConfirmParamsPaymentMethodDatum`, `PaymentIntent.CreateParamsPaymentMethodDatum`, `PaymentIntent.UpdateParamsPaymentMethodDatum`, `PaymentMethod.CreateParams`, `PaymentMethodConfiguration.CreateParams`, `PaymentMethodConfiguration.UpdateParams`, `PaymentMethodConfiguration`, `PaymentMethod`, `SetupIntent.ConfirmParamsPaymentMethodDatum`, `SetupIntent.CreateParamsPaymentMethodDatum`, and `SetupIntent.UpdateParamsPaymentMethodDatum`
 * Add support for `nz_bank_account` on `Charge.PaymentMethodDetail`, `ConfirmationToken.CreateParamsPaymentMethodDatum`, `ConfirmationToken.PaymentMethodPreview`, `CustomerPaymentMethod`, `Mandate.PaymentMethodDetail`, `PaymentIntent.ConfirmParamsPaymentMethodDatum`, `PaymentIntent.ConfirmParamsPaymentMethodOption`, `PaymentIntent.CreateParamsPaymentMethodDatum`, `PaymentIntent.CreateParamsPaymentMethodOption`, `PaymentIntent.PaymentMethodOption`, `PaymentIntent.UpdateParamsPaymentMethodDatum`, `PaymentIntent.UpdateParamsPaymentMethodOption`, `PaymentMethod.CreateParams`, `PaymentMethodConfiguration.CreateParams`, `PaymentMethodConfiguration.UpdateParams`, `PaymentMethodConfiguration`, `PaymentMethod`, `SetupAttempt.PaymentMethodDetail`, `SetupIntent.ConfirmParamsPaymentMethodDatum`, `SetupIntent.CreateParamsPaymentMethodDatum`, and `SetupIntent.UpdateParamsPaymentMethodDatum`
 * Add support for `optional_items` on `CheckoutSession`, `PaymentLink.CreateParams`, `PaymentLink`, and `checkout.Session.CreateParams`
@@ -37,6 +38,7 @@
 * Remove support for `amount_excluding_tax` and `unit_amount_excluding_tax` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Remove support for `coupon` on `Customer.CreateParams`, `Customer.UpdateParams`, `Invoice.CreatePreviewParamsScheduleDetailPhase`, `Invoice.CreatePreviewParams`, `Subscription.CreateParams`, `Subscription.UpdateParams`, `SubscriptionSchedule.CreateParamsPhase`, `SubscriptionSchedule.Phase`, and `SubscriptionSchedule.UpdateParamsPhase`
 * Remove support for `promotion_code` on `Customer.CreateParams`, `Customer.UpdateParams`, `Subscription.CreateParams`, and `Subscription.UpdateParams`
+* Add support for `checkout_session` on `CustomerBalanceTransaction`
 * Add support for new values `checkout_session_subscription_payment_canceled` and `checkout_session_subscription_payment` on enum `CustomerBalanceTransaction.type`
 * Add support for new values `billie`, `nz_bank_account`, and `satispay` on enums `CustomerPaymentMethod.ListParams.type`, `PaymentMethod.CreateParams.type`, and `PaymentMethod.ListParams.type`
 * Add support for new value `invoice.overpaid` on enum `Event.type`
@@ -62,7 +64,6 @@
 * Add support for `naver_pay` on `Mandate.PaymentMethodDetail` and `SetupAttempt.PaymentMethodDetail`
 * Add support for `setup_future_usage` on `PaymentIntent.ConfirmParamsPaymentMethodOptionNaverPay`, `PaymentIntent.CreateParamsPaymentMethodOptionNaverPay`, `PaymentIntent.PaymentMethodOption.NaverPay`, and `PaymentIntent.UpdateParamsPaymentMethodOptionNaverPay`
 * Change `PaymentIntent.ConfirmParamsPaymentMethodOptionWechatPay.client`, `PaymentIntent.CreateParamsPaymentMethodOptionWechatPay.client`, and `PaymentIntent.UpdateParamsPaymentMethodOptionWechatPay.client` to be optional
-* Remove support for `invoice` on `PaymentIntent`
 * Add support for new value `expired` on enum `PaymentIntent.cancellation_reason`
 * Add support for `default_value` on `PaymentLink.CreateParamsCustomFieldDropdown`, `PaymentLink.CreateParamsCustomFieldNumeric`, `PaymentLink.CreateParamsCustomFieldText`, `PaymentLink.CustomField.Dropdown`, `PaymentLink.CustomField.Numeric`, `PaymentLink.CustomField.Text`, `PaymentLink.UpdateParamsCustomFieldDropdown`, `PaymentLink.UpdateParamsCustomFieldNumeric`, and `PaymentLink.UpdateParamsCustomFieldText`
 * Add support for new values `billie` and `satispay` on enums `PaymentLink.CreateParams.payment_method_types`, `PaymentLink.UpdateParams.payment_method_types`, and `PaymentLink.payment_method_types`

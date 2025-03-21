@@ -7,6 +7,7 @@
 * Add support for new values `forwarding_api_retryable_upstream_error` and `setup_intent_mobile_wallet_unsupported` on enums `Invoice.last_finalization_error.code`, `PaymentIntent.last_payment_error.code`, `SetupAttempt.setup_error.code`, `SetupIntent.last_setup_error.code`, and `StripeError.code`
 * Add support for new value `last` on enum `Billing.Meter.default_aggregation.formula`
 * Add support for `presentment_details` on `Charge`, `Checkout.Session`, `PaymentIntent`, and `Refund`
+* Remove support for `invoice` on `Charge` and `PaymentIntent`
 * Add support for `optional_items` on `Checkout.Session` and `PaymentLink`
 * Add support for `permissions` on `Checkout.Session`
 * Remove support for `shipping_details` on `Checkout.Session`
@@ -19,6 +20,7 @@
 * Remove support for `tax_amounts` on `CreditNoteLineItem`, `CreditNote`, and `InvoiceLineItem`
 * Add support for `taxes` on `CreditNoteLineItem` and `InvoiceLineItem`
 * Remove support for `amount_excluding_tax` and `unit_amount_excluding_tax` on `CreditNoteLineItem` and `InvoiceLineItem`
+* Add support for `checkout_session` on `CustomerBalanceTransaction`
 * Add support for new values `checkout_session_subscription_payment_canceled` and `checkout_session_subscription_payment` on enum `CustomerBalanceTransaction.type`
 * Add support for new value `invoice.overpaid` on enum `Event.type`
 * Add support for `amount_overpaid` and `payments` on `Invoice`
@@ -32,7 +34,6 @@
 * Remove support for `subscription`, `unit_amount_decimal`, and `unit_amount` on `InvoiceItem`
 * Add support for new value `network_fallback` on enum `Issuing.Authorization.request_history[].reason`
 * Add support for new value `expired` on enum `Issuing.Authorization.status`
-* Remove support for `invoice` on `PaymentIntent`
 * Add support for new value `expired` on enum `PaymentIntent.cancellation_reason`
 * Add support for new values `billie` and `satispay` on enum `PaymentLink.payment_method_types`
 * Add support for `billie`, `nz_bank_account`, and `satispay` on `PaymentMethodConfiguration` and `PaymentMethod`
