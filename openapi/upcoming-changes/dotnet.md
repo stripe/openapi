@@ -1,5 +1,6 @@
 * Add support for new resource `InvoicePayment`
 * Remove support for resources `SubscriptionItemUsageRecordSummary` and `SubscriptionItemUsageRecord`
+* Add support for `Get` method on resource `InvoicePayment`
 * Remove support for `Create` method on resource `SubscriptionItemUsageRecord`
 * Remove support for `List` method on resource `SubscriptionItemUsageRecordSummary`
 * Remove support for `UpcomingLines` and `Upcoming` methods on resource `Invoice`
@@ -32,7 +33,7 @@
 * Change type of `InvoiceSubscriptionDetailsOptions.CancelAt`, `SubscriptionCreateOptions.CancelAt`, and `SubscriptionUpdateOptions.CancelAt` from `DateTime` to `DateTime | literal('min_period_end')`
 * Add support for `AmountOverpaid` and `Payments` on `Invoice`
 * Add support for `Parent` on `InvoiceItem`, `InvoiceLineItem`, and `Invoice`
-* Remove support for `ApplicationFeeAmount`, `Charge`, `Paid`, `PaymentIntent`, `Quote`, `SubscriptionDetails`, `SubscriptionProrationDate`, `Tax`, `TotalTaxAmounts`, and `TransferData` on `Invoice`
+* Remove support for `ApplicationFeeAmount`, `Charge`, `PaidOutOfBand`, `Paid`, `PaymentIntent`, `Quote`, `SubscriptionDetails`, `SubscriptionProrationDate`, `Tax`, `TotalTaxAmounts`, and `TransferData` on `Invoice`
 * Remove support for `Discount` on `Invoice` and `Subscription`
 * Remove support for `InvoiceItem`, `ProrationDetails`, `Proration`, `TaxRates`, and `Type` on `InvoiceLineItem`
 * Remove support for `Plan` and `SubscriptionItem` on `InvoiceItem` and `InvoiceLineItem`

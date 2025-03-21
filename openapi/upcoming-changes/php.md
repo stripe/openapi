@@ -1,5 +1,6 @@
 * Add support for new resource `InvoicePayment`
 * Remove support for resources `UsageRecordSummary` and `UsageRecord`
+* Add support for `retrieve` method on resource `InvoicePayment`
 * Remove support for `create` method on resource `UsageRecord`
 * Remove support for `all` method on resource `UsageRecordSummary`
 * Remove support for `upcomingLines` and `upcoming` methods on resource `Invoice`
@@ -22,7 +23,7 @@
 * Add support for new value `invoice.overpaid` on enum `Event.type`
 * Add support for `amount_overpaid` and `payments` on `Invoice`
 * Add support for `parent` on `InvoiceItem`, `InvoiceLineItem`, and `Invoice`
-* Remove support for `application_fee_amount`, `charge`, `paid`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, `total_tax_amounts`, and `transfer_data` on `Invoice`
+* Remove support for `application_fee_amount`, `charge`, `paid_out_of_band`, `paid`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, `total_tax_amounts`, and `transfer_data` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
 * Add support for new value `klarna` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
 * Remove support for `invoice_item`, `proration_details`, `proration`, `tax_rates`, and `type` on `InvoiceLineItem`
