@@ -17,6 +17,7 @@
 * Add support for `ShippingOptions` on `CheckoutSessionParams`
 * Remove support for `ShippingDetails` on `CheckoutSession`
 * Remove support for `Carrier`, `Phone`, and `TrackingNumber` on `CheckoutSessionCollectedInformationShippingDetails`
+* Add support for new value `custom` on enum `CheckoutSession.UIMode`
 * Add support for `BuyerID` on `ConfirmationTokenPaymentMethodPreviewNaverPay` and `PaymentMethodNaverPay`
 * Add support for new values `billie` and `satispay` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
 * Remove support for `DurationInMonths` on `CouponParams`

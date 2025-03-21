@@ -12,6 +12,7 @@
 * Add support for `optionalItems` on `Checkout.Session`, `PaymentLinkCreateParams`, `PaymentLink`, and `checkout.SessionCreateParams`
 * Add support for `permissions` on `Checkout.Session` and `checkout.SessionCreateParams`
 * Add support for new values `billie` and `satispay` on enum `checkout.SessionCreateParams.paymentMethodTypes`
+* Add support for new value `custom` on enum `checkout.SessionCreateParams.uiMode`
 * Add support for `shippingOptions` on `checkout.SessionUpdateParams`
 * Remove support for `shippingDetails` on `Checkout.Session`
 * Remove support for `carrier`, `phone`, and `trackingNumber` on `Checkout.Session.collected_information.shipping_details`

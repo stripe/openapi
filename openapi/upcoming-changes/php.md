@@ -9,6 +9,7 @@
 * Add support for `optional_items` on `Checkout.Session` and `PaymentLink`
 * Add support for `permissions` on `Checkout.Session`
 * Remove support for `shipping_details` on `Checkout.Session`
+* Add support for new value `custom` on enum `Checkout.Session.ui_mode`
 * Add support for new values `billie` and `satispay` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Remove support for value `repeating` from enum `Coupon.duration`
 * Add support for `refunds` on `CreditNote`
