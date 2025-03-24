@@ -49,7 +49,6 @@
 * Add support for `taxability_reason` on `Invoice#add_lines.lines[].tax_amounts[]`, `Invoice#update_lines.lines[].tax_amounts[]`, and `InvoiceLineItem#update.tax_amounts[]`
 * Add support for `jurisdiction_level` on `Invoice#add_lines.lines[].tax_amounts[].tax_rate_data`, `Invoice#update_lines.lines[].tax_amounts[].tax_rate_data`, and `InvoiceLineItem#update.tax_amounts[].tax_rate_data`
 * Remove support for `billing_thresholds` on `Invoice#create_preview.schedule_details.phases[].items[]`, `Invoice#create_preview.schedule_details.phases[]`, `Invoice#create_preview.subscription_details.items[]`, `Subscription#create.items[]`, `Subscription#create`, `Subscription#update.items[]`, `Subscription#update`, `SubscriptionItem#create`, `SubscriptionItem#update`, `SubscriptionItem`, `SubscriptionSchedule#create.default_settings`, `SubscriptionSchedule#create.phases[].items[]`, `SubscriptionSchedule#create.phases[]`, `SubscriptionSchedule#update.default_settings`, `SubscriptionSchedule#update.phases[].items[]`, `SubscriptionSchedule#update.phases[]`, `SubscriptionSchedule.default_settings`, `SubscriptionSchedule.phases[].items[]`, `SubscriptionSchedule.phases[]`, and `Subscription`
-* Remove support for `cancel_at_period_end` on `Invoice#create_preview.subscription_details`, `Subscription#create`, `Subscription#update`, and `Subscription`
 * Change type of `Invoice#create_preview.subscription_details.cancel_at`, `Subscription#create.cancel_at`, and `Subscription#update.cancel_at` from `DateTime` to `DateTime | literal('min_period_end')`
 * Add support for `amount_overpaid` and `payments` on `Invoice`
 * Add support for `parent` on `InvoiceItem`, `InvoiceLineItem`, and `Invoice`
@@ -73,6 +72,8 @@
 * Add support for `nz_bank_transfer` on `Refund.destination_details`
 * Add support for new value `canceled` on enum `Review.closed_reason`
 * Remove support for `current_period_end` and `current_period_start` on `Subscription`
+* Change type of `Subscription.cancel_at_period_end` from `boolean` to `nullable(boolean)`
+* Change `Subscription.cancel_at_period_end` to be optional
 * Add support for `current_period_end` and `current_period_start` on `SubscriptionItem`
 * Add support for `wifi` on `Terminal.Configuration#create`, `Terminal.Configuration#update`, and `Terminal.Configuration`
 * Add support for new value `invoice.overpaid` on enums `WebhookEndpoint#create.enabled_events` and `WebhookEndpoint#update.enabled_events`

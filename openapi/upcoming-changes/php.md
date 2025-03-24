@@ -40,6 +40,7 @@
 * Remove support for `aggregate_usage` on `Plan`
 * Add support for new value `canceled` on enum `Review.closed_reason`
 * Remove support for `billing_thresholds` on `SubscriptionItem` and `Subscription`
-* Remove support for `cancel_at_period_end`, `current_period_end`, and `current_period_start` on `Subscription`
+* Remove support for `current_period_end` and `current_period_start` on `Subscription`
+* Change type of `Subscription.cancel_at_period_end` from `boolean` to `nullable(boolean)`
 * Add support for `current_period_end` and `current_period_start` on `SubscriptionItem`
 * Add support for `wifi` on `Terminal.Configuration`
