@@ -50,7 +50,7 @@
 * Add support for `jurisdiction_level` on `Invoice#add_lines.lines[].tax_amounts[].tax_rate_data`, `Invoice#update_lines.lines[].tax_amounts[].tax_rate_data`, and `InvoiceLineItem#update.tax_amounts[].tax_rate_data`
 * Remove support for `billing_thresholds` on `Invoice#create_preview.schedule_details.phases[].items[]`, `Invoice#create_preview.schedule_details.phases[]`, `Invoice#create_preview.subscription_details.items[]`, `Subscription#create.items[]`, `Subscription#create`, `Subscription#update.items[]`, `Subscription#update`, `SubscriptionItem#create`, `SubscriptionItem#update`, `SubscriptionItem`, `SubscriptionSchedule#create.default_settings`, `SubscriptionSchedule#create.phases[].items[]`, `SubscriptionSchedule#create.phases[]`, `SubscriptionSchedule#update.default_settings`, `SubscriptionSchedule#update.phases[].items[]`, `SubscriptionSchedule#update.phases[]`, `SubscriptionSchedule.default_settings`, `SubscriptionSchedule.phases[].items[]`, `SubscriptionSchedule.phases[]`, and `Subscription`
 * Change type of `Invoice#create_preview.subscription_details.cancel_at`, `Subscription#create.cancel_at`, and `Subscription#update.cancel_at` from `DateTime` to `DateTime | literal('min_period_end')`
-* Add support for `amount_overpaid` and `payments` on `Invoice`
+* Add support for `amount_overpaid`, `confirmation_secret`, and `payments` on `Invoice`
 * Add support for `parent` on `InvoiceItem`, `InvoiceLineItem`, and `Invoice`
 * Remove support for `application_fee_amount`, `charge`, `paid_out_of_band`, `paid`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, `total_tax_amounts`, and `transfer_data` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`

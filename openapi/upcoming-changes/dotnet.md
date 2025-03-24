@@ -33,7 +33,7 @@
 * Add support for `JurisdictionLevel` on `InvoiceLineItemTaxAmountsTaxRateDataOptions` and `InvoiceLinesTaxAmountsTaxRateDataOptions`
 * Remove support for `BillingThresholds` on `InvoiceScheduleDetailsPhasesItemsOptions`, `InvoiceScheduleDetailsPhasesOptions`, `InvoiceSubscriptionDetailsItemsOptions`, `SubscriptionCreateOptions`, `SubscriptionItemCreateOptions`, `SubscriptionItemUpdateOptions`, `SubscriptionItem`, `SubscriptionItemsOptions`, `SubscriptionScheduleDefaultSettingsOptions`, `SubscriptionScheduleDefaultSettings`, `SubscriptionSchedulePhasesItemsOptions`, `SubscriptionSchedulePhasesItems`, `SubscriptionSchedulePhasesOptions`, `SubscriptionSchedulePhases`, `SubscriptionUpdateOptions`, and `Subscription`
 * Change type of `InvoiceSubscriptionDetailsOptions.CancelAt`, `SubscriptionCreateOptions.CancelAt`, and `SubscriptionUpdateOptions.CancelAt` from `DateTime` to `DateTime | literal('min_period_end')`
-* Add support for `AmountOverpaid` and `Payments` on `Invoice`
+* Add support for `AmountOverpaid`, `ConfirmationSecret`, and `Payments` on `Invoice`
 * Add support for `Parent` on `InvoiceItem`, `InvoiceLineItem`, and `Invoice`
 * Remove support for `ApplicationFeeAmount`, `Charge`, `PaidOutOfBand`, `Paid`, `PaymentIntent`, `Quote`, `SubscriptionDetails`, `SubscriptionProrationDate`, `Tax`, `TotalTaxAmounts`, and `TransferData` on `Invoice`
 * Remove support for `Discount` on `Invoice` and `Subscription`

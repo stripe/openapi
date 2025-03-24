@@ -23,7 +23,7 @@
 * Add support for `checkout_session` on `CustomerBalanceTransaction`
 * Add support for new values `checkout_session_subscription_payment_canceled` and `checkout_session_subscription_payment` on enum `CustomerBalanceTransaction.type`
 * Add support for new value `invoice.overpaid` on enum `Event.type`
-* Add support for `amount_overpaid` and `payments` on `Invoice`
+* Add support for `amount_overpaid`, `confirmation_secret`, and `payments` on `Invoice`
 * Add support for `parent` on `InvoiceItem`, `InvoiceLineItem`, and `Invoice`
 * Remove support for `application_fee_amount`, `charge`, `paid_out_of_band`, `paid`, `payment_intent`, `quote`, `subscription_details`, `subscription_proration_date`, `tax`, `total_tax_amounts`, and `transfer_data` on `Invoice`
 * Remove support for `discount` on `Invoice` and `Subscription`
