@@ -72,7 +72,6 @@
 * Add support for new value `canceled` on enum `Review.closed_reason`
 * Remove support for `current_period_end` and `current_period_start` on `Subscription`
 * Change type of `Subscription.cancel_at_period_end` from `boolean` to `boolean | null`
-* Change `Subscription.cancel_at_period_end` to be optional
 * Add support for `current_period_end` and `current_period_start` on `SubscriptionItem`
 * Add support for `wifi` on `Terminal.ConfigurationCreateParams`, `Terminal.ConfigurationUpdateParams`, and `Terminal.Configuration`
 * Add support for new value `invoice.overpaid` on enums `WebhookEndpointCreateParams.enabled_events` and `WebhookEndpointUpdateParams.enabled_events`
