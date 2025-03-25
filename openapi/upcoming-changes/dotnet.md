@@ -1,1 +1,1 @@
-* Remove support for `PauseCollection` on `InvoiceParentSubscriptionDetails`
+Release specs are identical.

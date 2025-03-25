@@ -1,1 +1,1 @@
-* Remove support for `pause_collection` on `Invoice.Parent.SubscriptionDetail`
+Release specs are identical.
