@@ -1,1 +1,1 @@
-Release specs are identical.
+* Release specs are identical.
