@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for new values `stripe_balance_payment_debit_reversal` and `stripe_balance_payment_debit` on enum `BalanceTransaction.Type`
