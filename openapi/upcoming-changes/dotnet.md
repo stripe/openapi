@@ -1,0 +1,1 @@
+* Change type of `InvoiceSubscriptionDetailsOptions.CancelAt`, `SubscriptionCreateOptions.CancelAt`, and `SubscriptionUpdateOptions.CancelAt` from `DateTime | literal('min_period_end')` to `DateTime`
