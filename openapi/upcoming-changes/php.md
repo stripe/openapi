@@ -1,1 +1,2 @@
 * Add support for new values `stripe_balance_payment_debit_reversal` and `stripe_balance_payment_debit` on enum `BalanceTransaction.type`
+* Add support for new value `repeating` on enum `Coupon.duration`
