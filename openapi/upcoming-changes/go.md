@@ -1,1 +1,1 @@
-* Add support for `NzBankAccountBECSDebitPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
+* Release specs are identical.
