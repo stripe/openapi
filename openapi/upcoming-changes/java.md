@@ -1,1 +1,1 @@
-Release specs are identical.
+* Add support for `nzBankAccountBecsDebitPayments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
