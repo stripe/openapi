@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for `billie` on `PaymentIntent#confirm.payment_method_options`, `PaymentIntent#create.payment_method_options`, `PaymentIntent#update.payment_method_options`, and `PaymentIntent.payment_method_options`
