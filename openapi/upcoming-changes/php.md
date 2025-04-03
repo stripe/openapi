@@ -1,0 +1,1 @@
+* Add support for `wallet_options` on `Checkout.Session`
