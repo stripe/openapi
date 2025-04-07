@@ -5,3 +5,4 @@
 * Add support for `billie` on `PaymentIntent.ConfirmParamsPaymentMethodOption`, `PaymentIntent.CreateParamsPaymentMethodOption`, `PaymentIntent.PaymentMethodOption`, and `PaymentIntent.UpdateParamsPaymentMethodOption`
 * Add support for `klarna` on `PaymentMethodDomain`
 * Change type of `TaxCalculationLineItem.reference` from `nullable(string)` to `string`
+* Add support for `in` on `TaxRegistration.CountryOption` and `tax.Registration.CreateParamsCountryOption`

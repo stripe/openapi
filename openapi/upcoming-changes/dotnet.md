@@ -3,3 +3,4 @@
 * Add support for `Installments` on `ConfirmationTokenPaymentMethodOptionsCard`
 * Add support for `Billie` on `PaymentIntentPaymentMethodOptionsOptions` and `PaymentIntentPaymentMethodOptions`
 * Add support for `Klarna` on `PaymentMethodDomain`
+* Add support for `In` on `TaxRegistrationCountryOptionsOptions` and `TaxRegistrationCountryOptions`

@@ -4,3 +4,4 @@
 * Add support for `billie` on `PaymentIntent::ConfirmParams::PaymentMethodOption`, `PaymentIntent::CreateParams::PaymentMethodOption`, `PaymentIntent::PaymentMethodOption`, and `PaymentIntent::UpdateParams::PaymentMethodOption`
 * Add support for `klarna` on `PaymentMethodDomain`
 * Change type of `TaxCalculationLineItem.reference` from `nullable(string)` to `string`
+* Add support for `in` on `TaxRegistration::CountryOption` and `TaxRegistration::CreateParams::CountryOption`
