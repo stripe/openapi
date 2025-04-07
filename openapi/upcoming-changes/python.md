@@ -4,3 +4,4 @@
 * Add support for `installments` on `ConfirmationToken.PaymentMethodOption.Card`
 * Add support for `billie` on `PaymentIntent.ConfirmParamsPaymentMethodOption`, `PaymentIntent.CreateParamsPaymentMethodOption`, `PaymentIntent.PaymentMethodOption`, and `PaymentIntent.UpdateParamsPaymentMethodOption`
 * Add support for `klarna` on `PaymentMethodDomain`
+* Change type of `TaxCalculationLineItem.reference` from `nullable(string)` to `string`
