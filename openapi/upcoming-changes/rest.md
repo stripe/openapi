@@ -1,3 +1,4 @@
+* Add support for `minority_owned_business_designation` on `Account#create.business_profile`, `Account#update.business_profile`, and `Account.business_profile`
 * Add support for new value `verification_legal_entity_structure_mismatch` on enums `Account.future_requirements.errors[].code`, `Account.requirements.errors[].code`, `BankAccount.future_requirements.errors[].code`, `BankAccount.requirements.errors[].code`, `Capability.future_requirements.errors[].code`, `Capability.requirements.errors[].code`, `Person.future_requirements.errors[].code`, and `Person.requirements.errors[].code`
 * Add support for `wallet_options` on `Checkout.Session#create` and `Checkout.Session`
 * Add support for `payment_method_options` on `ConfirmationToken.testHelpers#create`

@@ -1,3 +1,4 @@
+* Add support for `minorityOwnedBusinessDesignation` on `Account.business_profile`, `AccountCreateParams.business_profile`, and `AccountUpdateParams.business_profile`
 * Add support for `walletOptions` on `Checkout.Session` and `checkout.SessionCreateParams`
 * Add support for `paymentMethodOptions` on `ConfirmationTokenCreateParams`
 * Add support for `installments` on `ConfirmationToken.payment_method_options.card`

@@ -1,3 +1,4 @@
+* Add support for `MinorityOwnedBusinessDesignation` on `AccountBusinessProfileOptions` and `AccountBusinessProfile`
 * Add support for `WalletOptions` on `Checkout.SessionCreateOptions` and `CheckoutSession`
 * Add support for `PaymentMethodOptions` on `TestHelpersConfirmationTokenCreateOptions`
 * Add support for `Installments` on `ConfirmationTokenPaymentMethodOptionsCard`
