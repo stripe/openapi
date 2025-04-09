@@ -1,5 +1,6 @@
 * Add support for `minority_owned_business_designation` on `Account.BusinessProfile`, `Account.CreateParamsBusinessProfile`, and `Account.UpdateParamsBusinessProfile`
 * Add support for new value `verification_legal_entity_structure_mismatch` on enums `Account.FutureRequirement.Error.code`, `Account.Requirement.Error.code`, `AccountCapability.FutureRequirement.Error.code`, `AccountCapability.Requirement.Error.code`, `AccountPerson.FutureRequirement.Error.code`, `AccountPerson.Requirement.Error.code`, `BankAccount.FutureRequirement.Error.code`, and `BankAccount.Requirement.Error.code`
+* Add support for new value `tax_id_prohibited` on enums `Invoice.LastFinalizationError.code`, `PaymentIntent.LastPaymentError.code`, `SetupAttempt.SetupError.code`, `SetupIntent.LastSetupError.code`, and `StripeError.code`
 * Add support for `wallet_options` on `CheckoutSession` and `checkout.Session.CreateParams`
 * Add support for `payment_method_options` on `ConfirmationToken.CreateParams`
 * Add support for `installments` on `ConfirmationToken.PaymentMethodOption.Card`
