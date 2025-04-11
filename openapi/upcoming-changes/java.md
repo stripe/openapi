@@ -4,4 +4,5 @@
 * Add support for `installments` on `ConfirmationToken.payment_method_options.card`
 * Add support for `billie` on `PaymentIntent.payment_method_options`, `PaymentIntentConfirmParams.payment_method_options`, `PaymentIntentCreateParams.payment_method_options`, and `PaymentIntentUpdateParams.payment_method_options`
 * Add support for `klarna` on `PaymentMethodDomain`
+* Add support for `pendingReason` on `Refund`
 * Add support for `in` on `Tax.Registration.country_options` and `tax.RegistrationCreateParams.country_options`
