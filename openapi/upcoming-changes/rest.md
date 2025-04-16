@@ -7,5 +7,6 @@
 * Add support for `billie` on `PaymentIntent#confirm.payment_method_options`, `PaymentIntent#create.payment_method_options`, `PaymentIntent#update.payment_method_options`, and `PaymentIntent.payment_method_options`
 * Add support for `klarna` on `PaymentMethodDomain`
 * Add support for `pending_reason` on `Refund`
+* Change type of `Subscription.cancel_at_period_end` from `nullable(boolean)` to `boolean`
 * Change type of `Tax.CalculationLineItem.reference` from `nullable(string)` to `string`
 * Add support for `in` on `Tax.Registration#create.country_options` and `Tax.Registration.country_options`
