@@ -8,6 +8,7 @@
 * Add support for `Installments` on `ConfirmationTokenPaymentMethodOptionsCard`
 * Add support for new value `affirm` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
 * Add support for `Billie` on `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptionsParams`, and `PaymentIntentPaymentMethodOptions`
+* Add support for `Pix` on `PaymentMethodConfigurationParams` and `PaymentMethodConfiguration`
 * Add support for `Klarna` on `PaymentMethodDomain`
 * Add support for `USCfpbData` on `Person` and `TokenPersonParams`
 * Add support for `PendingReason` on `Refund`

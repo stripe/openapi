@@ -5,6 +5,7 @@
 * Add support for `payment_method_options` on `ConfirmationToken::CreateParams`
 * Add support for `installments` on `ConfirmationToken::PaymentMethodOption::Card`
 * Add support for `billie` on `PaymentIntent::ConfirmParams::PaymentMethodOption`, `PaymentIntent::CreateParams::PaymentMethodOption`, `PaymentIntent::PaymentMethodOption`, and `PaymentIntent::UpdateParams::PaymentMethodOption`
+* Add support for `pix` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
 * Add support for `klarna` on `PaymentMethodDomain`
 * Add support for `us_cfpb_data` on `Person` and `Token::CreateParams::Person`
 * Add support for `pending_reason` on `Refund`

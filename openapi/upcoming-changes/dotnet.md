@@ -5,6 +5,7 @@
 * Add support for `PaymentMethodOptions` on `TestHelpersConfirmationTokenCreateOptions`
 * Add support for `Installments` on `ConfirmationTokenPaymentMethodOptionsCard`
 * Add support for `Billie` on `PaymentIntentPaymentMethodOptionsOptions` and `PaymentIntentPaymentMethodOptions`
+* Add support for `Pix` on `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, and `PaymentMethodConfiguration`
 * Add support for `Klarna` on `PaymentMethodDomain`
 * Add support for `UsCfpbData` on `Person` and `TokenPersonOptions`
 * Add support for `PendingReason` on `Refund`
