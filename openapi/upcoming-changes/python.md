@@ -5,6 +5,7 @@
 * Add support for `wallet_options` on `CheckoutSession` and `checkout.Session.CreateParams`
 * Add support for `payment_method_options` on `ConfirmationToken.CreateParams`
 * Add support for `installments` on `ConfirmationToken.PaymentMethodOption.Card`
+* Add support for new value `affirm` on enums `Invoice.CreateParamsPaymentSetting.payment_method_types`, `Invoice.PaymentSetting.payment_method_types`, `Invoice.UpdateParamsPaymentSetting.payment_method_types`, `Subscription.CreateParamsPaymentSetting.payment_method_types`, `Subscription.PaymentSetting.payment_method_types`, and `Subscription.UpdateParamsPaymentSetting.payment_method_types`
 * Add support for `billie` on `PaymentIntent.ConfirmParamsPaymentMethodOption`, `PaymentIntent.CreateParamsPaymentMethodOption`, `PaymentIntent.PaymentMethodOption`, and `PaymentIntent.UpdateParamsPaymentMethodOption`
 * Add support for `klarna` on `PaymentMethodDomain`
 * Add support for `us_cfpb_data` on `Person` and `Token.CreateParamsPerson`
