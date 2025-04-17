@@ -11,3 +11,4 @@
 * Add support for `usCfpbData` on `Person` and `TokenCreateParams.person`
 * Add support for `pendingReason` on `Refund`
 * Add support for `aw`, `az`, `bd`, `bj`, `et`, `in`, `kg`, `la`, and `ph` on `Tax.Registration.country_options` and `tax.RegistrationCreateParams.country_options`
+* Add support for new value `2025-04-30.basil` on enum `WebhookEndpointCreateParams.apiVersion`
