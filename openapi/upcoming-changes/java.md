@@ -7,4 +7,4 @@
 * Add support for `klarna` on `PaymentMethodDomain`
 * Add support for `usCfpbData` on `Person` and `TokenCreateParams.person`
 * Add support for `pendingReason` on `Refund`
-* Add support for `in` on `Tax.Registration.country_options` and `tax.RegistrationCreateParams.country_options`
+* Add support for `aw`, `az`, `bd`, `bj`, `et`, `in`, `kg`, `la`, and `ph` on `Tax.Registration.country_options` and `tax.RegistrationCreateParams.country_options`

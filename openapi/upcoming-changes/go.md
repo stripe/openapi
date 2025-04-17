@@ -9,4 +9,4 @@
 * Add support for `Klarna` on `PaymentMethodDomain`
 * Add support for `USCfpbData` on `Person` and `TokenPersonParams`
 * Add support for `PendingReason` on `Refund`
-* Add support for `In` on `TaxRegistrationCountryOptionsParams` and `TaxRegistrationCountryOptions`
+* Add support for `Aw`, `Az`, `Bd`, `Bj`, `ET`, `In`, `Kg`, `La`, and `Ph` on `TaxRegistrationCountryOptionsParams` and `TaxRegistrationCountryOptions`

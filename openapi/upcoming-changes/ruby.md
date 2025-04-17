@@ -8,4 +8,4 @@
 * Add support for `us_cfpb_data` on `Person` and `Token::CreateParams::Person`
 * Add support for `pending_reason` on `Refund`
 * Change type of `TaxCalculationLineItem.reference` from `nullable(string)` to `string`
-* Add support for `in` on `TaxRegistration::CountryOption` and `TaxRegistration::CreateParams::CountryOption`
+* Add support for `aw`, `az`, `bd`, `bj`, `et`, `in`, `kg`, `la`, and `ph` on `TaxRegistration::CountryOption` and `TaxRegistration::CreateParams::CountryOption`
