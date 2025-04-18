@@ -5,6 +5,7 @@
 * Add support for `TaxID` on `ChargeBillingDetails`, `ConfirmationTokenPaymentMethodDataBillingDetailsParams`, `ConfirmationTokenPaymentMethodPreviewBillingDetails`, `PaymentIntentConfirmPaymentMethodDataBillingDetailsParams`, `PaymentIntentPaymentMethodDataBillingDetailsParams`, `PaymentMethodBillingDetailsParams`, `PaymentMethodBillingDetails`, `SetupIntentConfirmPaymentMethodDataBillingDetailsParams`, `SetupIntentPaymentMethodDataBillingDetailsParams`, and `TreasuryOutboundPaymentDestinationPaymentMethodDataBillingDetailsParams`
 * Add support for `WalletOptions` on `CheckoutSessionParams` and `CheckoutSession`
 * Add support for `Provider` on `CheckoutSessionAutomaticTax`, `InvoiceAutomaticTax`, and `QuoteAutomaticTax`
+* Add support for new values `aw_tin`, `az_tin`, `bd_bin`, `bf_ifu`, `bj_ifu`, `cm_niu`, `cv_nif`, `et_tin`, `kg_tin`, and `la_tin` on enums `CheckoutSessionCustomerDetailsTaxIds.Type`, `TaxCalculationCustomerDetailsTaxIds.Type`, `TaxId.Type`, and `TaxTransactionCustomerDetailsTaxIds.Type`
 * Add support for `PaymentMethodOptions` on `ConfirmationTokenParams`
 * Add support for `Installments` on `ConfirmationTokenPaymentMethodOptionsCard`
 * Add support for new value `affirm` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
