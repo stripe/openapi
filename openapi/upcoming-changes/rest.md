@@ -15,5 +15,5 @@
 * Add support for `pending_reason` on `Refund`
 * Change type of `Subscription.cancel_at_period_end` from `nullable(boolean)` to `boolean`
 * Change type of `Tax.CalculationLineItem.reference` from `nullable(string)` to `string`
-* Add support for `aw`, `az`, `bd`, `bj`, `et`, `in`, `kg`, `la`, and `ph` on `Tax.Registration#create.country_options` and `Tax.Registration.country_options`
+* Add support for `aw`, `az`, `bd`, `bf`, `bj`, `cm`, `cv`, `et`, `in`, `kg`, `la`, and `ph` on `Tax.Registration#create.country_options` and `Tax.Registration.country_options`
 * Add support for new value `2025-04-30.basil` on enum `WebhookEndpoint#create.api_version`

@@ -14,5 +14,5 @@
 * Add support for `us_cfpb_data` on `Person` and `Token.CreateParamsPerson`
 * Add support for `pending_reason` on `Refund`
 * Change type of `TaxCalculationLineItem.reference` from `nullable(string)` to `string`
-* Add support for `aw`, `az`, `bd`, `bj`, `et`, `in`, `kg`, `la`, and `ph` on `TaxRegistration.CountryOption` and `tax.Registration.CreateParamsCountryOption`
+* Add support for `aw`, `az`, `bd`, `bf`, `bj`, `cm`, `cv`, `et`, `in`, `kg`, `la`, and `ph` on `TaxRegistration.CountryOption` and `tax.Registration.CreateParamsCountryOption`
 * Add support for new value `2025-04-30.basil` on enum `WebhookEndpoint.CreateParams.api_version`
