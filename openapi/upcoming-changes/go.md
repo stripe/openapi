@@ -4,6 +4,7 @@
 * Add support for new value `verification_legal_entity_structure_mismatch` on enums `BankAccountFutureRequirementsErrors.Code` and `BankAccountRequirementsErrors.Code`
 * Add support for `TaxID` on `ChargeBillingDetails`, `ConfirmationTokenPaymentMethodDataBillingDetailsParams`, `ConfirmationTokenPaymentMethodPreviewBillingDetails`, `PaymentIntentConfirmPaymentMethodDataBillingDetailsParams`, `PaymentIntentPaymentMethodDataBillingDetailsParams`, `PaymentMethodBillingDetailsParams`, `PaymentMethodBillingDetails`, `SetupIntentConfirmPaymentMethodDataBillingDetailsParams`, `SetupIntentPaymentMethodDataBillingDetailsParams`, and `TreasuryOutboundPaymentDestinationPaymentMethodDataBillingDetailsParams`
 * Add support for `WalletOptions` on `CheckoutSessionParams` and `CheckoutSession`
+* Add support for `Provider` on `CheckoutSessionAutomaticTax`, `InvoiceAutomaticTax`, and `QuoteAutomaticTax`
 * Add support for `PaymentMethodOptions` on `ConfirmationTokenParams`
 * Add support for `Installments` on `ConfirmationTokenPaymentMethodOptionsCard`
 * Add support for new value `affirm` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`

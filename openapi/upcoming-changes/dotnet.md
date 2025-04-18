@@ -2,6 +2,7 @@
 * Add support for `RegistrationDate` on `AccountCompanyOptions`, `AccountCompany`, and `TokenAccountCompanyOptions`
 * Add support for `TaxId` on `ChargeBillingDetails`, `ConfirmationTokenPaymentMethodDataBillingDetailsOptions`, `ConfirmationTokenPaymentMethodPreviewBillingDetails`, `PaymentIntentPaymentMethodDataBillingDetailsOptions`, `PaymentMethodBillingDetailsOptions`, `PaymentMethodBillingDetails`, `SetupIntentPaymentMethodDataBillingDetailsOptions`, and `TreasuryOutboundPaymentDestinationPaymentMethodDataBillingDetailsOptions`
 * Add support for `WalletOptions` on `Checkout.SessionCreateOptions` and `CheckoutSession`
+* Add support for `Provider` on `CheckoutSessionAutomaticTax`, `InvoiceAutomaticTax`, and `QuoteAutomaticTax`
 * Add support for `PaymentMethodOptions` on `TestHelpersConfirmationTokenCreateOptions`
 * Add support for `Installments` on `ConfirmationTokenPaymentMethodOptionsCard`
 * Add support for `Billie` on `PaymentIntentPaymentMethodOptionsOptions` and `PaymentIntentPaymentMethodOptions`
