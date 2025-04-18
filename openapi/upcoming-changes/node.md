@@ -8,6 +8,7 @@
 * Add support for `payment_method_options` on `ConfirmationTokenCreateParams.testHelpers`
 * Add support for `installments` on `ConfirmationToken.payment_method_options.card`
 * Add support for new value `affirm` on enums `Invoice.payment_settings.payment_method_types`, `InvoiceCreateParams.payment_settings.payment_method_types`, `InvoiceUpdateParams.payment_settings.payment_method_types`, `Subscription.payment_settings.payment_method_types`, `SubscriptionCreateParams.payment_settings.payment_method_types`, and `SubscriptionUpdateParams.payment_settings.payment_method_types`
+* Change type of `InvoiceLineItem.parent.subscription_item_details.subscription` from `string` to `string | null`
 * Add support for `billie` on `PaymentIntent.payment_method_options`, `PaymentIntentConfirmParams.payment_method_options`, `PaymentIntentCreateParams.payment_method_options`, and `PaymentIntentUpdateParams.payment_method_options`
 * Add support for `pix` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
 * Add support for `klarna` on `PaymentMethodDomain`

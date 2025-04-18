@@ -5,6 +5,7 @@
 * Add support for `provider` on `CheckoutSession::AutomaticTax`, `Invoice::AutomaticTax`, and `Quote::AutomaticTax`
 * Add support for `payment_method_options` on `ConfirmationToken::CreateParams`
 * Add support for `installments` on `ConfirmationToken::PaymentMethodOption::Card`
+* Change type of `InvoiceLineItem::Parent::SubscriptionItemDetail.subscription` from `string` to `nullable(string)`
 * Add support for `billie` on `PaymentIntent::ConfirmParams::PaymentMethodOption`, `PaymentIntent::CreateParams::PaymentMethodOption`, `PaymentIntent::PaymentMethodOption`, and `PaymentIntent::UpdateParams::PaymentMethodOption`
 * Add support for `pix` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
 * Add support for `klarna` on `PaymentMethodDomain`
