@@ -6,6 +6,12 @@ inputs:
     description: 'Base branch'
     required: true
     default: "${{ github.base_ref || github.ref_name }}"
+  fixtures:
+    description: 'Path to custom fixtures file'
+    required: false
+  spec_path:
+    description: 'Path to OpenAPI specification'
+    required: false
 
 runs:
   using: "composite"
@@ -14,10 +20,21 @@ runs:
       shell: bash
       run: |
         BETA_ARG=""
+        FIXTURES_ARG=""
+        SPEC_PATH_ARG=""
 
         if [ "${{ contains(inputs.base, 'b') }}" == "true" ]; then
           BETA_ARG="-beta"
         fi
 
-        docker run -d -p 12111-12112:12111-12112 stripe/stripe-mock $BETA_ARG && sleep 5
+        if [ -n "${{ inputs.fixtures }}" ]; then
+          FIXTURES_ARG="-fixtures ${{ inputs.fixtures }}"
+        fi
 
+        if [ -n "${{ inputs.spec_path }}" ]; then
+          SPEC_PATH_ARG="-spec ${{ inputs.spec_path }}"
+        fi
+
+        docker run -d -p 12111-12112:12111-12112 \
+          -v "${{ github.workspace }}:/workspace" \
+          stripe/stripe-mock $BETA_ARG $FIXTURES_ARG $SPEC_PATH_ARG && sleep 5
