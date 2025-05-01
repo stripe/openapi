@@ -1,1 +1,2 @@
-* Release specs are identical.
+* Add support for `kakao_pay`, `kr_card`, `naver_pay`, `payco`, and `samsung_pay` on `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, and `PaymentMethodConfiguration`
+* Remove support for `tax_id` on `Treasury.OutboundPayment#create.destination_payment_method_data.billing_details`

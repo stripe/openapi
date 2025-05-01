@@ -1,1 +1,2 @@
-* Release specs are identical.
+* Add support for `KakaoPay`, `KrCard`, `NaverPay`, `Payco`, and `SamsungPay` on `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, and `PaymentMethodConfiguration`
+* Remove support for `TaxId` on `TreasuryOutboundPaymentDestinationPaymentMethodDataBillingDetailsOptions`
