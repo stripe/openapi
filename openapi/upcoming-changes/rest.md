@@ -1,3 +1,4 @@
 * Add support for `pix_payments` on `Account#create.capabilities`, `Account#update.capabilities`, and `Account.capabilities`
+* Add support for `satispay` on `PaymentIntent#confirm.payment_method_options`, `PaymentIntent#create.payment_method_options`, `PaymentIntent#update.payment_method_options`, and `PaymentIntent.payment_method_options`
 * Add support for `kakao_pay`, `kr_card`, `naver_pay`, `payco`, and `samsung_pay` on `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, and `PaymentMethodConfiguration`
 * Remove support for `tax_id` on `Treasury.OutboundPayment#create.destination_payment_method_data.billing_details`
