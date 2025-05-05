@@ -1,6 +1,5 @@
-* Add support for `PixPayments` on `AccountCapabilitiesOptions` and `AccountCapabilities`
+* Add support for `PixPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
 * Add support for `BalanceType` on `BalanceTransaction`
-* Add support for `Satispay` on `PaymentIntentPaymentMethodOptionsOptions` and `PaymentIntentPaymentMethodOptions`
-* Add support for `CaptureMethod` on `PaymentIntentPaymentMethodOptionsBillie`
+* Add support for `Satispay` on `PaymentIntent.PaymentMethodOptions` and `PaymentIntentPaymentMethodOptionsOptions`
+* Add support for `CaptureMethod` on `PaymentIntent.PaymentMethodOptions.Billie`
 * Add support for `KakaoPay`, `KrCard`, `NaverPay`, `Payco`, and `SamsungPay` on `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, and `PaymentMethodConfiguration`
-* Remove support for `TaxId` on `TreasuryOutboundPaymentDestinationPaymentMethodDataBillingDetailsOptions`

@@ -3,4 +3,3 @@
 * Add support for `satispay` on `PaymentIntent::ConfirmParams::PaymentMethodOption`, `PaymentIntent::CreateParams::PaymentMethodOption`, `PaymentIntent::PaymentMethodOption`, and `PaymentIntent::UpdateParams::PaymentMethodOption`
 * Add support for `capture_method` on `PaymentIntent::PaymentMethodOption::Billie`
 * Add support for `kakao_pay`, `kr_card`, `naver_pay`, `payco`, and `samsung_pay` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
-* Remove support for `tax_id` on `TreasuryOutboundPayment::CreateParams::DestinationPaymentMethodDatum::BillingDetail`
