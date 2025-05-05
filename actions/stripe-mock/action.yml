@@ -6,11 +6,17 @@ inputs:
     description: 'Base branch'
     required: true
     default: "${{ github.base_ref || github.ref_name }}"
+  beta:
+    description: 'Explicitly use beta'
+    required: false
   fixtures:
     description: 'Path to custom fixtures file'
     required: false
   spec_path:
-    description: 'Path to OpenAPI specification'
+    description: 'Path to OpenAPI specification. Pass `openapi_version` OR `spec_path` OR neither, never both'
+    required: false
+  openapi_version:
+    description: 'Use the OpenAPI specification at a specific version. Pass `openapi_version` OR `spec_path` OR neither, never both'
     required: false
 
 runs:
@@ -20,20 +26,51 @@ runs:
       shell: bash
       run: |
         BETA_ARG=""
+        OPENAPI_VERSION=""
         FIXTURES_ARG=""
         SPEC_PATH_ARG=""
+        CURL_OPTS=(--retry 3 \
+            --retry-all-errors \
+            --fail \
+            --verbose \
+            --no-progress-meter \
+            --show-error)
 
-        if [ "${{ contains(inputs.base, 'b') }}" == "true" ]; then
+        CURRENT_OPENAPI_SPEC=$(realpath latest.json)
+        CURRENT_FIXTURES_JSON=${CURRENT_OPENAPI_SPEC%/*}/fixtures.json
+
+        SPEC_NAME="spec3.sdk.json"
+        FIXTURES_NAME="fixtures3.json"
+
+        if [ "${{ inputs.beta }}" == "true" ] || [ "${{ contains(inputs.base, 'b') }}" == "true" ]; then
+          echo "Running stripe-mock with beta flag"
           BETA_ARG="-beta"
+          SPEC_NAME="spec3.beta.sdk.json"
+          FIXTURES_NAME="fixtures3.beta.json"
+        fi
+
+        if [ -n "${{ inputs.openapi_version }}" ]; then
+          if [ -n "${{ inputs.spec_path }}" ]; then
+            echo "Error: Pass either an OpenAPI version or a spec path, not both"
+            exit 1
+          fi
+
+          echo "Pulling specs for ${{ inputs.openapi_version }}"
+          curl "${CURL_OPTS[@]}" https://raw.githubusercontent.com/stripe/openapi/{{ inputs.openapi_version }}/openapi/$SPEC_NAME -o $CURRENT_OPENAPI_SPEC
+          curl "${CURL_OPTS[@]}" https://raw.githubusercontent.com/stripe/openapi/{{ inputs.openapi_version }}/openapi/$FIXTURES_NAME -o $CURRENT_FIXTURES_JSON
+        fi
+        elif [ -n "${{ inputs.spec_path }}" ]; then
+          echo "Spec path provided, using spec at ${{ inputs.spec_path }}"
+          CURRENT_OPENAPI_SPEC="${{ inputs.spec_path }}"
         fi
 
         if [ -n "${{ inputs.fixtures }}" ]; then
-          FIXTURES_ARG="-fixtures ${{ inputs.fixtures }}"
+          echo "Fixtures path provided, using fixtures at ${{ inputs.fixtures }}"
+          CURRENT_FIXTURES_JSON="${{ inputs.fixtures }}"
         fi
 
-        if [ -n "${{ inputs.spec_path }}" ]; then
-          SPEC_PATH_ARG="-spec ${{ inputs.spec_path }}"
-        fi
+        SPEC_PATH_ARG="-spec $CURRENT_OPENAPI_SPEC"
+        FIXTURES_ARG="-fixtures $CURRENT_FIXTURES_JSON"
 
         docker run -d -p 12111-12112:12111-12112 \
           -v "${{ github.workspace }}:/workspace" \
