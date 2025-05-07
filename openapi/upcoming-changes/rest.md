@@ -1,5 +1,3 @@
-* Add support for `collect_inputs` method on resource `Terminal.Reader`
-* Add support for `succeed_input_collection` and `timeout_input_collection` test helper methods on resource `Terminal.Reader`
 * Add support for `pix_payments` on `Account#create.capabilities`, `Account#update.capabilities`, and `Account.capabilities`
 * Add support for `balance_type` on `BalanceTransaction`
 * Add support for `setup_future_usage` on `Checkout.Session.payment_method_options.naver_pay`
@@ -8,6 +6,4 @@
 * Add support for `capture_method` on `PaymentIntent.payment_method_options.billie`
 * Add support for `kakao_pay`, `kr_card`, `naver_pay`, `payco`, and `samsung_pay` on `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, and `PaymentMethodConfiguration`
 * Add support for new value `simulated_stripe_s700` on enums `Terminal.Reader#list.device_type` and `Terminal.Reader.device_type`
-* Add support for `collect_inputs` on `Terminal.Reader.action`
-* Add support for new value `collect_inputs` on enum `Terminal.Reader.action.type`
 * Remove support for `tax_id` on `Treasury.OutboundPayment#create.destination_payment_method_data.billing_details`
