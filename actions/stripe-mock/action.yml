@@ -35,8 +35,8 @@ runs:
             --no-progress-meter \
             --show-error)
 
-        CURRENT_OPENAPI_SPEC=$(realpath latest.json)
-        CURRENT_FIXTURES_JSON=${CURRENT_OPENAPI_SPEC%/*}/fixtures.json
+        CURRENT_OPENAPI_SPEC=""
+        CURRENT_FIXTURES_JSON=""
 
         SPEC_NAME="spec3.sdk.json"
         FIXTURES_NAME="fixtures3.json"
@@ -59,10 +59,11 @@ runs:
             exit 1
           fi
 
+          CURRENT_OPENAPI_SPEC=$(pwd)/latest.json
+          CURRENT_FIXTURES_JSON=${CURRENT_OPENAPI_SPEC%/*}/fixtures.json
           echo "Pulling specs for ${{ inputs.openapi_version }}"
-          curl "${CURL_OPTS[@]}" https://raw.githubusercontent.com/stripe/openapi/{{ inputs.openapi_version }}/openapi/$SPEC_NAME -o $CURRENT_OPENAPI_SPEC
-          curl "${CURL_OPTS[@]}" https://raw.githubusercontent.com/stripe/openapi/{{ inputs.openapi_version }}/openapi/$FIXTURES_NAME -o $CURRENT_FIXTURES_JSON
-        fi
+          curl "${CURL_OPTS[@]}" https://raw.githubusercontent.com/stripe/openapi/${{ inputs.openapi_version }}/openapi/$SPEC_NAME -o $CURRENT_OPENAPI_SPEC
+          curl "${CURL_OPTS[@]}" https://raw.githubusercontent.com/stripe/openapi/${{ inputs.openapi_version }}/openapi/$FIXTURES_NAME -o $CURRENT_FIXTURES_JSON
         elif [ -n "${{ inputs.spec_path }}" ]; then
           echo "Spec path provided, using spec at ${{ inputs.spec_path }}"
           CURRENT_OPENAPI_SPEC="${{ inputs.spec_path }}"
@@ -73,8 +74,8 @@ runs:
           CURRENT_FIXTURES_JSON="${{ inputs.fixtures }}"
         fi
 
-        SPEC_PATH_ARG="-spec $CURRENT_OPENAPI_SPEC"
-        FIXTURES_ARG="-fixtures $CURRENT_FIXTURES_JSON"
+        SPEC_PATH_ARG=${CURRENT_OPENAPI_SPEC:+-spec $CURRENT_OPENAPI_SPEC}
+        FIXTURES_ARG=${CURRENT_FIXTURES_JSON:+-fixtures $CURRENT_FIXTURES_JSON}
 
         docker run -d -p 12111-12112:12111-12112 \
           -v "${{ github.workspace }}:/workspace" \
