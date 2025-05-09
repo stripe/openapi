@@ -1,5 +1,6 @@
 * Add support for `pix_payments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
 * Add support for `balance_type` on `BalanceTransaction`
+* Add support for `payment_method_remove` on `Checkout.SessionCreateParams.saved_payment_method_options`
 * Add support for `setup_future_usage` on `Checkout.Session.payment_method_options.naver_pay`
 * Change `ConfirmationToken.payment_method_preview.naver_pay.buyer_id` and `PaymentMethod.naver_pay.buyer_id` to be required
 * Add support for `satispay` on `PaymentIntent.payment_method_options`, `PaymentIntentConfirmParams.payment_method_options`, `PaymentIntentCreateParams.payment_method_options`, and `PaymentIntentUpdateParams.payment_method_options`
