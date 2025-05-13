@@ -1,4 +1,5 @@
 * Add support for `PixPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
+* Add support for `RefundAndDisputePrefunding` on `Balance`
 * Add support for `BalanceType` on `BalanceTransaction`
 * Add support for `PaymentMethodRemove` on `CheckoutSessionSavedPaymentMethodOptionsOptions`
 * Add support for `SetupFutureUsage` on `Checkout.Session.PaymentMethodOptions.NaverPay`

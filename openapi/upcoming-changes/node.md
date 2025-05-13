@@ -1,4 +1,5 @@
 * Add support for `pix_payments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
+* Add support for `refund_and_dispute_prefunding` on `Balance`
 * Add support for `balance_type` on `BalanceTransaction`
 * Add support for `payment_method_remove` on `Checkout.SessionCreateParams.saved_payment_method_options`
 * Add support for `setup_future_usage` on `Checkout.Session.payment_method_options.naver_pay`
