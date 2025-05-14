@@ -1,6 +1,7 @@
 * Add support for `pixPayments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
 * Add support for `refundAndDisputePrefunding` on `Balance`
 * Add support for `balanceType` on `BalanceTransaction`
+* Change `billing.AlertCreateParams.usage_threshold.meter` to be required
 * Add support for `paymentMethodRemove` on `checkout.SessionCreateParams.saved_payment_method_options`
 * Add support for `setupFutureUsage` on `checkout.Session.payment_method_options.naver_pay`
 * Add support for `satispay` on `PaymentIntent.payment_method_options`, `PaymentIntentConfirmParams.payment_method_options`, `PaymentIntentCreateParams.payment_method_options`, and `PaymentIntentUpdateParams.payment_method_options`
