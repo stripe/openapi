@@ -9,3 +9,4 @@
 * Add support for `capture_method` on `PaymentIntent.PaymentMethodOption.Billie`
 * Add support for `kakao_pay`, `kr_card`, `naver_pay`, `payco`, and `samsung_pay` on `PaymentMethodConfiguration.CreateParams`, `PaymentMethodConfiguration.ModifyParams`, and `PaymentMethodConfiguration`
 * Add support for new value `simulated_stripe_s700` on enums `Terminal.Reader.device_type` and `terminal.Reader.ListParams.device_type`
+* Add support for new value `2025-05-28.basil` on enum `WebhookEndpoint.CreateParams.api_version`

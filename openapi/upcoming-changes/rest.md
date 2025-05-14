@@ -10,3 +10,4 @@
 * Add support for `kakao_pay`, `kr_card`, `naver_pay`, `payco`, and `samsung_pay` on `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, and `PaymentMethodConfiguration`
 * Add support for new value `simulated_stripe_s700` on enums `Terminal.Reader#list.device_type` and `Terminal.Reader.device_type`
 * Remove support for `tax_id` on `Treasury.OutboundPayment#create.destination_payment_method_data.billing_details`
+* Add support for new value `2025-05-28.basil` on enum `WebhookEndpoint#create.api_version`
