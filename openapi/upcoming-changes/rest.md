@@ -5,6 +5,7 @@
 * Add support for `payment_method_remove` on `Checkout.Session#create.saved_payment_method_options`
 * Add support for `setup_future_usage` on `Checkout.Session.payment_method_options.naver_pay`
 * Change `ConfirmationToken.payment_method_preview.naver_pay.buyer_id` and `PaymentMethod.naver_pay.buyer_id` to be required
+* Add support for `sex`, `unparsed_place_of_birth`, and `unparsed_sex` on `Identity.VerificationReport.document` and `Identity.VerificationSession.verified_outputs`
 * Add support for `satispay` on `PaymentIntent#confirm.payment_method_options`, `PaymentIntent#create.payment_method_options`, `PaymentIntent#update.payment_method_options`, and `PaymentIntent.payment_method_options`
 * Add support for `capture_method` on `PaymentIntent.payment_method_options.billie`
 * Add support for `kakao_pay`, `kr_card`, `naver_pay`, `payco`, and `samsung_pay` on `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, and `PaymentMethodConfiguration`
