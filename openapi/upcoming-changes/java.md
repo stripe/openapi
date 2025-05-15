@@ -13,4 +13,6 @@
 * Add support for `kakaoPay`, `krCard`, `naverPay`, `payco`, and `samsungPay` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
 * Add support for new value `simulated_stripe_s700` on enum `terminal.ReaderListParams.deviceType`
 * Add support for `returnUrl` on `terminal.Reader.action.process_payment_intent.process_config` and `terminal.ReaderProcessPaymentIntentParams.process_config`
+* Add support for new value `invoice.payment.paid` on enums `WebhookEndpointCreateParams.enabledEvents` and `WebhookEndpointUpdateParams.enabledEvents`
 * Add support for new value `2025-05-28.basil` on enum `WebhookEndpointCreateParams.apiVersion`
+* Add support for snapshot event `invoice.payment.paid` with resource `InvoicePayment`

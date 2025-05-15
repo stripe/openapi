@@ -11,3 +11,4 @@
 * Add support for `CaptureMethod` on `PaymentIntent.PaymentMethodOptions.Billie`
 * Add support for `KakaoPay`, `KrCard`, `NaverPay`, `Payco`, and `SamsungPay` on `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, and `PaymentMethodConfiguration`
 * Add support for `ReturnUrl` on `Terminal.Reader.Action.ProcessPaymentIntent.ProcessConfig` and `TerminalReaderProcessConfigOptions`
+* Add support for snapshot event `InvoicePaymentPaid` with resource `InvoicePayment`

@@ -3,6 +3,8 @@
 * Add support for `balance_type` on `BalanceTransaction`
 * Add support for `post_payment_amount` and `pre_payment_amount` on `CreditNote`
 * Add support for new value `mixed` on enum `CreditNote.type`
+* Add support for new value `invoice.payment.paid` on enum `Event.type`
 * Add support for `kakao_pay`, `kr_card`, `naver_pay`, `payco`, and `samsung_pay` on `PaymentMethodConfiguration`
 * Add support for new value `simulated_stripe_s700` on enum `Terminal.Reader.device_type`
+* Add support for snapshot event `INVOICE_PAYMENT_PAID` with resource `InvoicePayment`
 * Add support for error code `forwarding_api_upstream_error` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`
