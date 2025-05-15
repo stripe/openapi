@@ -3,6 +3,7 @@
 * Add support for `refundAndDisputePrefunding` on `Balance`
 * Add support for `balanceType` on `BalanceTransaction`
 * Change `billing.AlertCreateParams.usage_threshold.meter` to be required
+* Add support for `location` and `reader` on `Charge.payment_method_details.affirm` and `Charge.payment_method_details.wechat_pay`
 * Add support for `paymentMethodRemove` on `checkout.SessionCreateParams.saved_payment_method_options`
 * Add support for `setupFutureUsage` on `checkout.Session.payment_method_options.naver_pay`
 * Add support for `postPaymentAmount` and `prePaymentAmount` on `CreditNote`
@@ -11,4 +12,5 @@
 * Add support for `captureMethod` on `PaymentIntent.payment_method_options.billie`
 * Add support for `kakaoPay`, `krCard`, `naverPay`, `payco`, and `samsungPay` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
 * Add support for new value `simulated_stripe_s700` on enum `terminal.ReaderListParams.deviceType`
+* Add support for `returnUrl` on `terminal.Reader.action.process_payment_intent.process_config` and `terminal.ReaderProcessPaymentIntentParams.process_config`
 * Add support for new value `2025-05-28.basil` on enum `WebhookEndpointCreateParams.apiVersion`
