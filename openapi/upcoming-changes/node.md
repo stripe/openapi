@@ -1,4 +1,6 @@
 * Add support for `attach_payment` method on resource `Invoice`
+* Add support for `collect_inputs` method on resource `Terminal.Reader`
+* Add support for `succeed_input_collection` and `timeout_input_collection` test helper methods on resource `Terminal.Reader`
 * Add support for `pix_payments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
 * Add support for `refund_and_dispute_prefunding` on `Balance`
 * Add support for `balance_type` on `BalanceTransaction`
@@ -16,6 +18,8 @@
 * Add support for `kakao_pay`, `kr_card`, `naver_pay`, `payco`, and `samsung_pay` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
 * Add support for new value `simulated_stripe_s700` on enums `Terminal.Reader.device_type` and `Terminal.ReaderListParams.device_type`
 * Add support for `return_url` on `Terminal.Reader.action.process_payment_intent.process_config` and `Terminal.ReaderProcessPaymentIntentParams.process_config`
+* Add support for `collect_inputs` on `Terminal.Reader.action`
+* Add support for new value `collect_inputs` on enum `Terminal.Reader.action.type`
 * Add support for new value `invoice.payment.paid` on enums `WebhookEndpointCreateParams.enabled_events` and `WebhookEndpointUpdateParams.enabled_events`
 * Add support for new value `2025-05-28.basil` on enum `WebhookEndpointCreateParams.api_version`
 * Add support for snapshot event `InvoicePaymentPaidEvent` with resource `InvoicePayment`

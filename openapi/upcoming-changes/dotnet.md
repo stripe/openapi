@@ -1,4 +1,6 @@
 * Add support for `AttachPayment` method on resource `Invoice`
+* Add support for `CollectInputs` method on resource `Terminal.Reader`
+* Add support for `SucceedInputCollection` and `TimeoutInputCollection` test helper methods on resource `Terminal.Reader`
 * Add support for `PixPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
 * Add support for `RefundAndDisputePrefunding` on `Balance`
 * Add support for `BalanceType` on `BalanceTransaction`
@@ -11,4 +13,5 @@
 * Add support for `CaptureMethod` on `PaymentIntent.PaymentMethodOptions.Billie`
 * Add support for `KakaoPay`, `KrCard`, `NaverPay`, `Payco`, and `SamsungPay` on `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, and `PaymentMethodConfiguration`
 * Add support for `ReturnUrl` on `Terminal.Reader.Action.ProcessPaymentIntent.ProcessConfig` and `TerminalReaderProcessConfigOptions`
+* Add support for `CollectInputs` on `Terminal.Reader.Action`
 * Add support for snapshot event `InvoicePaymentPaid` with resource `InvoicePayment`

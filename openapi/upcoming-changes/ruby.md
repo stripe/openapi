@@ -1,4 +1,6 @@
 * Add support for `attach_payment` method on resource `Invoice`
+* Add support for `collect_inputs` method on resource `Terminal::Reader`
+* Add support for `succeed_input_collection` and `timeout_input_collection` test helper methods on resource `Terminal::Reader`
 * Add support for `pix_payments` on `Account::Capability`, `Account::CreateParams::Capability`, and `Account::UpdateParams::Capability`
 * Add support for `refund_and_dispute_prefunding` on `Balance`
 * Add support for `balance_type` on `BalanceTransaction`
@@ -13,3 +15,4 @@
 * Add support for `capture_method` on `PaymentIntent::PaymentMethodOption::Billie`
 * Add support for `kakao_pay`, `kr_card`, `naver_pay`, `payco`, and `samsung_pay` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
 * Add support for `return_url` on `Terminal::Reader::Action::ProcessPaymentIntent::ProcessConfig` and `Terminal::Reader::ProcessPaymentIntentParams::ProcessConfig`
+* Add support for `collect_inputs` on `Terminal::Reader::Action`
