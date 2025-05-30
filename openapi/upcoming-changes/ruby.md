@@ -1,3 +1,4 @@
-* Add support for `disputes_list` and `payment_disputes` on `AccountSession::Component` and `AccountSession::CreateParams::Component`
-* Add support for `billing_thresholds` on `Invoice::CreatePreviewParams::ScheduleDetail::Phase::Item`, `Invoice::CreatePreviewParams::ScheduleDetail::Phase`, `Invoice::CreatePreviewParams::SubscriptionDetail::Item`, `Subscription::CreateParams::Item`, `Subscription::CreateParams`, `Subscription::UpdateParams::Item`, `Subscription::UpdateParams`, `SubscriptionItem::CreateParams`, `SubscriptionItem::UpdateParams`, `SubscriptionItem`, `SubscriptionSchedule::CreateParams::DefaultSetting`, `SubscriptionSchedule::CreateParams::Phase::Item`, `SubscriptionSchedule::CreateParams::Phase`, `SubscriptionSchedule::DefaultSetting`, `SubscriptionSchedule::Phase::Item`, `SubscriptionSchedule::Phase`, `SubscriptionSchedule::UpdateParams::DefaultSetting`, `SubscriptionSchedule::UpdateParams::Phase::Item`, `SubscriptionSchedule::UpdateParams::Phase`, and `Subscription`
-* Add support for `metadata` on `Tax::Calculation::CreateParams::LineItem` and `Tax::CalculationLineItem`
+* Add support for `related_person` on `Identity::VerificationSession::CreateParams` and `Identity::VerificationSession`
+* Add support for `matching` on `Identity::VerificationSession::Option`
+* Change type of `Terminal::Location::UpdateParams.display_name` from `string` to `emptyable(string)`
+* Add support for `status` on `Treasury::FinancialAccount::ListParams`

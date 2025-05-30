@@ -1,3 +1,4 @@
-* Add support for `disputes_list` and `payment_disputes` on `AccountSession.components` and `AccountSessionCreateParams.components`
-* Add support for `billing_thresholds` on `InvoiceCreatePreviewParams.schedule_details.phases[].items[]`, `InvoiceCreatePreviewParams.schedule_details.phases[]`, `InvoiceCreatePreviewParams.subscription_details.items[]`, `SubscriptionCreateParams.items[]`, `SubscriptionCreateParams`, `SubscriptionItemCreateParams`, `SubscriptionItemUpdateParams`, `SubscriptionItem`, `SubscriptionSchedule.default_settings`, `SubscriptionSchedule.phases[].items[]`, `SubscriptionSchedule.phases[]`, `SubscriptionScheduleCreateParams.default_settings`, `SubscriptionScheduleCreateParams.phases[].items[]`, `SubscriptionScheduleCreateParams.phases[]`, `SubscriptionScheduleUpdateParams.default_settings`, `SubscriptionScheduleUpdateParams.phases[].items[]`, `SubscriptionScheduleUpdateParams.phases[]`, `SubscriptionUpdateParams.items[]`, `SubscriptionUpdateParams`, and `Subscription`
-* Add support for `metadata` on `Tax.CalculationCreateParams.line_items[]` and `Tax.CalculationLineItem`
+* Add support for `related_person` on `Identity.VerificationSessionCreateParams` and `Identity.VerificationSession`
+* Add support for `matching` on `Identity.VerificationSession.options`
+* Change type of `Terminal.LocationUpdateParams.display_name` from `string` to `emptyable(string)`
+* Add support for `status` on `Treasury.FinancialAccountListParams`

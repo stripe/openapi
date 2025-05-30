@@ -1,3 +1,4 @@
-* Add support for `DisputesList` and `PaymentDisputes` on `AccountSessionComponentsParams` and `AccountSessionComponents`
-* Add support for `BillingThresholds` on `InvoiceCreatePreviewScheduleDetailsPhaseItemParams`, `InvoiceCreatePreviewScheduleDetailsPhaseParams`, `InvoiceCreatePreviewSubscriptionDetailsItemParams`, `SubscriptionItemParams`, `SubscriptionItem`, `SubscriptionParams`, `SubscriptionScheduleDefaultSettingsParams`, `SubscriptionScheduleDefaultSettings`, `SubscriptionSchedulePhaseItemParams`, `SubscriptionSchedulePhaseItem`, `SubscriptionSchedulePhaseParams`, `SubscriptionSchedulePhase`, and `Subscription`
-* Add support for `Metadata` on `TaxCalculationLineItemParams` and `TaxCalculationLineItem`
+* Add support for `RelatedPerson` on `IdentityVerificationSessionParams` and `IdentityVerificationSession`
+* Add support for `Matching` on `IdentityVerificationSessionOptions`
+* Change type of `TerminalLocationParams.DisplayName` from `string` to `emptyable(string)`
+* Add support for `Status` on `TreasuryFinancialAccountListParams`
