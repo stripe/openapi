@@ -1,4 +1,5 @@
 * Add support for `proof_of_address` on `Account.CreateParamsDocument` and `Account.ModifyParamsDocument`
+* Change `Account.Setting.Invoice.hosted_payment_method_save` to be required
 * Add support for `related_person` on `Identity.VerificationSession` and `identity.VerificationSession.CreateParams`
 * Add support for `matching` on `Identity.VerificationSession.Option`
 * Change type of `terminal.Location.ModifyParams.display_name` from `string` to `emptyable(string)`
