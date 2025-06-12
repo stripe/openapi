@@ -1,5 +1,7 @@
 * Add support for `proof_of_address` on `Account#create.documents` and `Account#update.documents`
 * Change `Account.settings.invoices.hosted_payment_method_save` to be required
+* Change type of `Dispute.enhanced_eligibility_types` from `literal('visa_compelling_evidence_3')` to `enum('visa_compelling_evidence_3'|'visa_compliance')`
+* Add support for new value `compliance` on enum `Dispute.payment_method_details.card.case_type`
 * Add support for `related_person` on `Identity.VerificationSession#create` and `Identity.VerificationSession`
 * Add support for `matching` on `Identity.VerificationSession.options`
 * Change type of `Terminal.Location#update.display_name` from `string` to `emptyable(string)`
