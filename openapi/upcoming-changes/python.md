@@ -1,5 +1,6 @@
 * Add support for `proof_of_address` on `Account.CreateParamsDocument` and `Account.ModifyParamsDocument`
 * Change `Account.Setting.Invoice.hosted_payment_method_save` to be required
+* Change type of `Charge.PaymentMethodDetail.Card.Installment.Plan.type`, `ConfirmationToken.CreateParamsPaymentMethodOptionCardInstallmentPlan.type`, `ConfirmationToken.PaymentMethodOption.Card.Installment.Plan.type`, `Invoice.CreateParamsPaymentSettingPaymentMethodOptionCardInstallmentPlan.type`, `Invoice.ModifyParamsPaymentSettingPaymentMethodOptionCardInstallmentPlan.type`, `PaymentIntent.ConfirmParamsPaymentMethodOptionCardInstallmentPlan.type`, `PaymentIntent.CreateParamsPaymentMethodOptionCardInstallmentPlan.type`, `PaymentIntent.ModifyParamsPaymentMethodOptionCardInstallmentPlan.type`, `PaymentIntent.PaymentMethodOption.Card.Installment.AvailablePlan.type`, and `PaymentIntent.PaymentMethodOption.Card.Installment.Plan.type` from `literal('fixed_count')` to `enum('bonus'|'fixed_count'|'revolving')`
 * Change type of `Dispute.enhanced_eligibility_types` from `literal('visa_compelling_evidence_3')` to `enum('visa_compelling_evidence_3'|'visa_compliance')`
 * Add support for new value `compliance` on enum `Dispute.PaymentMethodDetail.Card.case_type`
 * Add support for `related_person` on `Identity.VerificationSession` and `identity.VerificationSession.CreateParams`
