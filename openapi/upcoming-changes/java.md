@@ -1,7 +1,9 @@
+* Add support for `migrate` method on resource `Subscription`
 * Add support for `collect_payment_method` and `confirm_payment_intent` methods on resource `terminal.Reader`
 * Add support for `proofOfAddress` on `AccountCreateParams.documents` and `AccountUpdateParams.documents`
 * Add support for `monthlyPayoutDays` and `weeklyPayoutDays` on `Account.settings.payouts.schedule`, `AccountCreateParams.settings.payouts.schedule`, and `AccountUpdateParams.settings.payouts.schedule`
 * Change type of `Charge.payment_method_details.card.installments.plan.type`, `ConfirmationToken.payment_method_options.card.installments.plan.type`, `ConfirmationTokenCreateParams.payment_method_options.card.installments.plan.type`, `InvoiceCreateParams.payment_settings.payment_method_options.card.installments.plan.type`, `InvoiceUpdateParams.payment_settings.payment_method_options.card.installments.plan.type`, `PaymentIntent.payment_method_options.card.installments.available_plans[].type`, `PaymentIntent.payment_method_options.card.installments.plan.type`, `PaymentIntentConfirmParams.payment_method_options.card.installments.plan.type`, `PaymentIntentCreateParams.payment_method_options.card.installments.plan.type`, and `PaymentIntentUpdateParams.payment_method_options.card.installments.plan.type` from `literal('fixed_count')` to `enum('bonus'|'fixed_count'|'revolving')`
+* Add support for `billingMode` on `InvoiceCreatePreviewParams.schedule_details`, `InvoiceCreatePreviewParams.subscription_details`, `Quote.subscription_data`, `QuoteCreateParams.subscription_data`, `SubscriptionCreateParams`, `SubscriptionScheduleCreateParams`, `SubscriptionSchedule`, `Subscription`, and `checkout.SessionCreateParams.subscription_data`
 * Add support for new value `buut` on enums `ConfirmationTokenCreateParams.payment_method_data.ideal.bank`, `PaymentIntentConfirmParams.payment_method_data.ideal.bank`, `PaymentIntentCreateParams.payment_method_data.ideal.bank`, `PaymentIntentUpdateParams.payment_method_data.ideal.bank`, `PaymentMethodCreateParams.ideal.bank`, `SetupIntentConfirmParams.payment_method_data.ideal.bank`, `SetupIntentCreateParams.payment_method_data.ideal.bank`, and `SetupIntentUpdateParams.payment_method_data.ideal.bank`
 * Change type of `Dispute.enhancedEligibilityTypes` from `literal('visa_compelling_evidence_3')` to `enum('visa_compelling_evidence_3'|'visa_compliance')`
 * Add support for `relatedPerson` on `identity.VerificationSessionCreateParams` and `identity.VerificationSession`
@@ -10,4 +12,5 @@
 * Add support for `collectPaymentMethod` and `confirmPaymentIntent` on `terminal.Reader.action`
 * Add support for `status` on `treasury.FinancialAccountListParams`
 * Add support for new value `terminal.reader.action_updated` on enums `WebhookEndpointCreateParams.enabledEvents` and `WebhookEndpointUpdateParams.enabledEvents`
+* Add support for new value `2025-06-30.basil` on enum `WebhookEndpointCreateParams.apiVersion`
 * Add support for snapshot event `terminal.reader.action_updated` with resource `terminal.Reader`
