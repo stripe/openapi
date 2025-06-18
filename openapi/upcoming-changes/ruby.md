@@ -1,3 +1,4 @@
+* Add support for `collect_payment_method` and `confirm_payment_intent` methods on resource `Terminal::Reader`
 * Add support for `proof_of_address` on `Account::CreateParams::Document` and `Account::UpdateParams::Document`
 * Change `Account::Setting::Invoice.hosted_payment_method_save` to be required
 * Change type of `Charge::PaymentMethodDetail::Card::Installment::Plan.type`, `ConfirmationToken::CreateParams::PaymentMethodOption::Card::Installment::Plan.type`, `ConfirmationToken::PaymentMethodOption::Card::Installment::Plan.type`, `Invoice::CreateParams::PaymentSetting::PaymentMethodOption::Card::Installment::Plan.type`, `Invoice::UpdateParams::PaymentSetting::PaymentMethodOption::Card::Installment::Plan.type`, `PaymentIntent::ConfirmParams::PaymentMethodOption::Card::Installment::Plan.type`, `PaymentIntent::CreateParams::PaymentMethodOption::Card::Installment::Plan.type`, `PaymentIntent::PaymentMethodOption::Card::Installment::AvailablePlan.type`, `PaymentIntent::PaymentMethodOption::Card::Installment::Plan.type`, and `PaymentIntent::UpdateParams::PaymentMethodOption::Card::Installment::Plan.type` from `literal('fixed_count')` to `enum('bonus'|'fixed_count'|'revolving')`
@@ -5,4 +6,5 @@
 * Add support for `related_person` on `Identity::VerificationSession::CreateParams` and `Identity::VerificationSession`
 * Add support for `matching` on `Identity::VerificationSession::Option`
 * Change type of `Terminal::Location::UpdateParams.display_name` from `string` to `emptyable(string)`
+* Add support for `collect_payment_method` and `confirm_payment_intent` on `Terminal::Reader::Action`
 * Add support for `status` on `Treasury::FinancialAccount::ListParams`

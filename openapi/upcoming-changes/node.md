@@ -1,3 +1,4 @@
+* Add support for `collect_payment_method` and `confirm_payment_intent` methods on resource `Terminal.Reader`
 * Add support for `proof_of_address` on `AccountCreateParams.documents` and `AccountUpdateParams.documents`
 * Change `Account.settings.invoices.hosted_payment_method_save` to be required
 * Change type of `Charge.payment_method_details.card.installments.plan.type`, `ConfirmationToken.payment_method_options.card.installments.plan.type`, `ConfirmationTokenCreateParams.testHelpers.payment_method_options.card.installments.plan.type`, `InvoiceCreateParams.payment_settings.payment_method_options.card.installments.plan.type`, `InvoiceUpdateParams.payment_settings.payment_method_options.card.installments.plan.type`, `PaymentIntent.payment_method_options.card.installments.available_plans[].type`, `PaymentIntent.payment_method_options.card.installments.plan.type`, `PaymentIntentConfirmParams.payment_method_options.card.installments.plan.type`, `PaymentIntentCreateParams.payment_method_options.card.installments.plan.type`, and `PaymentIntentUpdateParams.payment_method_options.card.installments.plan.type` from `literal('fixed_count')` to `enum('bonus'|'fixed_count'|'revolving')`
@@ -5,7 +6,12 @@
 * Add support for new value `BUUTNL2A` on enums `Charge.payment_method_details.ideal.bic`, `ConfirmationToken.payment_method_preview.ideal.bic`, `PaymentMethod.ideal.bic`, and `SetupAttempt.payment_method_details.ideal.bic`
 * Change type of `Dispute.enhanced_eligibility_types` from `literal('visa_compelling_evidence_3')` to `enum('visa_compelling_evidence_3'|'visa_compliance')`
 * Add support for new value `compliance` on enum `Dispute.payment_method_details.card.case_type`
+* Add support for new value `terminal.reader.action_updated` on enum `Event.type`
 * Add support for `related_person` on `Identity.VerificationSessionCreateParams` and `Identity.VerificationSession`
 * Add support for `matching` on `Identity.VerificationSession.options`
 * Change type of `Terminal.LocationUpdateParams.display_name` from `string` to `emptyable(string)`
+* Add support for `collect_payment_method` and `confirm_payment_intent` on `Terminal.Reader.action`
+* Add support for new values `collect_payment_method` and `confirm_payment_intent` on enum `Terminal.Reader.action.type`
 * Add support for `status` on `Treasury.FinancialAccountListParams`
+* Add support for new value `terminal.reader.action_updated` on enums `WebhookEndpointCreateParams.enabled_events` and `WebhookEndpointUpdateParams.enabled_events`
+* Add support for snapshot event `TerminalReaderActionUpdatedEvent` with resource `Terminal.Reader`
