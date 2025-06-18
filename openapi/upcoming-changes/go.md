@@ -1,5 +1,6 @@
 * Add support for `CollectPaymentMethod` and `ConfirmPaymentIntent` methods on resource `TerminalReader`
 * Add support for `ProofOfAddress` on `AccountDocumentsParams`
+* Add support for `MonthlyPayoutDays` and `WeeklyPayoutDays` on `AccountSettingsPayoutsScheduleParams` and `AccountSettingsPayoutsSchedule`
 * Change type of `ConfirmationTokenPaymentMethodOptionsCardInstallmentsPlan.Type`, `ConfirmationTokenPaymentMethodOptionsCardInstallmentsPlanParams.Type`, `InvoicePaymentSettingsPaymentMethodOptionsCardInstallmentsPlanParams.Type`, `PaymentIntentConfirmPaymentMethodOptionsCardInstallmentsPlanParams.Type`, `PaymentIntentPaymentMethodOptionsCardInstallmentsPlan.Type`, and `PaymentIntentPaymentMethodOptionsCardInstallmentsPlanParams.Type` from `literal('fixed_count')` to `enum('bonus'|'fixed_count'|'revolving')`
 * Add support for new value `buut` on enum `ConfirmationTokenPaymentMethodPreviewIdeal.Bank`
 * Add support for new value `BUUTNL2A` on enum `ConfirmationTokenPaymentMethodPreviewIdeal.BIC`
