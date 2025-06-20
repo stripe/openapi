@@ -16,6 +16,7 @@
 * Add support for `klarna` on `Mandate.PaymentMethodDetail`, `SetupIntent.ConfirmParamsPaymentMethodOption`, `SetupIntent.CreateParamsPaymentMethodOption`, `SetupIntent.ModifyParamsPaymentMethodOption`, and `SetupIntent.PaymentMethodOption`
 * Add support for `on_demand` on `PaymentIntent.ConfirmParamsPaymentMethodOptionKlarna`, `PaymentIntent.CreateParamsPaymentMethodOptionKlarna`, and `PaymentIntent.ModifyParamsPaymentMethodOptionKlarna`
 * Change type of `PaymentIntent.ConfirmParamsPaymentMethodOptionKlarna.setup_future_usage`, `PaymentIntent.CreateParamsPaymentMethodOptionKlarna.setup_future_usage`, `PaymentIntent.ModifyParamsPaymentMethodOptionKlarna.setup_future_usage`, and `PaymentIntent.PaymentMethodOption.Klarna.setup_future_usage` from `literal('none')` to `enum('none'|'off_session'|'on_session')`
+* Add support for `ua` on `Tax.Registration.CountryOption` and `tax.Registration.CreateParamsCountryOption`
 * Change type of `terminal.Location.ModifyParams.display_name` from `string` to `emptyable(string)`
 * Add support for `collect_payment_method` and `confirm_payment_intent` on `Terminal.Reader.Action`
 * Add support for new values `collect_payment_method` and `confirm_payment_intent` on enum `Terminal.Reader.Action.type`

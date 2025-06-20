@@ -11,6 +11,7 @@
 * Add support for `Klarna` on `Mandate.PaymentMethodDetails`, `SetupIntent.PaymentMethodOptions`, and `SetupIntentPaymentMethodOptionsOptions`
 * Add support for `OnDemand` on `PaymentIntentPaymentMethodOptionsKlarnaOptions`
 * Change type of `PaymentIntent.PaymentMethodOptions.Klarna.SetupFutureUsage` and `PaymentIntentPaymentMethodOptionsKlarnaOptions.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session'|'on_session')`
+* Add support for `Ua` on `Tax.Registration.CountryOptions` and `TaxRegistrationCountryOptionsOptions`
 * Change type of `Terminal.LocationUpdateOptions.DisplayName` from `string` to `emptyable(string)`
 * Add support for `CollectPaymentMethod` and `ConfirmPaymentIntent` on `Terminal.Reader.Action`
 * Add support for `Status` on `Treasury.FinancialAccountListOptions`
