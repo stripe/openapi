@@ -1,8 +1,11 @@
 * Add support for `migrate` method on resource `Subscription`
 * Add support for `collect_payment_method` and `confirm_payment_intent` methods on resource `Terminal.Reader`
+* Add support for new value `crypto` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Change type of `Dispute.enhanced_eligibility_types` from `literal('visa_compelling_evidence_3')` to `enum('visa_compelling_evidence_3'|'visa_compliance')`
 * Add support for new value `terminal.reader.action_updated` on enum `Event.type`
 * Add support for `related_person` on `Identity.VerificationSession`
+* Add support for new value `crypto` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
+* Add support for `crypto` on `PaymentMethod`
 * Add support for new value `buut` on enum `PaymentMethod.ideal.bank`
 * Add support for new value `BUUTNL2A` on enum `PaymentMethod.ideal.bic`
 * Add support for `billing_mode` on `SubscriptionSchedule` and `Subscription`
