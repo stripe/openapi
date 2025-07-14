@@ -1,5 +1,6 @@
 * Add support for new resource `sigma.Schema`
 * Add support for `list` method on resource `sigma.Schema`
+* Remove support for value `disabled` from enum `Capability.status`
 * Add support for `transaction_id` on `Charge.PaymentMethodDetail.Cashapp`
 * Add support for `origin_context` on `Checkout.Session` and `checkout.Session.CreateParams`
 * Add support for `setup_future_usage` on `Checkout.Session.PaymentMethodOption.Pix` and `checkout.Session.CreateParamsPaymentMethodOptionPix`
