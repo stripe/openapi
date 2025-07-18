@@ -2,6 +2,7 @@
 * Add support for `List` method on resource `Sigma.Schema`
 * Add support for `TransactionId` on `Charge.PaymentMethodDetails.Cashapp`
 * Add support for `OriginContext` on `Checkout.SessionCreateOptions` and `Checkout.Session`
+* Add support for `Template` on `Checkout.Session.InvoiceCreation.InvoiceData.RenderingOptions`, `CheckoutSessionInvoiceCreationInvoiceDataRenderingOptionsOptions`, `PaymentLink.InvoiceCreation.InvoiceData.RenderingOptions`, and `PaymentLinkInvoiceCreationInvoiceDataRenderingOptionsOptions`
 * Add support for `SetupFutureUsage` on `Checkout.Session.PaymentMethodOptions.Pix` and `CheckoutSessionPaymentMethodOptionsPixOptions`
 * Add support for `Duration` on `InvoiceScheduleDetailsPhaseOptions` and `SubscriptionSchedulePhaseOptions`
 * Add support for `PriceData` on `PaymentLinkLineItemOptions`

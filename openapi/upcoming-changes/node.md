@@ -3,6 +3,7 @@
 * Remove support for value `disabled` from enum `Capability.status`
 * Add support for `transaction_id` on `Charge.payment_method_details.cashapp`
 * Add support for `origin_context` on `Checkout.SessionCreateParams` and `Checkout.Session`
+* Add support for `template` on `Checkout.Session.invoice_creation.invoice_data.rendering_options`, `Checkout.SessionCreateParams.invoice_creation.invoice_data.rendering_options`, `PaymentLink.invoice_creation.invoice_data.rendering_options`, `PaymentLinkCreateParams.invoice_creation.invoice_data.rendering_options`, and `PaymentLinkUpdateParams.invoice_creation.invoice_data.rendering_options`
 * Add support for `setup_future_usage` on `Checkout.Session.payment_method_options.pix` and `Checkout.SessionCreateParams.payment_method_options.pix`
 * Change `Identity.VerificationSession.related_person.account` to be required
 * Change `Identity.VerificationSession.related_person.person` to be required

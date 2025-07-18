@@ -3,6 +3,7 @@
 * Remove support for value `disabled` from enum `Capability.Status`
 * Add support for `TransactionID` on `ChargePaymentMethodDetailsCashapp`
 * Add support for `OriginContext` on `CheckoutSessionParams` and `CheckoutSession`
+* Add support for `Template` on `CheckoutSessionInvoiceCreationInvoiceDataRenderingOptionsParams`, `CheckoutSessionInvoiceCreationInvoiceDataRenderingOptions`, `PaymentLinkInvoiceCreationInvoiceDataRenderingOptionsParams`, and `PaymentLinkInvoiceCreationInvoiceDataRenderingOptions`
 * Add support for `SetupFutureUsage` on `CheckoutSessionPaymentMethodOptionsPixParams` and `CheckoutSessionPaymentMethodOptionsPix`
 * Add support for `Duration` on `InvoiceCreatePreviewScheduleDetailsPhaseParams` and `SubscriptionSchedulePhaseParams`
 * Add support for `PriceData` on `PaymentLinkLineItemParams`

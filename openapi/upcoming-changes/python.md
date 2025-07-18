@@ -3,6 +3,7 @@
 * Remove support for value `disabled` from enum `Capability.status`
 * Add support for `transaction_id` on `Charge.PaymentMethodDetail.Cashapp`
 * Add support for `origin_context` on `Checkout.Session` and `checkout.Session.CreateParams`
+* Add support for `template` on `Checkout.Session.InvoiceCreation.InvoiceDatum.RenderingOption`, `PaymentLink.CreateParamsInvoiceCreationInvoiceDatumRenderingOption`, `PaymentLink.InvoiceCreation.InvoiceDatum.RenderingOption`, `PaymentLink.ModifyParamsInvoiceCreationInvoiceDatumRenderingOption`, and `checkout.Session.CreateParamsInvoiceCreationInvoiceDatumRenderingOption`
 * Add support for `setup_future_usage` on `Checkout.Session.PaymentMethodOption.Pix` and `checkout.Session.CreateParamsPaymentMethodOptionPix`
 * Change `Identity.VerificationSession.RelatedPerson.account` to be required
 * Change `Identity.VerificationSession.RelatedPerson.person` to be required

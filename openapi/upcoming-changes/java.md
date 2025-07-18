@@ -2,6 +2,7 @@
 * Add support for `list` method on resource `sigma.Schema`
 * Add support for `transactionId` on `Charge.payment_method_details.cashapp`
 * Add support for `originContext` on `checkout.SessionCreateParams` and `checkout.Session`
+* Add support for `template` on `PaymentLink.invoice_creation.invoice_data.rendering_options`, `PaymentLinkCreateParams.invoice_creation.invoice_data.rendering_options`, `PaymentLinkUpdateParams.invoice_creation.invoice_data.rendering_options`, `checkout.Session.invoice_creation.invoice_data.rendering_options`, and `checkout.SessionCreateParams.invoice_creation.invoice_data.rendering_options`
 * Add support for `setupFutureUsage` on `checkout.Session.payment_method_options.pix` and `checkout.SessionCreateParams.payment_method_options.pix`
 * Add support for `duration` on `InvoiceCreatePreviewParams.schedule_details.phases[]`, `SubscriptionScheduleCreateParams.phases[]`, and `SubscriptionScheduleUpdateParams.phases[]`
 * Add support for `priceData` on `PaymentLinkCreateParams.line_items[]`

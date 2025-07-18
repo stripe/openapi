@@ -2,6 +2,7 @@
 * Add support for `list` method on resource `Sigma::Schema`
 * Add support for `transaction_id` on `Charge::PaymentMethodDetail::Cashapp`
 * Add support for `origin_context` on `Checkout::Session::CreateParams` and `Checkout::Session`
+* Add support for `template` on `Checkout::Session::CreateParams::InvoiceCreation::InvoiceDatum::RenderingOption`, `Checkout::Session::InvoiceCreation::InvoiceDatum::RenderingOption`, `PaymentLink::CreateParams::InvoiceCreation::InvoiceDatum::RenderingOption`, `PaymentLink::InvoiceCreation::InvoiceDatum::RenderingOption`, and `PaymentLink::UpdateParams::InvoiceCreation::InvoiceDatum::RenderingOption`
 * Add support for `setup_future_usage` on `Checkout::Session::CreateParams::PaymentMethodOption::Pix` and `Checkout::Session::PaymentMethodOption::Pix`
 * Change `Identity::VerificationSession::RelatedPerson.account` to be required
 * Change `Identity::VerificationSession::RelatedPerson.person` to be required
