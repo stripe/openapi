@@ -1,10 +1,10 @@
-* Add support for new resource `sigma.Schema`
-* Add support for `list` method on resource `sigma.Schema`
+* Add support for `instantPayoutsPromotion` on `AccountSession.components` and `AccountSessionCreateParams.components`
 * Add support for `transactionId` on `Charge.payment_method_details.cashapp`
 * Add support for `originContext` on `checkout.SessionCreateParams` and `checkout.Session`
 * Add support for `template` on `PaymentLink.invoice_creation.invoice_data.rendering_options`, `PaymentLinkCreateParams.invoice_creation.invoice_data.rendering_options`, `PaymentLinkUpdateParams.invoice_creation.invoice_data.rendering_options`, `checkout.Session.invoice_creation.invoice_data.rendering_options`, and `checkout.SessionCreateParams.invoice_creation.invoice_data.rendering_options`
 * Add support for `setupFutureUsage` on `checkout.Session.payment_method_options.pix` and `checkout.SessionCreateParams.payment_method_options.pix`
 * Add support for `duration` on `InvoiceCreatePreviewParams.schedule_details.phases[]`, `SubscriptionScheduleCreateParams.phases[]`, and `SubscriptionScheduleUpdateParams.phases[]`
+* Change type of `InvoiceCreatePreviewParams.subscription_details.cancelAt`, `SubscriptionCreateParams.cancelAt`, and `SubscriptionUpdateParams.cancelAt` from `DateTime` to `DateTime | enum('max_period_end'|'min_period_end')`
 * Add support for `priceData` on `PaymentLinkCreateParams.line_items[]`
 * Change `PaymentLinkCreateParams.line_items[].price` to be optional
 * Add support for new value `America/Coyhaique` on enum `reporting.ReportRunCreateParams.parameters.timezone`

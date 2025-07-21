@@ -1,5 +1,4 @@
-* Add support for new resource `Sigma.Schema`
-* Add support for `list` method on resource `Sigma.Schema`
+* Add support for `instant_payouts_promotion` on `AccountSession.components` and `AccountSessionCreateParams.components`
 * Remove support for value `disabled` from enum `Capability.status`
 * Add support for `transaction_id` on `Charge.payment_method_details.cashapp`
 * Add support for `origin_context` on `Checkout.SessionCreateParams` and `Checkout.Session`
@@ -8,6 +7,7 @@
 * Change `Identity.VerificationSession.related_person.account` to be required
 * Change `Identity.VerificationSession.related_person.person` to be required
 * Add support for `duration` on `InvoiceCreatePreviewParams.schedule_details.phases[]`, `SubscriptionScheduleCreateParams.phases[]`, and `SubscriptionScheduleUpdateParams.phases[]`
+* Change type of `InvoiceCreatePreviewParams.subscription_details.cancel_at`, `SubscriptionCreateParams.cancel_at`, and `SubscriptionUpdateParams.cancel_at` from `DateTime` to `DateTime | enum('max_period_end'|'min_period_end')`
 * Add support for `price_data` on `PaymentLinkCreateParams.line_items[]`
 * Change `PaymentLinkCreateParams.line_items[].price` to be optional
 * Add support for new value `America/Coyhaique` on enum `Reporting.ReportRunCreateParams.parameters.timezone`
