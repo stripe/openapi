@@ -1,4 +1,5 @@
 * Add support for `instant_payouts_promotion` on `AccountSession.Component` and `AccountSession.CreateParamsComponent`
+* Add support for `adjustable_quantity` on `BillingPortal.Configuration.Feature.SubscriptionUpdate.Product`, `billing_portal.Configuration.CreateParamsFeatureSubscriptionUpdateProduct`, and `billing_portal.Configuration.ModifyParamsFeatureSubscriptionUpdateProduct`
 * Remove support for value `disabled` from enum `Capability.status`
 * Add support for `transaction_id` on `Charge.PaymentMethodDetail.Cashapp`
 * Add support for `origin_context` on `Checkout.Session` and `checkout.Session.CreateParams`

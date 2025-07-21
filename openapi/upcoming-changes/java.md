@@ -1,4 +1,5 @@
 * Add support for `instantPayoutsPromotion` on `AccountSession.components` and `AccountSessionCreateParams.components`
+* Add support for `adjustableQuantity` on `billingportal.Configuration.features.subscription_update.products[]`, `billingportal.ConfigurationCreateParams.features.subscription_update.products[]`, and `billingportal.ConfigurationUpdateParams.features.subscription_update.products[]`
 * Add support for `transactionId` on `Charge.payment_method_details.cashapp`
 * Add support for `originContext` on `checkout.SessionCreateParams` and `checkout.Session`
 * Add support for `template` on `PaymentLink.invoice_creation.invoice_data.rendering_options`, `PaymentLinkCreateParams.invoice_creation.invoice_data.rendering_options`, `PaymentLinkUpdateParams.invoice_creation.invoice_data.rendering_options`, `checkout.Session.invoice_creation.invoice_data.rendering_options`, and `checkout.SessionCreateParams.invoice_creation.invoice_data.rendering_options`

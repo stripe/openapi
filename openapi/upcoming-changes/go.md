@@ -1,4 +1,5 @@
 * Add support for `InstantPayoutsPromotion` on `AccountSessionComponentsParams` and `AccountSessionComponents`
+* Add support for `AdjustableQuantity` on `BillingPortalConfigurationFeaturesSubscriptionUpdateProductsParams` and `BillingPortalConfigurationFeaturesSubscriptionUpdateProducts`
 * Remove support for value `disabled` from enum `Capability.Status`
 * Add support for `TransactionID` on `ChargePaymentMethodDetailsCashapp`
 * Add support for `OriginContext` on `CheckoutSessionParams` and `CheckoutSession`
