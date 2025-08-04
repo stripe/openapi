@@ -1,1 +1,1 @@
-* Add support for `origin_context` on `Checkout.Session`
+* Release specs are identical.
