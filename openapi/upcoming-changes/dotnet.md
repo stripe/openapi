@@ -1,2 +1,3 @@
+* Add support for `Installments` on `Charge.PaymentMethodDetails.Alma`
 * Add support for `TransactionId` on `Charge.PaymentMethodDetails.Alma`, `Charge.PaymentMethodDetails.AmazonPay`, `Charge.PaymentMethodDetails.KakaoPay`, `Charge.PaymentMethodDetails.KrCard`, `Charge.PaymentMethodDetails.NaverPay`, `Charge.PaymentMethodDetails.Payco`, `Charge.PaymentMethodDetails.RevolutPay`, and `Charge.PaymentMethodDetails.SamsungPay`
 * Add support for `Card` on `Terminal.TestHelpersReaderPresentPaymentMethodOptions`
