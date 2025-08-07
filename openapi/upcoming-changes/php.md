@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for new value `terminal_android_apk` on enum `File.purpose`
