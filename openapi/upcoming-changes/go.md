@@ -1,3 +1,4 @@
+* Add support for `Name` on `BillingPortalConfigurationParams` and `BillingPortalConfiguration`
 * Add support for `Installments` on `ChargePaymentMethodDetailsAlma`
 * Add support for `TransactionID` on `ChargePaymentMethodDetailsAlma`, `ChargePaymentMethodDetailsAmazonPay`, `ChargePaymentMethodDetailsKakaoPay`, `ChargePaymentMethodDetailsKrCard`, `ChargePaymentMethodDetailsNaverPay`, `ChargePaymentMethodDetailsPayco`, `ChargePaymentMethodDetailsRevolutPay`, and `ChargePaymentMethodDetailsSamsungPay`
 * Add support for new value `terminal_android_apk` on enum `File.Purpose`
