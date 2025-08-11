@@ -4,3 +4,4 @@
 * Add support for new value `terminal_android_apk` on enum `File.Purpose`
 * Add support for `Mxn` on `TerminalConfigurationTippingParams` and `TerminalConfigurationTipping`
 * Add support for `Card` on `TestHelpersTerminalReaderPresentPaymentMethodParams`
+* Add support for error code `customer_session_expired` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
