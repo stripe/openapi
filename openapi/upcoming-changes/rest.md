@@ -8,4 +8,4 @@
 * Add support for `card` on `Terminal.Reader.testHelpers#present_payment_method`
 * Add support for new value `card` on enum `Terminal.Reader.testHelpers#present_payment_method.type`
 * Add support for new value `2025-08-27.basil` on enum `WebhookEndpoint#create.api_version`
-* Add support for error code `customer_session_expired` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`
+* Add support for error codes `customer_session_expired` and `india_recurring_payment_mandate_canceled` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`
