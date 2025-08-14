@@ -1,3 +1,4 @@
+* Add support for `payout_details` on `AccountSession::Component` and `AccountSession::CreateParams::Component`
 * Add support for `name` on `BillingPortal::Configuration::CreateParams`, `BillingPortal::Configuration::UpdateParams`, and `BillingPortal::Configuration`
 * Add support for `installments` on `Charge::PaymentMethodDetail::Alma`
 * Add support for `transaction_id` on `Charge::PaymentMethodDetail::Alma`, `Charge::PaymentMethodDetail::AmazonPay`, `Charge::PaymentMethodDetail::KakaoPay`, `Charge::PaymentMethodDetail::KrCard`, `Charge::PaymentMethodDetail::NaverPay`, `Charge::PaymentMethodDetail::Payco`, `Charge::PaymentMethodDetail::RevolutPay`, and `Charge::PaymentMethodDetail::SamsungPay`
