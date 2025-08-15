@@ -6,6 +6,7 @@
 * Add support for new values `block` and `resolution` on enum `Dispute.payment_method_details.card.case_type`
 * Add support for new value `terminal_android_apk` on enums `File.purpose` and `FileListParams.purpose`
 * Add support for new value `terminal_android_apk` on enum `FileCreateParams.purpose`
+* Add support for `payout_method` on `PayoutCreateParams` and `Payout`
 * Add support for `mxn` on `Terminal.Configuration.tipping`, `Terminal.ConfigurationCreateParams.tipping`, and `Terminal.ConfigurationUpdateParams.tipping`
 * Add support for `card` on `Terminal.ReaderPresentPaymentMethodParams.testHelpers`
 * Add support for new value `card` on enum `Terminal.ReaderPresentPaymentMethodParams.testHelpers.type`

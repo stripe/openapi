@@ -5,6 +5,7 @@
 * Add support for `amountIncludesIof` on `PaymentIntent.payment_method_options.pix`, `PaymentIntentConfirmParams.payment_method_options.pix`, `PaymentIntentCreateParams.payment_method_options.pix`, `PaymentIntentUpdateParams.payment_method_options.pix`, `checkout.Session.payment_method_options.pix`, and `checkout.SessionCreateParams.payment_method_options.pix`
 * Add support for new value `terminal_android_apk` on enum `FileListParams.purpose`
 * Add support for new value `terminal_android_apk` on enum `FileCreateParams.purpose`
+* Add support for `payoutMethod` on `PayoutCreateParams` and `Payout`
 * Add support for `mxn` on `terminal.Configuration.tipping`, `terminal.ConfigurationCreateParams.tipping`, and `terminal.ConfigurationUpdateParams.tipping`
 * Add support for `card` on `terminal.ReaderPresentPaymentMethodParams`
 * Add support for new value `card` on enum `terminal.ReaderPresentPaymentMethodParams.type`
