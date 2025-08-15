@@ -1,4 +1,4 @@
-* Add support for `PayoutDetails` on `AccountSessionComponentsParams` and `AccountSessionComponents`
+* Add support for `BalanceReport`, `PayoutDetails`, and `PayoutReconciliationReport` on `AccountSessionComponentsParams` and `AccountSessionComponents`
 * Add support for `Name` on `BillingPortalConfigurationParams` and `BillingPortalConfiguration`
 * Add support for `Installments` on `ChargePaymentMethodDetailsAlma`
 * Add support for `TransactionID` on `ChargePaymentMethodDetailsAlma`, `ChargePaymentMethodDetailsAmazonPay`, `ChargePaymentMethodDetailsBillie`, `ChargePaymentMethodDetailsKakaoPay`, `ChargePaymentMethodDetailsKrCard`, `ChargePaymentMethodDetailsNaverPay`, `ChargePaymentMethodDetailsPayco`, `ChargePaymentMethodDetailsRevolutPay`, `ChargePaymentMethodDetailsSamsungPay`, and `ChargePaymentMethodDetailsSatispay`
