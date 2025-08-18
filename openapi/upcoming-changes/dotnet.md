@@ -5,5 +5,6 @@
 * Add support for `AmountIncludesIof` on `Checkout.Session.PaymentMethodOptions.Pix`, `CheckoutSessionPaymentMethodOptionsPixOptions`, `PaymentIntent.PaymentMethodOptions.Pix`, and `PaymentIntentPaymentMethodOptionsPixOptions`
 * Add support for `ExcludedPaymentMethodTypes` on `PaymentIntentCreateOptions` and `PaymentIntent`
 * Add support for `PayoutMethod` on `PayoutCreateOptions` and `Payout`
+* Add support for `Metadata` and `Period` on `SubscriptionAddInvoiceItemOptions`
 * Add support for `Mxn` on `Terminal.Configuration.Tipping` and `TerminalConfigurationTippingOptions`
 * Add support for `Card` on `Terminal.TestHelpersReaderPresentPaymentMethodOptions`

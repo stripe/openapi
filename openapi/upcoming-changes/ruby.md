@@ -5,5 +5,6 @@
 * Add support for `amount_includes_iof` on `Checkout::Session::CreateParams::PaymentMethodOption::Pix`, `Checkout::Session::PaymentMethodOption::Pix`, `PaymentIntent::ConfirmParams::PaymentMethodOption::Pix`, `PaymentIntent::CreateParams::PaymentMethodOption::Pix`, `PaymentIntent::PaymentMethodOption::Pix`, and `PaymentIntent::UpdateParams::PaymentMethodOption::Pix`
 * Add support for `excluded_payment_method_types` on `PaymentIntent::CreateParams` and `PaymentIntent`
 * Add support for `payout_method` on `Payout::CreateParams` and `Payout`
+* Add support for `metadata` and `period` on `Subscription::CreateParams::AddInvoiceItem` and `Subscription::UpdateParams::AddInvoiceItem`
 * Add support for `mxn` on `Terminal::Configuration::CreateParams::Tipping`, `Terminal::Configuration::Tipping`, and `Terminal::Configuration::UpdateParams::Tipping`
 * Add support for `card` on `Terminal::Reader::PresentPaymentMethodParams`

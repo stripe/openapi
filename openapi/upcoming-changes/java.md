@@ -7,6 +7,7 @@
 * Add support for new value `terminal_android_apk` on enum `FileCreateParams.purpose`
 * Add support for `excludedPaymentMethodTypes` on `PaymentIntentCreateParams` and `PaymentIntent`
 * Add support for `payoutMethod` on `PayoutCreateParams` and `Payout`
+* Add support for `metadata` and `period` on `SubscriptionCreateParams.add_invoice_items[]` and `SubscriptionUpdateParams.add_invoice_items[]`
 * Add support for `mxn` on `terminal.Configuration.tipping`, `terminal.ConfigurationCreateParams.tipping`, and `terminal.ConfigurationUpdateParams.tipping`
 * Add support for `card` on `terminal.ReaderPresentPaymentMethodParams`
 * Add support for new value `card` on enum `terminal.ReaderPresentPaymentMethodParams.type`

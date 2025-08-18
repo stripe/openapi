@@ -7,6 +7,7 @@
 * Add support for new value `terminal_android_apk` on enum `File.Purpose`
 * Add support for `ExcludedPaymentMethodTypes` on `PaymentIntentParams` and `PaymentIntent`
 * Add support for `PayoutMethod` on `PayoutParams` and `Payout`
+* Add support for `Metadata` and `Period` on `SubscriptionAddInvoiceItemParams`
 * Add support for `Mxn` on `TerminalConfigurationTippingParams` and `TerminalConfigurationTipping`
 * Add support for `Card` on `TestHelpersTerminalReaderPresentPaymentMethodParams`
 * Add support for error codes `customer_session_expired` and `india_recurring_payment_mandate_canceled` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
