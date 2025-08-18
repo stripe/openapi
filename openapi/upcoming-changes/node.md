@@ -6,9 +6,9 @@
 * Add support for new values `block` and `resolution` on enum `Dispute.payment_method_details.card.case_type`
 * Add support for new value `terminal_android_apk` on enums `File.purpose` and `FileListParams.purpose`
 * Add support for new value `terminal_android_apk` on enum `FileCreateParams.purpose`
+* Add support for `metadata` and `period` on `InvoiceCreatePreviewParams.schedule_details.phases[].add_invoice_items[]`, `SubscriptionCreateParams.add_invoice_items[]`, `SubscriptionSchedule.phases[].add_invoice_items[]`, `SubscriptionScheduleCreateParams.phases[].add_invoice_items[]`, `SubscriptionScheduleUpdateParams.phases[].add_invoice_items[]`, and `SubscriptionUpdateParams.add_invoice_items[]`
 * Add support for `excluded_payment_method_types` on `PaymentIntentCreateParams` and `PaymentIntent`
 * Add support for `payout_method` on `PayoutCreateParams` and `Payout`
-* Add support for `metadata` and `period` on `SubscriptionCreateParams.add_invoice_items[]` and `SubscriptionUpdateParams.add_invoice_items[]`
 * Add support for `mxn` on `Terminal.Configuration.tipping`, `Terminal.ConfigurationCreateParams.tipping`, and `Terminal.ConfigurationUpdateParams.tipping`
 * Add support for `card` on `Terminal.ReaderPresentPaymentMethodParams.testHelpers`
 * Add support for new value `card` on enum `Terminal.ReaderPresentPaymentMethodParams.testHelpers.type`
