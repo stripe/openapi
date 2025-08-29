@@ -1,1 +1,2 @@
-* Add support for `ExpMonth` and `ExpYear` on `IssuingCardParams`
+* Add support for `TrialUpdateBehavior` on `BillingPortalConfigurationFeaturesSubscriptionUpdateParams` and `BillingPortalConfigurationFeaturesSubscriptionUpdate`
+* Remove support for `Link` and `PayByBank` on `PaymentMethodParams`

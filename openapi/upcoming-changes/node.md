@@ -1,1 +1,3 @@
-* Add support for `exp_month` and `exp_year` on `Issuing.CardCreateParams`
+* Add support for `trial_update_behavior` on `BillingPortal.Configuration.features.subscription_update`, `BillingPortal.ConfigurationCreateParams.features.subscription_update`, and `BillingPortal.ConfigurationUpdateParams.features.subscription_update`
+* Remove support for `link` and `pay_by_bank` on `PaymentMethodUpdateParams`
+* Add support for new value `2025-09-30.clover` on enum `WebhookEndpointCreateParams.api_version`

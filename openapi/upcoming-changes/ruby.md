@@ -1,1 +1,2 @@
-* Add support for `exp_month` and `exp_year` on `Issuing::Card::CreateParams`
+* Add support for `trial_update_behavior` on `BillingPortal::Configuration::CreateParams::Feature::SubscriptionUpdate`, `BillingPortal::Configuration::Feature::SubscriptionUpdate`, and `BillingPortal::Configuration::UpdateParams::Feature::SubscriptionUpdate`
+* Remove support for `link` and `pay_by_bank` on `PaymentMethod::UpdateParams`

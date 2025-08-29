@@ -1,1 +1,2 @@
-* Release specs are identical.
+* Add support for `trial_update_behavior` on `BillingPortal.Configuration.features.subscription_update`, `BillingPortal\Configuration.create().$params.feature.subscription_update`, and `BillingPortal\Configuration.update().$params.feature.subscription_update`
+* Remove support for `link` and `pay_by_bank` on `PaymentMethod.update().$params`
