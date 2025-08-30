@@ -1,3 +1,4 @@
+* Remove support for values `saturday` and `sunday` from enums `Account#create.settings.payouts.schedule.weekly_payout_days`, `Account#update.settings.payouts.schedule.weekly_payout_days`, and `Account.settings.payouts.schedule.weekly_payout_days`
 * Add support for `trial_update_behavior` on `BillingPortal.Configuration#create.features.subscription_update`, `BillingPortal.Configuration#update.features.subscription_update`, and `BillingPortal.Configuration.features.subscription_update`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod#update`
 * Add support for new value `2025-09-30.clover` on enum `WebhookEndpoint#create.api_version`
