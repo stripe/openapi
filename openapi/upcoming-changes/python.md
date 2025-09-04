@@ -6,6 +6,7 @@
 * Add support for new value `paypay` on enums `ConfirmationToken.CreateParamsPaymentMethodDatum.type`, `PaymentIntent.ConfirmParamsPaymentMethodDatum.type`, `PaymentIntent.CreateParamsPaymentMethodDatum.type`, `PaymentIntent.ModifyParamsPaymentMethodDatum.type`, `SetupIntent.ConfirmParamsPaymentMethodDatum.type`, `SetupIntent.CreateParamsPaymentMethodDatum.type`, and `SetupIntent.ModifyParamsPaymentMethodDatum.type`
 * Add support for new value `paypay` on enums `ConfirmationToken.PaymentMethodPreview.type` and `PaymentMethod.type`
 * Add support for new value `paypay` on enums `Customer.ListPaymentMethodsParams.type`, `PaymentMethod.CreateParams.type`, and `PaymentMethod.ListParams.type`
+* Add support for `chargeback_loss_reason_code` on `Dispute.PaymentMethodDetail.Klarna`
 * Add support for new value `paypay` on enums `PaymentIntent.CreateParams.excluded_payment_method_types` and `PaymentIntent.excluded_payment_method_types`
 * Add support for new value `paypay` on enums `PaymentLink.CreateParams.payment_method_types`, `PaymentLink.ModifyParams.payment_method_types`, and `PaymentLink.payment_method_types`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod.ModifyParams`
