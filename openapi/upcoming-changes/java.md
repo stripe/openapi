@@ -8,5 +8,6 @@
 * Add support for `chargebackLossReasonCode` on `Dispute.payment_method_details.klarna`
 * Add support for new value `paypay` on enum `PaymentIntentCreateParams.excludedPaymentMethodTypes`
 * Add support for new value `paypay` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
+* Add support for `frMealVoucherConecs` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `payByBank` on `PaymentMethodUpdateParams`
 * Add support for new value `2025-09-30.clover` on enum `WebhookEndpointCreateParams.apiVersion`

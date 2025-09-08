@@ -6,4 +6,5 @@
 * Add support for `ChargebackLossReasonCode` on `DisputePaymentMethodDetailsKlarna`
 * Add support for new value `paypay` on enum `PaymentIntent.ExcludedPaymentMethodTypes`
 * Add support for new value `paypay` on enum `PaymentLink.PaymentMethodTypes`
+* Add support for `FRMealVoucherConecs` on `PaymentMethodConfigurationParams` and `PaymentMethodConfiguration`
 * Remove support for `Link` and `PayByBank` on `PaymentMethodParams`

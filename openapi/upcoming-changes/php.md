@@ -6,4 +6,5 @@
 * Add support for `chargeback_loss_reason_code` on `Dispute.payment_method_details.klarna`
 * Add support for new value `paypay` on enum `PaymentIntent.excluded_payment_method_types`
 * Add support for new value `paypay` on enum `PaymentLink.payment_method_types`
+* Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration.create().$params`, `PaymentMethodConfiguration.update().$params`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod.update().$params`
