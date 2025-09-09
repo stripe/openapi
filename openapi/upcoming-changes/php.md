@@ -9,3 +9,4 @@
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration.create().$params`, `PaymentMethodConfiguration.update().$params`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod.update().$params`
 * Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.closed_reason`
+* Add support for error codes `financial_connections_account_pending_account_numbers` and `financial_connections_account_unavailable_account_numbers` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`

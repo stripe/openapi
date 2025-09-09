@@ -13,3 +13,4 @@
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod.ModifyParams`
 * Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.closed_reason`
 * Add support for new value `2025-09-30.clover` on enum `WebhookEndpoint.CreateParams.api_version`
+* Add support for error codes `financial_connections_account_pending_account_numbers` and `financial_connections_account_unavailable_account_numbers` on `Invoice.LastFinalizationError`, `PaymentIntent.LastPaymentError`, `SetupAttempt.SetupError`, `SetupIntent.LastSetupError`, and `StripeError`
