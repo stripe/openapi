@@ -8,3 +8,4 @@
 * Add support for new value `paypay` on enum `PaymentLink.payment_method_types`
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration.create().$params`, `PaymentMethodConfiguration.update().$params`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod.update().$params`
+* Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.closed_reason`

@@ -11,4 +11,5 @@
 * Add support for new value `paypay` on enums `PaymentLink.CreateParams.payment_method_types`, `PaymentLink.ModifyParams.payment_method_types`, and `PaymentLink.payment_method_types`
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration.CreateParams`, `PaymentMethodConfiguration.ModifyParams`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod.ModifyParams`
+* Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.closed_reason`
 * Add support for new value `2025-09-30.clover` on enum `WebhookEndpoint.CreateParams.api_version`

@@ -8,3 +8,4 @@
 * Add support for new value `paypay` on enum `PaymentLink.PaymentMethodTypes`
 * Add support for `FRMealVoucherConecs` on `PaymentMethodConfigurationParams` and `PaymentMethodConfiguration`
 * Remove support for `Link` and `PayByBank` on `PaymentMethodParams`
+* Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.ClosedReason`
