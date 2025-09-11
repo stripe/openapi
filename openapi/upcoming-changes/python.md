@@ -8,6 +8,7 @@
 * Add support for new value `paypay` on enums `ConfirmationToken.PaymentMethodPreview.type` and `PaymentMethod.type`
 * Add support for new value `paypay` on enums `Customer.ListPaymentMethodsParams.type`, `PaymentMethod.CreateParams.type`, and `PaymentMethod.ListParams.type`
 * Add support for `chargeback_loss_reason_code` on `Dispute.PaymentMethodDetail.Klarna`
+* Remove support for `iterations` on `Invoice.CreatePreviewParamsScheduleDetailPhase`, `SubscriptionSchedule.CreateParamsPhase`, and `SubscriptionSchedule.ModifyParamsPhase`
 * Add support for new value `paypay` on enums `PaymentIntent.CreateParams.excluded_payment_method_types` and `PaymentIntent.excluded_payment_method_types`
 * Add support for new value `paypay` on enums `PaymentLink.CreateParams.payment_method_types`, `PaymentLink.ModifyParams.payment_method_types`, and `PaymentLink.payment_method_types`
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration.CreateParams`, `PaymentMethodConfiguration.ModifyParams`, and `PaymentMethodConfiguration`
