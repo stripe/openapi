@@ -4,3 +4,4 @@
 * Add support for `chargeback_loss_reason_code` on `Dispute::PaymentMethodDetail::Klarna`
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod::UpdateParams`
+* Add support for `bbpos_wisepad3` on `Terminal::Configuration::CreateParams`, `Terminal::Configuration::UpdateParams`, and `Terminal::Configuration`

@@ -10,4 +10,5 @@
 * Add support for new value `paypay` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
 * Add support for `frMealVoucherConecs` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `payByBank` on `PaymentMethodUpdateParams`
+* Add support for `bbposWisepad3` on `terminal.ConfigurationCreateParams`, `terminal.ConfigurationUpdateParams`, and `terminal.Configuration`
 * Add support for new value `2025-09-30.clover` on enum `WebhookEndpointCreateParams.apiVersion`

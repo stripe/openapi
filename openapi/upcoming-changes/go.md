@@ -10,4 +10,5 @@
 * Add support for `FRMealVoucherConecs` on `PaymentMethodConfigurationParams` and `PaymentMethodConfiguration`
 * Remove support for `Link` and `PayByBank` on `PaymentMethodParams`
 * Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.ClosedReason`
+* Add support for `BBPOSWisePad3` on `TerminalConfigurationParams` and `TerminalConfiguration`
 * Add support for error codes `financial_connections_account_pending_account_numbers` and `financial_connections_account_unavailable_account_numbers` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
