@@ -12,4 +12,7 @@
 * Add support for `frMealVoucherConecs` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `payByBank` on `PaymentMethodUpdateParams`
 * Add support for `bbposWisepad3` on `terminal.ConfigurationCreateParams`, `terminal.ConfigurationUpdateParams`, and `terminal.Configuration`
+* Add support for `addressKana`, `addressKanji`, `displayNameKana`, `displayNameKanji`, and `phone` on `terminal.LocationCreateParams`, `terminal.LocationUpdateParams`, and `terminal.Location`
+* Change `terminal.LocationCreateParams.address` to be optional
+* Change `terminal.LocationCreateParams.displayName` to be optional
 * Add support for new value `2025-09-30.clover` on enum `WebhookEndpointCreateParams.apiVersion`
