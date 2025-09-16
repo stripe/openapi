@@ -6,6 +6,7 @@
 * Add support for new value `paypay` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
 * Add support for `ChargebackLossReasonCode` on `DisputePaymentMethodDetailsKlarna`
 * Remove support for `Iterations` on `InvoiceCreatePreviewScheduleDetailsPhaseParams` and `SubscriptionSchedulePhaseParams`
+* Add support for `FraudDisputabilityLikelihood` and `RiskAssessment` on `IssuingAuthorizationParams`
 * Add support for new value `paypay` on enum `PaymentIntent.ExcludedPaymentMethodTypes`
 * Add support for new value `paypay` on enum `PaymentLink.PaymentMethodTypes`
 * Add support for `FRMealVoucherConecs` on `PaymentMethodConfigurationParams` and `PaymentMethodConfiguration`

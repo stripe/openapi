@@ -9,6 +9,7 @@
 * Add support for new value `paypay` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
 * Add support for `chargeback_loss_reason_code` on `Dispute.payment_method_details.klarna`
 * Remove support for `iterations` on `InvoiceCreatePreviewParams.schedule_details.phases[]`, `SubscriptionScheduleCreateParams.phases[]`, and `SubscriptionScheduleUpdateParams.phases[]`
+* Add support for `fraud_disputability_likelihood` and `risk_assessment` on `Issuing.AuthorizationCreateParams.testHelpers`
 * Add support for new value `paypay` on enums `PaymentIntent.excluded_payment_method_types` and `PaymentIntentCreateParams.excluded_payment_method_types`
 * Add support for new value `paypay` on enums `PaymentLink.payment_method_types`, `PaymentLinkCreateParams.payment_method_types`, and `PaymentLinkUpdateParams.payment_method_types`
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
