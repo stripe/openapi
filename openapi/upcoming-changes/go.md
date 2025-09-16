@@ -3,6 +3,7 @@
 * Remove support for values `saturday` and `sunday` from enum `AccountSettingsPayoutsSchedule.WeeklyPayoutDays`
 * Add support for `TrialUpdateBehavior` on `BillingPortalConfigurationFeaturesSubscriptionUpdateParams` and `BillingPortalConfigurationFeaturesSubscriptionUpdate`
 * Add support for `Paypay` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentIntentPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `SetupIntentConfirmPaymentMethodDataParams`, and `SetupIntentPaymentMethodDataParams`
+* Add support for `ExcludedPaymentMethodTypes` on `CheckoutSessionParams` and `CheckoutSession`
 * Add support for new value `paypay` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
 * Add support for `ChargebackLossReasonCode` on `DisputePaymentMethodDetailsKlarna`
 * Remove support for `Iterations` on `InvoiceCreatePreviewScheduleDetailsPhaseParams` and `SubscriptionSchedulePhaseParams`
