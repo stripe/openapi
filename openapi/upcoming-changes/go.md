@@ -5,6 +5,7 @@
 * Add support for `Paypay` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentIntentPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `SetupIntentConfirmPaymentMethodDataParams`, and `SetupIntentPaymentMethodDataParams`
 * Add support for `ExcludedPaymentMethodTypes` on `CheckoutSessionParams`, `CheckoutSession`, `PaymentIntentConfirmParams`, and `PaymentIntentParams`
 * Add support for new value `paypay` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
+* Add support for `BusinessName` and `IndividualName` on `CustomerParams` and `Customer`
 * Add support for `ChargebackLossReasonCode` on `DisputePaymentMethodDetailsKlarna`
 * Remove support for `Iterations` on `InvoiceCreatePreviewScheduleDetailsPhaseParams` and `SubscriptionSchedulePhaseParams`
 * Add support for `FraudDisputabilityLikelihood` and `RiskAssessment` on `IssuingAuthorizationParams`

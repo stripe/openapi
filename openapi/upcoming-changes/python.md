@@ -7,6 +7,7 @@
 * Add support for new value `paypay` on enum `checkout.Session.CreateParams.payment_method_types`
 * Add support for new value `paypay` on enums `ConfirmationToken.CreateParamsPaymentMethodDatum.type`, `PaymentIntent.ConfirmParamsPaymentMethodDatum.type`, `PaymentIntent.CreateParamsPaymentMethodDatum.type`, `PaymentIntent.ModifyParamsPaymentMethodDatum.type`, `SetupIntent.ConfirmParamsPaymentMethodDatum.type`, `SetupIntent.CreateParamsPaymentMethodDatum.type`, and `SetupIntent.ModifyParamsPaymentMethodDatum.type`
 * Add support for new value `paypay` on enums `ConfirmationToken.PaymentMethodPreview.type` and `PaymentMethod.type`
+* Add support for `business_name` and `individual_name` on `Customer.CreateParams`, `Customer.ModifyParams`, and `Customer`
 * Add support for new value `paypay` on enums `Customer.ListPaymentMethodsParams.type`, `PaymentMethod.CreateParams.type`, and `PaymentMethod.ListParams.type`
 * Add support for `chargeback_loss_reason_code` on `Dispute.PaymentMethodDetail.Klarna`
 * Remove support for `iterations` on `Invoice.CreatePreviewParamsScheduleDetailPhase`, `SubscriptionSchedule.CreateParamsPhase`, and `SubscriptionSchedule.ModifyParamsPhase`

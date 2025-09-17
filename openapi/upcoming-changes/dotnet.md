@@ -2,6 +2,7 @@
 * Add support for `TrialUpdateBehavior` on `BillingPortal.Configuration.Features.SubscriptionUpdate` and `BillingPortalConfigurationFeaturesSubscriptionUpdateOptions`
 * Add support for `Paypay` on `Charge.PaymentMethodDetails`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, and `SetupIntentPaymentMethodDataOptions`
 * Add support for `ExcludedPaymentMethodTypes` on `Checkout.SessionCreateOptions`, `Checkout.Session`, `PaymentIntentConfirmOptions`, and `PaymentIntentUpdateOptions`
+* Add support for `BusinessName` and `IndividualName` on `CustomerCreateOptions`, `CustomerUpdateOptions`, and `Customer`
 * Add support for `ChargebackLossReasonCode` on `Dispute.PaymentMethodDetails.Klarna`
 * Remove support for `Iterations` on `InvoiceScheduleDetailsPhaseOptions` and `SubscriptionSchedulePhaseOptions`
 * Add support for `FraudDisputabilityLikelihood` and `RiskAssessment` on `Issuing.TestHelpersAuthorizationCreateOptions`

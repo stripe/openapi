@@ -7,6 +7,7 @@
 * Add support for new value `paypay` on enum `Checkout.Session#create.payment_method_types`
 * Add support for new value `paypay` on enums `ConfirmationToken.testHelpers#create.payment_method_data.type`, `PaymentIntent#confirm.payment_method_data.type`, `PaymentIntent#create.payment_method_data.type`, `PaymentIntent#update.payment_method_data.type`, `SetupIntent#confirm.payment_method_data.type`, `SetupIntent#create.payment_method_data.type`, and `SetupIntent#update.payment_method_data.type`
 * Add support for new value `paypay` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
+* Add support for `business_name` and `individual_name` on `Customer#create`, `Customer#update`, and `Customer`
 * Add support for new value `paypay` on enums `Customer#list_payment_methods.type`, `PaymentMethod#create.type`, and `PaymentMethod#list.type`
 * Add support for `chargeback_loss_reason_code` on `Dispute.payment_method_details.klarna`
 * Remove support for `iterations` on `Invoice#create_preview.schedule_details.phases[]`, `SubscriptionSchedule#create.phases[]`, and `SubscriptionSchedule#update.phases[]`
