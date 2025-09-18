@@ -6,6 +6,7 @@
 * Add support for `ChargebackLossReasonCode` on `Dispute.PaymentMethodDetails.Klarna`
 * Remove support for `Iterations` on `InvoiceScheduleDetailsPhaseOptions` and `SubscriptionSchedulePhaseOptions`
 * Add support for `FraudDisputabilityLikelihood` and `RiskAssessment` on `Issuing.TestHelpersAuthorizationCreateOptions`
+* Add support for `SecondLine` on `Issuing.Card`
 * Add support for `FrMealVoucherConecs` on `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, and `PaymentMethodConfiguration`
 * Remove support for `Link` and `PayByBank` on `PaymentMethodUpdateOptions`
 * Add support for `Promotion` on `PromotionCodeCreateOptions` and `PromotionCode`

@@ -12,6 +12,7 @@
 * Add support for `chargeback_loss_reason_code` on `Dispute.PaymentMethodDetail.Klarna`
 * Remove support for `iterations` on `Invoice.CreatePreviewParamsScheduleDetailPhase`, `SubscriptionSchedule.CreateParamsPhase`, and `SubscriptionSchedule.ModifyParamsPhase`
 * Add support for `fraud_disputability_likelihood` and `risk_assessment` on `issuing.Authorization.CreateParams`
+* Add support for `second_line` on `Issuing.Card`
 * Add support for new value `paypay` on enums `PaymentIntent.CreateParams.excluded_payment_method_types` and `PaymentIntent.excluded_payment_method_types`
 * Add support for new value `paypay` on enums `PaymentLink.CreateParams.payment_method_types`, `PaymentLink.ModifyParams.payment_method_types`, and `PaymentLink.payment_method_types`
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration.CreateParams`, `PaymentMethodConfiguration.ModifyParams`, and `PaymentMethodConfiguration`
