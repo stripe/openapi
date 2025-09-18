@@ -22,6 +22,7 @@
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration.CreateParams`, `PaymentMethodConfiguration.ModifyParams`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod.ModifyParams`
 * Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.closed_reason`
+* Add support for `provider` on `Tax.Settings.Default`
 * Add support for `bbpos_wisepad3` on `Terminal.Configuration`, `terminal.Configuration.CreateParams`, and `terminal.Configuration.ModifyParams`
 * Add support for `address_kana`, `address_kanji`, `display_name_kana`, `display_name_kanji`, and `phone` on `Terminal.Location`, `terminal.Location.CreateParams`, and `terminal.Location.ModifyParams`
 * Change `terminal.Location.CreateParams.address` to be optional
