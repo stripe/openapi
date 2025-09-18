@@ -1,3 +1,4 @@
+* Add support for `Source` on `Discount`
 * Add support for `PaypayPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
 * Add support for `TrialUpdateBehavior` on `BillingPortal.Configuration.Features.SubscriptionUpdate` and `BillingPortalConfigurationFeaturesSubscriptionUpdateOptions`
 * Add support for `Paypay` on `Charge.PaymentMethodDetails`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, and `SetupIntentPaymentMethodDataOptions`
