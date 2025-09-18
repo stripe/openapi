@@ -1,8 +1,8 @@
 * Add support for `PaypayPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
 * Add support for `TrialUpdateBehavior` on `BillingPortal.Configuration.Features.SubscriptionUpdate` and `BillingPortalConfigurationFeaturesSubscriptionUpdateOptions`
 * Add support for `Paypay` on `Charge.PaymentMethodDetails`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, and `SetupIntentPaymentMethodDataOptions`
+* Add support for `BrandingSettings` and `NameCollection` on `Checkout.SessionCreateOptions` and `Checkout.Session`
 * Add support for `ExcludedPaymentMethodTypes` on `Checkout.SessionCreateOptions`, `Checkout.Session`, `PaymentIntentConfirmOptions`, and `PaymentIntentUpdateOptions`
-* Add support for `NameCollection` on `Checkout.SessionCreateOptions` and `Checkout.Session`
 * Add support for `Flexible` on `CheckoutSessionSubscriptionDataBillingModeOptions`, `InvoiceScheduleDetailsBillingModeOptions`, `InvoiceSubscriptionDetailsBillingModeOptions`, `Quote.SubscriptionData.BillingMode`, `QuoteSubscriptionDataBillingModeOptions`, `Subscription.BillingMode`, `SubscriptionBillingModeOptions`, `SubscriptionSchedule.BillingMode`, and `SubscriptionScheduleBillingModeOptions`
 * Add support for `BusinessName` and `IndividualName` on `Checkout.Session.CollectedInformation`, `Checkout.Session.CustomerDetails`, `CustomerCreateOptions`, `CustomerUpdateOptions`, and `Customer`
 * Add support for `ChargebackLossReasonCode` on `Dispute.PaymentMethodDetails.Klarna`

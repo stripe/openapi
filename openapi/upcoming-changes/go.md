@@ -3,8 +3,8 @@
 * Remove support for values `saturday` and `sunday` from enum `AccountSettingsPayoutsSchedule.WeeklyPayoutDays`
 * Add support for `TrialUpdateBehavior` on `BillingPortalConfigurationFeaturesSubscriptionUpdateParams` and `BillingPortalConfigurationFeaturesSubscriptionUpdate`
 * Add support for `Paypay` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentIntentPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `SetupIntentConfirmPaymentMethodDataParams`, and `SetupIntentPaymentMethodDataParams`
+* Add support for `BrandingSettings` and `NameCollection` on `CheckoutSessionParams` and `CheckoutSession`
 * Add support for `ExcludedPaymentMethodTypes` on `CheckoutSessionParams`, `CheckoutSession`, `PaymentIntentConfirmParams`, and `PaymentIntentParams`
-* Add support for `NameCollection` on `CheckoutSessionParams` and `CheckoutSession`
 * Add support for `Flexible` on `CheckoutSessionSubscriptionDataBillingModeParams`, `InvoiceCreatePreviewScheduleDetailsBillingModeParams`, `InvoiceCreatePreviewSubscriptionDetailsBillingModeParams`, `QuoteSubscriptionDataBillingModeParams`, `QuoteSubscriptionDataBillingMode`, `SubscriptionBillingModeParams`, `SubscriptionBillingMode`, `SubscriptionMigrateBillingModeParams`, `SubscriptionScheduleBillingModeParams`, and `SubscriptionScheduleBillingMode`
 * Add support for `BusinessName` and `IndividualName` on `CheckoutSessionCollectedInformation`, `CheckoutSessionCustomerDetails`, `CustomerParams`, and `Customer`
 * Add support for new value `paypay` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
