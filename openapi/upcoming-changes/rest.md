@@ -19,8 +19,6 @@
 * Add support for new value `paypay` on enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod#update`
-* Add support for `promotion` on `PromotionCode#create` and `PromotionCode`
-* Change `PromotionCode#create.coupon` to be optional
 * Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.closed_reason`
 * Add support for `bbpos_wisepad3` on `Terminal.Configuration#create`, `Terminal.Configuration#update`, and `Terminal.Configuration`
 * Add support for `address_kana`, `address_kanji`, `display_name_kana`, `display_name_kanji`, and `phone` on `Terminal.Location#create`, `Terminal.Location#update`, and `Terminal.Location`

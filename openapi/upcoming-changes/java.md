@@ -17,8 +17,6 @@
 * Add support for new value `paypay` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
 * Add support for `frMealVoucherConecs` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `payByBank` on `PaymentMethodUpdateParams`
-* Add support for `promotion` on `PromotionCodeCreateParams` and `PromotionCode`
-* Change `PromotionCodeCreateParams.coupon` to be optional
 * Add support for `bbposWisepad3` on `terminal.ConfigurationCreateParams`, `terminal.ConfigurationUpdateParams`, and `terminal.Configuration`
 * Add support for `addressKana`, `addressKanji`, `displayNameKana`, `displayNameKanji`, and `phone` on `terminal.LocationCreateParams`, `terminal.LocationUpdateParams`, and `terminal.Location`
 * Change `terminal.LocationCreateParams.address` to be optional
