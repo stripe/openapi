@@ -1,5 +1,6 @@
 * Add support for new values `external_request` and `unsupported_business_type` on enums `Account.FutureRequirement.Error.code`, `Account.Requirement.Error.code`, `BankAccount.FutureRequirement.Error.code`, `BankAccount.Requirement.Error.code`, `Capability.FutureRequirement.Error.code`, `Capability.Requirement.Error.code`, `Person.FutureRequirement.Error.code`, and `Person.Requirement.Error.code`
 * Add support for `source` on `Discount`
+* Remove support for `coupon` on `Discount`
 * Add support for `paypay_payments` on `Account.Capability`, `Account.CreateParamsCapability`, and `Account.ModifyParamsCapability`
 * Remove support for values `saturday` and `sunday` from enums `Account.CreateParamsSettingPayoutSchedule.weekly_payout_days`, `Account.ModifyParamsSettingPayoutSchedule.weekly_payout_days`, and `Account.Setting.Payout.Schedule.weekly_payout_days`
 * Add support for `trial_update_behavior` on `BillingPortal.Configuration.Feature.SubscriptionUpdate`, `billing_portal.Configuration.CreateParamsFeatureSubscriptionUpdate`, and `billing_portal.Configuration.ModifyParamsFeatureSubscriptionUpdate`
