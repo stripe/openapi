@@ -1,7 +1,7 @@
 * Add support for new resource `BalanceSettings`
 * Add support for `retrieve` and `update` methods on resource `BalanceSettings`
 * Add support for `source` on `Discount`
-* Remove support for `coupon` on `Discount`
+* Remove support for `coupon` on `Discount`, `PromotionCodeCreateParams`, and `PromotionCode`
 * Add support for `paypayPayments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
 * Remove support for values `saturday` and `sunday` from enums `AccountCreateParams.settings.payouts.schedule.weeklyPayoutDays` and `AccountUpdateParams.settings.payouts.schedule.weeklyPayoutDays`
 * Add support for `trialUpdateBehavior` on `billingportal.Configuration.features.subscription_update`, `billingportal.ConfigurationCreateParams.features.subscription_update`, and `billingportal.ConfigurationUpdateParams.features.subscription_update`
@@ -25,7 +25,6 @@
 * Add support for `frMealVoucherConecs` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `payByBank` on `PaymentMethodUpdateParams`
 * Add support for `promotion` on `PromotionCodeCreateParams` and `PromotionCode`
-* Change `PromotionCodeCreateParams.coupon` to be optional
 * Add support for `billedUntil` on `SubscriptionItem`
 * Add support for `provider` on `tax.Settings.defaults`
 * Add support for `bbposWisepad3` on `terminal.ConfigurationCreateParams`, `terminal.ConfigurationUpdateParams`, and `terminal.Configuration`

@@ -1,7 +1,7 @@
 * Add support for new resource `BalanceSettings`
 * Add support for `retrieve` and `update` methods on resource `BalanceSettings`
 * Add support for `source` on `Discount`
-* Remove support for `coupon` on `Discount`
+* Remove support for `coupon` on `Discount`, `PromotionCode::CreateParams`, and `PromotionCode`
 * Add support for `paypay_payments` on `Account::Capability`, `Account::CreateParams::Capability`, and `Account::UpdateParams::Capability`
 * Add support for `trial_update_behavior` on `BillingPortal::Configuration::CreateParams::Feature::SubscriptionUpdate`, `BillingPortal::Configuration::Feature::SubscriptionUpdate`, and `BillingPortal::Configuration::UpdateParams::Feature::SubscriptionUpdate`
 * Add support for `paypay` on `Charge::PaymentMethodDetail`, `ConfirmationToken::CreateParams::PaymentMethodDatum`, `ConfirmationToken::PaymentMethodPreview`, `PaymentIntent::ConfirmParams::PaymentMethodDatum`, `PaymentIntent::ConfirmParams::PaymentMethodOption`, `PaymentIntent::CreateParams::PaymentMethodDatum`, `PaymentIntent::CreateParams::PaymentMethodOption`, `PaymentIntent::PaymentMethodOption`, `PaymentIntent::UpdateParams::PaymentMethodDatum`, `PaymentIntent::UpdateParams::PaymentMethodOption`, `PaymentMethod::CreateParams`, `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, `PaymentMethodConfiguration`, `PaymentMethod`, `SetupIntent::ConfirmParams::PaymentMethodDatum`, `SetupIntent::CreateParams::PaymentMethodDatum`, and `SetupIntent::UpdateParams::PaymentMethodDatum`
@@ -19,7 +19,6 @@
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod::UpdateParams`
 * Add support for `promotion` on `PromotionCode::CreateParams` and `PromotionCode`
-* Change `PromotionCode::CreateParams.coupon` to be optional
 * Add support for `billed_until` on `SubscriptionItem`
 * Add support for `provider` on `Tax::Settings::Default`
 * Add support for `bbpos_wisepad3` on `Terminal::Configuration::CreateParams`, `Terminal::Configuration::UpdateParams`, and `Terminal::Configuration`

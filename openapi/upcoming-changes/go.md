@@ -2,7 +2,7 @@
 * Add support for `Get` and `Update` methods on resource `BalanceSettings`
 * Add support for new values `external_request` and `unsupported_business_type` on enums `BankAccountFutureRequirementsErrors.Code` and `BankAccountRequirementsErrors.Code`
 * Add support for `Source` on `Discount`
-* Remove support for `Coupon` on `Discount`
+* Remove support for `Coupon` on `Discount`, `PromotionCodeParams`, and `PromotionCode`
 * Add support for `PaypayPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
 * Remove support for values `saturday` and `sunday` from enum `AccountSettingsPayoutsSchedule.WeeklyPayoutDays`
 * Add support for `TrialUpdateBehavior` on `BillingPortalConfigurationFeaturesSubscriptionUpdateParams` and `BillingPortalConfigurationFeaturesSubscriptionUpdate`

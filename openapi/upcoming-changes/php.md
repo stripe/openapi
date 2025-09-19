@@ -2,7 +2,7 @@
 * Add support for `retrieve` and `update` methods on resource `BalanceSettings`
 * Add support for new values `external_request` and `unsupported_business_type` on enums `Account.future_requirements.errors[].code`, `Account.requirements.errors[].code`, `BankAccount.future_requirements.errors[].code`, `BankAccount.requirements.errors[].code`, `Capability.future_requirements.errors[].code`, `Capability.requirements.errors[].code`, `Person.future_requirements.errors[].code`, and `Person.requirements.errors[].code`
 * Add support for `source` on `Discount`
-* Remove support for `coupon` on `Discount`
+* Remove support for `coupon` on `Discount`, `PromotionCode.create().$params`, and `PromotionCode`
 * Add support for `paypay_payments` on `Account.capabilities`, `Account.create().$params.capability`, and `Account.update().$params.capability`
 * Remove support for values `saturday` and `sunday` from enum `Account.settings.payouts.schedule.weekly_payout_days`
 * Add support for `trial_update_behavior` on `BillingPortal.Configuration.features.subscription_update`, `BillingPortal\Configuration.create().$params.feature.subscription_update`, and `BillingPortal\Configuration.update().$params.feature.subscription_update`
@@ -24,7 +24,6 @@
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration.create().$params`, `PaymentMethodConfiguration.update().$params`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod.update().$params`
 * Add support for `promotion` on `PromotionCode.create().$params` and `PromotionCode`
-* Change `PromotionCode.create().$params.coupon` to be optional
 * Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.closed_reason`
 * Add support for `billed_until` on `SubscriptionItem`
 * Add support for `provider` on `Tax.Settings.defaults`
