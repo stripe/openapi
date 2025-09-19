@@ -13,6 +13,7 @@
 * Add support for `ChargebackLossReasonCode` on `DisputePaymentMethodDetailsKlarna`
 * Add support for `NetAmount` and `ProrationDetails` on `InvoiceItem`
 * Remove support for `Iterations` on `InvoiceCreatePreviewScheduleDetailsPhaseParams` and `SubscriptionSchedulePhaseParams`
+* Add support for `BillingSchedules` on `InvoiceCreatePreviewSubscriptionDetailsParams`, `SubscriptionParams`, and `Subscription`
 * Add support for `FraudDisputabilityLikelihood` and `RiskAssessment` on `IssuingAuthorizationParams`
 * Add support for `SecondLine` on `IssuingCard`
 * Add support for new value `paypay` on enum `PaymentIntent.ExcludedPaymentMethodTypes`
@@ -21,6 +22,7 @@
 * Remove support for `Link` and `PayByBank` on `PaymentMethodParams`
 * Add support for `Promotion` on `PromotionCodeParams` and `PromotionCode`
 * Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.ClosedReason`
+* Add support for `BilledUntil` on `SubscriptionItem`
 * Add support for `Provider` on `TaxSettingsDefaults`
 * Add support for `BBPOSWisePad3` on `TerminalConfigurationParams` and `TerminalConfiguration`
 * Add support for `AddressKana`, `AddressKanji`, `DisplayNameKana`, `DisplayNameKanji`, and `Phone` on `TerminalLocationParams` and `TerminalLocation`
