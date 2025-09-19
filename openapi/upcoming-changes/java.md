@@ -1,3 +1,5 @@
+* Add support for new resource `BalanceSettings`
+* Add support for `retrieve` and `update` methods on resource `BalanceSettings`
 * Add support for `source` on `Discount`
 * Remove support for `coupon` on `Discount`
 * Add support for `paypayPayments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`

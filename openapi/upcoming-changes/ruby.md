@@ -1,3 +1,5 @@
+* Add support for new resource `BalanceSettings`
+* Add support for `retrieve` and `update` methods on resource `BalanceSettings`
 * Add support for `source` on `Discount`
 * Remove support for `coupon` on `Discount`
 * Add support for `paypay_payments` on `Account::Capability`, `Account::CreateParams::Capability`, and `Account::UpdateParams::Capability`

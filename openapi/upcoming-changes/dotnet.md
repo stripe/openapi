@@ -1,3 +1,5 @@
+* Add support for new resource `BalanceSettings`
+* Add support for `Get` and `Update` methods on resource `BalanceSettings`
 * Add support for `Source` on `Discount`
 * Remove support for `Coupon` on `Discount`
 * Add support for `PaypayPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`

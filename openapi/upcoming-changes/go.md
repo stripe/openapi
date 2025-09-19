@@ -1,3 +1,5 @@
+* Add support for new resource `BalanceSettings`
+* Add support for `Get` and `Update` methods on resource `BalanceSettings`
 * Add support for new values `external_request` and `unsupported_business_type` on enums `BankAccountFutureRequirementsErrors.Code` and `BankAccountRequirementsErrors.Code`
 * Add support for `Source` on `Discount`
 * Remove support for `Coupon` on `Discount`

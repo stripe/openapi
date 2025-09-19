@@ -1,3 +1,5 @@
+* Add support for new resource `BalanceSettings`
+* Add support for `modify` and `retrieve` methods on resource `BalanceSettings`
 * Add support for new values `external_request` and `unsupported_business_type` on enums `Account.FutureRequirement.Error.code`, `Account.Requirement.Error.code`, `BankAccount.FutureRequirement.Error.code`, `BankAccount.Requirement.Error.code`, `Capability.FutureRequirement.Error.code`, `Capability.Requirement.Error.code`, `Person.FutureRequirement.Error.code`, and `Person.Requirement.Error.code`
 * Add support for `source` on `Discount`
 * Remove support for `coupon` on `Discount`
