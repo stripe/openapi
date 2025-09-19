@@ -14,6 +14,8 @@
 * Add support for `second_line` on `Issuing::Card`
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod::UpdateParams`
+* Add support for `promotion` on `PromotionCode::CreateParams` and `PromotionCode`
+* Change `PromotionCode::CreateParams.coupon` to be optional
 * Add support for `provider` on `Tax::Settings::Default`
 * Add support for `bbpos_wisepad3` on `Terminal::Configuration::CreateParams`, `Terminal::Configuration::UpdateParams`, and `Terminal::Configuration`
 * Add support for `address_kana`, `address_kanji`, `display_name_kana`, `display_name_kanji`, and `phone` on `Terminal::Location::CreateParams`, `Terminal::Location::UpdateParams`, and `Terminal::Location`

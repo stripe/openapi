@@ -19,6 +19,7 @@
 * Add support for new value `paypay` on enum `PaymentLink.PaymentMethodTypes`
 * Add support for `FRMealVoucherConecs` on `PaymentMethodConfigurationParams` and `PaymentMethodConfiguration`
 * Remove support for `Link` and `PayByBank` on `PaymentMethodParams`
+* Add support for `Promotion` on `PromotionCodeParams` and `PromotionCode`
 * Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.ClosedReason`
 * Add support for `Provider` on `TaxSettingsDefaults`
 * Add support for `BBPOSWisePad3` on `TerminalConfigurationParams` and `TerminalConfiguration`

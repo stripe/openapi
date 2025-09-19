@@ -19,6 +19,8 @@
 * Add support for new value `paypay` on enum `PaymentLink.payment_method_types`
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration.create().$params`, `PaymentMethodConfiguration.update().$params`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod.update().$params`
+* Add support for `promotion` on `PromotionCode.create().$params` and `PromotionCode`
+* Change `PromotionCode.create().$params.coupon` to be optional
 * Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.closed_reason`
 * Add support for `provider` on `Tax.Settings.defaults`
 * Add support for `bbpos_wisepad3` on `Terminal.Configuration`, `Terminal\Configuration.create().$params`, and `Terminal\Configuration.update().$params`

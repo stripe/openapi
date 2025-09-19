@@ -14,6 +14,7 @@
 * Add support for `SecondLine` on `Issuing.Card`
 * Add support for `FrMealVoucherConecs` on `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, and `PaymentMethodConfiguration`
 * Remove support for `Link` and `PayByBank` on `PaymentMethodUpdateOptions`
+* Add support for `Promotion` on `PromotionCodeCreateOptions` and `PromotionCode`
 * Add support for `Provider` on `Tax.Settings.Defaults`
 * Add support for `BbposWisepad3` on `Terminal.ConfigurationCreateOptions`, `Terminal.ConfigurationUpdateOptions`, and `Terminal.Configuration`
 * Add support for `AddressKana`, `AddressKanji`, `DisplayNameKana`, `DisplayNameKanji`, and `Phone` on `Terminal.LocationCreateOptions`, `Terminal.LocationUpdateOptions`, and `Terminal.Location`
