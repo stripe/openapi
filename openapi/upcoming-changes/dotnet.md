@@ -19,7 +19,7 @@
 * Remove support for `Iterations` on `InvoiceScheduleDetailsPhaseOptions` and `SubscriptionSchedulePhaseOptions`
 * Add support for `FraudDisputabilityLikelihood` and `RiskAssessment` on `Issuing.TestHelpersAuthorizationCreateOptions`
 * Add support for `SecondLine` on `Issuing.Card`
-* Add support for `FrMealVoucherConecs` on `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, and `PaymentMethodConfiguration`
+* Add support for `FrMealVoucherConecs` on `PaymentMethodConfigurationCreateOptions` and `PaymentMethodConfigurationUpdateOptions`
 * Remove support for `Link` and `PayByBank` on `PaymentMethodUpdateOptions`
 * Add support for `Promotion` on `PromotionCodeCreateOptions` and `PromotionCode`
 * Add support for `Provider` on `Tax.Settings.Defaults`

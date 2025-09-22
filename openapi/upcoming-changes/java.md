@@ -25,7 +25,7 @@
 * Add support for `secondLine` on `issuing.Card`
 * Add support for new values `mb_way` and `paypay` on enum `PaymentIntentCreateParams.excludedPaymentMethodTypes`
 * Add support for new value `paypay` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
-* Add support for `frMealVoucherConecs` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
+* Add support for `frMealVoucherConecs` on `PaymentMethodConfigurationCreateParams` and `PaymentMethodConfigurationUpdateParams`
 * Remove support for `link` and `payByBank` on `PaymentMethodUpdateParams`
 * Add support for `promotion` on `PromotionCodeCreateParams` and `PromotionCode`
 * Add support for `provider` on `tax.Settings.defaults`

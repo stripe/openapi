@@ -19,7 +19,7 @@
 * Remove support for `iterations` on `Invoice::CreatePreviewParams::ScheduleDetail::Phase`, `SubscriptionSchedule::CreateParams::Phase`, and `SubscriptionSchedule::UpdateParams::Phase`
 * Add support for `fraud_disputability_likelihood` and `risk_assessment` on `Issuing::Authorization::CreateParams`
 * Add support for `second_line` on `Issuing::Card`
-* Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
+* Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration::CreateParams` and `PaymentMethodConfiguration::UpdateParams`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod::UpdateParams`
 * Add support for `promotion` on `PromotionCode::CreateParams` and `PromotionCode`
 * Add support for `provider` on `Tax::Settings::Default`
