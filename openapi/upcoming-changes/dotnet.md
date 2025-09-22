@@ -4,6 +4,7 @@
 * Remove support for `Coupon` on `Discount`, `PromotionCodeCreateOptions`, and `PromotionCode`
 * Add support for `MbWayPayments` and `PaypayPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
 * Add support for `TrialUpdateBehavior` on `BillingPortal.Configuration.Features.SubscriptionUpdate` and `BillingPortalConfigurationFeaturesSubscriptionUpdateOptions`
+* Add support for `MbWay` on `Charge.PaymentMethodDetails`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodCreateOptions`, `PaymentMethod`, and `SetupIntentPaymentMethodDataOptions`
 * Add support for `Paypay` on `Charge.PaymentMethodDetails`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, and `SetupIntentPaymentMethodDataOptions`
 * Add support for `BrandingSettings` and `NameCollection` on `Checkout.SessionCreateOptions` and `Checkout.Session`
 * Add support for `ExcludedPaymentMethodTypes` on `Checkout.SessionCreateOptions`, `Checkout.Session`, `PaymentIntentConfirmOptions`, and `PaymentIntentUpdateOptions`
