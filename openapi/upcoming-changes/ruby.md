@@ -2,7 +2,7 @@
 * Add support for `retrieve` and `update` methods on resource `BalanceSettings`
 * Add support for `source` on `Discount`
 * Remove support for `coupon` on `Discount`, `PromotionCode::CreateParams`, and `PromotionCode`
-* Add support for `paypay_payments` on `Account::Capability`, `Account::CreateParams::Capability`, and `Account::UpdateParams::Capability`
+* Add support for `mb_way_payments` and `paypay_payments` on `Account::Capability`, `Account::CreateParams::Capability`, and `Account::UpdateParams::Capability`
 * Add support for `trial_update_behavior` on `BillingPortal::Configuration::CreateParams::Feature::SubscriptionUpdate`, `BillingPortal::Configuration::Feature::SubscriptionUpdate`, and `BillingPortal::Configuration::UpdateParams::Feature::SubscriptionUpdate`
 * Add support for `paypay` on `Charge::PaymentMethodDetail`, `ConfirmationToken::CreateParams::PaymentMethodDatum`, `ConfirmationToken::PaymentMethodPreview`, `PaymentIntent::ConfirmParams::PaymentMethodDatum`, `PaymentIntent::ConfirmParams::PaymentMethodOption`, `PaymentIntent::CreateParams::PaymentMethodDatum`, `PaymentIntent::CreateParams::PaymentMethodOption`, `PaymentIntent::PaymentMethodOption`, `PaymentIntent::UpdateParams::PaymentMethodDatum`, `PaymentIntent::UpdateParams::PaymentMethodOption`, `PaymentMethod::CreateParams`, `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, `PaymentMethodConfiguration`, `PaymentMethod`, `SetupIntent::ConfirmParams::PaymentMethodDatum`, `SetupIntent::CreateParams::PaymentMethodDatum`, and `SetupIntent::UpdateParams::PaymentMethodDatum`
 * Add support for `branding_settings` and `name_collection` on `Checkout::Session::CreateParams` and `Checkout::Session`

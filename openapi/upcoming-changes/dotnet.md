@@ -2,7 +2,7 @@
 * Add support for `Get` and `Update` methods on resource `BalanceSettings`
 * Add support for `Source` on `Discount`
 * Remove support for `Coupon` on `Discount`, `PromotionCodeCreateOptions`, and `PromotionCode`
-* Add support for `PaypayPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
+* Add support for `MbWayPayments` and `PaypayPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
 * Add support for `TrialUpdateBehavior` on `BillingPortal.Configuration.Features.SubscriptionUpdate` and `BillingPortalConfigurationFeaturesSubscriptionUpdateOptions`
 * Add support for `Paypay` on `Charge.PaymentMethodDetails`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, and `SetupIntentPaymentMethodDataOptions`
 * Add support for `BrandingSettings` and `NameCollection` on `Checkout.SessionCreateOptions` and `Checkout.Session`

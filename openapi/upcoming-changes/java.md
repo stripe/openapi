@@ -2,7 +2,7 @@
 * Add support for `retrieve` and `update` methods on resource `BalanceSettings`
 * Add support for `source` on `Discount`
 * Remove support for `coupon` on `Discount`, `PromotionCodeCreateParams`, and `PromotionCode`
-* Add support for `paypayPayments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
+* Add support for `mbWayPayments` and `paypayPayments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
 * Remove support for values `saturday` and `sunday` from enums `AccountCreateParams.settings.payouts.schedule.weeklyPayoutDays` and `AccountUpdateParams.settings.payouts.schedule.weeklyPayoutDays`
 * Add support for `trialUpdateBehavior` on `billingportal.Configuration.features.subscription_update`, `billingportal.ConfigurationCreateParams.features.subscription_update`, and `billingportal.ConfigurationUpdateParams.features.subscription_update`
 * Add support for `paypay` on `Charge.payment_method_details`, `ConfirmationToken.payment_method_preview`, `ConfirmationTokenCreateParams.payment_method_data`, `PaymentIntent.payment_method_options`, `PaymentIntentConfirmParams.payment_method_data`, `PaymentIntentConfirmParams.payment_method_options`, `PaymentIntentCreateParams.payment_method_data`, `PaymentIntentCreateParams.payment_method_options`, `PaymentIntentUpdateParams.payment_method_data`, `PaymentIntentUpdateParams.payment_method_options`, `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, `PaymentMethodConfiguration`, `PaymentMethodCreateParams`, `PaymentMethod`, `SetupIntentConfirmParams.payment_method_data`, `SetupIntentCreateParams.payment_method_data`, and `SetupIntentUpdateParams.payment_method_data`
