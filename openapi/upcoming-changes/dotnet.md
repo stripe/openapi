@@ -16,13 +16,11 @@
 * Add support for `ChargebackLossReasonCode` on `Dispute.PaymentMethodDetails.Klarna`
 * Add support for `NetAmount` and `ProrationDetails` on `InvoiceItem`
 * Remove support for `Iterations` on `InvoiceScheduleDetailsPhaseOptions` and `SubscriptionSchedulePhaseOptions`
-* Add support for `BillingSchedules` on `InvoiceSubscriptionDetailsOptions`, `SubscriptionCreateOptions`, `SubscriptionUpdateOptions`, and `Subscription`
 * Add support for `FraudDisputabilityLikelihood` and `RiskAssessment` on `Issuing.TestHelpersAuthorizationCreateOptions`
 * Add support for `SecondLine` on `Issuing.Card`
 * Add support for `FrMealVoucherConecs` on `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, and `PaymentMethodConfiguration`
 * Remove support for `Link` and `PayByBank` on `PaymentMethodUpdateOptions`
 * Add support for `Promotion` on `PromotionCodeCreateOptions` and `PromotionCode`
-* Add support for `BilledUntil` on `SubscriptionItem`
 * Add support for `Provider` on `Tax.Settings.Defaults`
 * Add support for `BbposWisepad3` on `Terminal.ConfigurationCreateOptions`, `Terminal.ConfigurationUpdateOptions`, and `Terminal.Configuration`
 * Add support for `AddressKana`, `AddressKanji`, `DisplayNameKana`, `DisplayNameKanji`, and `Phone` on `Terminal.LocationCreateOptions`, `Terminal.LocationUpdateOptions`, and `Terminal.Location`

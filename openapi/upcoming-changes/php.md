@@ -19,7 +19,6 @@
 * Add support for `chargeback_loss_reason_code` on `Dispute.payment_method_details.klarna`
 * Add support for `net_amount` and `proration_details` on `InvoiceItem`
 * Remove support for `iterations` on `Invoice.create_preview().$params.schedule_detail.phase`, `SubscriptionSchedule.create().$params.phase`, and `SubscriptionSchedule.update().$params.phase`
-* Add support for `billing_schedules` on `Invoice.create_preview().$params.subscription_detail`, `Subscription.create().$params`, `Subscription.update().$params`, and `Subscription`
 * Add support for `fraud_disputability_likelihood` and `risk_assessment` on `Issuing\Authorization.create().$params`
 * Add support for `second_line` on `Issuing.Card`
 * Add support for new value `paypay` on enum `PaymentIntent.excluded_payment_method_types`
@@ -28,7 +27,6 @@
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod.update().$params`
 * Add support for `promotion` on `PromotionCode.create().$params` and `PromotionCode`
 * Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.closed_reason`
-* Add support for `billed_until` on `SubscriptionItem`
 * Add support for `provider` on `Tax.Settings.defaults`
 * Add support for `bbpos_wisepad3` on `Terminal.Configuration`, `Terminal\Configuration.create().$params`, and `Terminal\Configuration.update().$params`
 * Add support for `address_kana`, `address_kanji`, `display_name_kana`, `display_name_kanji`, and `phone` on `Terminal.Location`, `Terminal\Location.create().$params`, and `Terminal\Location.update().$params`

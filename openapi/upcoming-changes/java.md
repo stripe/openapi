@@ -20,7 +20,6 @@
 * Add support for `chargebackLossReasonCode` on `Dispute.payment_method_details.klarna`
 * Add support for `netAmount` and `prorationDetails` on `InvoiceItem`
 * Remove support for `iterations` on `InvoiceCreatePreviewParams.schedule_details.phases[]`, `SubscriptionScheduleCreateParams.phases[]`, and `SubscriptionScheduleUpdateParams.phases[]`
-* Add support for `billingSchedules` on `InvoiceCreatePreviewParams.subscription_details`, `SubscriptionCreateParams`, `SubscriptionUpdateParams`, and `Subscription`
 * Add support for `fraudDisputabilityLikelihood` and `riskAssessment` on `issuing.AuthorizationCreateParams`
 * Add support for `secondLine` on `issuing.Card`
 * Add support for new value `paypay` on enum `PaymentIntentCreateParams.excludedPaymentMethodTypes`
@@ -28,7 +27,6 @@
 * Add support for `frMealVoucherConecs` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `payByBank` on `PaymentMethodUpdateParams`
 * Add support for `promotion` on `PromotionCodeCreateParams` and `PromotionCode`
-* Add support for `billedUntil` on `SubscriptionItem`
 * Add support for `provider` on `tax.Settings.defaults`
 * Add support for `bbposWisepad3` on `terminal.ConfigurationCreateParams`, `terminal.ConfigurationUpdateParams`, and `terminal.Configuration`
 * Add support for `addressKana`, `addressKanji`, `displayNameKana`, `displayNameKanji`, and `phone` on `terminal.LocationCreateParams`, `terminal.LocationUpdateParams`, and `terminal.Location`

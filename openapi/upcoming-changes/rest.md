@@ -22,7 +22,6 @@
 * Add support for `chargeback_loss_reason_code` on `Dispute.payment_method_details.klarna`
 * Add support for `net_amount` and `proration_details` on `InvoiceItem`
 * Remove support for `iterations` on `Invoice#create_preview.schedule_details.phases[]`, `SubscriptionSchedule#create.phases[]`, and `SubscriptionSchedule#update.phases[]`
-* Add support for `billing_schedules` on `Invoice#create_preview.subscription_details`, `Subscription#create`, `Subscription#update`, and `Subscription`
 * Add support for `fraud_disputability_likelihood` and `risk_assessment` on `Issuing.Authorization.testHelpers#create`
 * Add support for `second_line` on `Issuing.Card`
 * Add support for new value `paypay` on enums `PaymentIntent#create.excluded_payment_method_types` and `PaymentIntent.excluded_payment_method_types`
@@ -31,7 +30,6 @@
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod#update`
 * Add support for `promotion` on `PromotionCode#create` and `PromotionCode`
 * Add support for new values `acknowledged` and `payment_never_settled` on enum `Review.closed_reason`
-* Add support for `billed_until` on `SubscriptionItem`
 * Add support for `provider` on `Tax.Settings.defaults`
 * Add support for `bbpos_wisepad3` on `Terminal.Configuration#create`, `Terminal.Configuration#update`, and `Terminal.Configuration`
 * Add support for `address_kana`, `address_kanji`, `display_name_kana`, `display_name_kanji`, and `phone` on `Terminal.Location#create`, `Terminal.Location#update`, and `Terminal.Location`

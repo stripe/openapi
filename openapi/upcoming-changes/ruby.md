@@ -16,13 +16,11 @@
 * Add support for `chargeback_loss_reason_code` on `Dispute::PaymentMethodDetail::Klarna`
 * Add support for `net_amount` and `proration_details` on `InvoiceItem`
 * Remove support for `iterations` on `Invoice::CreatePreviewParams::ScheduleDetail::Phase`, `SubscriptionSchedule::CreateParams::Phase`, and `SubscriptionSchedule::UpdateParams::Phase`
-* Add support for `billing_schedules` on `Invoice::CreatePreviewParams::SubscriptionDetail`, `Subscription::CreateParams`, `Subscription::UpdateParams`, and `Subscription`
 * Add support for `fraud_disputability_likelihood` and `risk_assessment` on `Issuing::Authorization::CreateParams`
 * Add support for `second_line` on `Issuing::Card`
 * Add support for `fr_meal_voucher_conecs` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
 * Remove support for `link` and `pay_by_bank` on `PaymentMethod::UpdateParams`
 * Add support for `promotion` on `PromotionCode::CreateParams` and `PromotionCode`
-* Add support for `billed_until` on `SubscriptionItem`
 * Add support for `provider` on `Tax::Settings::Default`
 * Add support for `bbpos_wisepad3` on `Terminal::Configuration::CreateParams`, `Terminal::Configuration::UpdateParams`, and `Terminal::Configuration`
 * Add support for `address_kana`, `address_kanji`, `display_name_kana`, `display_name_kanji`, and `phone` on `Terminal::Location::CreateParams`, `Terminal::Location::UpdateParams`, and `Terminal::Location`
