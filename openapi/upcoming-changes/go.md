@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for new value `prevented` on enum `Dispute.Status`
