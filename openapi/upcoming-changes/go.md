@@ -1,1 +1,6 @@
+* Remove support for `PaypayPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
+* Remove support for `Paypay` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentIntentPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `SetupIntentConfirmPaymentMethodDataParams`, and `SetupIntentPaymentMethodDataParams`
+* Remove support for value `paypay` from enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
 * Add support for new value `prevented` on enum `Dispute.Status`
+* Remove support for value `paypay` from enum `PaymentIntent.ExcludedPaymentMethodTypes`
+* Remove support for value `paypay` from enum `PaymentLink.PaymentMethodTypes`
