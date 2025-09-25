@@ -1,10 +1,1 @@
-* Remove support for `paypay_payments` on `Account#create.capabilities`, `Account#update.capabilities`, and `Account.capabilities`
-* Remove support for `paypay` on `Charge.payment_method_details`, `ConfirmationToken.payment_method_preview`, `ConfirmationToken.testHelpers#create.payment_method_data`, `PaymentIntent#confirm.payment_method_data`, `PaymentIntent#confirm.payment_method_options`, `PaymentIntent#create.payment_method_data`, `PaymentIntent#create.payment_method_options`, `PaymentIntent#update.payment_method_data`, `PaymentIntent#update.payment_method_options`, `PaymentIntent.payment_method_options`, `PaymentMethod#create`, `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, `PaymentMethodConfiguration`, `PaymentMethod`, `SetupIntent#confirm.payment_method_data`, `SetupIntent#create.payment_method_data`, and `SetupIntent#update.payment_method_data`
-* Remove support for value `paypay` from enum `Checkout.Session#create.excluded_payment_method_types`
-* Remove support for value `paypay` from enum `Checkout.Session#create.payment_method_types`
-* Remove support for value `paypay` from enums `ConfirmationToken.testHelpers#create.payment_method_data.type`, `PaymentIntent#confirm.payment_method_data.type`, `PaymentIntent#create.payment_method_data.type`, `PaymentIntent#update.payment_method_data.type`, `SetupIntent#confirm.payment_method_data.type`, `SetupIntent#create.payment_method_data.type`, and `SetupIntent#update.payment_method_data.type`
-* Remove support for value `paypay` from enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
-* Remove support for value `paypay` from enums `Customer#list_payment_methods.type`, `PaymentMethod#create.type`, and `PaymentMethod#list.type`
-* Add support for new value `prevented` on enum `Dispute.status`
-* Remove support for value `paypay` from enums `PaymentIntent#confirm.excluded_payment_method_types`, `PaymentIntent#create.excluded_payment_method_types`, `PaymentIntent#update.excluded_payment_method_types`, and `PaymentIntent.excluded_payment_method_types`
-* Remove support for value `paypay` from enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`
+* Release specs are identical.
