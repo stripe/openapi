@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Remove support for `balance_report` and `payout_reconciliation_report` on `AccountSession#create.components` and `AccountSession.components`
