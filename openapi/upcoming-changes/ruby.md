@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for `last_seen_at` on `Terminal::Reader`
