@@ -1,1 +1,1 @@
-* Remove support for `balance_report` and `payout_reconciliation_report` on `AccountSession#create.components` and `AccountSession.components`
+* Add support for new value `2025-10-29.clover` on enum `WebhookEndpoint#create.api_version`

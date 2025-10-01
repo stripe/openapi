@@ -1,1 +1,1 @@
-* Remove support for `balance_report` and `payout_reconciliation_report` on `AccountSession.components` and `AccountSession.create().$params.component`
+* Release specs are identical.

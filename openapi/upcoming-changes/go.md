@@ -1,1 +1,1 @@
-* Remove support for `BalanceReport` and `PayoutReconciliationReport` on `AccountSessionComponentsParams` and `AccountSessionComponents`
+* Release specs are identical.
