@@ -1,1 +1,2 @@
+* Add support for `mb_way` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
 * Add support for `last_seen_at` on `Terminal::Reader`
