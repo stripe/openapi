@@ -1,6 +1,7 @@
 * Add support for new resources `PaymentAttemptRecord` and `PaymentRecord`
 * Add support for `list` and `retrieve` methods on resource `PaymentAttemptRecord`
 * Add support for `report_payment_attempt_canceled`, `report_payment_attempt_failed`, `report_payment_attempt_guaranteed`, `report_payment_attempt_informational`, `report_payment_attempt`, `report_payment`, `report_refund`, and `retrieve` methods on resource `PaymentRecord`
+* Add support for `representative_declaration` on `Account::Company`, `Account::CreateParams::Company`, `Account::UpdateParams::Company`, and `Token::CreateParams::Account::Company`
 * Add support for `payment_method_configuration` on `BillingPortal::Configuration::CreateParams::Feature::PaymentMethodUpdate` and `BillingPortal::Configuration::UpdateParams::Feature::PaymentMethodUpdate`
 * Add support for `mb_way` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
 * Add support for `gip` on `Terminal::Configuration::CreateParams::Tipping`, `Terminal::Configuration::Tipping`, and `Terminal::Configuration::UpdateParams::Tipping`

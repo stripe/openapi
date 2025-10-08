@@ -1,6 +1,7 @@
 * Add support for new resources `PaymentAttemptRecord` and `PaymentRecord`
 * Add support for `list` and `retrieve` methods on resource `PaymentAttemptRecord`
 * Add support for `report_payment_attempt_canceled`, `report_payment_attempt_failed`, `report_payment_attempt_guaranteed`, `report_payment_attempt_informational`, `report_payment_attempt`, `report_payment`, `report_refund`, and `retrieve` methods on resource `PaymentRecord`
+* Add support for `representativeDeclaration` on `Account.company`, `AccountCreateParams.company`, `AccountUpdateParams.company`, and `TokenCreateParams.account.company`
 * Add support for `paymentMethodConfiguration` on `billingportal.ConfigurationCreateParams.features.payment_method_update` and `billingportal.ConfigurationUpdateParams.features.payment_method_update`
 * Add support for new value `mb_way` on enum `checkout.SessionCreateParams.excludedPaymentMethodTypes`
 * Add support for new value `mb_way` on enum `checkout.SessionCreateParams.paymentMethodTypes`

@@ -1,6 +1,7 @@
 * Add support for new resources `PaymentAttemptRecord` and `PaymentRecord`
 * Add support for `Get` and `List` methods on resource `PaymentAttemptRecord`
 * Add support for `Get`, `ReportPaymentAttemptCanceled`, `ReportPaymentAttemptFailed`, `ReportPaymentAttemptGuaranteed`, `ReportPaymentAttemptInformational`, `ReportPaymentAttempt`, `ReportPayment`, and `ReportRefund` methods on resource `PaymentRecord`
+* Add support for `RepresentativeDeclaration` on `AccountCompanyParams`, `AccountCompany`, and `TokenAccountCompanyParams`
 * Add support for `PaymentMethodConfiguration` on `BillingPortalConfigurationFeaturesPaymentMethodUpdateParams`
 * Add support for new value `solana` on enum `ChargePaymentMethodDetailsCrypto.Network`
 * Add support for new value `platform_terms_of_service` on enum `File.Purpose`
