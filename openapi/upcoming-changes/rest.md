@@ -8,6 +8,7 @@
 * Add support for new value `mb_way` on enum `Checkout.Session#create.payment_method_types`
 * Add support for new value `platform_terms_of_service` on enums `File#list.purpose` and `File.purpose`
 * Add support for new value `platform_terms_of_service` on enum `File#create.purpose`
+* Add support for `name_collection` on `PaymentLink#create`, `PaymentLink#update`, and `PaymentLink`
 * Add support for new value `mb_way` on enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`
 * Add support for `mb_way` on `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, and `PaymentMethodConfiguration`
 * Add support for `gip` on `Terminal.Configuration#create.tipping`, `Terminal.Configuration#update.tipping`, and `Terminal.Configuration.tipping`

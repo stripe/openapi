@@ -5,6 +5,7 @@
 * Add support for `PaymentMethodConfiguration` on `BillingPortalConfigurationFeaturesPaymentMethodUpdateParams`
 * Add support for new value `solana` on enum `ChargePaymentMethodDetailsCrypto.Network`
 * Add support for new value `platform_terms_of_service` on enum `File.Purpose`
+* Add support for `NameCollection` on `PaymentLinkParams` and `PaymentLink`
 * Add support for new value `mb_way` on enum `PaymentLink.PaymentMethodTypes`
 * Add support for `MbWay` on `PaymentMethodConfigurationParams` and `PaymentMethodConfiguration`
 * Add support for `Gip` on `TerminalConfigurationTippingParams` and `TerminalConfigurationTipping`

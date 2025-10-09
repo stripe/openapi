@@ -5,6 +5,7 @@
 * Add support for `payment_method_configuration` on `BillingPortal\Configuration.create().$params.feature.payment_method_update` and `BillingPortal\Configuration.update().$params.feature.payment_method_update`
 * Add support for new value `solana` on enum `Charge.payment_method_details.crypto.network`
 * Add support for new value `platform_terms_of_service` on enum `File.purpose`
+* Add support for `name_collection` on `PaymentLink.create().$params`, `PaymentLink.update().$params`, and `PaymentLink`
 * Add support for new value `mb_way` on enum `PaymentLink.payment_method_types`
 * Add support for `mb_way` on `PaymentMethodConfiguration.create().$params`, `PaymentMethodConfiguration.update().$params`, and `PaymentMethodConfiguration`
 * Add support for `gip` on `Terminal.Configuration.tipping`, `Terminal\Configuration.create().$params.tipping`, and `Terminal\Configuration.update().$params.tipping`
