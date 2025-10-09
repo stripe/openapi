@@ -6,8 +6,12 @@
 * Add support for new value `solana` on enum `Charge.payment_method_details.crypto.network`
 * Add support for new value `mb_way` on enum `Checkout.Session#create.excluded_payment_method_types`
 * Add support for new value `mb_way` on enum `Checkout.Session#create.payment_method_types`
+* Add support for `payment_record_refund` and `type` on `CreditNote#create.refunds[]`, `CreditNote#preview.refunds[]`, `CreditNote#preview_lines.refunds[]`, and `CreditNote.refunds[]`
 * Add support for new value `platform_terms_of_service` on enums `File#list.purpose` and `File.purpose`
 * Add support for new value `platform_terms_of_service` on enum `File#create.purpose`
+* Add support for `payment_record` on `Invoice#attach_payment`, `InvoicePayment#list.payment`, and `InvoicePayment.payment`
+* Change type of `InvoicePayment#list.payment.type` from `literal('payment_intent')` to `enum('payment_intent'|'payment_record')`
+* Add support for new value `custom` on enums `Invoice#create.payment_settings.payment_method_types`, `Invoice#update.payment_settings.payment_method_types`, `Invoice.payment_settings.payment_method_types`, `Subscription#create.payment_settings.payment_method_types`, `Subscription#update.payment_settings.payment_method_types`, and `Subscription.payment_settings.payment_method_types`
 * Add support for `name_collection` on `PaymentLink#create`, `PaymentLink#update`, and `PaymentLink`
 * Add support for new value `mb_way` on enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`
 * Add support for `mb_way` on `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, and `PaymentMethodConfiguration`

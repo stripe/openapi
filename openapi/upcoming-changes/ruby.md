@@ -3,6 +3,9 @@
 * Add support for `report_payment_attempt_canceled`, `report_payment_attempt_failed`, `report_payment_attempt_guaranteed`, `report_payment_attempt_informational`, `report_payment_attempt`, `report_payment`, `report_refund`, and `retrieve` methods on resource `PaymentRecord`
 * Add support for `representative_declaration` on `Account::Company`, `Account::CreateParams::Company`, `Account::UpdateParams::Company`, and `Token::CreateParams::Account::Company`
 * Add support for `payment_method_configuration` on `BillingPortal::Configuration::CreateParams::Feature::PaymentMethodUpdate` and `BillingPortal::Configuration::UpdateParams::Feature::PaymentMethodUpdate`
+* Add support for `payment_record_refund` and `type` on `CreditNote::CreateParams::Refund`, `CreditNote::ListPreviewLineItemsParams::Refund`, `CreditNote::PreviewParams::Refund`, and `CreditNote::Refund`
+* Add support for `payment_record` on `Invoice::AttachPaymentParams`, `InvoicePayment::ListParams::Payment`, and `InvoicePayment::Payment`
+* Change type of `InvoicePayment::ListParams::Payment.type` from `literal('payment_intent')` to `enum('payment_intent'|'payment_record')`
 * Add support for `name_collection` on `PaymentLink::CreateParams`, `PaymentLink::UpdateParams`, and `PaymentLink`
 * Add support for `mb_way` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
 * Add support for `gip` on `Terminal::Configuration::CreateParams::Tipping`, `Terminal::Configuration::Tipping`, and `Terminal::Configuration::UpdateParams::Tipping`
