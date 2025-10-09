@@ -7,6 +7,6 @@
 * Add support for `payment_record` on `Invoice::AttachPaymentParams`, `InvoicePayment::ListParams::Payment`, and `InvoicePayment::Payment`
 * Change type of `InvoicePayment::ListParams::Payment.type` from `literal('payment_intent')` to `enum('payment_intent'|'payment_record')`
 * Add support for `name_collection` on `PaymentLink::CreateParams`, `PaymentLink::UpdateParams`, and `PaymentLink`
-* Add support for `mb_way` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
+* Add support for `crypto` and `mb_way` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
 * Add support for `gip` on `Terminal::Configuration::CreateParams::Tipping`, `Terminal::Configuration::Tipping`, and `Terminal::Configuration::UpdateParams::Tipping`
 * Add support for `last_seen_at` on `Terminal::Reader`

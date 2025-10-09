@@ -11,6 +11,6 @@
 * Add support for new value `custom` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
 * Add support for `NameCollection` on `PaymentLinkParams` and `PaymentLink`
 * Add support for new value `mb_way` on enum `PaymentLink.PaymentMethodTypes`
-* Add support for `MbWay` on `PaymentMethodConfigurationParams` and `PaymentMethodConfiguration`
+* Add support for `Crypto` and `MbWay` on `PaymentMethodConfigurationParams` and `PaymentMethodConfiguration`
 * Add support for `Gip` on `TerminalConfigurationTippingParams` and `TerminalConfigurationTipping`
 * Add support for `LastSeenAt` on `TerminalReader`
