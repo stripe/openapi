@@ -2,6 +2,7 @@
 * Add support for `all` and `retrieve` methods on resource `PaymentAttemptRecord`
 * Add support for `report_payment_attempt_canceled`, `report_payment_attempt_failed`, `report_payment_attempt_guaranteed`, `report_payment_attempt_informational`, `report_payment_attempt`, `report_payment`, `report_refund`, and `retrieve` methods on resource `PaymentRecord`
 * Add support for `representative_declaration` on `Account.company`, `Account.create().$params.company`, `Account.update().$params.company`, and `Token.create().$params.account.company`
+* Change `Billing\CreditGrant.create().$params.category` to be optional
 * Add support for `payment_method_configuration` on `BillingPortal\Configuration.create().$params.feature.payment_method_update` and `BillingPortal\Configuration.update().$params.feature.payment_method_update`
 * Add support for new value `solana` on enum `Charge.payment_method_details.crypto.network`
 * Add support for `twint` on `Checkout.Session.payment_method_options` and `Checkout\Session.create().$params.payment_method_option`

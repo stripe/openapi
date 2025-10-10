@@ -2,6 +2,7 @@
 * Add support for `list` and `retrieve` methods on resource `PaymentAttemptRecord`
 * Add support for `report_payment_attempt_canceled`, `report_payment_attempt_failed`, `report_payment_attempt_guaranteed`, `report_payment_attempt_informational`, `report_payment_attempt`, `report_payment`, `report_refund`, and `retrieve` methods on resource `PaymentRecord`
 * Add support for `representative_declaration` on `Account.company`, `AccountCreateParams.company`, `AccountUpdateParams.company`, and `TokenCreateParams.account.company`
+* Change `Billing.CreditGrantCreateParams.category` to be optional
 * Add support for `payment_method_configuration` on `BillingPortal.ConfigurationCreateParams.features.payment_method_update` and `BillingPortal.ConfigurationUpdateParams.features.payment_method_update`
 * Add support for new value `solana` on enum `Charge.payment_method_details.crypto.network`
 * Add support for new value `mb_way` on enum `Checkout.SessionCreateParams.excluded_payment_method_types`
