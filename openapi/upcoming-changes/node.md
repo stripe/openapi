@@ -5,6 +5,7 @@
 * Add support for `payment_method_configuration` on `BillingPortal.ConfigurationCreateParams.features.payment_method_update` and `BillingPortal.ConfigurationUpdateParams.features.payment_method_update`
 * Add support for new value `solana` on enum `Charge.payment_method_details.crypto.network`
 * Add support for new value `mb_way` on enum `Checkout.SessionCreateParams.excluded_payment_method_types`
+* Add support for `twint` on `Checkout.Session.payment_method_options` and `Checkout.SessionCreateParams.payment_method_options`
 * Add support for new value `mb_way` on enum `Checkout.SessionCreateParams.payment_method_types`
 * Add support for `payment_record_refund` and `type` on `CreditNote.refunds[]`, `CreditNoteCreateParams.refunds[]`, `CreditNotePreviewLinesParams.refunds[]`, and `CreditNotePreviewParams.refunds[]`
 * Add support for new value `platform_terms_of_service` on enums `File.purpose` and `FileListParams.purpose`

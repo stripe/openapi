@@ -4,6 +4,7 @@
 * Add support for `representativeDeclaration` on `Account.company`, `AccountCreateParams.company`, `AccountUpdateParams.company`, and `TokenCreateParams.account.company`
 * Add support for `paymentMethodConfiguration` on `billingportal.ConfigurationCreateParams.features.payment_method_update` and `billingportal.ConfigurationUpdateParams.features.payment_method_update`
 * Add support for new value `mb_way` on enum `checkout.SessionCreateParams.excludedPaymentMethodTypes`
+* Add support for `twint` on `checkout.Session.payment_method_options` and `checkout.SessionCreateParams.payment_method_options`
 * Add support for new value `mb_way` on enum `checkout.SessionCreateParams.paymentMethodTypes`
 * Add support for `paymentRecordRefund` and `type` on `CreditNote.refunds[]`, `CreditNoteCreateParams.refunds[]`, `CreditNotePreviewLinesParams.refunds[]`, and `CreditNotePreviewParams.refunds[]`
 * Add support for new value `platform_terms_of_service` on enum `FileListParams.purpose`
