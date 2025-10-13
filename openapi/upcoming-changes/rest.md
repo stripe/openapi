@@ -17,6 +17,7 @@
 * Add support for `name_collection` on `PaymentLink#create`, `PaymentLink#update`, and `PaymentLink`
 * Add support for new value `mb_way` on enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`
 * Add support for `crypto` and `mb_way` on `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, and `PaymentMethodConfiguration`
+* Add support for `excluded_payment_method_types` on `SetupIntent#create`, `SetupIntent#update`, and `SetupIntent`
 * Add support for `gip` on `Terminal.Configuration#create.tipping`, `Terminal.Configuration#update.tipping`, and `Terminal.Configuration.tipping`
 * Add support for `last_seen_at` on `Terminal.Reader`
 * Add support for new value `2025-10-29.clover` on enum `WebhookEndpoint#create.api_version`

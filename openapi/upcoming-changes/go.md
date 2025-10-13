@@ -13,5 +13,6 @@
 * Add support for `NameCollection` on `PaymentLinkParams` and `PaymentLink`
 * Add support for new value `mb_way` on enum `PaymentLink.PaymentMethodTypes`
 * Add support for `Crypto` and `MbWay` on `PaymentMethodConfigurationParams` and `PaymentMethodConfiguration`
+* Add support for `ExcludedPaymentMethodTypes` on `SetupIntentParams` and `SetupIntent`
 * Add support for `Gip` on `TerminalConfigurationTippingParams` and `TerminalConfigurationTipping`
 * Add support for `LastSeenAt` on `TerminalReader`
