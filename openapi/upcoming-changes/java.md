@@ -23,6 +23,7 @@
 * Add support for `excludedPaymentMethodTypes` on `SetupIntentCreateParams`, `SetupIntentUpdateParams`, and `SetupIntent`
 * Add support for `gip` on `terminal.Configuration.tipping`, `terminal.ConfigurationCreateParams.tipping`, and `terminal.ConfigurationUpdateParams.tipping`
 * Add support for `lastSeenAt` on `terminal.Reader`
-* Add support for new value `invoice.payment_attempt_required` on enums `WebhookEndpointCreateParams.enabledEvents` and `WebhookEndpointUpdateParams.enabledEvents`
+* Add support for new values `balance_settings.updated` and `invoice.payment_attempt_required` on enums `WebhookEndpointCreateParams.enabledEvents` and `WebhookEndpointUpdateParams.enabledEvents`
 * Add support for new value `2025-10-29.clover` on enum `WebhookEndpointCreateParams.apiVersion`
+* Add support for snapshot event `balance_settings.updated` with resource `BalanceSettings`
 * Add support for snapshot event `invoice.payment_attempt_required` with resource `Invoice`

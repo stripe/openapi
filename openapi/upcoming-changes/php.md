@@ -8,7 +8,7 @@
 * Add support for new value `solana` on enum `Charge.payment_method_details.crypto.network`
 * Add support for `twint` on `Checkout.Session.payment_method_options` and `Checkout\Session.create().$params.payment_method_option`
 * Add support for `payment_record_refund` and `type` on `CreditNote.create().$params.refund`, `CreditNote.preview().$params.refund`, `CreditNote.preview_lines().$params.refund`, and `CreditNote.refunds[]`
-* Add support for new value `invoice.payment_attempt_required` on enum `Event.type`
+* Add support for new values `balance_settings.updated` and `invoice.payment_attempt_required` on enum `Event.type`
 * Add support for new value `platform_terms_of_service` on enum `File.purpose`
 * Add support for `payment_record` on `Invoice.attach_payment().$params`, `InvoicePayment.all().$params.payment`, and `InvoicePayment.payment`
 * Change type of `InvoicePayment.all().$params.payment.type` from `literal('payment_intent')` to `enum('payment_intent'|'payment_record')`
@@ -22,4 +22,5 @@
 * Add support for `excluded_payment_method_types` on `SetupIntent.create().$params`, `SetupIntent.update().$params`, and `SetupIntent`
 * Add support for `gip` on `Terminal.Configuration.tipping`, `Terminal\Configuration.create().$params.tipping`, and `Terminal\Configuration.update().$params.tipping`
 * Add support for `last_seen_at` on `Terminal.Reader`
+* Add support for snapshot event `BALANCE_SETTINGS_UPDATED` with resource `BalanceSettings`
 * Add support for snapshot event `INVOICE_PAYMENT_ATTEMPT_REQUIRED` with resource `Invoice`
