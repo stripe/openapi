@@ -16,3 +16,4 @@
 * Add support for `ExcludedPaymentMethodTypes` on `SetupIntentCreateOptions`, `SetupIntentUpdateOptions`, and `SetupIntent`
 * Add support for `Gip` on `Terminal.Configuration.Tipping` and `TerminalConfigurationTippingOptions`
 * Add support for `LastSeenAt` on `Terminal.Reader`
+* Add support for snapshot event `InvoicePaymentAttemptRequired` with resource `Invoice`

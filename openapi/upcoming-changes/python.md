@@ -10,6 +10,7 @@
 * Add support for `twint` on `Checkout.Session.PaymentMethodOption` and `checkout.Session.CreateParamsPaymentMethodOption`
 * Add support for new value `mb_way` on enum `checkout.Session.CreateParams.payment_method_types`
 * Add support for `payment_record_refund` and `type` on `CreditNote.CreateParamsRefund`, `CreditNote.PreviewLinesParamsRefund`, `CreditNote.PreviewParamsRefund`, and `CreditNote.Refund`
+* Add support for new value `invoice.payment_attempt_required` on enum `Event.type`
 * Add support for new value `platform_terms_of_service` on enums `File.ListParams.purpose` and `File.purpose`
 * Add support for new value `platform_terms_of_service` on enum `File.CreateParams.purpose`
 * Add support for `payment_record` on `Invoice.AttachPaymentParams`, `InvoicePayment.ListParamsPayment`, and `InvoicePayment.Payment`
@@ -24,4 +25,6 @@
 * Add support for `excluded_payment_method_types` on `SetupIntent.CreateParams`, `SetupIntent.ModifyParams`, and `SetupIntent`
 * Add support for `gip` on `Terminal.Configuration.Tipping`, `terminal.Configuration.CreateParamsTipping`, and `terminal.Configuration.ModifyParamsTipping`
 * Add support for `last_seen_at` on `Terminal.Reader`
+* Add support for new value `invoice.payment_attempt_required` on enums `WebhookEndpoint.CreateParams.enabled_events` and `WebhookEndpoint.ModifyParams.enabled_events`
 * Add support for new value `2025-10-29.clover` on enum `WebhookEndpoint.CreateParams.api_version`
+* Add support for snapshot event `invoice.payment_attempt_required` with resource `Invoice`

@@ -7,6 +7,7 @@
 * Add support for new value `solana` on enum `ChargePaymentMethodDetailsCrypto.Network`
 * Add support for `TWINT` on `CheckoutSessionPaymentMethodOptionsParams` and `CheckoutSessionPaymentMethodOptions`
 * Add support for `PaymentRecordRefund` and `Type` on `CreditNotePreviewLinesRefundParams`, `CreditNotePreviewRefundParams`, `CreditNoteRefundParams`, and `CreditNoteRefund`
+* Add support for new value `invoice.payment_attempt_required` on enum `Event.Type`
 * Add support for new value `platform_terms_of_service` on enum `File.Purpose`
 * Add support for `PaymentRecord` on `InvoiceAttachPaymentParams`, `InvoicePaymentListPaymentParams`, and `InvoicePaymentPayment`
 * Change type of `InvoicePaymentListPaymentParams.Type` from `literal('payment_intent')` to `enum('payment_intent'|'payment_record')`
@@ -20,3 +21,4 @@
 * Add support for `ExcludedPaymentMethodTypes` on `SetupIntentParams` and `SetupIntent`
 * Add support for `Gip` on `TerminalConfigurationTippingParams` and `TerminalConfigurationTipping`
 * Add support for `LastSeenAt` on `TerminalReader`
+* Add support for snapshot event `EventTypeInvoicePaymentAttemptRequired` with resource `Invoice`
