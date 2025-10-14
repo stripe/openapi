@@ -1,6 +1,7 @@
-* Add support for new resources `PaymentAttemptRecord` and `PaymentRecord`
+* Add support for new resources `PaymentAttemptRecord`, `PaymentIntentAmountDetailsLineItem`, and `PaymentRecord`
 * Add support for `list` and `retrieve` methods on resource `PaymentAttemptRecord`
 * Add support for `report_payment_attempt_canceled`, `report_payment_attempt_failed`, `report_payment_attempt_guaranteed`, `report_payment_attempt_informational`, `report_payment_attempt`, `report_payment`, `report_refund`, and `retrieve` methods on resource `PaymentRecord`
+* Add support for `list` method on resource `PaymentIntentAmountDetailsLineItem`
 * Add support for `representativeDeclaration` on `Account.company`, `AccountCreateParams.company`, `AccountUpdateParams.company`, and `TokenCreateParams.account.company`
 * Change `billing.CreditGrantCreateParams.category` to be optional
 * Add support for `paymentMethodConfiguration` on `billingportal.ConfigurationCreateParams.features.payment_method_update` and `billingportal.ConfigurationUpdateParams.features.payment_method_update`
@@ -13,6 +14,9 @@
 * Add support for `paymentRecord` on `InvoiceAttachPaymentParams`, `InvoicePayment.payment`, and `InvoicePaymentListParams.payment`
 * Change type of `InvoicePaymentListParams.payment.type` from `literal('payment_intent')` to `enum('payment_intent'|'payment_record')`
 * Add support for new value `custom` on enums `InvoiceCreateParams.payment_settings.paymentMethodTypes`, `InvoiceUpdateParams.payment_settings.paymentMethodTypes`, `SubscriptionCreateParams.payment_settings.paymentMethodTypes`, and `SubscriptionUpdateParams.payment_settings.paymentMethodTypes`
+* Add support for `amountDetails` on `PaymentIntentCaptureParams`, `PaymentIntentConfirmParams`, `PaymentIntentCreateParams`, `PaymentIntentIncrementAuthorizationParams`, and `PaymentIntentUpdateParams`
+* Add support for `paymentDetails` on `PaymentIntentCaptureParams`, `PaymentIntentConfirmParams`, `PaymentIntentCreateParams`, `PaymentIntentIncrementAuthorizationParams`, `PaymentIntentUpdateParams`, and `PaymentIntent`
+* Add support for `discountAmount`, `lineItems`, `shipping`, and `tax` on `PaymentIntent.amount_details`
 * Add support for `nameCollection` on `PaymentLinkCreateParams`, `PaymentLinkUpdateParams`, and `PaymentLink`
 * Add support for new value `mb_way` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
 * Add support for `crypto` and `mbWay` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
