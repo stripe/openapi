@@ -23,3 +23,4 @@
 * Add support for `LastSeenAt` on `TerminalReader`
 * Add support for snapshot event `EventTypeBalanceSettingsUpdated` with resource `BalanceSettings`
 * Add support for snapshot event `EventTypeInvoicePaymentAttemptRequired` with resource `Invoice`
+* Add support for error code `payment_intent_rate_limit_exceeded` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`

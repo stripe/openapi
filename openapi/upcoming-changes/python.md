@@ -29,3 +29,4 @@
 * Add support for new value `2025-10-29.clover` on enum `WebhookEndpoint.CreateParams.api_version`
 * Add support for snapshot event `balance_settings.updated` with resource `BalanceSettings`
 * Add support for snapshot event `invoice.payment_attempt_required` with resource `Invoice`
+* Add support for error code `payment_intent_rate_limit_exceeded` on `Invoice.LastFinalizationError`, `PaymentIntent.LastPaymentError`, `SetupAttempt.SetupError`, `SetupIntent.LastSetupError`, and `StripeError`

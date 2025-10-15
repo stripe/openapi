@@ -24,3 +24,4 @@
 * Add support for `last_seen_at` on `Terminal.Reader`
 * Add support for snapshot event `BALANCE_SETTINGS_UPDATED` with resource `BalanceSettings`
 * Add support for snapshot event `INVOICE_PAYMENT_ATTEMPT_REQUIRED` with resource `Invoice`
+* Add support for error code `payment_intent_rate_limit_exceeded` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`
