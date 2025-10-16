@@ -13,7 +13,8 @@
 * Add support for `payment_details` on `PaymentIntent::CaptureParams`, `PaymentIntent::ConfirmParams`, `PaymentIntent::CreateParams`, `PaymentIntent::IncrementAuthorizationParams`, `PaymentIntent::UpdateParams`, and `PaymentIntent`
 * Add support for `discount_amount`, `line_items`, `shipping`, and `tax` on `PaymentIntent::AmountDetail`
 * Add support for `name_collection` on `PaymentLink::CreateParams`, `PaymentLink::UpdateParams`, and `PaymentLink`
-* Add support for `crypto` and `mb_way` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
+* Add support for `crypto` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, `PaymentMethodConfiguration`, and `Refund::DestinationDetail`
+* Add support for `mb_way` on `PaymentMethodConfiguration::CreateParams`, `PaymentMethodConfiguration::UpdateParams`, and `PaymentMethodConfiguration`
 * Add support for `excluded_payment_method_types` on `SetupIntent::CreateParams`, `SetupIntent::UpdateParams`, and `SetupIntent`
 * Add support for `gip` on `Terminal::Configuration::CreateParams::Tipping`, `Terminal::Configuration::Tipping`, and `Terminal::Configuration::UpdateParams::Tipping`
 * Add support for `last_seen_at` on `Terminal::Reader`

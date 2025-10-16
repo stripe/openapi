@@ -21,7 +21,8 @@
 * Add support for `discount_amount`, `line_items`, `shipping`, and `tax` on `PaymentIntent.AmountDetail`
 * Add support for `name_collection` on `PaymentLink.CreateParams`, `PaymentLink.ModifyParams`, and `PaymentLink`
 * Add support for new value `mb_way` on enums `PaymentLink.CreateParams.payment_method_types`, `PaymentLink.ModifyParams.payment_method_types`, and `PaymentLink.payment_method_types`
-* Add support for `crypto` and `mb_way` on `PaymentMethodConfiguration.CreateParams`, `PaymentMethodConfiguration.ModifyParams`, and `PaymentMethodConfiguration`
+* Add support for `crypto` on `PaymentMethodConfiguration.CreateParams`, `PaymentMethodConfiguration.ModifyParams`, `PaymentMethodConfiguration`, and `Refund.DestinationDetail`
+* Add support for `mb_way` on `PaymentMethodConfiguration.CreateParams`, `PaymentMethodConfiguration.ModifyParams`, and `PaymentMethodConfiguration`
 * Add support for `excluded_payment_method_types` on `SetupIntent.CreateParams`, `SetupIntent.ModifyParams`, and `SetupIntent`
 * Add support for `gip` on `Terminal.Configuration.Tipping`, `terminal.Configuration.CreateParamsTipping`, and `terminal.Configuration.ModifyParamsTipping`
 * Add support for `last_seen_at` on `Terminal.Reader`
