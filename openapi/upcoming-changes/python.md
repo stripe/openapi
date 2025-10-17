@@ -10,6 +10,7 @@
 * Add support for `twint` on `Checkout.Session.PaymentMethodOption` and `checkout.SessionCreateParamsPaymentMethodOption`
 * Add support for new value `mb_way` on enum `checkout.SessionCreateParams.payment_method_types`
 * Add support for `payment_record_refund` and `type` on `CreditNote.Refund`, `CreditNoteCreateParamsRefund`, `CreditNotePreviewLinesParamsRefund`, and `CreditNotePreviewParamsRefund`
+* Add support for `provider` on `Customer.Tax`
 * Add support for new values `balance_settings.updated` and `invoice.payment_attempt_required` on enum `Event.type`
 * Add support for new value `platform_terms_of_service` on enums `File.purpose` and `FileListParams.purpose`
 * Add support for new value `platform_terms_of_service` on enum `FileCreateParams.purpose`

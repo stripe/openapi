@@ -7,6 +7,7 @@
 * Add support for new value `solana` on enum `ChargePaymentMethodDetailsCrypto.Network`
 * Add support for `TWINT` on `CheckoutSessionPaymentMethodOptionsParams` and `CheckoutSessionPaymentMethodOptions`
 * Add support for `PaymentRecordRefund` and `Type` on `CreditNotePreviewLinesRefundParams`, `CreditNotePreviewRefundParams`, `CreditNoteRefundParams`, and `CreditNoteRefund`
+* Add support for `Provider` on `CustomerTax`
 * Add support for new values `balance_settings.updated` and `invoice.payment_attempt_required` on enum `Event.Type`
 * Add support for new value `platform_terms_of_service` on enum `File.Purpose`
 * Add support for `PaymentRecord` on `InvoiceAttachPaymentParams`, `InvoicePaymentListPaymentParams`, and `InvoicePaymentPayment`

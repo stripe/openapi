@@ -7,6 +7,7 @@
 * Add support for `payment_method_configuration` on `BillingPortal::ConfigurationCreateParams::Feature::PaymentMethodUpdate` and `BillingPortal::ConfigurationUpdateParams::Feature::PaymentMethodUpdate`
 * Add support for `twint` on `Checkout::Session::PaymentMethodOption` and `Checkout::SessionCreateParams::PaymentMethodOption`
 * Add support for `payment_record_refund` and `type` on `CreditNote::Refund`, `CreditNoteCreateParams::Refund`, `CreditNoteListPreviewLineItemsParams::Refund`, and `CreditNotePreviewParams::Refund`
+* Add support for `provider` on `Customer::Tax`
 * Add support for `payment_record` on `InvoiceAttachPaymentParams`, `InvoicePayment::Payment`, and `InvoicePaymentListParams::Payment`
 * Change type of `InvoicePaymentListParams::Payment.type` from `literal('payment_intent')` to `enum('payment_intent'|'payment_record')`
 * Add support for `amount_details` on `PaymentIntentCaptureParams`, `PaymentIntentConfirmParams`, `PaymentIntentCreateParams`, `PaymentIntentIncrementAuthorizationParams`, and `PaymentIntentUpdateParams`
