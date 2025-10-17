@@ -21,6 +21,7 @@
 * Add support for `Crypto` on `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, and `RefundDestinationDetails`
 * Add support for `MbWay` on `PaymentMethodConfigurationParams` and `PaymentMethodConfiguration`
 * Add support for `ExcludedPaymentMethodTypes` on `SetupIntentParams` and `SetupIntent`
+* Add support for `Tw` on `TaxRegistrationCountryOptionsParams` and `TaxRegistrationCountryOptions`
 * Add support for `Gip` on `TerminalConfigurationTippingParams` and `TerminalConfigurationTipping`
 * Add support for `LastSeenAt` on `TerminalReader`
 * Add support for snapshot event `EventTypeBalanceSettingsUpdated` with resource `BalanceSettings`

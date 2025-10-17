@@ -17,5 +17,6 @@
 * Add support for `crypto` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, `PaymentMethodConfiguration`, and `Refund::DestinationDetail`
 * Add support for `mb_way` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
 * Add support for `excluded_payment_method_types` on `SetupIntentCreateParams`, `SetupIntentUpdateParams`, and `SetupIntent`
+* Add support for `tw` on `Tax::Registration::CountryOption` and `Tax::RegistrationCreateParams::CountryOption`
 * Add support for `gip` on `Terminal::Configuration::Tipping`, `Terminal::ConfigurationCreateParams::Tipping`, and `Terminal::ConfigurationUpdateParams::Tipping`
 * Add support for `last_seen_at` on `Terminal::Reader`

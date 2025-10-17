@@ -25,6 +25,7 @@
 * Add support for `crypto` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationModifyParams`, `PaymentMethodConfiguration`, and `Refund.DestinationDetail`
 * Add support for `mb_way` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationModifyParams`, and `PaymentMethodConfiguration`
 * Add support for `excluded_payment_method_types` on `SetupIntentCreateParams`, `SetupIntentModifyParams`, and `SetupIntent`
+* Add support for `tw` on `Tax.Registration.CountryOption` and `tax.RegistrationCreateParamsCountryOption`
 * Add support for `gip` on `Terminal.Configuration.Tipping`, `terminal.ConfigurationCreateParamsTipping`, and `terminal.ConfigurationModifyParamsTipping`
 * Add support for `last_seen_at` on `Terminal.Reader`
 * Add support for new values `balance_settings.updated` and `invoice.payment_attempt_required` on enums `WebhookEndpointCreateParams.enabled_events` and `WebhookEndpointModifyParams.enabled_events`
