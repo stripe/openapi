@@ -9,6 +9,7 @@
 * Add support for `twint` on `checkout.Session.payment_method_options` and `checkout.SessionCreateParams.payment_method_options`
 * Add support for new value `mb_way` on enum `checkout.SessionCreateParams.paymentMethodTypes`
 * Add support for `paymentRecordRefund` and `type` on `CreditNote.refunds[]`, `CreditNoteCreateParams.refunds[]`, `CreditNotePreviewLinesParams.refunds[]`, and `CreditNotePreviewParams.refunds[]`
+* Add support for `customerSheet` and `mobilePaymentElement` on `CustomerSession.components` and `CustomerSessionCreateParams.components`
 * Add support for `provider` on `Customer.tax`
 * Add support for new value `platform_terms_of_service` on enum `FileListParams.purpose`
 * Add support for new value `platform_terms_of_service` on enum `FileCreateParams.purpose`
