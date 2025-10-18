@@ -10,6 +10,7 @@
 * Add support for new value `mb_way` on enum `checkout.SessionCreateParams.paymentMethodTypes`
 * Add support for `paymentRecordRefund` and `type` on `CreditNote.refunds[]`, `CreditNoteCreateParams.refunds[]`, `CreditNotePreviewLinesParams.refunds[]`, and `CreditNotePreviewParams.refunds[]`
 * Add support for `customerSheet` and `mobilePaymentElement` on `CustomerSession.components` and `CustomerSessionCreateParams.components`
+* Add support for new value `custom` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
 * Add support for `provider` on `Customer.tax`
 * Add support for new value `platform_terms_of_service` on enum `FileListParams.purpose`
 * Add support for new value `platform_terms_of_service` on enum `FileCreateParams.purpose`
@@ -23,6 +24,7 @@
 * Add support for new value `mb_way` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
 * Add support for `crypto` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, `PaymentMethodConfiguration`, and `Refund.destination_details`
 * Add support for `mbWay` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
+* Add support for `custom` on `PaymentMethodCreateParams` and `PaymentMethod`
 * Add support for `excludedPaymentMethodTypes` on `SetupIntentCreateParams`, `SetupIntentUpdateParams`, and `SetupIntent`
 * Add support for `tw` on `tax.Registration.country_options` and `tax.RegistrationCreateParams.country_options`
 * Add support for `gip` on `terminal.Configuration.tipping`, `terminal.ConfigurationCreateParams.tipping`, and `terminal.ConfigurationUpdateParams.tipping`

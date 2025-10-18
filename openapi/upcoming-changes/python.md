@@ -9,8 +9,10 @@
 * Add support for new value `mb_way` on enum `checkout.SessionCreateParams.excluded_payment_method_types`
 * Add support for `twint` on `Checkout.Session.PaymentMethodOption` and `checkout.SessionCreateParamsPaymentMethodOption`
 * Add support for new value `mb_way` on enum `checkout.SessionCreateParams.payment_method_types`
+* Add support for new value `custom` on enums `ConfirmationToken.PaymentMethodPreview.type` and `PaymentMethod.type`
 * Add support for `payment_record_refund` and `type` on `CreditNote.Refund`, `CreditNoteCreateParamsRefund`, `CreditNotePreviewLinesParamsRefund`, and `CreditNotePreviewParamsRefund`
 * Add support for `customer_sheet` and `mobile_payment_element` on `CustomerSession.Component` and `CustomerSessionCreateParamsComponent`
+* Add support for new value `custom` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
 * Add support for `provider` on `Customer.Tax`
 * Add support for new values `balance_settings.updated` and `invoice.payment_attempt_required` on enum `Event.type`
 * Add support for new value `platform_terms_of_service` on enums `File.purpose` and `FileListParams.purpose`
@@ -25,6 +27,7 @@
 * Add support for new value `mb_way` on enums `PaymentLink.payment_method_types`, `PaymentLinkCreateParams.payment_method_types`, and `PaymentLinkModifyParams.payment_method_types`
 * Add support for `crypto` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationModifyParams`, `PaymentMethodConfiguration`, and `Refund.DestinationDetail`
 * Add support for `mb_way` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationModifyParams`, and `PaymentMethodConfiguration`
+* Add support for `custom` on `PaymentMethodCreateParams` and `PaymentMethod`
 * Add support for `excluded_payment_method_types` on `SetupIntentCreateParams`, `SetupIntentModifyParams`, and `SetupIntent`
 * Add support for `tw` on `Tax.Registration.CountryOption` and `tax.RegistrationCreateParamsCountryOption`
 * Add support for `gip` on `Terminal.Configuration.Tipping`, `terminal.ConfigurationCreateParamsTipping`, and `terminal.ConfigurationModifyParamsTipping`

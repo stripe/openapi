@@ -9,8 +9,10 @@
 * Add support for new value `mb_way` on enum `Checkout.Session#create.excluded_payment_method_types`
 * Add support for `twint` on `Checkout.Session#create.payment_method_options` and `Checkout.Session.payment_method_options`
 * Add support for new value `mb_way` on enum `Checkout.Session#create.payment_method_types`
+* Add support for new value `custom` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Add support for `payment_record_refund` and `type` on `CreditNote#create.refunds[]`, `CreditNote#preview.refunds[]`, `CreditNote#preview_lines.refunds[]`, and `CreditNote.refunds[]`
 * Add support for `customer_sheet` and `mobile_payment_element` on `CustomerSession#create.components` and `CustomerSession.components`
+* Add support for new value `custom` on enums `Customer#list_payment_methods.type`, `PaymentMethod#create.type`, and `PaymentMethod#list.type`
 * Add support for `provider` on `Customer.tax`
 * Add support for new values `balance_settings.updated` and `invoice.payment_attempt_required` on enum `Event.type`
 * Add support for new value `platform_terms_of_service` on enums `File#list.purpose` and `File.purpose`
@@ -25,6 +27,7 @@
 * Add support for new value `mb_way` on enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`
 * Add support for `crypto` on `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, `PaymentMethodConfiguration`, and `Refund.destination_details`
 * Add support for `mb_way` on `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, and `PaymentMethodConfiguration`
+* Add support for `custom` on `PaymentMethod#create` and `PaymentMethod`
 * Add support for `excluded_payment_method_types` on `SetupIntent#create`, `SetupIntent#update`, and `SetupIntent`
 * Add support for `tw` on `Tax.Registration#create.country_options` and `Tax.Registration.country_options`
 * Add support for `gip` on `Terminal.Configuration#create.tipping`, `Terminal.Configuration#update.tipping`, and `Terminal.Configuration.tipping`

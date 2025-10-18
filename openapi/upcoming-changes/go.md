@@ -6,6 +6,7 @@
 * Add support for `PaymentMethodConfiguration` on `BillingPortalConfigurationFeaturesPaymentMethodUpdateParams`
 * Add support for new value `solana` on enum `ChargePaymentMethodDetailsCrypto.Network`
 * Add support for `TWINT` on `CheckoutSessionPaymentMethodOptionsParams` and `CheckoutSessionPaymentMethodOptions`
+* Add support for new value `custom` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
 * Add support for `PaymentRecordRefund` and `Type` on `CreditNotePreviewLinesRefundParams`, `CreditNotePreviewRefundParams`, `CreditNoteRefundParams`, and `CreditNoteRefund`
 * Add support for `CustomerSheet` and `MobilePaymentElement` on `CustomerSessionComponentsParams` and `CustomerSessionComponents`
 * Add support for `Provider` on `CustomerTax`
@@ -21,6 +22,7 @@
 * Add support for new value `mb_way` on enum `PaymentLink.PaymentMethodTypes`
 * Add support for `Crypto` on `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, and `RefundDestinationDetails`
 * Add support for `MbWay` on `PaymentMethodConfigurationParams` and `PaymentMethodConfiguration`
+* Add support for `Custom` on `PaymentMethodParams` and `PaymentMethod`
 * Add support for `ExcludedPaymentMethodTypes` on `SetupIntentParams` and `SetupIntent`
 * Add support for `Tw` on `TaxRegistrationCountryOptionsParams` and `TaxRegistrationCountryOptions`
 * Add support for `Gip` on `TerminalConfigurationTippingParams` and `TerminalConfigurationTipping`
