@@ -25,6 +25,7 @@
 * Add support for `mb_way` on `PaymentMethodConfiguration.create().$params`, `PaymentMethodConfiguration.update().$params`, and `PaymentMethodConfiguration`
 * Add support for `custom` on `PaymentMethod.create().$params` and `PaymentMethod`
 * Add support for `excluded_payment_method_types` on `SetupIntent.create().$params`, `SetupIntent.update().$params`, and `SetupIntent`
+* Change `SetupIntent.flow_directions` to be optional
 * Add support for `tw` on `Tax.Registration.country_options` and `Tax\Registration.create().$params.country_option`
 * Add support for `gip` on `Terminal.Configuration.tipping`, `Terminal\Configuration.create().$params.tipping`, and `Terminal\Configuration.update().$params.tipping`
 * Add support for `last_seen_at` on `Terminal.Reader`

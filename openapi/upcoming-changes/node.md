@@ -29,6 +29,7 @@
 * Add support for `mb_way` on `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, and `PaymentMethodConfiguration`
 * Add support for `custom` on `PaymentMethodCreateParams` and `PaymentMethod`
 * Add support for `excluded_payment_method_types` on `SetupIntentCreateParams`, `SetupIntentUpdateParams`, and `SetupIntent`
+* Change `SetupIntent.flow_directions` to be optional
 * Add support for `tw` on `Tax.Registration.country_options` and `Tax.RegistrationCreateParams.country_options`
 * Add support for `gip` on `Terminal.Configuration.tipping`, `Terminal.ConfigurationCreateParams.tipping`, and `Terminal.ConfigurationUpdateParams.tipping`
 * Add support for `last_seen_at` on `Terminal.Reader`
