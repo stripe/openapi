@@ -1,1 +1,1 @@
-* Add support for `SubscriptionReference` on `PaymentIntentAmountDetailsLineItem.PaymentMethodOptions.Klarna`
+* Release specs are identical.

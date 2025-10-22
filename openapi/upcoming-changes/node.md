@@ -1,1 +1,1 @@
-* Add support for `subscription_reference` on `PaymentIntentAmountDetailsLineItem.payment_method_options.klarna`
+* Release specs are identical.
