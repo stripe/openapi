@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for new value `2025-11-17.clover` on enum `WebhookEndpoint#create.api_version`
