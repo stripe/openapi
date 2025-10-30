@@ -1,1 +1,2 @@
+* Add support for `capture_method` on `PaymentIntent#confirm.payment_method_options.card_present`, `PaymentIntent#create.payment_method_options.card_present`, `PaymentIntent#update.payment_method_options.card_present`, and `PaymentIntent.payment_method_options.card_present`
 * Add support for new value `2025-11-17.clover` on enum `WebhookEndpoint#create.api_version`

@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for `CaptureMethod` on `PaymentIntent.PaymentMethodOptions.CardPresent` and `PaymentIntentPaymentMethodOptionsCardPresentOptions`
