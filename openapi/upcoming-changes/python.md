@@ -3,7 +3,7 @@
 * Add support for `payment_method_configuration` on `BillingPortal.Configuration.Feature.PaymentMethodUpdate`
 * Add support for `transaction_id` on `Charge.PaymentMethodDetail.Ideal`, `PaymentAttemptRecord.PaymentMethodDetail.Ideal`, and `PaymentRecord.PaymentMethodDetail.Ideal`
 * Add support for new value `tokenized_account_number_deactivated` on enums `ConfirmationToken.PaymentMethodPreview.UsBankAccount.StatusDetail.Blocked.reason` and `PaymentMethod.UsBankAccount.StatusDetail.Blocked.reason`
-* Add support for `created` on `CustomerListCustomerBalanceTransactionParams`
+* Add support for `created` on `CustomerListCustomerBalanceTransactionParams` and `InvoicePaymentListParams`
 * Add support for new values `financial_connections.account.account_numbers_updated` and `financial_connections.account.upcoming_account_number_expiry` on enum `Event.type`
 * Add support for `account_numbers` on `FinancialConnections.Account`
 * Add support for `fraud_risk` on `issuing.AuthorizationCreateParamsRiskAssessment`
