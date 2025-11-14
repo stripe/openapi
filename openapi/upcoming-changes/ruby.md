@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Change `PaymentIntent.transfer_data` to be optional
