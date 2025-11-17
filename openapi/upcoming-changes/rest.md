@@ -1,4 +1,6 @@
 * Add support for new value `mollie` on enums `Charge.payment_method_details.ideal.bank`, `ConfirmationToken.payment_method_preview.ideal.bank`, `ConfirmationToken.testHelpers#create.payment_method_data.ideal.bank`, `PaymentAttemptRecord.payment_method_details.ideal.bank`, `PaymentIntent#confirm.payment_method_data.ideal.bank`, `PaymentIntent#create.payment_method_data.ideal.bank`, `PaymentIntent#update.payment_method_data.ideal.bank`, `PaymentMethod#create.ideal.bank`, `PaymentMethod.ideal.bank`, `PaymentRecord.payment_method_details.ideal.bank`, `SetupAttempt.payment_method_details.ideal.bank`, `SetupIntent#confirm.payment_method_data.ideal.bank`, `SetupIntent#create.payment_method_data.ideal.bank`, and `SetupIntent#update.payment_method_data.ideal.bank`
 * Add support for new value `MLLENL2A` on enums `Charge.payment_method_details.ideal.bic`, `ConfirmationToken.payment_method_preview.ideal.bic`, `PaymentAttemptRecord.payment_method_details.ideal.bic`, `PaymentMethod.ideal.bic`, `PaymentRecord.payment_method_details.ideal.bic`, and `SetupAttempt.payment_method_details.ideal.bic`
+* Add support for `invoice` on `Customer#balance_transactions`
 * Change `PaymentIntent.transfer_data` to be optional
+* Add support for `reported_by` on `PaymentRecord`
 * Add support for new value `2025-12-15.clover` on enum `WebhookEndpoint#create.api_version`

@@ -1,2 +1,4 @@
 * Add support for new value `mollie` on enums `ConfirmationTokenCreateParams.payment_method_data.ideal.bank`, `PaymentIntentConfirmParams.payment_method_data.ideal.bank`, `PaymentIntentCreateParams.payment_method_data.ideal.bank`, `PaymentIntentUpdateParams.payment_method_data.ideal.bank`, `PaymentMethodCreateParams.ideal.bank`, `SetupIntentConfirmParams.payment_method_data.ideal.bank`, `SetupIntentCreateParams.payment_method_data.ideal.bank`, and `SetupIntentUpdateParams.payment_method_data.ideal.bank`
+* Add support for `invoice` on `CustomerBalanceTransactionListParams`
+* Add support for `reportedBy` on `PaymentRecord`
 * Add support for new value `2025-12-15.clover` on enum `WebhookEndpointCreateParams.apiVersion`
