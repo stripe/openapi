@@ -11,6 +11,7 @@
 * Add support for new value `payto` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
 * Add support for `invoice` on `CustomerListCustomerBalanceTransactionsParams`
 * Add support for new value `payto` on enums `Invoice.payment_settings.payment_method_types`, `InvoiceCreateParams.payment_settings.payment_method_types`, `InvoiceUpdateParams.payment_settings.payment_method_types`, `Subscription.payment_settings.payment_method_types`, `SubscriptionCreateParams.payment_settings.payment_method_types`, and `SubscriptionUpdateParams.payment_settings.payment_method_types`
+* Add support for `authorization_code`, `description`, `iin`, `installments`, `issuer`, `network_advice_code`, `network_decline_code`, and `stored_credential_usage` on `PaymentAttemptRecord.payment_method_details.card` and `PaymentRecord.payment_method_details.card`
 * Change `PaymentIntent.transfer_data` to be optional
 * Add support for new value `payto` on enums `PaymentLink.payment_method_types`, `PaymentLinkCreateParams.payment_method_types`, and `PaymentLinkUpdateParams.payment_method_types`
 * Add support for `reported_by` on `PaymentRecord`

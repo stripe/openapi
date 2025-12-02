@@ -9,6 +9,7 @@
 * Add support for new value `payto` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
 * Add support for `invoice` on `CustomerBalanceTransactionListParams`
 * Add support for new value `payto` on enums `InvoiceCreateParams.payment_settings.paymentMethodTypes`, `InvoiceUpdateParams.payment_settings.paymentMethodTypes`, `SubscriptionCreateParams.payment_settings.paymentMethodTypes`, and `SubscriptionUpdateParams.payment_settings.paymentMethodTypes`
+* Add support for `authorizationCode`, `description`, `iin`, `installments`, `issuer`, `networkAdviceCode`, `networkDeclineCode`, and `storedCredentialUsage` on `PaymentAttemptRecord.payment_method_details.card` and `PaymentRecord.payment_method_details.card`
 * Add support for new value `payto` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
 * Add support for `reportedBy` on `PaymentRecord`
 * Add support for new value `2025-12-15.clover` on enum `WebhookEndpointCreateParams.apiVersion`

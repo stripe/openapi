@@ -7,6 +7,7 @@
 * Add support for new value `payto` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Add support for `invoice` on `CustomerBalanceTransaction.all().$params`
 * Add support for new value `payto` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
+* Add support for `authorization_code`, `description`, `iin`, `installments`, `issuer`, `network_advice_code`, `network_decline_code`, and `stored_credential_usage` on `PaymentAttemptRecord.payment_method_details.card` and `PaymentRecord.payment_method_details.card`
 * Add support for new value `payto` on enums `PaymentIntent.excluded_payment_method_types` and `SetupIntent.excluded_payment_method_types`
 * Change `PaymentIntent.transfer_data` to be optional
 * Add support for new value `payto` on enum `PaymentLink.payment_method_types`
