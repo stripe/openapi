@@ -16,3 +16,4 @@
 * Add support for new value `payto` on enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`
 * Add support for `reported_by` on `PaymentRecord`
 * Add support for new value `2025-12-15.clover` on enum `WebhookEndpoint#create.api_version`
+* Add support for error code `account_token_required_for_v2_account` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`

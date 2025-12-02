@@ -11,3 +11,4 @@
 * Add support for new value `payto` on enums `PaymentIntent.ExcludedPaymentMethodTypes` and `SetupIntent.ExcludedPaymentMethodTypes`
 * Add support for new value `payto` on enum `PaymentLink.PaymentMethodTypes`
 * Add support for `ReportedBy` on `PaymentRecord`
+* Add support for error code `account_token_required_for_v2_account` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
