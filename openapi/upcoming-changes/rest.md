@@ -1,3 +1,4 @@
+* Add support for `metadata` on `Checkout.Session#create.line_items[]` and `LineItem`
 * Add support for `payto_payments` on `Account#create.capabilities`, `Account#update.capabilities`, and `Account.capabilities`
 * Add support for `signer` on `Account#create.documents.proof_of_registration`, `Account#create.documents.proof_of_ultimate_beneficial_ownership`, `Account#update.documents.proof_of_registration`, and `Account#update.documents.proof_of_ultimate_beneficial_ownership`
 * Add support for `billing_cycle_anchor` on `BillingPortal.Configuration#create.features.subscription_update`, `BillingPortal.Configuration#update.features.subscription_update`, and `BillingPortal.Configuration.features.subscription_update`
@@ -6,6 +7,7 @@
 * Add support for new value `MLLENL2A` on enums `Charge.payment_method_details.ideal.bic`, `ConfirmationToken.payment_method_preview.ideal.bic`, `PaymentAttemptRecord.payment_method_details.ideal.bic`, `PaymentMethod.ideal.bic`, `PaymentRecord.payment_method_details.ideal.bic`, and `SetupAttempt.payment_method_details.ideal.bic`
 * Add support for new value `payto` on enums `Checkout.Session#create.excluded_payment_method_types`, `PaymentIntent#confirm.excluded_payment_method_types`, `PaymentIntent#create.excluded_payment_method_types`, `PaymentIntent#update.excluded_payment_method_types`, `PaymentIntent.excluded_payment_method_types`, `SetupIntent#create.excluded_payment_method_types`, `SetupIntent#update.excluded_payment_method_types`, and `SetupIntent.excluded_payment_method_types`
 * Add support for new value `payto` on enum `Checkout.Session#create.payment_method_types`
+* Add support for `line_items` on `Checkout.Session#update`
 * Add support for new value `payto` on enums `ConfirmationToken.testHelpers#create.payment_method_data.type`, `PaymentIntent#confirm.payment_method_data.type`, `PaymentIntent#create.payment_method_data.type`, `PaymentIntent#update.payment_method_data.type`, `SetupIntent#confirm.payment_method_data.type`, `SetupIntent#create.payment_method_data.type`, and `SetupIntent#update.payment_method_data.type`
 * Add support for new value `payto` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Add support for `invoice` on `Customer#balance_transactions`

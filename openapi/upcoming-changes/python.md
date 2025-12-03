@@ -1,3 +1,4 @@
+* Add support for `metadata` on `LineItem` and `checkout.SessionCreateParamsLineItem`
 * Add support for `payto_payments` on `Account.Capability`, `AccountCreateParamsCapability`, and `AccountModifyParamsCapability`
 * Add support for `signer` on `AccountCreateParamsDocumentProofOfRegistration`, `AccountCreateParamsDocumentProofOfUltimateBeneficialOwnership`, `AccountModifyParamsDocumentProofOfRegistration`, and `AccountModifyParamsDocumentProofOfUltimateBeneficialOwnership`
 * Add support for `billing_cycle_anchor` on `BillingPortal.Configuration.Feature.SubscriptionUpdate`, `billing_portal.ConfigurationCreateParamsFeatureSubscriptionUpdate`, and `billing_portal.ConfigurationModifyParamsFeatureSubscriptionUpdate`
@@ -6,6 +7,7 @@
 * Add support for new value `MLLENL2A` on enums `Charge.PaymentMethodDetail.Ideal.bic`, `ConfirmationToken.PaymentMethodPreview.Ideal.bic`, `PaymentAttemptRecord.PaymentMethodDetail.Ideal.bic`, `PaymentMethod.Ideal.bic`, `PaymentRecord.PaymentMethodDetail.Ideal.bic`, and `SetupAttempt.PaymentMethodDetail.Ideal.bic`
 * Add support for new value `payto` on enums `PaymentIntent.excluded_payment_method_types`, `PaymentIntentConfirmParams.excluded_payment_method_types`, `PaymentIntentCreateParams.excluded_payment_method_types`, `PaymentIntentModifyParams.excluded_payment_method_types`, `SetupIntent.excluded_payment_method_types`, `SetupIntentCreateParams.excluded_payment_method_types`, `SetupIntentModifyParams.excluded_payment_method_types`, and `checkout.SessionCreateParams.excluded_payment_method_types`
 * Add support for new value `payto` on enum `checkout.SessionCreateParams.payment_method_types`
+* Add support for `line_items` on `checkout.SessionModifyParams`
 * Add support for new value `payto` on enums `ConfirmationTokenCreateParamsPaymentMethodDatum.type`, `PaymentIntentConfirmParamsPaymentMethodDatum.type`, `PaymentIntentCreateParamsPaymentMethodDatum.type`, `PaymentIntentModifyParamsPaymentMethodDatum.type`, `SetupIntentConfirmParamsPaymentMethodDatum.type`, `SetupIntentCreateParamsPaymentMethodDatum.type`, and `SetupIntentModifyParamsPaymentMethodDatum.type`
 * Add support for new value `payto` on enums `ConfirmationToken.PaymentMethodPreview.type` and `PaymentMethod.type`
 * Add support for new value `payto` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
