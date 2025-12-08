@@ -1,9 +1,1 @@
-* Add support for `Metadata` on `CheckoutSessionLineItemOptions` and `LineItem`
-* Add support for `PaytoPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
-* Add support for `Signer` on `AccountDocumentsProofOfRegistrationOptions` and `AccountDocumentsProofOfUltimateBeneficialOwnershipOptions`
-* Add support for `BillingCycleAnchor` on `BillingPortal.Configuration.Features.SubscriptionUpdate` and `BillingPortalConfigurationFeaturesSubscriptionUpdateOptions`
-* Add support for `Payto` on `Charge.PaymentMethodDetails`, `Checkout.Session.PaymentMethodOptions`, `CheckoutSessionPaymentMethodOptionsOptions`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `Invoice.PaymentSettings.PaymentMethodOptions`, `InvoicePaymentSettingsPaymentMethodOptionsOptions`, `Mandate.PaymentMethodDetails`, `PaymentAttemptRecord.PaymentMethodDetails`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethodUpdateOptions`, `PaymentMethod`, `PaymentRecord.PaymentMethodDetails`, `SetupAttempt.PaymentMethodDetails`, `SetupIntent.PaymentMethodOptions`, `SetupIntentPaymentMethodDataOptions`, `SetupIntentPaymentMethodOptionsOptions`, `Subscription.PaymentSettings.PaymentMethodOptions`, and `SubscriptionPaymentSettingsPaymentMethodOptionsOptions`
-* Add support for `LineItems` on `Checkout.SessionUpdateOptions`
-* Add support for `Invoice` on `CustomerCustomerBalanceTransactionListOptions`
-* Add support for `AuthorizationCode`, `Description`, `Iin`, `Installments`, `Issuer`, `NetworkAdviceCode`, `NetworkDeclineCode`, and `StoredCredentialUsage` on `PaymentAttemptRecord.PaymentMethodDetails.Card` and `PaymentRecord.PaymentMethodDetails.Card`
-* Add support for `ReportedBy` on `PaymentRecord`
+* Release specs are identical.
