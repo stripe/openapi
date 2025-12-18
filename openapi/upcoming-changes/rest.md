@@ -1,1 +1,2 @@
+* Change `Invoice.payment_settings.payment_method_options.payto` and `Subscription.payment_settings.payment_method_options.payto` to be required
 * Add support for `topup` on `Treasury.ReceivedDebit.linked_flows`
