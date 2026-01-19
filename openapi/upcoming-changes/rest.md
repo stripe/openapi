@@ -8,6 +8,8 @@
 * Add support for new value `pl_nip` on enums `Checkout.Session.customer_details.tax_ids[].type`, `Invoice.customer_tax_ids[].type`, `Tax.Calculation.customer_details.tax_ids[].type`, `Tax.Transaction.customer_details.tax_ids[].type`, and `TaxId.type`
 * Add support for new value `pl_nip` on enums `Customer#create.tax_id_data[].type`, `Invoice#create_preview.customer_details.tax_ids[].type`, `Tax.Calculation#create.customer_details.tax_ids[].type`, and `TaxId#create.type`
 * Change `Invoice.payment_settings.payment_method_options.payto` and `Subscription.payment_settings.payment_method_options.payto` to be required
+* Add support for `enforce_arithmetic_validation` on `PaymentIntent#capture.amount_details`, `PaymentIntent#confirm.amount_details`, `PaymentIntent#create.amount_details`, `PaymentIntent#increment_authorization.amount_details`, and `PaymentIntent#update.amount_details`
 * Remove support for `preferred_settlement_speed` on `PaymentIntent#confirm.payment_method_options.us_bank_account`, `PaymentIntent#create.payment_method_options.us_bank_account`, `PaymentIntent#update.payment_method_options.us_bank_account`, and `PaymentIntent.payment_method_options.us_bank_account`
+* Add support for `error` on `PaymentIntent.amount_details`
 * Remove support for `bgn` on `Terminal.Configuration#create.tipping`, `Terminal.Configuration#update.tipping`, and `Terminal.Configuration.tipping`
 * Add support for `topup` on `Treasury.ReceivedDebit.linked_flows`
