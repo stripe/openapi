@@ -4,27 +4,40 @@ This repository contains [OpenAPI specifications][openapi] for Stripe's API.
 
 [Changelog](https://github.com/stripe/openapi/releases/)
 
+## Directory Structure
 
-Files can be found in the `openapi/` directory:
+| Directory | Description |
+|-----------|-------------|
+| [`/latest/`](./latest/) | **Recommended.** Latest GA release with [v1 and v2 API endpoints](https://docs.stripe.com/api-v2-overview) |
+| [`/preview/`](./preview/) | Same as `/latest/`, but includes [public preview API endpoints](https://docs.stripe.com/release-phases). |
+| [`/openapi/`](./openapi/) | Legacy. v1-only endpoint specifications (still updated every release) |
 
-* `spec3.{json,yaml}:` OpenAPI 3.0 spec matching the public Stripe API.
-* `spec3.sdk.{json,yaml}:` Expanded OpenAPI 3.0 spec intended for Stripe-internal
-  use.
-    * Contains special annotations, deprecated endpoints, and pre-release
-      features specifically intended to support generating Stripe API
-      libraries. Users should use the `spec3.{json,yaml}` variant instead.
-* `fixtures3.{json,yaml}`: Test fixtures for resources in `spec3`. See below
-  for more information.
+### `/latest/` — Generally Available (GA) Specifications
 
+The latest generally available (GA) release, containing OpenAPI specifications with both [v1 and v2 API endpoints](https://docs.stripe.com/api-v2-overview).
 
-We used to support OpenAPI 2.0, but have since deprecated its use, and it's no
-longer receiving updates. It is available on
-[old versions](https://github.com/stripe/openapi/tree/v83) of this repository.
+Use these files to generate SDKs or client libraries that support Stripe's API. The specifications include both v1 and v2 endpoints and events, providing complete API coverage in a single file.
 
+### `/preview/` — Preview Release
 
-The specs provided in this repository do not explicity target
-[openapi-generator](https://github.com/OpenAPITools/openapi-generator).  They are instead generated via a custom closed-source
-generator.
+The latest public preview release. Use these files for early access to upcoming API features before GA release.
+
+To learn more about public preview and other phases, see [Stripe's Product release phases](https://stripe.com/docs/product-release-phases).
+
+### `/openapi/` — v1 Only (Legacy)
+
+The original OpenAPI files containing [v1 endpoints only](https://docs.stripe.com/api-v2-overview).
+
+These files are still updated with every release, but we recommend new projects use `/latest/` for complete API coverage. If you currently use the OpenAPI files in `/openapi/`, you don't need to change anything—the existing structure remains unchanged and the specifications continue to be updated on every release.
+
+## File Formats
+
+All specification files are available in both JSON and YAML formats.
+
+### Public vs SDK Specs
+
+- **Public specs** (`spec3.{json,yaml}`) — Use these for most purposes
+- **SDK specs** (`spec3.sdk.{json,yaml}`) — Contains special annotations, deprecated endpoints, and pre-release features specifically intended to support generating Stripe API libraries. Users should typically use the public variant instead.
 
 ## Vendor Extensions
 
@@ -94,21 +107,15 @@ invoice_line_item:
   ...
 ```
 
-## Updates
+## OpenAPI Version
 
-Please make updates to the script included in `bin` to help maintain
-consistency and commit cleanliness (search JIRA for full instructions):
+We used to support OpenAPI 2.0, but have since deprecated its use, and it's no
+longer receiving updates. It is available on
+[old versions](https://github.com/stripe/openapi/tree/v83) of this repository.
 
-    bin/update
-
-## Development
-
-Run the test suite:
-
-    make
-
-[expand]: https://stripe.com/docs/api/#expanding_objects
-[openapi]: https://www.openapis.org/
+The specs provided in this repository do not explicitly target
+[openapi-generator](https://github.com/OpenAPITools/openapi-generator). They are instead generated via a custom closed-source
+generator.
 
 <!--
 # vim: set tw=79:
