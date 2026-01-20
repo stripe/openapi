@@ -1,0 +1,80 @@
+name: Sync OpenAPI Artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version name (e.g., 2025-12-15.clover)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Fetch app installation token
+        uses: tibdex/github-app-token@v1.5.2
+        id: gh-api-token
+        with:
+          app_id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
+          private_key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+
+      - name: Get current version
+        id: current-version
+        run: echo "value=$(jq -r '.info.version' ./latest/openapi.json 2>/dev/null || echo 'unknown')" >> $GITHUB_OUTPUT
+
+      - name: Create directories
+        run: |
+          mkdir -p ./latest
+          mkdir -p ./preview
+
+      - name: Download latest (GA) JSON specs
+        run: |
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/ga/public.json" \
+            -o ./latest/openapi.spec3.json
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/ga/sdk.json" \
+            -o ./latest/openapi.sdk.spec3.json
+
+      - name: Download latest (GA) YAML specs
+        run: |
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/ga/public.yaml" \
+            -o ./latest/openapi.spec3.yaml
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/ga/sdk.yaml" \
+            -o ./latest/openapi.sdk.spec3.yaml
+
+      - name: Download preview JSON specs
+        run: |
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/public_preview/sdk.json" \
+            -o ./preview/openapi.spec3.sdk.json
+
+      - name: Download preview YAML specs
+        run: |
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/public_preview/sdk.yaml" \
+            -o ./preview/openapi.spec3.sdk.yaml
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected, skipping commit step"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          git config user.name "Stripe OpenAPI"
+          git config user.email "105521251+stripe-openapi[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Update OpenAPI for ${{ inputs.version }}"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ steps.gh-api-token.outputs.token }}
