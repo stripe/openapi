@@ -120,3 +120,6 @@ generator.
 <!--
 # vim: set tw=79:
 -->
+
+[expand]: https://stripe.com/docs/api/#expanding_objects
+[openapi]: https://www.openapis.org/
