@@ -8,25 +8,25 @@ This repository contains [OpenAPI specifications][openapi] for Stripe's API.
 
 | Directory | Description |
 |-----------|-------------|
-| [`/latest/`](./latest/) | **Recommended.** Latest GA release with v1 and v2 API endpoints |
-| [`/preview/`](./preview/) | Preview release SDK specifications |
+| [`/latest/`](./latest/) | **Recommended.** Latest GA release with [v1 and v2 API endpoints](https://docs.stripe.com/api-v2-overview) |
+| [`/preview/`](./preview/) | Same as `/latest/`, but includes [public preview API endpoints](https://docs.stripe.com/release-phases). |
 | [`/openapi/`](./openapi/) | Legacy. v1-only endpoint specifications (still updated every release) |
 
-### `/latest/` — Unified v1 + v2 Specifications
+### `/latest/` — Generally Available (GA) Specifications
 
-The latest generally available (GA) release, containing unified OpenAPI specifications with both v1 and v2 API endpoints.
+The latest generally available (GA) release, containing OpenAPI specifications with both [v1 and v2 API endpoints](https://docs.stripe.com/api-v2-overview).
 
-Use these files to generate SDKs or client libraries that support Stripe's v2 APIs. The specifications include v2 endpoints and events alongside v1 endpoints, providing complete API coverage in a single file.
+Use these files to generate SDKs or client libraries that support Stripe's API. The specifications include both v1 and v2 endpoints and events, providing complete API coverage in a single file.
 
 ### `/preview/` — Preview Release
 
-The latest public preview release.
+The latest public preview release. Use these files for early access to upcoming API features before GA release.
 
-Use these files for early access to upcoming API features before GA release.
+To learn more about public preview and other phases, see [Stripe's Product release phases](https://stripe.com/docs/product-release-phases).
 
 ### `/openapi/` — v1 Only (Legacy)
 
-The original OpenAPI files containing v1 endpoints only.
+The original OpenAPI files containing [v1 endpoints only](https://docs.stripe.com/api-v2-overview).
 
 These files are still updated with every release, but we recommend new projects use `/latest/` for complete API coverage. If you currently use the OpenAPI files in `/openapi/`, you don't need to change anything—the existing structure remains unchanged and the specifications continue to be updated on every release.
 

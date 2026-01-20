@@ -2,6 +2,8 @@
 
 This directory contains the **latest public preview** OpenAPI specifications for Stripe's API, including both v1 and v2 endpoints.
 
+To learn more about public preview and other phases, see [Stripe's Product release phases](https://stripe.com/docs/product-release-phases).
+
 ## Files
 
 | File | Description |
