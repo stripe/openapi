@@ -1,1 +1,1 @@
-* Add support for `adjustable_quantity` on `LineItem`
+* Release specs are identical.
