@@ -1,1 +1,3 @@
-* Release specs are identical.
+* Add support for `SettlementType` on `ApplicationFee`
+* Remove support for `CardIssuerDecline` on `Radar.PaymentEvaluation.Insights`
+* Add support for `Cellular` on `Terminal.ConfigurationCreateOptions`, `Terminal.ConfigurationUpdateOptions`, and `Terminal.Configuration`
