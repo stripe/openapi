@@ -1,3 +1,4 @@
+* Add support for new resources `Reserve::Hold`, `Reserve::Plan`, and `Reserve::Release`
 * Add support for `settlement_type` on `ApplicationFee`
 * Add support for `location` and `reader` on `Charge::PaymentMethodDetail::CardPresent`, `Charge::PaymentMethodDetail::InteracPresent`, `ConfirmationToken::PaymentMethodPreview::Card::GeneratedFrom::PaymentMethodDetail::CardPresent`, `PaymentAttemptRecord::PaymentMethodDetail::CardPresent`, `PaymentAttemptRecord::PaymentMethodDetail::InteracPresent`, `PaymentMethod::Card::GeneratedFrom::PaymentMethodDetail::CardPresent`, `PaymentRecord::PaymentMethodDetail::CardPresent`, and `PaymentRecord::PaymentMethodDetail::InteracPresent`
 * Add support for `display_name` and `service_user_number` on `Mandate::PaymentMethodDetail::BacsDebit`

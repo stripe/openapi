@@ -1,7 +1,13 @@
+* Add support for new resources `ReserveHold`, `ReservePlan`, and `ReserveRelease`
 * Add support for `SettlementType` on `ApplicationFee`
 * Add support for `Location` and `Reader` on `ChargePaymentMethodDetailsCardPresent`, `ChargePaymentMethodDetailsInteracPresent`, `ConfirmationTokenPaymentMethodPreviewCardGeneratedFromPaymentMethodDetailsCardPresent`, `PaymentAttemptRecordPaymentMethodDetailsCardPresent`, `PaymentAttemptRecordPaymentMethodDetailsInteracPresent`, `PaymentMethodCardGeneratedFromPaymentMethodDetailsCardPresent`, `PaymentRecordPaymentMethodDetailsCardPresent`, and `PaymentRecordPaymentMethodDetailsInteracPresent`
+* Add support for new values `reserve.hold.created`, `reserve.hold.updated`, `reserve.plan.created`, `reserve.plan.disabled`, `reserve.plan.expired`, `reserve.plan.updated`, and `reserve.release.created` on enum `Event.Type`
+* Add support for new value `pay_by_bank` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
 * Add support for `DisplayName` and `ServiceUserNumber` on `MandatePaymentMethodDetailsBacsDebit`
 * Remove support for `CardIssuerDecline` on `RadarPaymentEvaluationInsights`
 * Add support for `PaymentBehavior` on `SubscriptionItemParams`
 * Add support for `Cellular` on `TerminalConfigurationParams` and `TerminalConfiguration`
+* Add support for snapshot events `EventTypeReserveHoldCreated` and `EventTypeReserveHoldUpdated` with resource `ReserveHold`
+* Add support for snapshot events `EventTypeReservePlanCreated`, `EventTypeReservePlanDisabled`, `EventTypeReservePlanExpired`, and `EventTypeReservePlanUpdated` with resource `ReservePlan`
+* Add support for snapshot event `EventTypeReserveReleaseCreated` with resource `ReserveRelease`
 * Add support for error codes `storer_capability_missing` and `storer_capability_not_active` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
