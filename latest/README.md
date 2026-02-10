@@ -6,8 +6,8 @@ This directory contains the **latest generally available (GA)** OpenAPI specific
 
 | File | Description |
 |------|-------------|
-| `spec3.{json,yaml}` | OpenAPI 3.0 spec matching the public Stripe API (v1 and v2 endpoints) |
-| `spec3.sdk.{json,yaml}` | Expanded OpenAPI 3.0 spec intended for Stripe-internal use |
+| `openapi.spec3.{json,yaml}` | OpenAPI 3.0 spec matching the public Stripe API (v1 and v2 endpoints) |
+| `openapi.spec3.sdk.{json,yaml}` | Expanded OpenAPI 3.0 spec intended for Stripe-internal use |
 
 ## Other Directories
 
