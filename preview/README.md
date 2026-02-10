@@ -8,7 +8,7 @@ To learn more about public preview and other phases, see [Stripe's Product relea
 
 | File | Description |
 |------|-------------|
-| `spec3.sdk.{json,yaml}` | Expanded OpenAPI 3.0 spec intended for Stripe-internal use |
+| `openapi.spec3.sdk.{json,yaml}` | Expanded OpenAPI 3.0 spec intended for Stripe-internal use |
 
 This directory contains **SDK specs only**. These files include additional OpenAPI extensions and are meant for Stripe-internal usage only, but are still otherwise available for public use.
 
