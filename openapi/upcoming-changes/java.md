@@ -6,6 +6,7 @@
 * Add support for `displayName` and `serviceUserNumber` on `Mandate.payment_method_details.bacs_debit`
 * Remove support for `cardIssuerDecline` on `radar.PaymentEvaluation.insights`
 * Add support for `paymentBehavior` on `SubscriptionItemDeleteParams`
+* Add support for `lk` on `tax.Registration.country_options` and `tax.RegistrationCreateParams.country_options`
 * Add support for `cellular` on `terminal.ConfigurationCreateParams`, `terminal.ConfigurationUpdateParams`, and `terminal.Configuration`
 * Add support for new values `reserve.hold.created`, `reserve.hold.updated`, `reserve.plan.created`, `reserve.plan.disabled`, `reserve.plan.expired`, `reserve.plan.updated`, and `reserve.release.created` on enums `WebhookEndpointCreateParams.enabledEvents` and `WebhookEndpointUpdateParams.enabledEvents`
 * Add support for new value `2026-02-25.clover` on enum `WebhookEndpointCreateParams.apiVersion`

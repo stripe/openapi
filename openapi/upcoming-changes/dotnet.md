@@ -3,6 +3,7 @@
 * Add support for `DisplayName` and `ServiceUserNumber` on `Mandate.PaymentMethodDetails.BacsDebit`
 * Remove support for `CardIssuerDecline` on `Radar.PaymentEvaluation.Insights`
 * Add support for `PaymentBehavior` on `SubscriptionItemDeleteOptions`
+* Add support for `Lk` on `Tax.Registration.CountryOptions` and `TaxRegistrationCountryOptionsOptions`
 * Add support for `Cellular` on `Terminal.ConfigurationCreateOptions`, `Terminal.ConfigurationUpdateOptions`, and `Terminal.Configuration`
 * Add support for snapshot events `ReserveHoldCreated` and `ReserveHoldUpdated` with resource `Reserve.Hold`
 * Add support for snapshot events `ReservePlanCreated`, `ReservePlanDisabled`, `ReservePlanExpired`, and `ReservePlanUpdated` with resource `Reserve.Plan`

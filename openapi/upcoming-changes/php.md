@@ -8,6 +8,7 @@
 * Change type of `PaymentAttemptRecord.payment_method_details.us_bank_account.expected_debit_date` and `PaymentRecord.payment_method_details.us_bank_account.expected_debit_date` from `nullable(string)` to `string`
 * Remove support for `card_issuer_decline` on `Radar.PaymentEvaluation.insights`
 * Add support for `payment_behavior` on `SubscriptionItem.delete().$params`
+* Add support for `lk` on `Tax.Registration.country_options` and `Tax\Registration.create().$params.country_option`
 * Add support for `cellular` on `Terminal.Configuration`, `Terminal\Configuration.create().$params`, and `Terminal\Configuration.update().$params`
 * Add support for snapshot events `RESERVE_HOLD_CREATED` and `RESERVE_HOLD_UPDATED` with resource `Reserve.Hold`
 * Add support for snapshot events `RESERVE_PLAN_CREATED`, `RESERVE_PLAN_DISABLED`, `RESERVE_PLAN_EXPIRED`, and `RESERVE_PLAN_UPDATED` with resource `Reserve.Plan`

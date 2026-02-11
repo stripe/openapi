@@ -5,4 +5,5 @@
 * Change type of `PaymentAttemptRecord::PaymentMethodDetail::UsBankAccount.expected_debit_date` and `PaymentRecord::PaymentMethodDetail::UsBankAccount.expected_debit_date` from `nullable(string)` to `string`
 * Remove support for `card_issuer_decline` on `Radar::PaymentEvaluation::Insight`
 * Add support for `payment_behavior` on `SubscriptionItemDeleteParams`
+* Add support for `lk` on `Tax::Registration::CountryOption` and `Tax::RegistrationCreateParams::CountryOption`
 * Add support for `cellular` on `Terminal::ConfigurationCreateParams`, `Terminal::ConfigurationUpdateParams`, and `Terminal::Configuration`

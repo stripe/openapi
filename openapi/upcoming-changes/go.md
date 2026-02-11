@@ -6,6 +6,7 @@
 * Add support for `DisplayName` and `ServiceUserNumber` on `MandatePaymentMethodDetailsBacsDebit`
 * Remove support for `CardIssuerDecline` on `RadarPaymentEvaluationInsights`
 * Add support for `PaymentBehavior` on `SubscriptionItemParams`
+* Add support for `Lk` on `TaxRegistrationCountryOptionsParams` and `TaxRegistrationCountryOptions`
 * Add support for `Cellular` on `TerminalConfigurationParams` and `TerminalConfiguration`
 * Add support for snapshot events `EventTypeReserveHoldCreated` and `EventTypeReserveHoldUpdated` with resource `ReserveHold`
 * Add support for snapshot events `EventTypeReservePlanCreated`, `EventTypeReservePlanDisabled`, `EventTypeReservePlanExpired`, and `EventTypeReservePlanUpdated` with resource `ReservePlan`

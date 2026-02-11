@@ -9,6 +9,7 @@
 * Change type of `PaymentAttemptRecord.payment_method_details.us_bank_account.expected_debit_date` and `PaymentRecord.payment_method_details.us_bank_account.expected_debit_date` from `string | null` to `string`
 * Remove support for `card_issuer_decline` on `Radar.PaymentEvaluation.insights`
 * Add support for `payment_behavior` on `SubscriptionItemDeleteParams`
+* Add support for `lk` on `Tax.Registration.country_options` and `Tax.RegistrationCreateParams.country_options`
 * Add support for `cellular` on `Terminal.ConfigurationCreateParams`, `Terminal.ConfigurationUpdateParams`, and `Terminal.Configuration`
 * Add support for new values `reserve.hold.created`, `reserve.hold.updated`, `reserve.plan.created`, `reserve.plan.disabled`, `reserve.plan.expired`, `reserve.plan.updated`, and `reserve.release.created` on enums `WebhookEndpointCreateParams.enabled_events` and `WebhookEndpointUpdateParams.enabled_events`
 * Add support for new value `2026-02-25.clover` on enum `WebhookEndpointCreateParams.api_version`
