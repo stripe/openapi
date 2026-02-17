@@ -9,6 +9,8 @@
 * Add support for `display_name` and `service_user_number` on `Mandate.payment_method_details.bacs_debit`
 * Change type of `PaymentAttemptRecord.payment_method_details.boleto.tax_id` and `PaymentRecord.payment_method_details.boleto.tax_id` from `string` to `nullable(string)`
 * Change type of `PaymentAttemptRecord.payment_method_details.us_bank_account.expected_debit_date` and `PaymentRecord.payment_method_details.us_bank_account.expected_debit_date` from `nullable(string)` to `string`
+* Add support for `transaction_purpose` on `PaymentIntent#confirm.payment_method_options.us_bank_account`, `PaymentIntent#create.payment_method_options.us_bank_account`, `PaymentIntent#update.payment_method_options.us_bank_account`, and `PaymentIntent.payment_method_options.us_bank_account`
+* Add support for `optional_items` on `PaymentLink#update`
 * Remove support for `card_issuer_decline` on `Radar.PaymentEvaluation.insights`
 * Add support for `payment_behavior` on `SubscriptionItem#delete`
 * Add support for `lk` on `Tax.Registration#create.country_options` and `Tax.Registration.country_options`

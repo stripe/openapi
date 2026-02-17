@@ -5,6 +5,8 @@
 * Add support for new values `terminal_wifi_certificate` and `terminal_wifi_private_key` on enum `File.Purpose`
 * Add support for new value `pay_by_bank` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
 * Add support for `DisplayName` and `ServiceUserNumber` on `MandatePaymentMethodDetailsBacsDebit`
+* Add support for `TransactionPurpose` on `PaymentIntentConfirmPaymentMethodOptionsUsBankAccountParams`, `PaymentIntentPaymentMethodOptionsUsBankAccountParams`, and `PaymentIntentPaymentMethodOptionsUsBankAccount`
+* Add support for `OptionalItems` on `PaymentLinkParams`
 * Remove support for `CardIssuerDecline` on `RadarPaymentEvaluationInsights`
 * Add support for `PaymentBehavior` on `SubscriptionItemParams`
 * Add support for `Lk` on `TaxRegistrationCountryOptionsParams` and `TaxRegistrationCountryOptions`

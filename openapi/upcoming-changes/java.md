@@ -5,6 +5,8 @@
 * Add support for new values `terminal_wifi_certificate` and `terminal_wifi_private_key` on enum `FileCreateParams.purpose`
 * Add support for new value `pay_by_bank` on enums `InvoiceCreateParams.payment_settings.paymentMethodTypes`, `InvoiceUpdateParams.payment_settings.paymentMethodTypes`, `SubscriptionCreateParams.payment_settings.paymentMethodTypes`, and `SubscriptionUpdateParams.payment_settings.paymentMethodTypes`
 * Add support for `displayName` and `serviceUserNumber` on `Mandate.payment_method_details.bacs_debit`
+* Add support for `transactionPurpose` on `PaymentIntent.payment_method_options.us_bank_account`, `PaymentIntentConfirmParams.payment_method_options.us_bank_account`, `PaymentIntentCreateParams.payment_method_options.us_bank_account`, and `PaymentIntentUpdateParams.payment_method_options.us_bank_account`
+* Add support for `optionalItems` on `PaymentLinkUpdateParams`
 * Remove support for `cardIssuerDecline` on `radar.PaymentEvaluation.insights`
 * Add support for `paymentBehavior` on `SubscriptionItemDeleteParams`
 * Add support for `lk` on `tax.Registration.country_options` and `tax.RegistrationCreateParams.country_options`
