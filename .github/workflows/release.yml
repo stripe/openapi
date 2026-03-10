@@ -17,6 +17,28 @@ jobs:
         git fetch --tags --force
         echo "$(git tag -l --format='%(contents:body)' ${{ github.ref_name }})" > "${{ runner.temp }}/release_notes.md"
 
+    - name: Add OpenAPI spec versions to release notes
+      run: |
+        SPECS=(
+          openapi/spec3.sdk.json
+          openapi/spec3.beta.sdk.json
+          openapi/spec3.private_preview.sdk.json
+        )
+        {
+          echo ""
+          echo "## OpenAPI spec versions"
+          echo ""
+          echo "| Spec | info.version |"
+          echo "|------|--------------|"
+          for spec in "${SPECS[@]}"; do
+            if [ -f "$spec" ]; then
+              version=$(jq -r '.info.version // "—" | gsub("\n"; " ")' "$spec")
+              display="${spec%.json}.{json,yaml}"
+              echo "| $display | $version |"
+            fi
+          done
+        } >> "${{ runner.temp }}/release_notes.md"
+
     - name: Fetch app installation token
       uses: tibdex/github-app-token@v1.5.2
       id: gh-api-token
