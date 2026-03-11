@@ -1,4 +1,5 @@
 * Add support for `upiPayments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
+* Add support for `integrationIdentifier` on `checkout.SessionCreateParams` and `checkout.Session`
 * Add support for `crypto` on `checkout.SessionCreateParams.payment_method_options`
 * Add support for `metadata` on `CreditNoteCreateParams.lines[]`, `CreditNoteLineItem`, `CreditNotePreviewLinesParams.lines[]`, and `CreditNotePreviewParams.lines[]`
 * Add support for `lifecycleControls` on `issuing.CardCreateParams` and `issuing.Card`

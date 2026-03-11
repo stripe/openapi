@@ -1,4 +1,5 @@
 * Add support for `upi_payments` on `Account.capabilities`, `Account.create().$params.capability`, and `Account.update().$params.capability`
+* Add support for `integration_identifier` on `Checkout.Session` and `Checkout\Session.create().$params`
 * Add support for `crypto` on `Checkout\Session.create().$params.payment_method_option`
 * Add support for new value `marine_carbon_removal` on enum `Climate.Supplier.removal_pathway`
 * Add support for `metadata` on `CreditNote.create().$params.line`, `CreditNote.preview().$params.line`, `CreditNote.preview_lines().$params.line`, and `CreditNoteLineItem`
