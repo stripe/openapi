@@ -1,6 +1,7 @@
 * Add support for `upi_payments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
 * Add support for `integration_identifier` on `Checkout.SessionCreateParams` and `Checkout.Session`
 * Add support for `crypto` on `Checkout.SessionCreateParams.payment_method_options`
+* Add support for new values `elements`, `embedded_page`, `form`, and `hosted_page` on enums `Checkout.Session.ui_mode` and `Checkout.SessionCreateParams.ui_mode`
 * Add support for new value `marine_carbon_removal` on enum `Climate.Supplier.removal_pathway`
 * Add support for `metadata` on `CreditNoteCreateParams.lines[]`, `CreditNoteLineItem`, `CreditNotePreviewLinesParams.lines[]`, and `CreditNotePreviewParams.lines[]`
 * Add support for `lifecycle_controls` on `Issuing.CardCreateParams` and `Issuing.Card`
@@ -12,5 +13,6 @@
 * ⚠️ Change type of `PaymentAttemptRecord.payment_method_details.card.last4` and `PaymentRecord.payment_method_details.card.last4` from `string` to `string | null`
 * ⚠️ Change type of `PaymentAttemptRecord.payment_method_details.card.moto` and `PaymentRecord.payment_method_details.card.moto` from `boolean` to `boolean | null`
 * Add support for `cryptogram`, `electronic_commerce_indicator`, `exemption_indicator_applied`, and `exemption_indicator` on `PaymentAttemptRecord.payment_method_details.card.three_d_secure` and `PaymentRecord.payment_method_details.card.three_d_secure`
+* Add support for `recommended_action` on `Radar.PaymentEvaluation`
 * Add support for new value `2026-03-25.dahlia` on enum `WebhookEndpointCreateParams.api_version`
 * Add support for error code `service_period_coupon_with_metered_tiered_item_unsupported` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`
