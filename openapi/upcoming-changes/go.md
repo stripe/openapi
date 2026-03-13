@@ -11,4 +11,5 @@
 * Add support for `Cryptogram`, `ElectronicCommerceIndicator`, `ExemptionIndicatorApplied`, and `ExemptionIndicator` on `PaymentAttemptRecordPaymentMethodDetailsCardThreeDSecure` and `PaymentRecordPaymentMethodDetailsCardThreeDSecure`
 * Add support for `RecommendedAction` and `Signals` on `RadarPaymentEvaluation`
 * ⚠️ Remove support for `Insights` on `RadarPaymentEvaluation`
+* Add support for new value `canceled_by_retention_policy` on enum `SubscriptionCancellationDetails.Reason`
 * Add support for error code `service_period_coupon_with_metered_tiered_item_unsupported` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`

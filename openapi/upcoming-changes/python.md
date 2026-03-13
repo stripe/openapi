@@ -18,5 +18,6 @@
 * Add support for `cryptogram`, `electronic_commerce_indicator`, `exemption_indicator_applied`, and `exemption_indicator` on `PaymentAttemptRecord.PaymentMethodDetail.Card.ThreeDSecure` and `PaymentRecord.PaymentMethodDetail.Card.ThreeDSecure`
 * Add support for `recommended_action` and `signals` on `Radar.PaymentEvaluation`
 * ⚠️ Remove support for `insights` on `Radar.PaymentEvaluation`
+* Add support for new value `canceled_by_retention_policy` on enum `Subscription.CancellationDetail.reason`
 * Add support for new value `2026-03-25.dahlia` on enum `WebhookEndpointCreateParams.api_version`
 * Add support for error code `service_period_coupon_with_metered_tiered_item_unsupported` on `Invoice.LastFinalizationError`, `PaymentIntent.LastPaymentError`, `SetupAttempt.SetupError`, `SetupIntent.LastSetupError`, and `StripeError`
