@@ -1,4 +1,5 @@
 * Add support for `upi_payments` on `Account.Capability`, `AccountCreateParamsCapability`, and `AccountModifyParamsCapability`
+* Add support for new value `tempo` on enums `Charge.PaymentMethodDetail.Crypto.network`, `PaymentAttemptRecord.PaymentMethodDetail.Crypto.network`, and `PaymentRecord.PaymentMethodDetail.Crypto.network`
 * Add support for `integration_identifier` on `Checkout.Session` and `checkout.SessionCreateParams`
 * Add support for `crypto` on `checkout.SessionCreateParamsPaymentMethodOption`
 * Add support for `pending_invoice_item_interval` on `checkout.SessionCreateParamsSubscriptionDatum`

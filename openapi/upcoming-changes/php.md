@@ -1,4 +1,5 @@
 * Add support for `upi_payments` on `Account.capabilities`, `Account.create().$params.capability`, and `Account.update().$params.capability`
+* Add support for new value `tempo` on enums `Charge.payment_method_details.crypto.network`, `PaymentAttemptRecord.payment_method_details.crypto.network`, and `PaymentRecord.payment_method_details.crypto.network`
 * Add support for `integration_identifier` on `Checkout.Session` and `Checkout\Session.create().$params`
 * Add support for `crypto` on `Checkout\Session.create().$params.payment_method_option`
 * Add support for `pending_invoice_item_interval` on `Checkout\Session.create().$params.subscription_datum`
