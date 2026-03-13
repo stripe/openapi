@@ -1,6 +1,7 @@
 * Add support for `upiPayments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
 * Add support for `integrationIdentifier` on `checkout.SessionCreateParams` and `checkout.Session`
 * Add support for `crypto` on `checkout.SessionCreateParams.payment_method_options`
+* Add support for `pendingInvoiceItemInterval` on `checkout.SessionCreateParams.subscription_data`
 * Add support for new values `elements`, `embedded_page`, `form`, and `hosted_page` on enum `checkout.SessionCreateParams.uiMode`
 * Add support for `metadata` on `CreditNoteCreateParams.lines[]`, `CreditNoteLineItem`, `CreditNotePreviewLinesParams.lines[]`, and `CreditNotePreviewParams.lines[]`
 * ⚠️ Add support for `level` on `issuing.AuthorizationCreateParams.risk_assessment.card_testing_risk` and `issuing.AuthorizationCreateParams.risk_assessment.merchant_dispute_risk`

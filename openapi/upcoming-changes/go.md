@@ -1,6 +1,7 @@
 * Add support for `UpiPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
 * Add support for `IntegrationIdentifier` on `CheckoutSessionParams` and `CheckoutSession`
 * Add support for `Crypto` on `CheckoutSessionPaymentMethodOptionsParams`
+* Add support for `PendingInvoiceItemInterval` on `CheckoutSessionSubscriptionDataParams`
 * Add support for new values `elements`, `embedded_page`, `form`, and `hosted_page` on enum `CheckoutSession.UIMode`
 * Add support for new value `marine_carbon_removal` on enum `ClimateSupplier.RemovalPathway`
 * Add support for `Metadata` on `CreditNoteLineItem`, `CreditNoteLineParams`, `CreditNotePreviewLineParams`, and `CreditNotePreviewLinesLineParams`

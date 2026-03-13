@@ -1,6 +1,7 @@
 * Add support for `upi_payments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
 * Add support for `integration_identifier` on `Checkout.SessionCreateParams` and `Checkout.Session`
 * Add support for `crypto` on `Checkout.SessionCreateParams.payment_method_options`
+* Add support for `pending_invoice_item_interval` on `Checkout.SessionCreateParams.subscription_data`
 * Add support for new values `elements`, `embedded_page`, `form`, and `hosted_page` on enums `Checkout.Session.ui_mode` and `Checkout.SessionCreateParams.ui_mode`
 * Add support for new value `marine_carbon_removal` on enum `Climate.Supplier.removal_pathway`
 * Add support for `metadata` on `CreditNoteCreateParams.lines[]`, `CreditNoteLineItem`, `CreditNotePreviewLinesParams.lines[]`, and `CreditNotePreviewParams.lines[]`

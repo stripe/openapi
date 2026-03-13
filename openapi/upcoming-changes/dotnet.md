@@ -1,6 +1,7 @@
 * Add support for `UpiPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
 * Add support for `IntegrationIdentifier` on `Checkout.SessionCreateOptions` and `Checkout.Session`
 * Add support for `Crypto` on `CheckoutSessionPaymentMethodOptionsOptions`
+* Add support for `PendingInvoiceItemInterval` on `CheckoutSessionSubscriptionDataOptions`
 * Add support for `Metadata` on `CreditNoteLineItem` and `CreditNoteLineOptions`
 * ⚠️ Add support for `Level` on `IssuingAuthorizationRiskAssessmentCardTestingRiskOptions` and `IssuingAuthorizationRiskAssessmentMerchantDisputeRiskOptions`
 * ⚠️ Remove support for `RiskLevel` on `IssuingAuthorizationRiskAssessmentCardTestingRiskOptions` and `IssuingAuthorizationRiskAssessmentMerchantDisputeRiskOptions`
