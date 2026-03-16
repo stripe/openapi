@@ -12,6 +12,7 @@
 * Add support for new value `upi` on enums `ConfirmationToken.PaymentMethodPreview.type` and `PaymentMethod.type`
 * Add support for `metadata` on `CreditNoteCreateParamsLine`, `CreditNoteLineItem`, `CreditNotePreviewLinesParamsLine`, and `CreditNotePreviewParamsLine`
 * Add support for new value `upi` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
+* Add support for `quantity_decimal` on `InvoiceAddLinesParamsLine`, `InvoiceCreatePreviewParamsInvoiceItem`, `InvoiceItemCreateParams`, `InvoiceItemModifyParams`, `InvoiceItem`, `InvoiceLineItemModifyParams`, `InvoiceLineItem`, and `InvoiceUpdateLinesParamsLine`
 * ⚠️ Add support for `level` on `issuing.AuthorizationCreateParamsRiskAssessmentCardTestingRisk` and `issuing.AuthorizationCreateParamsRiskAssessmentMerchantDisputeRisk`
 * ⚠️ Remove support for `risk_level` on `issuing.AuthorizationCreateParamsRiskAssessmentCardTestingRisk` and `issuing.AuthorizationCreateParamsRiskAssessmentMerchantDisputeRisk`
 * Add support for `lifecycle_controls` on `Issuing.Card` and `issuing.CardCreateParams`

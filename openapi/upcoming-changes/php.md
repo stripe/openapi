@@ -8,6 +8,7 @@
 * Add support for new value `marine_carbon_removal` on enum `Climate.Supplier.removal_pathway`
 * Add support for new value `upi` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Add support for `metadata` on `CreditNote.create().$params.line`, `CreditNote.preview().$params.line`, `CreditNote.preview_lines().$params.line`, and `CreditNoteLineItem`
+* Add support for `quantity_decimal` on `Invoice.add_lines().$params.line`, `Invoice.create_preview().$params.invoice_item`, `Invoice.update_lines().$params.line`, `InvoiceItem.create().$params`, `InvoiceItem.update().$params`, `InvoiceItem`, `InvoiceLineItem.update().$params`, and `InvoiceLineItem`
 * ⚠️ Add support for `level` on `Issuing\Authorization.create().$params.risk_assessment.card_testing_risk` and `Issuing\Authorization.create().$params.risk_assessment.merchant_dispute_risk`
 * ⚠️ Remove support for `risk_level` on `Issuing\Authorization.create().$params.risk_assessment.card_testing_risk` and `Issuing\Authorization.create().$params.risk_assessment.merchant_dispute_risk`
 * Add support for `lifecycle_controls` on `Issuing.Card` and `Issuing\Card.create().$params`

@@ -4,6 +4,7 @@
 * Add support for `Crypto` on `CheckoutSessionPaymentMethodOptionsOptions`
 * Add support for `PendingInvoiceItemInterval` on `CheckoutSessionSubscriptionDataOptions`
 * Add support for `Metadata` on `CreditNoteLineItem` and `CreditNoteLineOptions`
+* Add support for `QuantityDecimal` on `InvoiceInvoiceItemOptions`, `InvoiceItemCreateOptions`, `InvoiceItemUpdateOptions`, `InvoiceItem`, `InvoiceLineItemUpdateOptions`, `InvoiceLineItem`, and `InvoiceLineOptions`
 * ⚠️ Add support for `Level` on `IssuingAuthorizationRiskAssessmentCardTestingRiskOptions` and `IssuingAuthorizationRiskAssessmentMerchantDisputeRiskOptions`
 * ⚠️ Remove support for `RiskLevel` on `IssuingAuthorizationRiskAssessmentCardTestingRiskOptions` and `IssuingAuthorizationRiskAssessmentMerchantDisputeRiskOptions`
 * Add support for `LifecycleControls` on `Issuing.CardCreateOptions` and `Issuing.Card`

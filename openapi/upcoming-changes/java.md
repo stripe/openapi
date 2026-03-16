@@ -9,6 +9,7 @@
 * Add support for new value `upi` on enums `ConfirmationTokenCreateParams.payment_method_data.type`, `PaymentIntentConfirmParams.payment_method_data.type`, `PaymentIntentCreateParams.payment_method_data.type`, `PaymentIntentUpdateParams.payment_method_data.type`, `SetupIntentConfirmParams.payment_method_data.type`, `SetupIntentCreateParams.payment_method_data.type`, and `SetupIntentUpdateParams.payment_method_data.type`
 * Add support for `metadata` on `CreditNoteCreateParams.lines[]`, `CreditNoteLineItem`, `CreditNotePreviewLinesParams.lines[]`, and `CreditNotePreviewParams.lines[]`
 * Add support for new value `upi` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
+* Add support for `quantityDecimal` on `InvoiceAddLinesParams.lines[]`, `InvoiceCreatePreviewParams.invoice_items[]`, `InvoiceItemCreateParams`, `InvoiceItemUpdateParams`, `InvoiceItem`, `InvoiceLineItemUpdateParams`, `InvoiceLineItem`, and `InvoiceUpdateLinesParams.lines[]`
 * ⚠️ Add support for `level` on `issuing.AuthorizationCreateParams.risk_assessment.card_testing_risk` and `issuing.AuthorizationCreateParams.risk_assessment.merchant_dispute_risk`
 * ⚠️ Remove support for `riskLevel` on `issuing.AuthorizationCreateParams.risk_assessment.card_testing_risk` and `issuing.AuthorizationCreateParams.risk_assessment.merchant_dispute_risk`
 * Add support for `lifecycleControls` on `issuing.CardCreateParams` and `issuing.Card`

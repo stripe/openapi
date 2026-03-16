@@ -8,6 +8,7 @@
 * Add support for new value `marine_carbon_removal` on enum `ClimateSupplier.RemovalPathway`
 * Add support for new value `upi` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
 * Add support for `Metadata` on `CreditNoteLineItem`, `CreditNoteLineParams`, `CreditNotePreviewLineParams`, and `CreditNotePreviewLinesLineParams`
+* Add support for `QuantityDecimal` on `InvoiceAddLinesLineParams`, `InvoiceCreatePreviewInvoiceItemParams`, `InvoiceItemParams`, `InvoiceItem`, `InvoiceLineItemParams`, `InvoiceLineItem`, and `InvoiceUpdateLinesLineParams`
 * ⚠️ Add support for `Level` on `IssuingAuthorizationRiskAssessmentCardTestingRiskParams` and `IssuingAuthorizationRiskAssessmentMerchantDisputeRiskParams`
 * ⚠️ Remove support for `RiskLevel` on `IssuingAuthorizationRiskAssessmentCardTestingRiskParams` and `IssuingAuthorizationRiskAssessmentMerchantDisputeRiskParams`
 * Add support for `LifecycleControls` on `IssuingCardParams` and `IssuingCard`
