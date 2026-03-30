@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for `app_distribution` on `Account::Capability`, `AccountCreateParams::Capability`, and `AccountUpdateParams::Capability`

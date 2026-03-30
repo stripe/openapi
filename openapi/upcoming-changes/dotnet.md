@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for `AppDistribution` on `Account.Capabilities` and `AccountCapabilitiesOptions`
