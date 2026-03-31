@@ -1,4 +1,6 @@
 * Add support for `app_distribution` on `Account.capabilities`, `Account.create().$params.capability`, and `Account.update().$params.capability`
-* Add support for new value `usdt` on enums `Charge.payment_method_details.crypto.token_currency`, `PaymentAttemptRecord.payment_method_details.crypto.token_currency`, and `PaymentRecord.payment_method_details.crypto.token_currency`
+* Add support for new values `phantom_cash` and `usdt` on enums `Charge.payment_method_details.crypto.token_currency`, `PaymentAttemptRecord.payment_method_details.crypto.token_currency`, and `PaymentRecord.payment_method_details.crypto.token_currency`
+* Add support for new value `fulfillment_error` on enum `Issuing.Card.cancellation_reason`
+* Add support for new value `fulfillment_error` on enum `Issuing.Card.replacement_reason`
 * Add support for new values `low`, `not_assessed`, and `unknown` on enum `Radar.PaymentEvaluation.signals.fraudulent_payment.risk_level`
 * Add support for new value `account` on enum `Radar.ValueList.item_type`
