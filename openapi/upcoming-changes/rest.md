@@ -8,6 +8,7 @@
 * ⚠️ Add support for new value `fulfillment_error` on enum `Issuing.Card.cancellation_reason`
 * ⚠️ Add support for new value `fulfillment_error` on enum `Issuing.Card.replacement_reason`
 * Add support for `amount` and `currency` on `Mandate.multi_use`
+* Add support for `external_reference` on `Price#create` and `Price#update`
 * ⚠️ Add support for new values `low`, `not_assessed`, and `unknown` on enum `Radar.PaymentEvaluation.signals.fraudulent_payment.risk_level`
 * ⚠️ Add support for new value `account` on enums `Radar.ValueList#create.item_type` and `Radar.ValueList.item_type`
 * Add support for `pix_display_qr_code` on `SetupIntent.next_action`

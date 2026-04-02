@@ -8,6 +8,7 @@
 * Add support for new value `fulfillment_error` on enum `IssuingCard.CancellationReason`
 * Add support for new value `fulfillment_error` on enum `IssuingCard.ReplacementReason`
 * Add support for `Amount` and `Currency` on `MandateMultiUse`
+* Add support for `ExternalReference` on `PriceParams`
 * Add support for new values `low`, `not_assessed`, and `unknown` on enum `RadarPaymentEvaluationSignalsFraudulentPayment.RiskLevel`
 * Add support for new value `account` on enum `RadarValueList.ItemType`
 * Add support for `PixDisplayQRCode` on `SetupIntentNextAction`

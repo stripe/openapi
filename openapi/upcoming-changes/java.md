@@ -5,6 +5,7 @@
 * Add support for `pix` on `Invoice.payment_settings.payment_method_options`, `InvoiceCreateParams.payment_settings.payment_method_options`, `InvoiceUpdateParams.payment_settings.payment_method_options`, `Mandate.payment_method_details`, `SetupAttempt.payment_method_details`, `SetupIntent.payment_method_options`, `SetupIntentConfirmParams.payment_method_options`, `SetupIntentCreateParams.payment_method_options`, `SetupIntentUpdateParams.payment_method_options`, `Subscription.payment_settings.payment_method_options`, `SubscriptionCreateParams.payment_settings.payment_method_options`, and `SubscriptionUpdateParams.payment_settings.payment_method_options`
 * Add support for new value `pix` on enums `InvoiceCreateParams.payment_settings.paymentMethodTypes`, `InvoiceUpdateParams.payment_settings.paymentMethodTypes`, `SubscriptionCreateParams.payment_settings.paymentMethodTypes`, and `SubscriptionUpdateParams.payment_settings.paymentMethodTypes`
 * Add support for `amount` and `currency` on `Mandate.multi_use`
+* Add support for `externalReference` on `PriceCreateParams` and `PriceUpdateParams`
 * Add support for new value `account` on enum `radar.ValueListCreateParams.itemType`
 * Add support for `pixDisplayQrCode` on `SetupIntent.next_action`
 * Add support for new value `2026-04-22.dahlia` on enum `WebhookEndpointCreateParams.apiVersion`
