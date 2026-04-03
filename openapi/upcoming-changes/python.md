@@ -3,11 +3,14 @@
 * Add support for `mandate` on `Charge.PaymentMethodDetail.Pix`, `PaymentAttemptRecord.PaymentMethodDetail.Pix`, and `PaymentRecord.PaymentMethodDetail.Pix`
 * Add support for `mandate_options` on `Checkout.Session.PaymentMethodOption.Pix`, `PaymentIntent.PaymentMethodOption.Pix`, `PaymentIntentConfirmParamsPaymentMethodOptionPix`, `PaymentIntentCreateParamsPaymentMethodOptionPix`, `PaymentIntentModifyParamsPaymentMethodOptionPix`, and `checkout.SessionCreateParamsPaymentMethodOptionPix`
 * ⚠️ Change type of `Checkout.Session.PaymentMethodOption.Pix.setup_future_usage`, `PaymentIntent.PaymentMethodOption.Pix.setup_future_usage`, `PaymentIntentConfirmParamsPaymentMethodOptionPix.setup_future_usage`, `PaymentIntentCreateParamsPaymentMethodOptionPix.setup_future_usage`, `PaymentIntentModifyParamsPaymentMethodOptionPix.setup_future_usage`, and `checkout.SessionCreateParamsPaymentMethodOptionPix.setup_future_usage` from `literal('none')` to `enum('none'|'off_session')`
+* ⚠️ Remove support for `countries` on `FinancialConnections.Session.Filter` and `financial_connections.SessionCreateParamsFilter`
+* Add support for `country` on `FinancialConnections.Session.Filter`
 * Add support for `pix` on `Invoice.PaymentSetting.PaymentMethodOption`, `InvoiceCreateParamsPaymentSettingPaymentMethodOption`, `InvoiceModifyParamsPaymentSettingPaymentMethodOption`, `Mandate.PaymentMethodDetail`, `SetupAttempt.PaymentMethodDetail`, `SetupIntent.PaymentMethodOption`, `SetupIntentConfirmParamsPaymentMethodOption`, `SetupIntentCreateParamsPaymentMethodOption`, `SetupIntentModifyParamsPaymentMethodOption`, `Subscription.PaymentSetting.PaymentMethodOption`, `SubscriptionCreateParamsPaymentSettingPaymentMethodOption`, and `SubscriptionModifyParamsPaymentSettingPaymentMethodOption`
 * ⚠️ Add support for new value `pix` on enums `Invoice.PaymentSetting.payment_method_types`, `InvoiceCreateParamsPaymentSetting.payment_method_types`, `InvoiceModifyParamsPaymentSetting.payment_method_types`, `Subscription.PaymentSetting.payment_method_types`, `SubscriptionCreateParamsPaymentSetting.payment_method_types`, and `SubscriptionModifyParamsPaymentSetting.payment_method_types`
 * ⚠️ Add support for new value `fulfillment_error` on enum `Issuing.Card.cancellation_reason`
 * ⚠️ Add support for new value `fulfillment_error` on enum `Issuing.Card.replacement_reason`
 * Add support for `amount` and `currency` on `Mandate.MultiUse`
+* ⚠️ Change type of `PaymentAttemptRecord.PaymentMethodDetail.Alma.Installment.count` and `PaymentRecord.PaymentMethodDetail.Alma.Installment.count` from `longInteger` to `nullable(longInteger)`
 * Add support for `external_reference` on `PriceCreateParams` and `PriceModifyParams`
 * ⚠️ Add support for new values `low`, `not_assessed`, and `unknown` on enum `Radar.PaymentEvaluation.Signal.FraudulentPayment.risk_level`
 * ⚠️ Add support for new value `account` on enums `Radar.ValueList.item_type` and `radar.ValueListCreateParams.item_type`
