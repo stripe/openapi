@@ -1,4 +1,5 @@
 * Add support for `app_distribution` on `Account#create.capabilities`, `Account#update.capabilities`, and `Account.capabilities`
+* ⚠️ Add support for new value `inbound_transfer` on enum `BalanceTransaction.type`
 * ⚠️ Add support for new values `phantom_cash` and `usdt` on enums `Charge.payment_method_details.crypto.token_currency`, `PaymentAttemptRecord.payment_method_details.crypto.token_currency`, and `PaymentRecord.payment_method_details.crypto.token_currency`
 * Add support for `mandate` on `Charge.payment_method_details.pix`, `PaymentAttemptRecord.payment_method_details.pix`, and `PaymentRecord.payment_method_details.pix`
 * Add support for `mandate_options` on `Checkout.Session#create.payment_method_options.pix`, `Checkout.Session.payment_method_options.pix`, `PaymentIntent#confirm.payment_method_options.pix`, `PaymentIntent#create.payment_method_options.pix`, `PaymentIntent#update.payment_method_options.pix`, and `PaymentIntent.payment_method_options.pix`
