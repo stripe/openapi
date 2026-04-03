@@ -4,15 +4,12 @@
 * Add support for `mandate` on `Charge.payment_method_details.pix`, `PaymentAttemptRecord.payment_method_details.pix`, and `PaymentRecord.payment_method_details.pix`
 * Add support for `mandate_options` on `Checkout.Session.payment_method_options.pix`, `Checkout\Session.create().$params.payment_method_option.pix`, `PaymentIntent.confirm().$params.payment_method_option.pix`, `PaymentIntent.create().$params.payment_method_option.pix`, `PaymentIntent.payment_method_options.pix`, and `PaymentIntent.update().$params.payment_method_option.pix`
 * ⚠️ Change type of `Checkout.Session.payment_method_options.pix.setup_future_usage`, `Checkout\Session.create().$params.payment_method_option.pix.setup_future_usage`, `PaymentIntent.confirm().$params.payment_method_option.pix.setup_future_usage`, `PaymentIntent.create().$params.payment_method_option.pix.setup_future_usage`, `PaymentIntent.payment_method_options.pix.setup_future_usage`, and `PaymentIntent.update().$params.payment_method_option.pix.setup_future_usage` from `literal('none')` to `enum('none'|'off_session')`
-* ⚠️ Remove support for `countries` on `FinancialConnections.Session.filters` and `FinancialConnections\Session.create().$params.filter`
-* Add support for `country` on `FinancialConnections.Session.filters`
 * Add support for `pix` on `Invoice.create().$params.payment_setting.payment_method_option`, `Invoice.payment_settings.payment_method_options`, `Invoice.update().$params.payment_setting.payment_method_option`, `Mandate.payment_method_details`, `SetupAttempt.payment_method_details`, `SetupIntent.confirm().$params.payment_method_option`, `SetupIntent.create().$params.payment_method_option`, `SetupIntent.payment_method_options`, `SetupIntent.update().$params.payment_method_option`, `Subscription.create().$params.payment_setting.payment_method_option`, `Subscription.payment_settings.payment_method_options`, and `Subscription.update().$params.payment_setting.payment_method_option`
 * Add support for new value `pix` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
 * Add support for new value `fulfillment_error` on enum `Issuing.Card.cancellation_reason`
 * Add support for new value `fulfillment_error` on enum `Issuing.Card.replacement_reason`
 * Add support for `amount` and `currency` on `Mandate.multi_use`
 * ⚠️ Change type of `PaymentAttemptRecord.payment_method_details.alma.installments.count` and `PaymentRecord.payment_method_details.alma.installments.count` from `longInteger` to `nullable(longInteger)`
-* Add support for `external_reference` on `Price.create().$params` and `Price.update().$params`
 * Add support for new values `low`, `not_assessed`, and `unknown` on enum `Radar.PaymentEvaluation.signals.fraudulent_payment.risk_level`
 * Add support for new value `account` on enum `Radar.ValueList.item_type`
 * Add support for `pix_display_qr_code` on `SetupIntent.next_action`
