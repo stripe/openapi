@@ -1,3 +1,4 @@
+* Add support for `balance_report` and `payout_reconciliation_report` on `AccountSession.Component` and `AccountSessionCreateParamsComponent`
 * Add support for `app_distribution` on `Account.Capability`, `AccountCreateParamsCapability`, and `AccountModifyParamsCapability`
 * ⚠️ Add support for new values `fee_credit_funding` and `inbound_transfer` on enum `BalanceTransaction.type`
 * Add support for `sunbit` on `Charge.PaymentMethodDetail`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenCreateParamsPaymentMethodDatum`, `PaymentAttemptRecord.PaymentMethodDetail`, `PaymentIntentConfirmParamsPaymentMethodDatum`, `PaymentIntentCreateParamsPaymentMethodDatum`, `PaymentIntentModifyParamsPaymentMethodDatum`, `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationModifyParams`, `PaymentMethodConfiguration`, `PaymentMethodCreateParams`, `PaymentMethod`, `PaymentRecord.PaymentMethodDetail`, `SetupIntentConfirmParamsPaymentMethodDatum`, `SetupIntentCreateParamsPaymentMethodDatum`, and `SetupIntentModifyParamsPaymentMethodDatum`
@@ -10,6 +11,7 @@
 * Add support for new value `sunbit` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
 * Add support for `pix` on `Invoice.PaymentSetting.PaymentMethodOption`, `InvoiceCreateParamsPaymentSettingPaymentMethodOption`, `InvoiceModifyParamsPaymentSettingPaymentMethodOption`, `Mandate.PaymentMethodDetail`, `SetupAttempt.PaymentMethodDetail`, `SetupIntent.PaymentMethodOption`, `SetupIntentConfirmParamsPaymentMethodOption`, `SetupIntentCreateParamsPaymentMethodOption`, `SetupIntentModifyParamsPaymentMethodOption`, `Subscription.PaymentSetting.PaymentMethodOption`, `SubscriptionCreateParamsPaymentSettingPaymentMethodOption`, and `SubscriptionModifyParamsPaymentSettingPaymentMethodOption`
 * ⚠️ Add support for new value `pix` on enums `Invoice.PaymentSetting.payment_method_types`, `InvoiceCreateParamsPaymentSetting.payment_method_types`, `InvoiceModifyParamsPaymentSetting.payment_method_types`, `Subscription.PaymentSetting.payment_method_types`, `SubscriptionCreateParamsPaymentSetting.payment_method_types`, and `SubscriptionModifyParamsPaymentSetting.payment_method_types`
+* Add support for `card_presence` on `Issuing.Authorization`
 * ⚠️ Add support for new value `fulfillment_error` on enum `Issuing.Card.cancellation_reason`
 * ⚠️ Add support for new value `fulfillment_error` on enum `Issuing.Card.replacement_reason`
 * Add support for `amount` and `currency` on `Mandate.MultiUse`
@@ -19,3 +21,4 @@
 * ⚠️ Add support for new value `account` on enums `Radar.ValueList.item_type` and `radar.ValueListCreateParams.item_type`
 * Add support for `pix_display_qr_code` on `SetupIntent.NextAction`
 * Add support for new value `2026-04-22.dahlia` on enum `WebhookEndpointCreateParams.api_version`
+* Add support for error codes `action_blocked` and `approval_required` on `Invoice.LastFinalizationError`, `PaymentIntent.LastPaymentError`, `SetupAttempt.SetupError`, `SetupIntent.LastSetupError`, and `StripeError`

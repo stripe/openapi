@@ -1,3 +1,4 @@
+* Add support for `balance_report` and `payout_reconciliation_report` on `AccountSession.components` and `AccountSession.create().$params.component`
 * Add support for `app_distribution` on `Account.capabilities`, `Account.create().$params.capability`, and `Account.update().$params.capability`
 * Add support for new values `fee_credit_funding` and `inbound_transfer` on enum `BalanceTransaction.type`
 * Add support for `sunbit` on `Charge.payment_method_details`, `ConfirmationToken.create().$params.payment_method_datum`, `ConfirmationToken.payment_method_preview`, `PaymentAttemptRecord.payment_method_details`, `PaymentIntent.confirm().$params.payment_method_datum`, `PaymentIntent.create().$params.payment_method_datum`, `PaymentIntent.update().$params.payment_method_datum`, `PaymentMethod.create().$params`, `PaymentMethodConfiguration.create().$params`, `PaymentMethodConfiguration.update().$params`, `PaymentMethodConfiguration`, `PaymentMethod`, `PaymentRecord.payment_method_details`, `SetupIntent.confirm().$params.payment_method_datum`, `SetupIntent.create().$params.payment_method_datum`, and `SetupIntent.update().$params.payment_method_datum`
@@ -8,6 +9,7 @@
 * Add support for new value `sunbit` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Add support for `pix` on `Invoice.create().$params.payment_setting.payment_method_option`, `Invoice.payment_settings.payment_method_options`, `Invoice.update().$params.payment_setting.payment_method_option`, `Mandate.payment_method_details`, `SetupAttempt.payment_method_details`, `SetupIntent.confirm().$params.payment_method_option`, `SetupIntent.create().$params.payment_method_option`, `SetupIntent.payment_method_options`, `SetupIntent.update().$params.payment_method_option`, `Subscription.create().$params.payment_setting.payment_method_option`, `Subscription.payment_settings.payment_method_options`, and `Subscription.update().$params.payment_setting.payment_method_option`
 * Add support for new value `pix` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
+* Add support for `card_presence` on `Issuing.Authorization`
 * Add support for new value `fulfillment_error` on enum `Issuing.Card.cancellation_reason`
 * Add support for new value `fulfillment_error` on enum `Issuing.Card.replacement_reason`
 * Add support for `amount` and `currency` on `Mandate.multi_use`
@@ -16,3 +18,4 @@
 * Add support for new values `low`, `not_assessed`, and `unknown` on enum `Radar.PaymentEvaluation.signals.fraudulent_payment.risk_level`
 * Add support for new value `account` on enum `Radar.ValueList.item_type`
 * Add support for `pix_display_qr_code` on `SetupIntent.next_action`
+* Add support for error codes `action_blocked` and `approval_required` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`
