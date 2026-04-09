@@ -12,5 +12,6 @@
 * Add support for `amount` and `currency` on `Mandate.multi_use`
 * Add support for new value `sunbit` on enums `PaymentIntentConfirmParams.excludedPaymentMethodTypes`, `PaymentIntentCreateParams.excludedPaymentMethodTypes`, `PaymentIntentUpdateParams.excludedPaymentMethodTypes`, `SetupIntentCreateParams.excludedPaymentMethodTypes`, and `SetupIntentUpdateParams.excludedPaymentMethodTypes`
 * Add support for new value `account` on enum `radar.ValueListCreateParams.itemType`
+* Add support for `moto` on `SetupAttempt.payment_method_details.card`
 * Add support for `pixDisplayQrCode` on `SetupIntent.next_action`
 * Add support for new value `2026-04-22.dahlia` on enum `WebhookEndpointCreateParams.apiVersion`

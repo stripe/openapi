@@ -19,6 +19,7 @@
 * ⚠️ Add support for new value `sunbit` on enums `PaymentIntent.excluded_payment_method_types`, `PaymentIntentConfirmParams.excluded_payment_method_types`, `PaymentIntentCreateParams.excluded_payment_method_types`, `PaymentIntentModifyParams.excluded_payment_method_types`, `SetupIntent.excluded_payment_method_types`, `SetupIntentCreateParams.excluded_payment_method_types`, and `SetupIntentModifyParams.excluded_payment_method_types`
 * ⚠️ Add support for new values `low`, `not_assessed`, and `unknown` on enum `Radar.PaymentEvaluation.Signal.FraudulentPayment.risk_level`
 * ⚠️ Add support for new value `account` on enums `Radar.ValueList.item_type` and `radar.ValueListCreateParams.item_type`
+* Add support for `moto` on `SetupAttempt.PaymentMethodDetail.Card`
 * Add support for `pix_display_qr_code` on `SetupIntent.NextAction`
 * Add support for new value `2026-04-22.dahlia` on enum `WebhookEndpointCreateParams.api_version`
 * Add support for error codes `action_blocked` and `approval_required` on `Invoice.LastFinalizationError`, `PaymentIntent.LastPaymentError`, `SetupAttempt.SetupError`, `SetupIntent.LastSetupError`, and `StripeError`

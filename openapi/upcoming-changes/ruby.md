@@ -8,4 +8,5 @@
 * Add support for `card_presence` on `Issuing::Authorization`
 * Add support for `amount` and `currency` on `Mandate::MultiUse`
 * ⚠️ Change type of `PaymentAttemptRecord::PaymentMethodDetail::Alma::Installment.count` and `PaymentRecord::PaymentMethodDetail::Alma::Installment.count` from `longInteger` to `nullable(longInteger)`
+* Add support for `moto` on `SetupAttempt::PaymentMethodDetail::Card`
 * Add support for `pix_display_qr_code` on `SetupIntent::NextAction`

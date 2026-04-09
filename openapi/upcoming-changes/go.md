@@ -16,5 +16,6 @@
 * Add support for new value `sunbit` on enums `PaymentIntent.ExcludedPaymentMethodTypes` and `SetupIntent.ExcludedPaymentMethodTypes`
 * Add support for new values `low`, `not_assessed`, and `unknown` on enum `RadarPaymentEvaluationSignalsFraudulentPayment.RiskLevel`
 * Add support for new value `account` on enum `RadarValueList.ItemType`
+* Add support for `MOTO` on `SetupAttemptPaymentMethodDetailsCard`
 * Add support for `PixDisplayQRCode` on `SetupIntentNextAction`
 * Add support for error codes `action_blocked` and `approval_required` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`

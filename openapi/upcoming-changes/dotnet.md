@@ -8,4 +8,5 @@
 * Add support for `CardPresence` on `Issuing.Authorization`
 * Add support for `Amount` and `Currency` on `Mandate.MultiUse`
 * ⚠️ Change type of `PaymentAttemptRecord.PaymentMethodDetails.Alma.Installments.Count` and `PaymentRecord.PaymentMethodDetails.Alma.Installments.Count` from `longInteger` to `nullable(longInteger)`
+* Add support for `Moto` on `SetupAttempt.PaymentMethodDetails.Card`
 * Add support for `PixDisplayQrCode` on `SetupIntent.NextAction`
