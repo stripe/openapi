@@ -10,6 +10,7 @@
 * Add support for `Pix` on `InvoicePaymentSettingsPaymentMethodOptionsParams`, `InvoicePaymentSettingsPaymentMethodOptions`, `MandatePaymentMethodDetails`, `SetupAttemptPaymentMethodDetails`, `SetupIntentConfirmPaymentMethodOptionsParams`, `SetupIntentPaymentMethodOptionsParams`, `SetupIntentPaymentMethodOptions`, `SubscriptionPaymentSettingsPaymentMethodOptionsParams`, and `SubscriptionPaymentSettingsPaymentMethodOptions`
 * Add support for new value `pix` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
 * Add support for `CardPresence` on `IssuingAuthorization`
+* Add support for `AllowedCardPresences` and `BlockedCardPresences` on `IssuingCardSpendingControlsParams`, `IssuingCardSpendingControls`, `IssuingCardholderSpendingControlsParams`, and `IssuingCardholderSpendingControls`
 * Add support for new value `fulfillment_error` on enum `IssuingCard.CancellationReason`
 * Add support for new value `fulfillment_error` on enum `IssuingCard.ReplacementReason`
 * Add support for `Amount` and `Currency` on `MandateMultiUse`

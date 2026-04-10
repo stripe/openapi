@@ -10,6 +10,7 @@
 * Add support for `pix` on `Invoice.create().$params.payment_setting.payment_method_option`, `Invoice.payment_settings.payment_method_options`, `Invoice.update().$params.payment_setting.payment_method_option`, `Mandate.payment_method_details`, `SetupAttempt.payment_method_details`, `SetupIntent.confirm().$params.payment_method_option`, `SetupIntent.create().$params.payment_method_option`, `SetupIntent.payment_method_options`, `SetupIntent.update().$params.payment_method_option`, `Subscription.create().$params.payment_setting.payment_method_option`, `Subscription.payment_settings.payment_method_options`, and `Subscription.update().$params.payment_setting.payment_method_option`
 * Add support for new value `pix` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
 * Add support for `card_presence` on `Issuing.Authorization`
+* Add support for `allowed_card_presences` and `blocked_card_presences` on `Issuing.Card.spending_controls`, `Issuing.Cardholder.spending_controls`, `Issuing\Card.create().$params.spending_control`, `Issuing\Card.update().$params.spending_control`, `Issuing\Cardholder.create().$params.spending_control`, and `Issuing\Cardholder.update().$params.spending_control`
 * Add support for new value `fulfillment_error` on enum `Issuing.Card.cancellation_reason`
 * Add support for new value `fulfillment_error` on enum `Issuing.Card.replacement_reason`
 * Add support for `amount` and `currency` on `Mandate.multi_use`
