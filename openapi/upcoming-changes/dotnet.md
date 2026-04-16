@@ -1,6 +1,7 @@
 * Add support for `BalanceReport` and `PayoutReconciliationReport` on `AccountSession.Components` and `AccountSessionComponentsOptions`
 * Add support for `AppDistribution` and `SunbitPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
 * Add support for `Sunbit` on `Charge.PaymentMethodDetails`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentAttemptRecord.PaymentMethodDetails`, `PaymentIntentPaymentMethodDataOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, `PaymentRecord.PaymentMethodDetails`, and `SetupIntentPaymentMethodDataOptions`
+* Add support for `Location` and `Reader` on `Charge.PaymentMethodDetails.Klarna`, `PaymentAttemptRecord.PaymentMethodDetails.Klarna`, and `PaymentRecord.PaymentMethodDetails.Klarna`
 * Add support for `Mandate` on `Charge.PaymentMethodDetails.Pix`, `PaymentAttemptRecord.PaymentMethodDetails.Pix`, and `PaymentRecord.PaymentMethodDetails.Pix`
 * Add support for `ManagedPayments` on `Checkout.SessionCreateOptions`, `Checkout.Session`, `PaymentIntent`, `PaymentLinkCreateOptions`, `PaymentLink`, `SetupIntent`, and `Subscription`
 * Add support for `MandateOptions` on `Checkout.Session.PaymentMethodOptions.Pix`, `CheckoutSessionPaymentMethodOptionsPixOptions`, `PaymentIntent.PaymentMethodOptions.Pix`, and `PaymentIntentPaymentMethodOptionsPixOptions`
@@ -12,5 +13,6 @@
 * Add support for `AllowedCardPresences` and `BlockedCardPresences` on `Issuing.Card.SpendingControls`, `Issuing.Cardholder.SpendingControls`, `IssuingCardSpendingControlsOptions`, and `IssuingCardholderSpendingControlsOptions`
 * Add support for `Amount` and `Currency` on `Mandate.MultiUse`
 * ⚠️ Change type of `PaymentAttemptRecord.PaymentMethodDetails.Alma.Installments.Count` and `PaymentRecord.PaymentMethodDetails.Alma.Installments.Count` from `longInteger` to `nullable(longInteger)`
+* Add support for `KlarnaDisplayQrCode` on `PaymentIntent.NextAction`
 * Add support for `Moto` on `SetupAttempt.PaymentMethodDetails.Card`
 * Add support for `PixDisplayQrCode` on `SetupIntent.NextAction`
