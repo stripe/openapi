@@ -19,6 +19,7 @@
 * Add support for new value `fulfillment_error` on enum `IssuingCard.CancellationReason`
 * Add support for new value `fulfillment_error` on enum `IssuingCard.ReplacementReason`
 * Add support for `Amount` and `Currency` on `MandateMultiUse`
+* Add support for `AmountToConfirm` on `PaymentIntentConfirmParams`
 * Add support for new value `sunbit` on enums `PaymentIntent.ExcludedPaymentMethodTypes` and `SetupIntent.ExcludedPaymentMethodTypes`
 * Add support for `KlarnaDisplayQRCode` on `PaymentIntentNextAction`
 * Add support for new value `sunbit` on enum `PaymentLink.PaymentMethodTypes`

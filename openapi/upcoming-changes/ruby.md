@@ -13,6 +13,7 @@
 * Add support for `allowed_card_presences` and `blocked_card_presences` on `Issuing::Card::SpendingControl`, `Issuing::CardCreateParams::SpendingControl`, `Issuing::CardUpdateParams::SpendingControl`, `Issuing::Cardholder::SpendingControl`, `Issuing::CardholderCreateParams::SpendingControl`, and `Issuing::CardholderUpdateParams::SpendingControl`
 * Add support for `amount` and `currency` on `Mandate::MultiUse`
 * ⚠️ Change type of `PaymentAttemptRecord::PaymentMethodDetail::Alma::Installment.count` and `PaymentRecord::PaymentMethodDetail::Alma::Installment.count` from `longInteger` to `nullable(longInteger)`
+* Add support for `amount_to_confirm` on `PaymentIntentConfirmParams`
 * Add support for `klarna_display_qr_code` on `PaymentIntent::NextAction`
 * Add support for `moto` on `SetupAttempt::PaymentMethodDetail::Card`
 * Add support for `pix_display_qr_code` on `SetupIntent::NextAction`

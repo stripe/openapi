@@ -18,6 +18,7 @@
 * Add support for `cardPresence` on `issuing.Authorization`
 * Add support for `allowedCardPresences` and `blockedCardPresences` on `issuing.Card.spending_controls`, `issuing.CardCreateParams.spending_controls`, `issuing.CardUpdateParams.spending_controls`, `issuing.Cardholder.spending_controls`, `issuing.CardholderCreateParams.spending_controls`, and `issuing.CardholderUpdateParams.spending_controls`
 * Add support for `amount` and `currency` on `Mandate.multi_use`
+* Add support for `amountToConfirm` on `PaymentIntentConfirmParams`
 * Add support for `klarnaDisplayQrCode` on `PaymentIntent.next_action`
 * Add support for new value `sunbit` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
 * Add support for new value `account` on enum `radar.ValueListCreateParams.itemType`

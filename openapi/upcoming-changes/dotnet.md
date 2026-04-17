@@ -13,6 +13,7 @@
 * Add support for `AllowedCardPresences` and `BlockedCardPresences` on `Issuing.Card.SpendingControls`, `Issuing.Cardholder.SpendingControls`, `IssuingCardSpendingControlsOptions`, and `IssuingCardholderSpendingControlsOptions`
 * Add support for `Amount` and `Currency` on `Mandate.MultiUse`
 * ⚠️ Change type of `PaymentAttemptRecord.PaymentMethodDetails.Alma.Installments.Count` and `PaymentRecord.PaymentMethodDetails.Alma.Installments.Count` from `longInteger` to `nullable(longInteger)`
+* Add support for `AmountToConfirm` on `PaymentIntentConfirmOptions`
 * Add support for `KlarnaDisplayQrCode` on `PaymentIntent.NextAction`
 * Add support for `Moto` on `SetupAttempt.PaymentMethodDetails.Card`
 * Add support for `PixDisplayQrCode` on `SetupIntent.NextAction`

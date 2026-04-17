@@ -25,6 +25,7 @@
 * ⚠️ Add support for new value `fulfillment_error` on enum `Issuing.Card.replacement_reason`
 * Add support for `amount` and `currency` on `Mandate.MultiUse`
 * ⚠️ Change type of `PaymentAttemptRecord.PaymentMethodDetail.Alma.Installment.count` and `PaymentRecord.PaymentMethodDetail.Alma.Installment.count` from `longInteger` to `nullable(longInteger)`
+* Add support for `amount_to_confirm` on `PaymentIntentConfirmParams`
 * Add support for `klarna_display_qr_code` on `PaymentIntent.NextAction`
 * ⚠️ Add support for new value `sunbit` on enums `PaymentLink.payment_method_types`, `PaymentLinkCreateParams.payment_method_types`, and `PaymentLinkModifyParams.payment_method_types`
 * ⚠️ Add support for new values `low`, `not_assessed`, and `unknown` on enum `Radar.PaymentEvaluation.Signal.FraudulentPayment.risk_level`
