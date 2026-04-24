@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Change type of `PaymentAttemptRecord::PaymentMethodDetail::Alma::Installment.count` and `PaymentRecord::PaymentMethodDetail::Alma::Installment.count` from `nullable(longInteger)` to `longInteger`

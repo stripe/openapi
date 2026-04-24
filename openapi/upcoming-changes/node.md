@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Change type of `PaymentAttemptRecord.payment_method_details.alma.installments.count` and `PaymentRecord.payment_method_details.alma.installments.count` from `longInteger | null` to `longInteger`

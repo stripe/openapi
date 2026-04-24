@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Change type of `PaymentAttemptRecord.PaymentMethodDetails.Alma.Installments.Count` and `PaymentRecord.PaymentMethodDetails.Alma.Installments.Count` from `nullable(longInteger)` to `longInteger`
