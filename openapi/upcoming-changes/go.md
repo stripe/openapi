@@ -1,1 +1,11 @@
-* Release specs are identical.
+* Add support for `BizumPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
+* Add support for `Bizum` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `PaymentAttemptRecordPaymentMethodDetails`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentIntentPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `PaymentRecordPaymentMethodDetails`, `SetupIntentConfirmPaymentMethodDataParams`, `SetupIntentConfirmPaymentMethodOptionsParams`, `SetupIntentPaymentMethodDataParams`, `SetupIntentPaymentMethodOptionsParams`, and `SetupIntentPaymentMethodOptions`
+* Add support for `Mandate` on `ChargePaymentMethodDetailsTwint`, `PaymentAttemptRecordPaymentMethodDetailsTwint`, and `PaymentRecordPaymentMethodDetailsTwint`
+* ⚠️ Change type of `CheckoutSessionPaymentMethodOptionsTwint.SetupFutureUsage`, `CheckoutSessionPaymentMethodOptionsTwintParams.SetupFutureUsage`, `PaymentIntentConfirmPaymentMethodOptionsTwintParams.SetupFutureUsage`, `PaymentIntentPaymentMethodOptionsTwint.SetupFutureUsage`, and `PaymentIntentPaymentMethodOptionsTwintParams.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
+* Add support for new value `bizum` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
+* Add support for new value `twint` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
+* Add support for `TWINT` on `MandatePaymentMethodDetails` and `SetupAttemptPaymentMethodDetails`
+* Add support for new value `bizum` on enums `PaymentIntent.ExcludedPaymentMethodTypes` and `SetupIntent.ExcludedPaymentMethodTypes`
+* Add support for new value `bizum` on enum `PaymentLink.PaymentMethodTypes`
+* Add support for `APIError` on `TerminalReaderAction`
+* Add support for error code `payment_method_microdeposit_processing_error` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
