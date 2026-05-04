@@ -8,4 +8,4 @@
 * Add support for new value `bizum` on enums `PaymentIntent.ExcludedPaymentMethodTypes` and `SetupIntent.ExcludedPaymentMethodTypes`
 * Add support for new value `bizum` on enum `PaymentLink.PaymentMethodTypes`
 * Add support for `APIError` on `TerminalReaderAction`
-* Add support for error code `payment_method_microdeposit_processing_error` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
+* Add support for error codes `payment_method_microdeposit_processing_error`, `terminal_scope_requires_location`, and `terminal_scope_requires_reader` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`

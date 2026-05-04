@@ -12,4 +12,5 @@
 * Change type of `PaymentAttemptRecord.PaymentMethodDetail.Alma.Installment.count` and `PaymentRecord.PaymentMethodDetail.Alma.Installment.count` from `nullable(longInteger)` to `longInteger`
 * ⚠️ Add support for new value `bizum` on enums `PaymentLink.payment_method_types`, `PaymentLinkCreateParams.payment_method_types`, and `PaymentLinkModifyParams.payment_method_types`
 * Add support for `api_error` on `Terminal.Reader.Action`
-* Add support for error code `payment_method_microdeposit_processing_error` on `Invoice.LastFinalizationError`, `PaymentIntent.LastPaymentError`, `SetupAttempt.SetupError`, `SetupIntent.LastSetupError`, and `StripeError`
+* Add support for new value `2026-05-27.dahlia` on enum `WebhookEndpointCreateParams.api_version`
+* Add support for error codes `payment_method_microdeposit_processing_error`, `terminal_scope_requires_location`, and `terminal_scope_requires_reader` on `Invoice.LastFinalizationError`, `PaymentIntent.LastPaymentError`, `SetupAttempt.SetupError`, `SetupIntent.LastSetupError`, and `StripeError`

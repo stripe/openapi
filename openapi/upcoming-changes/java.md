@@ -10,3 +10,4 @@
 * Add support for `twint` on `Mandate.payment_method_details` and `SetupAttempt.payment_method_details`
 * Add support for new value `bizum` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
 * Add support for `apiError` on `terminal.Reader.action`
+* Add support for new value `2026-05-27.dahlia` on enum `WebhookEndpointCreateParams.apiVersion`
