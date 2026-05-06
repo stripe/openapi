@@ -7,7 +7,8 @@
 * Add support for new value `bizum` on enums `ConfirmationTokenCreateParams.payment_method_data.type`, `PaymentIntentConfirmParams.payment_method_data.type`, `PaymentIntentCreateParams.payment_method_data.type`, `PaymentIntentUpdateParams.payment_method_data.type`, `SetupIntentConfirmParams.payment_method_data.type`, `SetupIntentCreateParams.payment_method_data.type`, and `SetupIntentUpdateParams.payment_method_data.type`
 * Add support for new value `bizum` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
 * Add support for new value `twint` on enums `InvoiceCreateParams.payment_settings.paymentMethodTypes`, `InvoiceUpdateParams.payment_settings.paymentMethodTypes`, `SubscriptionCreateParams.payment_settings.paymentMethodTypes`, and `SubscriptionUpdateParams.payment_settings.paymentMethodTypes`
+* Add support for `amountPaidOffStripe` on `Invoice`
 * Add support for `twint` on `Mandate.payment_method_details` and `SetupAttempt.payment_method_details`
 * Add support for new value `bizum` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
-* Add support for `apiError` on `terminal.Reader.action`
+* Add support for `apiError` and `printContent` on `terminal.Reader.action`
 * Add support for new value `2026-05-27.dahlia` on enum `WebhookEndpointCreateParams.apiVersion`

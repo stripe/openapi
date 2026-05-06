@@ -2,6 +2,7 @@
 * Add support for `Bizum` on `Charge.PaymentMethodDetails`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentAttemptRecord.PaymentMethodDetails`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, `PaymentRecord.PaymentMethodDetails`, `SetupIntent.PaymentMethodOptions`, `SetupIntentPaymentMethodDataOptions`, and `SetupIntentPaymentMethodOptionsOptions`
 * Add support for `Mandate` on `Charge.PaymentMethodDetails.Twint`, `PaymentAttemptRecord.PaymentMethodDetails.Twint`, and `PaymentRecord.PaymentMethodDetails.Twint`
 * ⚠️ Change type of `Checkout.Session.PaymentMethodOptions.Twint.SetupFutureUsage`, `CheckoutSessionPaymentMethodOptionsTwintOptions.SetupFutureUsage`, `PaymentIntent.PaymentMethodOptions.Twint.SetupFutureUsage`, and `PaymentIntentPaymentMethodOptionsTwintOptions.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
+* Add support for `AmountPaidOffStripe` on `Invoice`
 * Add support for `Twint` on `Mandate.PaymentMethodDetails` and `SetupAttempt.PaymentMethodDetails`
 * Change type of `PaymentAttemptRecord.PaymentMethodDetails.Alma.Installments.Count` and `PaymentRecord.PaymentMethodDetails.Alma.Installments.Count` from `nullable(longInteger)` to `longInteger`
-* Add support for `ApiError` on `Terminal.Reader.Action`
+* Add support for `ApiError` and `PrintContent` on `Terminal.Reader.Action`

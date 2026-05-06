@@ -3,10 +3,12 @@
 * Add support for `mandate` on `Charge.payment_method_details.twint`, `PaymentAttemptRecord.payment_method_details.twint`, and `PaymentRecord.payment_method_details.twint`
 * ⚠️ Change type of `Checkout.Session.payment_method_options.twint.setup_future_usage`, `Checkout\Session.create().$params.payment_method_option.twint.setup_future_usage`, `PaymentIntent.confirm().$params.payment_method_option.twint.setup_future_usage`, `PaymentIntent.create().$params.payment_method_option.twint.setup_future_usage`, `PaymentIntent.payment_method_options.twint.setup_future_usage`, and `PaymentIntent.update().$params.payment_method_option.twint.setup_future_usage` from `literal('none')` to `enum('none'|'off_session')`
 * Add support for new value `bizum` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
+* Add support for `amount_paid_off_stripe` on `Invoice`
 * Add support for new value `twint` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
 * Add support for `twint` on `Mandate.payment_method_details` and `SetupAttempt.payment_method_details`
 * Change type of `PaymentAttemptRecord.payment_method_details.alma.installments.count` and `PaymentRecord.payment_method_details.alma.installments.count` from `nullable(longInteger)` to `longInteger`
 * Add support for new value `bizum` on enums `PaymentIntent.excluded_payment_method_types` and `SetupIntent.excluded_payment_method_types`
 * Add support for new value `bizum` on enum `PaymentLink.payment_method_types`
-* Add support for `api_error` on `Terminal.Reader.action`
+* Add support for `api_error` and `print_content` on `Terminal.Reader.action`
+* Add support for new value `print_content` on enum `Terminal.Reader.action.type`
 * Add support for error codes `payment_method_microdeposit_processing_error`, `terminal_scope_requires_location`, and `terminal_scope_requires_reader` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`

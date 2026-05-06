@@ -8,9 +8,11 @@
 * ⚠️ Add support for new value `bizum` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Add support for new value `bizum` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
 * ⚠️ Add support for new value `twint` on enums `Invoice.payment_settings.payment_method_types`, `InvoiceCreateParams.payment_settings.payment_method_types`, `InvoiceUpdateParams.payment_settings.payment_method_types`, `Subscription.payment_settings.payment_method_types`, `SubscriptionCreateParams.payment_settings.payment_method_types`, and `SubscriptionUpdateParams.payment_settings.payment_method_types`
+* Add support for `amount_paid_off_stripe` on `Invoice`
 * Add support for `twint` on `Mandate.payment_method_details` and `SetupAttempt.payment_method_details`
 * Change type of `PaymentAttemptRecord.payment_method_details.alma.installments.count` and `PaymentRecord.payment_method_details.alma.installments.count` from `longInteger | null` to `longInteger`
 * ⚠️ Add support for new value `bizum` on enums `PaymentLink.payment_method_types`, `PaymentLinkCreateParams.payment_method_types`, and `PaymentLinkUpdateParams.payment_method_types`
-* Add support for `api_error` on `Terminal.Reader.action`
+* Add support for `api_error` and `print_content` on `Terminal.Reader.action`
+* ⚠️ Add support for new value `print_content` on enum `Terminal.Reader.action.type`
 * Add support for new value `2026-05-27.dahlia` on enum `WebhookEndpointCreateParams.api_version`
 * Add support for error codes `payment_method_microdeposit_processing_error`, `terminal_scope_requires_location`, and `terminal_scope_requires_reader` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`
