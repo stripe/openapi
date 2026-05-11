@@ -22,4 +22,4 @@
 * Add support for `api_error` and `print_content` on `Terminal.Reader.action`
 * ⚠️ Add support for new value `print_content` on enum `Terminal.Reader.action.type`
 * Add support for new value `2026-05-27.dahlia` on enum `WebhookEndpointCreateParams.api_version`
-* Add support for error codes `payment_method_microdeposit_processing_error`, `siret_invalid`, `terminal_scope_requires_location`, and `terminal_scope_requires_reader` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`
+* Add support for error codes `payment_method_microdeposit_processing_error` and `siret_invalid` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`

@@ -15,4 +15,4 @@
 * Add support for `Active` on `PaymentMethodConfigurationListParams`
 * Add support for `APIError` and `PrintContent` on `TerminalReaderAction`
 * Add support for new value `print_content` on enum `TerminalReaderAction.Type`
-* Add support for error codes `payment_method_microdeposit_processing_error`, `siret_invalid`, `terminal_scope_requires_location`, and `terminal_scope_requires_reader` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
+* Add support for error codes `payment_method_microdeposit_processing_error` and `siret_invalid` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
