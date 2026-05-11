@@ -1,13 +1,18 @@
 * Add support for `BizumPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
+* Add support for `AutomaticTransferRulesByCurrency` on `BalanceSettingsPaymentsPayoutsParams` and `BalanceSettingsPaymentsPayouts`
 * Add support for `Bizum` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `PaymentAttemptRecordPaymentMethodDetails`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentIntentPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `PaymentRecordPaymentMethodDetails`, `SetupIntentConfirmPaymentMethodDataParams`, `SetupIntentConfirmPaymentMethodOptionsParams`, `SetupIntentPaymentMethodDataParams`, `SetupIntentPaymentMethodOptionsParams`, and `SetupIntentPaymentMethodOptions`
 * Add support for `Mandate` on `ChargePaymentMethodDetailsTwint`, `PaymentAttemptRecordPaymentMethodDetailsTwint`, and `PaymentRecordPaymentMethodDetailsTwint`
-* ⚠️ Change type of `CheckoutSessionPaymentMethodOptionsTwint.SetupFutureUsage`, `CheckoutSessionPaymentMethodOptionsTwintParams.SetupFutureUsage`, `PaymentIntentConfirmPaymentMethodOptionsTwintParams.SetupFutureUsage`, `PaymentIntentPaymentMethodOptionsTwint.SetupFutureUsage`, and `PaymentIntentPaymentMethodOptionsTwintParams.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
+* Change type of `CheckoutSessionPaymentMethodOptionsTwintParams.SetupFutureUsage`, `PaymentIntentConfirmPaymentMethodOptionsTwintParams.SetupFutureUsage`, and `PaymentIntentPaymentMethodOptionsTwintParams.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
+* ⚠️ Change type of `CheckoutSessionPaymentMethodOptionsTwint.SetupFutureUsage` and `PaymentIntentPaymentMethodOptionsTwint.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * Add support for new value `bizum` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
+* Add support for `Discountable` on `InvoiceCreatePreviewScheduleDetailsPhaseAddInvoiceItemParams`, `SubscriptionAddInvoiceItemParams`, `SubscriptionSchedulePhaseAddInvoiceItemParams`, and `SubscriptionSchedulePhaseAddInvoiceItem`
 * Add support for `AmountPaidOffStripe` on `Invoice`
 * Add support for new value `twint` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
 * Add support for `TWINT` on `MandatePaymentMethodDetails` and `SetupAttemptPaymentMethodDetails`
 * Add support for new value `bizum` on enums `PaymentIntent.ExcludedPaymentMethodTypes` and `SetupIntent.ExcludedPaymentMethodTypes`
+* Add support for `BLIKAuthorize` on `PaymentIntentNextAction` and `SetupIntentNextAction`
 * Add support for new value `bizum` on enum `PaymentLink.PaymentMethodTypes`
+* Add support for `Active` on `PaymentMethodConfigurationListParams`
 * Add support for `APIError` and `PrintContent` on `TerminalReaderAction`
 * Add support for new value `print_content` on enum `TerminalReaderAction.Type`
-* Add support for error codes `payment_method_microdeposit_processing_error`, `terminal_scope_requires_location`, and `terminal_scope_requires_reader` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
+* Add support for error codes `payment_method_microdeposit_processing_error`, `siret_invalid`, `terminal_scope_requires_location`, and `terminal_scope_requires_reader` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, and `StripeError`
