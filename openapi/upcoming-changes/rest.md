@@ -1,5 +1,6 @@
 * Add support for `bizum_payments` on `Account#create.capabilities`, `Account#update.capabilities`, and `Account.capabilities`
 * Add support for `automatic_transfer_rules_by_currency` on `BalanceSettings#update.payments.payouts` and `BalanceSettings.payments.payouts`
+* Add support for `description` on `Charge#create.transfer_data`, `PaymentIntent#create.transfer_data`, `PaymentIntent#update.transfer_data`, and `PaymentIntent.transfer_data`
 * Add support for `bizum` on `Charge.payment_method_details`, `ConfirmationToken.payment_method_preview`, `ConfirmationToken.testHelpers#create.payment_method_data`, `PaymentAttemptRecord.payment_method_details`, `PaymentIntent#confirm.payment_method_data`, `PaymentIntent#confirm.payment_method_options`, `PaymentIntent#create.payment_method_data`, `PaymentIntent#create.payment_method_options`, `PaymentIntent#update.payment_method_data`, `PaymentIntent#update.payment_method_options`, `PaymentIntent.payment_method_options`, `PaymentMethod#create`, `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, `PaymentMethodConfiguration`, `PaymentMethod`, `PaymentRecord.payment_method_details`, `SetupIntent#confirm.payment_method_data`, `SetupIntent#confirm.payment_method_options`, `SetupIntent#create.payment_method_data`, `SetupIntent#create.payment_method_options`, `SetupIntent#update.payment_method_data`, `SetupIntent#update.payment_method_options`, and `SetupIntent.payment_method_options`
 * Add support for `mandate` on `Charge.payment_method_details.twint`, `PaymentAttemptRecord.payment_method_details.twint`, and `PaymentRecord.payment_method_details.twint`
 * Add support for new value `bizum` on enums `Checkout.Session#create.excluded_payment_method_types`, `PaymentIntent#confirm.excluded_payment_method_types`, `PaymentIntent#create.excluded_payment_method_types`, `PaymentIntent#update.excluded_payment_method_types`, `SetupIntent#create.excluded_payment_method_types`, and `SetupIntent#update.excluded_payment_method_types`
@@ -11,15 +12,23 @@
 * Add support for new value `bizum` on enums `Customer#list_payment_methods.type`, `PaymentMethod#create.type`, and `PaymentMethod#list.type`
 * Add support for new value `twint` on enums `Invoice#create.payment_settings.payment_method_types`, `Invoice#update.payment_settings.payment_method_types`, `Subscription#create.payment_settings.payment_method_types`, and `Subscription#update.payment_settings.payment_method_types`
 * Add support for `discountable` on `Invoice#create_preview.schedule_details.phases[].add_invoice_items[]`, `Subscription#create.add_invoice_items[]`, `Subscription#update.add_invoice_items[]`, `SubscriptionSchedule#create.phases[].add_invoice_items[]`, `SubscriptionSchedule#update.phases[].add_invoice_items[]`, and `SubscriptionSchedule.phases[].add_invoice_items[]`
+* Add support for `billing_schedules` on `Invoice#create_preview.subscription_details`, `Subscription#create`, `Subscription#update`, and `Subscription`
+* Add support for new value `max_billed_until` on enums `Invoice#create_preview.subscription_details.cancel_at`, `Subscription#create.cancel_at`, and `Subscription#update.cancel_at`
 * Add support for `amount_paid_off_stripe` on `Invoice`
 * ⚠️ Add support for new value `twint` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
 * Add support for `twint` on `Mandate.payment_method_details` and `SetupAttempt.payment_method_details`
+* Add support for `metadata` and `payment_data` on `PaymentIntent#create.transfer_data`, `PaymentIntent#update.transfer_data`, and `PaymentIntent.transfer_data`
 * ⚠️ Add support for new value `bizum` on enums `PaymentIntent.excluded_payment_method_types` and `SetupIntent.excluded_payment_method_types`
 * Add support for `blik_authorize` on `PaymentIntent.next_action` and `SetupIntent.next_action`
 * Add support for new value `bizum` on enums `PaymentLink#create.payment_method_types` and `PaymentLink#update.payment_method_types`
 * ⚠️ Add support for new value `bizum` on enum `PaymentLink.payment_method_types`
 * Add support for `active` on `PaymentMethodConfiguration#list`
+* Add support for `billed_until` on `SubscriptionItem`
+* Add support for `discount` and `discounts` on `Subscription.pending_update`
+* Add support for `verifone_m425`, `verifone_p630`, `verifone_ux700`, and `verifone_v660p` on `Terminal.Configuration#create`, `Terminal.Configuration#update`, and `Terminal.Configuration`
+* Add support for new values `simulated_verifone_m425`, `simulated_verifone_p630`, `simulated_verifone_ux700`, `simulated_verifone_v660p`, `verifone_m425`, `verifone_p630`, `verifone_ux700`, and `verifone_v660p` on enum `Terminal.Reader#list.device_type`
 * Add support for `api_error` and `print_content` on `Terminal.Reader.action`
 * ⚠️ Add support for new value `print_content` on enum `Terminal.Reader.action.type`
+* ⚠️ Add support for new values `simulated_verifone_m425`, `simulated_verifone_p630`, `simulated_verifone_ux700`, `simulated_verifone_v660p`, `verifone_m425`, `verifone_p630`, `verifone_ux700`, and `verifone_v660p` on enum `Terminal.Reader.device_type`
 * Add support for new value `2026-05-27.dahlia` on enum `WebhookEndpoint#create.api_version`
 * Add support for error codes `payment_method_microdeposit_processing_error` and `siret_invalid` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`
