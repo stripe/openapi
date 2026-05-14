@@ -22,4 +22,5 @@
 * Add support for `api_error` and `print_content` on `Terminal.Reader.action`
 * Add support for new value `print_content` on enum `Terminal.Reader.action.type`
 * Add support for new values `simulated_verifone_m425`, `simulated_verifone_p630`, `simulated_verifone_ux700`, `simulated_verifone_v660p`, `verifone_m425`, `verifone_p630`, `verifone_ux700`, and `verifone_v660p` on enum `Terminal.Reader.device_type`
+* Add support for `customer` on `TestHelpers\TestClock.create().$params`
 * Add support for error codes `payment_method_microdeposit_processing_error` and `siret_invalid` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, and `StripeError`

@@ -24,4 +24,5 @@
 * Add support for `verifoneM425`, `verifoneP630`, `verifoneUx700`, and `verifoneV660p` on `terminal.ConfigurationCreateParams`, `terminal.ConfigurationUpdateParams`, and `terminal.Configuration`
 * Add support for new values `simulated_verifone_m425`, `simulated_verifone_p630`, `simulated_verifone_ux700`, `simulated_verifone_v660p`, `verifone_m425`, `verifone_p630`, `verifone_ux700`, and `verifone_v660p` on enum `terminal.ReaderListParams.deviceType`
 * Add support for `apiError` and `printContent` on `terminal.Reader.action`
+* Add support for `customer` on `testhelpers.TestClockCreateParams`
 * Add support for new value `2026-05-27.dahlia` on enum `WebhookEndpointCreateParams.apiVersion`

@@ -16,3 +16,4 @@
 * Add support for `Discount` and `Discounts` on `Subscription.PendingUpdate`
 * Add support for `VerifoneM425`, `VerifoneP630`, `VerifoneUx700`, and `VerifoneV660p` on `Terminal.ConfigurationCreateOptions`, `Terminal.ConfigurationUpdateOptions`, and `Terminal.Configuration`
 * Add support for `ApiError` and `PrintContent` on `Terminal.Reader.Action`
+* Add support for `Customer` on `TestHelpers.TestClockCreateOptions`

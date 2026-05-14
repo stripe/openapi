@@ -16,3 +16,4 @@
 * Add support for `discount` and `discounts` on `Subscription::PendingUpdate`
 * Add support for `verifone_m425`, `verifone_p630`, `verifone_ux700`, and `verifone_v660p` on `Terminal::ConfigurationCreateParams`, `Terminal::ConfigurationUpdateParams`, and `Terminal::Configuration`
 * Add support for `api_error` and `print_content` on `Terminal::Reader::Action`
+* Add support for `customer` on `TestHelpers::TestClockCreateParams`
