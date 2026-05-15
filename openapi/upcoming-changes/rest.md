@@ -11,6 +11,7 @@
 * Add support for new value `bizum` on enums `ConfirmationToken.testHelpers#create.payment_method_data.type`, `PaymentIntent#confirm.payment_method_data.type`, `PaymentIntent#create.payment_method_data.type`, `PaymentIntent#update.payment_method_data.type`, `SetupIntent#confirm.payment_method_data.type`, `SetupIntent#create.payment_method_data.type`, and `SetupIntent#update.payment_method_data.type`
 * ⚠️ Add support for new value `bizum` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Add support for new value `bizum` on enums `Customer#list_payment_methods.type`, `PaymentMethod#create.type`, and `PaymentMethod#list.type`
+* Add support for `credited_items` on `InvoiceItem.proration_details`
 * Add support for new value `twint` on enums `Invoice#create.payment_settings.payment_method_types`, `Invoice#update.payment_settings.payment_method_types`, `Subscription#create.payment_settings.payment_method_types`, and `Subscription#update.payment_settings.payment_method_types`
 * Add support for `discountable` on `Invoice#create_preview.schedule_details.phases[].add_invoice_items[]`, `Subscription#create.add_invoice_items[]`, `Subscription#update.add_invoice_items[]`, `SubscriptionSchedule#create.phases[].add_invoice_items[]`, `SubscriptionSchedule#update.phases[].add_invoice_items[]`, and `SubscriptionSchedule.phases[].add_invoice_items[]`
 * Add support for `billing_schedules` on `Invoice#create_preview.subscription_details`, `Subscription#create`, `Subscription#update`, and `Subscription`

@@ -7,6 +7,7 @@
 * Change type of `Checkout\Session.create().$params.payment_method_option.twint.setup_future_usage`, `PaymentIntent.confirm().$params.payment_method_option.twint.setup_future_usage`, `PaymentIntent.create().$params.payment_method_option.twint.setup_future_usage`, and `PaymentIntent.update().$params.payment_method_option.twint.setup_future_usage` from `literal('none')` to `enum('none'|'off_session')`
 * ⚠️ Change type of `Checkout.Session.payment_method_options.twint.setup_future_usage` and `PaymentIntent.payment_method_options.twint.setup_future_usage` from `literal('none')` to `enum('none'|'off_session')`
 * Add support for new value `bizum` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
+* Add support for `credited_items` on `InvoiceItem.proration_details`
 * Add support for `discountable` on `Invoice.create_preview().$params.schedule_detail.phase.add_invoice_item`, `Subscription.create().$params.add_invoice_item`, `Subscription.update().$params.add_invoice_item`, `SubscriptionSchedule.create().$params.phase.add_invoice_item`, `SubscriptionSchedule.phases[].add_invoice_items[]`, and `SubscriptionSchedule.update().$params.phase.add_invoice_item`
 * Add support for `billing_schedules` on `Invoice.create_preview().$params.subscription_detail`, `Subscription.create().$params`, `Subscription.update().$params`, and `Subscription`
 * Add support for `amount_paid_off_stripe` on `Invoice`

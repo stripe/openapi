@@ -7,6 +7,7 @@
 * Change type of `CheckoutSessionPaymentMethodOptionsTwintParams.SetupFutureUsage`, `PaymentIntentConfirmPaymentMethodOptionsTwintParams.SetupFutureUsage`, and `PaymentIntentPaymentMethodOptionsTwintParams.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * ⚠️ Change type of `CheckoutSessionPaymentMethodOptionsTwint.SetupFutureUsage` and `PaymentIntentPaymentMethodOptionsTwint.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * Add support for new value `bizum` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
+* Add support for `CreditedItems` on `InvoiceItemProrationDetails`
 * Add support for `Discountable` on `InvoiceCreatePreviewScheduleDetailsPhaseAddInvoiceItemParams`, `SubscriptionAddInvoiceItemParams`, `SubscriptionSchedulePhaseAddInvoiceItemParams`, and `SubscriptionSchedulePhaseAddInvoiceItem`
 * Add support for `BillingSchedules` on `InvoiceCreatePreviewSubscriptionDetailsParams`, `SubscriptionParams`, and `Subscription`
 * Add support for `AmountPaidOffStripe` on `Invoice`

@@ -6,6 +6,7 @@
 * Add support for `Mandate` on `Charge.PaymentMethodDetails.Twint`, `PaymentAttemptRecord.PaymentMethodDetails.Twint`, and `PaymentRecord.PaymentMethodDetails.Twint`
 * Change type of `CheckoutSessionPaymentMethodOptionsTwintOptions.SetupFutureUsage` and `PaymentIntentPaymentMethodOptionsTwintOptions.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * ⚠️ Change type of `Checkout.Session.PaymentMethodOptions.Twint.SetupFutureUsage` and `PaymentIntent.PaymentMethodOptions.Twint.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
+* Add support for `CreditedItems` on `InvoiceItem.ProrationDetails`
 * Add support for `Discountable` on `InvoiceScheduleDetailsPhaseAddInvoiceItemOptions`, `SubscriptionAddInvoiceItemOptions`, `SubscriptionSchedule.Phase.AddInvoiceItem`, and `SubscriptionSchedulePhaseAddInvoiceItemOptions`
 * Add support for `BillingSchedules` on `InvoiceSubscriptionDetailsOptions`, `SubscriptionCreateOptions`, `SubscriptionUpdateOptions`, and `Subscription`
 * Add support for `AmountPaidOffStripe` on `Invoice`

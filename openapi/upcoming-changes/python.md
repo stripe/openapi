@@ -11,6 +11,7 @@
 * Add support for new value `bizum` on enums `ConfirmationTokenCreateParamsPaymentMethodDatum.type`, `PaymentIntentConfirmParamsPaymentMethodDatum.type`, `PaymentIntentCreateParamsPaymentMethodDatum.type`, `PaymentIntentModifyParamsPaymentMethodDatum.type`, `SetupIntentConfirmParamsPaymentMethodDatum.type`, `SetupIntentCreateParamsPaymentMethodDatum.type`, and `SetupIntentModifyParamsPaymentMethodDatum.type`
 * ⚠️ Add support for new value `bizum` on enums `ConfirmationToken.PaymentMethodPreview.type` and `PaymentMethod.type`
 * Add support for new value `bizum` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
+* Add support for `credited_items` on `InvoiceItem.ProrationDetail`
 * Add support for new value `twint` on enums `InvoiceCreateParamsPaymentSetting.payment_method_types`, `InvoiceModifyParamsPaymentSetting.payment_method_types`, `SubscriptionCreateParamsPaymentSetting.payment_method_types`, and `SubscriptionModifyParamsPaymentSetting.payment_method_types`
 * Add support for `discountable` on `InvoiceCreatePreviewParamsScheduleDetailPhaseAddInvoiceItem`, `SubscriptionCreateParamsAddInvoiceItem`, `SubscriptionModifyParamsAddInvoiceItem`, `SubscriptionSchedule.Phase.AddInvoiceItem`, `SubscriptionScheduleCreateParamsPhaseAddInvoiceItem`, and `SubscriptionScheduleModifyParamsPhaseAddInvoiceItem`
 * Add support for `billing_schedules` on `InvoiceCreatePreviewParamsSubscriptionDetail`, `SubscriptionCreateParams`, `SubscriptionModifyParams`, and `Subscription`

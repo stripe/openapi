@@ -6,6 +6,7 @@
 * Add support for `mandate` on `Charge::PaymentMethodDetail::Twint`, `PaymentAttemptRecord::PaymentMethodDetail::Twint`, and `PaymentRecord::PaymentMethodDetail::Twint`
 * Change type of `Checkout::SessionCreateParams::PaymentMethodOption::Twint.setup_future_usage`, `PaymentIntentConfirmParams::PaymentMethodOption::Twint.setup_future_usage`, `PaymentIntentCreateParams::PaymentMethodOption::Twint.setup_future_usage`, and `PaymentIntentUpdateParams::PaymentMethodOption::Twint.setup_future_usage` from `literal('none')` to `enum('none'|'off_session')`
 * ⚠️ Change type of `Checkout::Session::PaymentMethodOption::Twint.setup_future_usage` and `PaymentIntent::PaymentMethodOption::Twint.setup_future_usage` from `literal('none')` to `enum('none'|'off_session')`
+* Add support for `credited_items` on `InvoiceItem::ProrationDetail`
 * Add support for `discountable` on `InvoiceCreatePreviewParams::ScheduleDetail::Phase::AddInvoiceItem`, `SubscriptionCreateParams::AddInvoiceItem`, `SubscriptionSchedule::Phase::AddInvoiceItem`, `SubscriptionScheduleCreateParams::Phase::AddInvoiceItem`, `SubscriptionScheduleUpdateParams::Phase::AddInvoiceItem`, and `SubscriptionUpdateParams::AddInvoiceItem`
 * Add support for `billing_schedules` on `InvoiceCreatePreviewParams::SubscriptionDetail`, `SubscriptionCreateParams`, `SubscriptionUpdateParams`, and `Subscription`
 * Add support for `amount_paid_off_stripe` on `Invoice`
