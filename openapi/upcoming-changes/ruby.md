@@ -10,7 +10,8 @@
 * Add support for `billing_schedules` on `InvoiceCreatePreviewParams::SubscriptionDetail`, `SubscriptionCreateParams`, `SubscriptionUpdateParams`, and `Subscription`
 * Add support for `amount_paid_off_stripe` on `Invoice`
 * Add support for `twint` on `Mandate::PaymentMethodDetail` and `SetupAttempt::PaymentMethodDetail`
-* Add support for `metadata` and `payment_data` on `PaymentIntent::TransferDatum`, `PaymentIntentCreateParams::TransferDatum`, and `PaymentIntentUpdateParams::TransferDatum`
+* Add support for `metadata` on `PaymentIntent::TransferDatum`, `PaymentIntentCreateParams::TransferDatum`, `PaymentIntentUpdateParams::TransferDatum`, and `Subscription::PendingUpdate`
+* Add support for `payment_data` on `PaymentIntent::TransferDatum`, `PaymentIntentCreateParams::TransferDatum`, and `PaymentIntentUpdateParams::TransferDatum`
 * Add support for `blik_authorize` on `PaymentIntent::NextAction` and `SetupIntent::NextAction`
 * Add support for `payment_method_options` on `PaymentLinkCreateParams`, `PaymentLinkUpdateParams`, and `PaymentLink`
 * Add support for `active` on `PaymentMethodConfigurationListParams`

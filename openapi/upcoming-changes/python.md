@@ -18,7 +18,8 @@
 * Add support for `amount_paid_off_stripe` on `Invoice`
 * ⚠️ Add support for new value `twint` on enums `Invoice.PaymentSetting.payment_method_types` and `Subscription.PaymentSetting.payment_method_types`
 * Add support for `twint` on `Mandate.PaymentMethodDetail` and `SetupAttempt.PaymentMethodDetail`
-* Add support for `metadata` and `payment_data` on `PaymentIntent.TransferDatum`, `PaymentIntentCreateParamsTransferDatum`, and `PaymentIntentModifyParamsTransferDatum`
+* Add support for `metadata` on `PaymentIntent.TransferDatum`, `PaymentIntentCreateParamsTransferDatum`, `PaymentIntentModifyParamsTransferDatum`, and `Subscription.PendingUpdate`
+* Add support for `payment_data` on `PaymentIntent.TransferDatum`, `PaymentIntentCreateParamsTransferDatum`, and `PaymentIntentModifyParamsTransferDatum`
 * ⚠️ Add support for new value `bizum` on enums `PaymentIntent.excluded_payment_method_types` and `SetupIntent.excluded_payment_method_types`
 * Add support for `blik_authorize` on `PaymentIntent.NextAction` and `SetupIntent.NextAction`
 * Add support for `payment_method_options` on `PaymentLinkCreateParams`, `PaymentLinkModifyParams`, and `PaymentLink`

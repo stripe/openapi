@@ -10,7 +10,8 @@
 * Add support for `BillingSchedules` on `InvoiceSubscriptionDetailsOptions`, `SubscriptionCreateOptions`, `SubscriptionUpdateOptions`, and `Subscription`
 * Add support for `AmountPaidOffStripe` on `Invoice`
 * Add support for `Twint` on `Mandate.PaymentMethodDetails` and `SetupAttempt.PaymentMethodDetails`
-* Add support for `Metadata` and `PaymentData` on `PaymentIntent.TransferData` and `PaymentIntentTransferDataOptions`
+* Add support for `Metadata` on `PaymentIntent.TransferData`, `PaymentIntentTransferDataOptions`, and `Subscription.PendingUpdate`
+* Add support for `PaymentData` on `PaymentIntent.TransferData` and `PaymentIntentTransferDataOptions`
 * Add support for `BlikAuthorize` on `PaymentIntent.NextAction` and `SetupIntent.NextAction`
 * Add support for `PaymentMethodOptions` on `PaymentLinkCreateOptions`, `PaymentLinkUpdateOptions`, and `PaymentLink`
 * Add support for `Active` on `PaymentMethodConfigurationListOptions`

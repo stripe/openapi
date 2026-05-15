@@ -16,7 +16,8 @@
 * Add support for new value `max_billed_until` on enums `InvoiceCreatePreviewParams.subscription_details.cancelAt`, `SubscriptionCreateParams.cancelAt`, and `SubscriptionUpdateParams.cancelAt`
 * Add support for `amountPaidOffStripe` on `Invoice`
 * Add support for `twint` on `Mandate.payment_method_details` and `SetupAttempt.payment_method_details`
-* Add support for `metadata` and `paymentData` on `PaymentIntent.transfer_data`, `PaymentIntentCreateParams.transfer_data`, and `PaymentIntentUpdateParams.transfer_data`
+* Add support for `metadata` on `PaymentIntent.transfer_data`, `PaymentIntentCreateParams.transfer_data`, `PaymentIntentUpdateParams.transfer_data`, and `Subscription.pending_update`
+* Add support for `paymentData` on `PaymentIntent.transfer_data`, `PaymentIntentCreateParams.transfer_data`, and `PaymentIntentUpdateParams.transfer_data`
 * Add support for `blikAuthorize` on `PaymentIntent.next_action` and `SetupIntent.next_action`
 * Add support for `paymentMethodOptions` on `PaymentLinkCreateParams`, `PaymentLinkUpdateParams`, and `PaymentLink`
 * Add support for new value `bizum` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
