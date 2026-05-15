@@ -1,5 +1,6 @@
 * Add support for `bizumPayments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
 * Add support for `automaticTransferRulesByCurrency` on `BalanceSettings.payments.payouts` and `BalanceSettingsUpdateParams.payments.payouts`
+* Add support for `startOfDay` on `BalanceSettings.payments.settlement_timing` and `BalanceSettingsUpdateParams.payments.settlement_timing`
 * Add support for `description` on `ChargeCreateParams.transfer_data`, `PaymentIntent.transfer_data`, `PaymentIntentCreateParams.transfer_data`, and `PaymentIntentUpdateParams.transfer_data`
 * Add support for `bizum` on `Charge.payment_method_details`, `ConfirmationToken.payment_method_preview`, `ConfirmationTokenCreateParams.payment_method_data`, `PaymentAttemptRecord.payment_method_details`, `PaymentIntent.payment_method_options`, `PaymentIntentConfirmParams.payment_method_data`, `PaymentIntentConfirmParams.payment_method_options`, `PaymentIntentCreateParams.payment_method_data`, `PaymentIntentCreateParams.payment_method_options`, `PaymentIntentUpdateParams.payment_method_data`, `PaymentIntentUpdateParams.payment_method_options`, `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, `PaymentMethodConfiguration`, `PaymentMethodCreateParams`, `PaymentMethod`, `PaymentRecord.payment_method_details`, `SetupIntent.payment_method_options`, `SetupIntentConfirmParams.payment_method_data`, `SetupIntentConfirmParams.payment_method_options`, `SetupIntentCreateParams.payment_method_data`, `SetupIntentCreateParams.payment_method_options`, `SetupIntentUpdateParams.payment_method_data`, and `SetupIntentUpdateParams.payment_method_options`
 * Add support for `mandate` on `Charge.payment_method_details.twint`, `PaymentAttemptRecord.payment_method_details.twint`, and `PaymentRecord.payment_method_details.twint`
@@ -17,6 +18,7 @@
 * Add support for `twint` on `Mandate.payment_method_details` and `SetupAttempt.payment_method_details`
 * Add support for `metadata` and `paymentData` on `PaymentIntent.transfer_data`, `PaymentIntentCreateParams.transfer_data`, and `PaymentIntentUpdateParams.transfer_data`
 * Add support for `blikAuthorize` on `PaymentIntent.next_action` and `SetupIntent.next_action`
+* Add support for `paymentMethodOptions` on `PaymentLinkCreateParams`, `PaymentLinkUpdateParams`, and `PaymentLink`
 * Add support for new value `bizum` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
 * Add support for `active` on `PaymentMethodConfigurationListParams`
 * Add support for `billedUntil` on `SubscriptionItem`

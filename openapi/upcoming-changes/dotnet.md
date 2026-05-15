@@ -1,5 +1,6 @@
 * Add support for `BizumPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
 * Add support for `AutomaticTransferRulesByCurrency` on `BalanceSettings.Payments.Payouts` and `BalanceSettingsPaymentsPayoutsOptions`
+* Add support for `StartOfDay` on `BalanceSettings.Payments.SettlementTiming` and `BalanceSettingsPaymentsSettlementTimingOptions`
 * Add support for `Description` on `ChargeTransferDataOptions`, `PaymentIntent.TransferData`, and `PaymentIntentTransferDataOptions`
 * Add support for `Bizum` on `Charge.PaymentMethodDetails`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentAttemptRecord.PaymentMethodDetails`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, `PaymentRecord.PaymentMethodDetails`, `SetupIntent.PaymentMethodOptions`, `SetupIntentPaymentMethodDataOptions`, and `SetupIntentPaymentMethodOptionsOptions`
 * Add support for `Mandate` on `Charge.PaymentMethodDetails.Twint`, `PaymentAttemptRecord.PaymentMethodDetails.Twint`, and `PaymentRecord.PaymentMethodDetails.Twint`
@@ -11,6 +12,7 @@
 * Add support for `Twint` on `Mandate.PaymentMethodDetails` and `SetupAttempt.PaymentMethodDetails`
 * Add support for `Metadata` and `PaymentData` on `PaymentIntent.TransferData` and `PaymentIntentTransferDataOptions`
 * Add support for `BlikAuthorize` on `PaymentIntent.NextAction` and `SetupIntent.NextAction`
+* Add support for `PaymentMethodOptions` on `PaymentLinkCreateOptions`, `PaymentLinkUpdateOptions`, and `PaymentLink`
 * Add support for `Active` on `PaymentMethodConfigurationListOptions`
 * Add support for `BilledUntil` on `SubscriptionItem`
 * Add support for `Discount` and `Discounts` on `Subscription.PendingUpdate`

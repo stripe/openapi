@@ -1,5 +1,6 @@
 * Add support for `bizum_payments` on `Account.capabilities`, `Account.create().$params.capability`, and `Account.update().$params.capability`
 * Add support for `automatic_transfer_rules_by_currency` on `BalanceSettings.payments.payouts` and `BalanceSettings.update().$params.payment.payout`
+* Add support for `start_of_day` on `BalanceSettings.payments.settlement_timing` and `BalanceSettings.update().$params.payment.settlement_timing`
 * Add support for `description` on `Charge.create().$params.transfer_datum`, `PaymentIntent.create().$params.transfer_datum`, `PaymentIntent.transfer_data`, and `PaymentIntent.update().$params.transfer_datum`
 * Add support for `bizum` on `Charge.payment_method_details`, `ConfirmationToken.create().$params.payment_method_datum`, `ConfirmationToken.payment_method_preview`, `PaymentAttemptRecord.payment_method_details`, `PaymentIntent.confirm().$params.payment_method_datum`, `PaymentIntent.confirm().$params.payment_method_option`, `PaymentIntent.create().$params.payment_method_datum`, `PaymentIntent.create().$params.payment_method_option`, `PaymentIntent.payment_method_options`, `PaymentIntent.update().$params.payment_method_datum`, `PaymentIntent.update().$params.payment_method_option`, `PaymentMethod.create().$params`, `PaymentMethodConfiguration.create().$params`, `PaymentMethodConfiguration.update().$params`, `PaymentMethodConfiguration`, `PaymentMethod`, `PaymentRecord.payment_method_details`, `SetupIntent.confirm().$params.payment_method_datum`, `SetupIntent.confirm().$params.payment_method_option`, `SetupIntent.create().$params.payment_method_datum`, `SetupIntent.create().$params.payment_method_option`, `SetupIntent.payment_method_options`, `SetupIntent.update().$params.payment_method_datum`, and `SetupIntent.update().$params.payment_method_option`
 * Add support for `mandate` on `Charge.payment_method_details.twint`, `PaymentAttemptRecord.payment_method_details.twint`, and `PaymentRecord.payment_method_details.twint`
@@ -14,6 +15,7 @@
 * Add support for `metadata` and `payment_data` on `PaymentIntent.create().$params.transfer_datum`, `PaymentIntent.transfer_data`, and `PaymentIntent.update().$params.transfer_datum`
 * Add support for new value `bizum` on enums `PaymentIntent.excluded_payment_method_types` and `SetupIntent.excluded_payment_method_types`
 * Add support for `blik_authorize` on `PaymentIntent.next_action` and `SetupIntent.next_action`
+* Add support for `payment_method_options` on `PaymentLink.create().$params`, `PaymentLink.update().$params`, and `PaymentLink`
 * Add support for new value `bizum` on enum `PaymentLink.payment_method_types`
 * Add support for `active` on `PaymentMethodConfiguration.all().$params`
 * Add support for `billed_until` on `SubscriptionItem`

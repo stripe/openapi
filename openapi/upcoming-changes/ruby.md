@@ -1,5 +1,6 @@
 * Add support for `bizum_payments` on `Account::Capability`, `AccountCreateParams::Capability`, and `AccountUpdateParams::Capability`
 * Add support for `automatic_transfer_rules_by_currency` on `BalanceSettings::Payment::Payout` and `BalanceSettingsUpdateParams::Payment::Payout`
+* Add support for `start_of_day` on `BalanceSettings::Payment::SettlementTiming` and `BalanceSettingsUpdateParams::Payment::SettlementTiming`
 * Add support for `description` on `ChargeCreateParams::TransferDatum`, `PaymentIntent::TransferDatum`, `PaymentIntentCreateParams::TransferDatum`, and `PaymentIntentUpdateParams::TransferDatum`
 * Add support for `bizum` on `Charge::PaymentMethodDetail`, `ConfirmationToken::PaymentMethodPreview`, `ConfirmationTokenCreateParams::PaymentMethodDatum`, `PaymentAttemptRecord::PaymentMethodDetail`, `PaymentIntent::PaymentMethodOption`, `PaymentIntentConfirmParams::PaymentMethodDatum`, `PaymentIntentConfirmParams::PaymentMethodOption`, `PaymentIntentCreateParams::PaymentMethodDatum`, `PaymentIntentCreateParams::PaymentMethodOption`, `PaymentIntentUpdateParams::PaymentMethodDatum`, `PaymentIntentUpdateParams::PaymentMethodOption`, `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, `PaymentMethodConfiguration`, `PaymentMethodCreateParams`, `PaymentMethod`, `PaymentRecord::PaymentMethodDetail`, `SetupIntent::PaymentMethodOption`, `SetupIntentConfirmParams::PaymentMethodDatum`, `SetupIntentConfirmParams::PaymentMethodOption`, `SetupIntentCreateParams::PaymentMethodDatum`, `SetupIntentCreateParams::PaymentMethodOption`, `SetupIntentUpdateParams::PaymentMethodDatum`, and `SetupIntentUpdateParams::PaymentMethodOption`
 * Add support for `mandate` on `Charge::PaymentMethodDetail::Twint`, `PaymentAttemptRecord::PaymentMethodDetail::Twint`, and `PaymentRecord::PaymentMethodDetail::Twint`
@@ -11,6 +12,7 @@
 * Add support for `twint` on `Mandate::PaymentMethodDetail` and `SetupAttempt::PaymentMethodDetail`
 * Add support for `metadata` and `payment_data` on `PaymentIntent::TransferDatum`, `PaymentIntentCreateParams::TransferDatum`, and `PaymentIntentUpdateParams::TransferDatum`
 * Add support for `blik_authorize` on `PaymentIntent::NextAction` and `SetupIntent::NextAction`
+* Add support for `payment_method_options` on `PaymentLinkCreateParams`, `PaymentLinkUpdateParams`, and `PaymentLink`
 * Add support for `active` on `PaymentMethodConfigurationListParams`
 * Add support for `billed_until` on `SubscriptionItem`
 * Add support for `discount` and `discounts` on `Subscription::PendingUpdate`

@@ -1,5 +1,6 @@
 * Add support for `BizumPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
 * Add support for `AutomaticTransferRulesByCurrency` on `BalanceSettingsPaymentsPayoutsParams` and `BalanceSettingsPaymentsPayouts`
+* Add support for `StartOfDay` on `BalanceSettingsPaymentsSettlementTimingParams` and `BalanceSettingsPaymentsSettlementTiming`
 * Add support for `Description` on `ChargeTransferDataParams`, `PaymentIntentTransferDataParams`, and `PaymentIntentTransferData`
 * Add support for `Bizum` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `PaymentAttemptRecordPaymentMethodDetails`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentIntentPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `PaymentRecordPaymentMethodDetails`, `SetupIntentConfirmPaymentMethodDataParams`, `SetupIntentConfirmPaymentMethodOptionsParams`, `SetupIntentPaymentMethodDataParams`, `SetupIntentPaymentMethodOptionsParams`, and `SetupIntentPaymentMethodOptions`
 * Add support for `Mandate` on `ChargePaymentMethodDetailsTwint`, `PaymentAttemptRecordPaymentMethodDetailsTwint`, and `PaymentRecordPaymentMethodDetailsTwint`
@@ -14,6 +15,7 @@
 * Add support for `Metadata` and `PaymentData` on `PaymentIntentTransferDataParams` and `PaymentIntentTransferData`
 * Add support for new value `bizum` on enums `PaymentIntent.ExcludedPaymentMethodTypes` and `SetupIntent.ExcludedPaymentMethodTypes`
 * Add support for `BLIKAuthorize` on `PaymentIntentNextAction` and `SetupIntentNextAction`
+* Add support for `PaymentMethodOptions` on `PaymentLinkParams` and `PaymentLink`
 * Add support for new value `bizum` on enum `PaymentLink.PaymentMethodTypes`
 * Add support for `Active` on `PaymentMethodConfigurationListParams`
 * Add support for `BilledUntil` on `SubscriptionItem`
