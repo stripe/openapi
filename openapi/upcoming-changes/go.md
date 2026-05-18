@@ -1,5 +1,6 @@
 * Add support for `BizumPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
 * Add support for `AutomaticTransferRulesByCurrency` on `BalanceSettingsPaymentsPayoutsParams` and `BalanceSettingsPaymentsPayouts`
+* Add support for `StartOfDay` on `BalanceSettingsPaymentsSettlementTimingParams` and `BalanceSettingsPaymentsSettlementTiming`
 * Add support for `Description` on `ChargeTransferDataParams`, `PaymentIntentTransferDataParams`, and `PaymentIntentTransferData`
 * Add support for `Bizum` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `PaymentAttemptRecordPaymentMethodDetails`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentIntentPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `PaymentRecordPaymentMethodDetails`, `SetupIntentConfirmPaymentMethodDataParams`, `SetupIntentConfirmPaymentMethodOptionsParams`, `SetupIntentPaymentMethodDataParams`, `SetupIntentPaymentMethodOptionsParams`, and `SetupIntentPaymentMethodOptions`
 * Add support for `Mandate` on `ChargePaymentMethodDetailsTwint`, `PaymentAttemptRecordPaymentMethodDetailsTwint`, and `PaymentRecordPaymentMethodDetailsTwint`
@@ -8,7 +9,6 @@
 * Add support for new value `bizum` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
 * Add support for `CreditedItems` on `InvoiceItemProrationDetails`
 * Add support for `Discountable` on `InvoiceCreatePreviewScheduleDetailsPhaseAddInvoiceItemParams`, `SubscriptionAddInvoiceItemParams`, `SubscriptionSchedulePhaseAddInvoiceItemParams`, and `SubscriptionSchedulePhaseAddInvoiceItem`
-* Add support for `BillingSchedules` on `InvoiceCreatePreviewSubscriptionDetailsParams`, `SubscriptionParams`, and `Subscription`
 * Add support for `AmountPaidOffStripe` on `Invoice`
 * Add support for new value `twint` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
 * Add support for `TWINT` on `MandatePaymentMethodDetails` and `SetupAttemptPaymentMethodDetails`
@@ -19,7 +19,6 @@
 * Add support for `PaymentMethodOptions` on `PaymentLinkParams` and `PaymentLink`
 * Add support for new value `bizum` on enum `PaymentLink.PaymentMethodTypes`
 * Add support for `Active` on `PaymentMethodConfigurationListParams`
-* Add support for `BilledUntil` on `SubscriptionItem`
 * Add support for `Discount` and `Discounts` on `SubscriptionPendingUpdate`
 * Add support for `VerifoneM425`, `VerifoneP630`, `VerifoneUx700`, and `VerifoneV660p` on `TerminalConfigurationParams` and `TerminalConfiguration`
 * Add support for `APIError` and `PrintContent` on `TerminalReaderAction`
