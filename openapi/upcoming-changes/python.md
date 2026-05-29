@@ -1,1 +1,5 @@
-* Release specs are identical.
+* Add support for `buyer_id` on `Charge.PaymentMethodDetail.Bizum`, `ConfirmationToken.PaymentMethodPreview.Blik`, `PaymentAttemptRecord.PaymentMethodDetail.Bizum`, `PaymentMethod.Blik`, and `PaymentRecord.PaymentMethodDetail.Bizum`
+* ⚠️ Add support for new value `validated` on enum `Identity.VerificationSession.Redaction.status`
+* Add support for `sunbit` on `PaymentIntent.PaymentMethodOption`, `PaymentIntentConfirmParamsPaymentMethodOption`, `PaymentIntentCreateParamsPaymentMethodOption`, and `PaymentIntentModifyParamsPaymentMethodOption`
+* Add support for new value `2026-06-24.dahlia` on enum `WebhookEndpointCreateParams.api_version`
+* Add support for error code `failed_tax_calculation` on `Invoice.LastFinalizationError`, `PaymentIntent.LastPaymentError`, `SetupAttempt.SetupError`, `SetupIntent.LastSetupError`, `StripeError`, and `Terminal.Reader.Action.ApiError`

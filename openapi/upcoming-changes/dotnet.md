@@ -1,1 +1,2 @@
-* Release specs are identical.
+* Add support for `BuyerId` on `Charge.PaymentMethodDetails.Bizum`, `ConfirmationToken.PaymentMethodPreview.Blik`, `PaymentAttemptRecord.PaymentMethodDetails.Bizum`, `PaymentMethod.Blik`, and `PaymentRecord.PaymentMethodDetails.Bizum`
+* Add support for `Sunbit` on `PaymentIntent.PaymentMethodOptions` and `PaymentIntentPaymentMethodOptionsOptions`

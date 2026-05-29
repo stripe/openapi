@@ -1,1 +1,4 @@
-* Release specs are identical.
+* Add support for `BuyerID` on `ChargePaymentMethodDetailsBizum`, `ConfirmationTokenPaymentMethodPreviewBlik`, `PaymentAttemptRecordPaymentMethodDetailsBizum`, `PaymentMethodBlik`, and `PaymentRecordPaymentMethodDetailsBizum`
+* Add support for new value `validated` on enum `IdentityVerificationSessionRedaction.Status`
+* Add support for `Sunbit` on `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptionsParams`, and `PaymentIntentPaymentMethodOptions`
+* Add support for error code `failed_tax_calculation` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, `StripeError`, and `TerminalReaderActionApiError`
