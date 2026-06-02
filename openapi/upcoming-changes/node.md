@@ -1,4 +1,7 @@
+* ⚠️ Add support for new value `tax_fund` on enum `BalanceTransaction.type`
 * Add support for `buyer_id` on `Charge.payment_method_details.bizum`, `ConfirmationToken.payment_method_preview.blik`, `PaymentAttemptRecord.payment_method_details.bizum`, `PaymentMethod.blik`, and `PaymentRecord.payment_method_details.bizum`
+* ⚠️ Add support for new value `sui` on enums `Charge.payment_method_details.crypto.network`, `PaymentAttemptRecord.payment_method_details.crypto.network`, and `PaymentRecord.payment_method_details.crypto.network`
+* ⚠️ Add support for new value `usdsui` on enums `Charge.payment_method_details.crypto.token_currency`, `PaymentAttemptRecord.payment_method_details.crypto.token_currency`, and `PaymentRecord.payment_method_details.crypto.token_currency`
 * Add support for `status_details` on `FinancialConnections.Account`
 * ⚠️ Add support for new value `validated` on enum `Identity.VerificationSession.redaction.status`
 * ⚠️ Remove support for `stored_credential_usage` on `PaymentAttemptRecord.payment_method_details.card` and `PaymentRecord.payment_method_details.card`
