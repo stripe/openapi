@@ -6,3 +6,4 @@
 * Add support for `StatusDetails` on `FinancialConnections.Account`
 * ⚠️ Remove support for `StoredCredentialUsage` on `PaymentAttemptRecord.PaymentMethodDetails.Card` and `PaymentRecord.PaymentMethodDetails.Card`
 * Add support for `Sunbit` on `PaymentIntent.PaymentMethodOptions` and `PaymentIntentPaymentMethodOptionsOptions`
+* Add support for `CustomFields`, `Description`, and `Footer` on `Subscription.InvoiceSettings` and `SubscriptionInvoiceSettingsOptions`

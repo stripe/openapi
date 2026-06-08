@@ -6,4 +6,5 @@
 * Add support for `statusDetails` on `financialconnections.Account`
 * ⚠️ Remove support for `storedCredentialUsage` on `PaymentAttemptRecord.payment_method_details.card` and `PaymentRecord.payment_method_details.card`
 * Add support for `sunbit` on `PaymentIntent.payment_method_options`, `PaymentIntentConfirmParams.payment_method_options`, `PaymentIntentCreateParams.payment_method_options`, and `PaymentIntentUpdateParams.payment_method_options`
+* Add support for `customFields`, `description`, and `footer` on `Subscription.invoice_settings`, `SubscriptionCreateParams.invoice_settings`, and `SubscriptionUpdateParams.invoice_settings`
 * Add support for new value `2026-06-24.dahlia` on enum `WebhookEndpointCreateParams.apiVersion`

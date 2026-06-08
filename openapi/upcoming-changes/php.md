@@ -13,4 +13,5 @@
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.iin` and `PaymentRecord.payment_method_details.card.iin` to be optional
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.issuer` and `PaymentRecord.payment_method_details.card.issuer` to be optional
 * Add support for `sunbit` on `PaymentIntent.confirm().$params.payment_method_option`, `PaymentIntent.create().$params.payment_method_option`, `PaymentIntent.payment_method_options`, and `PaymentIntent.update().$params.payment_method_option`
+* Add support for `custom_fields`, `description`, and `footer` on `Subscription.create().$params.invoice_setting`, `Subscription.invoice_settings`, and `Subscription.update().$params.invoice_setting`
 * Add support for error code `failed_tax_calculation` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, `StripeError`, and `Terminal.Reader.action.api_error`
