@@ -4,6 +4,8 @@
 * Add support for `Fingerprint` on `Charge.PaymentMethodDetails.Pix`, `ConfirmationToken.PaymentMethodPreview.Pix`, `PaymentMethod.Pix`, and `SetupAttempt.PaymentMethodDetails.Pix`
 * Add support for `Sunbit` on `Checkout.Session.PaymentMethodOptions`, `CheckoutSessionPaymentMethodOptionsOptions`, `PaymentIntent.PaymentMethodOptions`, and `PaymentIntentPaymentMethodOptionsOptions`
 * Add support for `BillingCycleAnchorConfig` on `CheckoutSessionSubscriptionDataOptions`
+* Add support for `MastercardCompliance` on `Dispute.Evidence.EnhancedEvidence`, `Dispute.EvidenceDetails.EnhancedEligibility`, and `DisputeEvidenceEnhancedEvidenceOptions`
 * Add support for `StatusDetails` on `FinancialConnections.Account`
 * ⚠️ Remove support for `StoredCredentialUsage` on `PaymentAttemptRecord.PaymentMethodDetails.Card` and `PaymentRecord.PaymentMethodDetails.Card`
 * Add support for `CustomFields`, `Description`, and `Footer` on `Subscription.InvoiceSettings` and `SubscriptionInvoiceSettingsOptions`
+* Add support for `PaymentMethodOptions` and `PaymentMethod` on `TopupCreateOptions`
