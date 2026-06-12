@@ -19,9 +19,11 @@
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.iin` and `PaymentRecord.payment_method_details.card.iin` to be optional
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.issuer` and `PaymentRecord.payment_method_details.card.issuer` to be optional
 * Add support for `setup_future_usage` on `PaymentIntent#confirm.payment_method_options.satispay`, `PaymentIntent#create.payment_method_options.satispay`, `PaymentIntent#update.payment_method_options.satispay`, and `PaymentIntent.payment_method_options.satispay`
+* Add support for `customer` on `Refund`
+* Add support for `payment_method` on `Refund` and `Topup#create`
 * Add support for `satispay` on `SetupAttempt.payment_method_details`
 * Add support for `custom_fields`, `description`, and `footer` on `Subscription#create.invoice_settings`, `Subscription#update.invoice_settings`, and `Subscription.invoice_settings`
-* Add support for `payment_method_options` and `payment_method` on `Topup#create`
+* Add support for `payment_method_options` on `Topup#create`
 * Add support for new values `billing.meter.created`, `billing.meter.deactivated`, `billing.meter.reactivated`, and `billing.meter.updated` on enums `WebhookEndpoint#create.enabled_events` and `WebhookEndpoint#update.enabled_events`
 * Add support for new value `2026-06-24.dahlia` on enum `WebhookEndpoint#create.api_version`
 * Add support for error codes `failed_tax_calculation`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, `StripeError`, and `Terminal.Reader.action.api_error`

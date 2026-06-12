@@ -17,7 +17,9 @@
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.iin` and `PaymentRecord.payment_method_details.card.iin` to be optional
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.issuer` and `PaymentRecord.payment_method_details.card.issuer` to be optional
 * Add support for `setup_future_usage` on `PaymentIntent.confirm().$params.payment_method_option.satispay`, `PaymentIntent.create().$params.payment_method_option.satispay`, `PaymentIntent.payment_method_options.satispay`, and `PaymentIntent.update().$params.payment_method_option.satispay`
+* Add support for `customer` on `Refund`
+* Add support for `payment_method` on `Refund` and `Topup.create().$params`
 * Add support for `satispay` on `SetupAttempt.payment_method_details`
 * Add support for `custom_fields`, `description`, and `footer` on `Subscription.create().$params.invoice_setting`, `Subscription.invoice_settings`, and `Subscription.update().$params.invoice_setting`
-* Add support for `payment_method_options` and `payment_method` on `Topup.create().$params`
+* Add support for `payment_method_options` on `Topup.create().$params`
 * Add support for error codes `failed_tax_calculation`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, `StripeError`, and `Terminal.Reader.action.api_error`
