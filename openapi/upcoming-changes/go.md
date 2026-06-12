@@ -11,7 +11,10 @@
 * Add support for new value `mastercard_compliance` on enum `Dispute.EnhancedEligibilityTypes`
 * Add support for `StatusDetails` on `FinancialConnectionsAccount`
 * Add support for new value `validated` on enum `IdentityVerificationSessionRedaction.Status`
+* Add support for new value `satispay` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
 * ⚠️ Remove support for `StoredCredentialUsage` on `PaymentAttemptRecordPaymentMethodDetailsCard` and `PaymentRecordPaymentMethodDetailsCard`
+* Add support for `SetupFutureUsage` on `PaymentIntentConfirmPaymentMethodOptionsSatispayParams`, `PaymentIntentPaymentMethodOptionsSatispayParams`, and `PaymentIntentPaymentMethodOptionsSatispay`
+* Add support for `Satispay` on `SetupAttemptPaymentMethodDetails`
 * Add support for `CustomFields`, `Description`, and `Footer` on `SubscriptionInvoiceSettingsParams` and `SubscriptionInvoiceSettings`
 * Add support for `PaymentMethodOptions` and `PaymentMethod` on `TopupParams`
 * Add support for error codes `failed_tax_calculation`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, `StripeError`, and `TerminalReaderActionApiError`

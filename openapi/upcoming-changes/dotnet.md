@@ -7,5 +7,7 @@
 * Add support for `MastercardCompliance` on `Dispute.Evidence.EnhancedEvidence`, `Dispute.EvidenceDetails.EnhancedEligibility`, and `DisputeEvidenceEnhancedEvidenceOptions`
 * Add support for `StatusDetails` on `FinancialConnections.Account`
 * ⚠️ Remove support for `StoredCredentialUsage` on `PaymentAttemptRecord.PaymentMethodDetails.Card` and `PaymentRecord.PaymentMethodDetails.Card`
+* Add support for `SetupFutureUsage` on `PaymentIntent.PaymentMethodOptions.Satispay` and `PaymentIntentPaymentMethodOptionsSatispayOptions`
+* Add support for `Satispay` on `SetupAttempt.PaymentMethodDetails`
 * Add support for `CustomFields`, `Description`, and `Footer` on `Subscription.InvoiceSettings` and `SubscriptionInvoiceSettingsOptions`
 * Add support for `PaymentMethodOptions` and `PaymentMethod` on `TopupCreateOptions`

@@ -12,10 +12,14 @@
 * Add support for new values `billing.meter.created`, `billing.meter.deactivated`, `billing.meter.reactivated`, and `billing.meter.updated` on enum `Event.type`
 * Add support for `status_details` on `FinancialConnections.Account`
 * ⚠️ Add support for new value `validated` on enum `Identity.VerificationSession.redaction.status`
+* Add support for new value `satispay` on enums `Invoice#create.payment_settings.payment_method_types`, `Invoice#update.payment_settings.payment_method_types`, `Subscription#create.payment_settings.payment_method_types`, and `Subscription#update.payment_settings.payment_method_types`
+* ⚠️ Add support for new value `satispay` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
 * ⚠️ Remove support for `stored_credential_usage` on `PaymentAttemptRecord.payment_method_details.card` and `PaymentRecord.payment_method_details.card`
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.description` and `PaymentRecord.payment_method_details.card.description` to be optional
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.iin` and `PaymentRecord.payment_method_details.card.iin` to be optional
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.issuer` and `PaymentRecord.payment_method_details.card.issuer` to be optional
+* Add support for `setup_future_usage` on `PaymentIntent#confirm.payment_method_options.satispay`, `PaymentIntent#create.payment_method_options.satispay`, `PaymentIntent#update.payment_method_options.satispay`, and `PaymentIntent.payment_method_options.satispay`
+* Add support for `satispay` on `SetupAttempt.payment_method_details`
 * Add support for `custom_fields`, `description`, and `footer` on `Subscription#create.invoice_settings`, `Subscription#update.invoice_settings`, and `Subscription.invoice_settings`
 * Add support for `payment_method_options` and `payment_method` on `Topup#create`
 * Add support for new values `billing.meter.created`, `billing.meter.deactivated`, `billing.meter.reactivated`, and `billing.meter.updated` on enums `WebhookEndpoint#create.enabled_events` and `WebhookEndpoint#update.enabled_events`

@@ -11,10 +11,14 @@
 * ⚠️ Add support for new value `mastercard_compliance` on enum `Dispute.enhanced_eligibility_types`
 * Add support for `status_details` on `FinancialConnections.Account`
 * ⚠️ Add support for new value `validated` on enum `Identity.VerificationSession.Redaction.status`
+* Add support for new value `satispay` on enums `InvoiceCreateParamsPaymentSetting.payment_method_types`, `InvoiceModifyParamsPaymentSetting.payment_method_types`, `SubscriptionCreateParamsPaymentSetting.payment_method_types`, and `SubscriptionModifyParamsPaymentSetting.payment_method_types`
+* ⚠️ Add support for new value `satispay` on enums `Invoice.PaymentSetting.payment_method_types` and `Subscription.PaymentSetting.payment_method_types`
 * ⚠️ Remove support for `stored_credential_usage` on `PaymentAttemptRecord.PaymentMethodDetail.Card` and `PaymentRecord.PaymentMethodDetail.Card`
 * ⚠️ Change `PaymentAttemptRecord.PaymentMethodDetail.Card.description` and `PaymentRecord.PaymentMethodDetail.Card.description` to be optional
 * ⚠️ Change `PaymentAttemptRecord.PaymentMethodDetail.Card.iin` and `PaymentRecord.PaymentMethodDetail.Card.iin` to be optional
 * ⚠️ Change `PaymentAttemptRecord.PaymentMethodDetail.Card.issuer` and `PaymentRecord.PaymentMethodDetail.Card.issuer` to be optional
+* Add support for `setup_future_usage` on `PaymentIntent.PaymentMethodOption.Satispay`, `PaymentIntentConfirmParamsPaymentMethodOptionSatispay`, `PaymentIntentCreateParamsPaymentMethodOptionSatispay`, and `PaymentIntentModifyParamsPaymentMethodOptionSatispay`
+* Add support for `satispay` on `SetupAttempt.PaymentMethodDetail`
 * Add support for `custom_fields`, `description`, and `footer` on `Subscription.InvoiceSetting`, `SubscriptionCreateParamsInvoiceSetting`, and `SubscriptionModifyParamsInvoiceSetting`
 * Add support for `payment_method_options` and `payment_method` on `TopupCreateParams`
 * Add support for new value `2026-06-24.dahlia` on enum `WebhookEndpointCreateParams.api_version`

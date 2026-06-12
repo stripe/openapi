@@ -11,10 +11,14 @@
 * ⚠️ Add support for new value `mastercard_compliance` on enum `Dispute.enhanced_eligibility_types`
 * Add support for `status_details` on `FinancialConnections.Account`
 * ⚠️ Add support for new value `validated` on enum `Identity.VerificationSession.redaction.status`
+* Add support for new value `satispay` on enums `InvoiceCreateParams.payment_settings.payment_method_types`, `InvoiceUpdateParams.payment_settings.payment_method_types`, `SubscriptionCreateParams.payment_settings.payment_method_types`, and `SubscriptionUpdateParams.payment_settings.payment_method_types`
+* ⚠️ Add support for new value `satispay` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
 * ⚠️ Remove support for `stored_credential_usage` on `PaymentAttemptRecord.payment_method_details.card` and `PaymentRecord.payment_method_details.card`
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.description` and `PaymentRecord.payment_method_details.card.description` to be optional
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.iin` and `PaymentRecord.payment_method_details.card.iin` to be optional
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.issuer` and `PaymentRecord.payment_method_details.card.issuer` to be optional
+* Add support for `setup_future_usage` on `PaymentIntent.payment_method_options.satispay`, `PaymentIntentConfirmParams.payment_method_options.satispay`, `PaymentIntentCreateParams.payment_method_options.satispay`, and `PaymentIntentUpdateParams.payment_method_options.satispay`
+* Add support for `satispay` on `SetupAttempt.payment_method_details`
 * Add support for `custom_fields`, `description`, and `footer` on `Subscription.invoice_settings`, `SubscriptionCreateParams.invoice_settings`, and `SubscriptionUpdateParams.invoice_settings`
 * Add support for `payment_method_options` and `payment_method` on `TopupCreateParams`
 * Add support for new value `2026-06-24.dahlia` on enum `WebhookEndpointCreateParams.api_version`
