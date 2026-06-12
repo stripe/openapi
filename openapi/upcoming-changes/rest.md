@@ -9,7 +9,7 @@
 * Add support for `billing_cycle_anchor_config` on `Checkout.Session#create.subscription_data`
 * Add support for `mastercard_compliance` on `Dispute#update.evidence.enhanced_evidence`, `Dispute.evidence.enhanced_evidence`, and `Dispute.evidence_details.enhanced_eligibility`
 * ⚠️ Add support for new value `mastercard_compliance` on enum `Dispute.enhanced_eligibility_types`
-* Add support for new values `billing.meter.created`, `billing.meter.deactivated`, `billing.meter.reactivated`, and `billing.meter.updated` on enum `Event.type`
+* Add support for new values `billing.credit_balance_transaction.created`, `billing.credit_grant.updated`, `billing.meter.created`, `billing.meter.deactivated`, `billing.meter.reactivated`, and `billing.meter.updated` on enum `Event.type`
 * Add support for `status_details` on `FinancialConnections.Account`
 * ⚠️ Add support for new value `validated` on enum `Identity.VerificationSession.redaction.status`
 * Add support for new value `satispay` on enums `Invoice#create.payment_settings.payment_method_types`, `Invoice#update.payment_settings.payment_method_types`, `Subscription#create.payment_settings.payment_method_types`, and `Subscription#update.payment_settings.payment_method_types`
@@ -24,6 +24,6 @@
 * Add support for `satispay` on `SetupAttempt.payment_method_details`
 * Add support for `custom_fields`, `description`, and `footer` on `Subscription#create.invoice_settings`, `Subscription#update.invoice_settings`, and `Subscription.invoice_settings`
 * Add support for `payment_method_options` on `Topup#create`
-* Add support for new values `billing.meter.created`, `billing.meter.deactivated`, `billing.meter.reactivated`, and `billing.meter.updated` on enums `WebhookEndpoint#create.enabled_events` and `WebhookEndpoint#update.enabled_events`
+* Add support for new values `billing.credit_balance_transaction.created`, `billing.credit_grant.updated`, `billing.meter.created`, `billing.meter.deactivated`, `billing.meter.reactivated`, and `billing.meter.updated` on enums `WebhookEndpoint#create.enabled_events` and `WebhookEndpoint#update.enabled_events`
 * Add support for new value `2026-06-24.dahlia` on enum `WebhookEndpoint#create.api_version`
 * Add support for error codes `failed_tax_calculation`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, `StripeError`, and `Terminal.Reader.action.api_error`
