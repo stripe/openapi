@@ -1,5 +1,4 @@
 * Add support for `release_details` on `Reserve::Hold`
-* Change `Billing::CreditGrant.priority` to be required
 * Add support for `buyer_id` on `Charge::PaymentMethodDetail::Bizum`, `ConfirmationToken::PaymentMethodPreview::Bizum`, `ConfirmationToken::PaymentMethodPreview::Blik`, `PaymentAttemptRecord::PaymentMethodDetail::Bizum`, `PaymentMethod::Bizum`, `PaymentMethod::Blik`, and `PaymentRecord::PaymentMethodDetail::Bizum`
 * Add support for `transaction_link_id` on `Charge::PaymentMethodDetail::Card`
 * Add support for `fingerprint` on `Charge::PaymentMethodDetail::Pix`, `ConfirmationToken::PaymentMethodPreview::Pix`, `PaymentMethod::Pix`, and `SetupAttempt::PaymentMethodDetail::Pix`

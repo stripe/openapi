@@ -1,6 +1,5 @@
 * Add support for `release_details` on `Reserve.Hold`
 * ⚠️ Add support for new value `tax_fund` on enum `BalanceTransaction.type`
-* Change `Billing.CreditGrant.priority` to be required
 * Add support for `buyer_id` on `Charge.payment_method_details.bizum`, `ConfirmationToken.payment_method_preview.bizum`, `ConfirmationToken.payment_method_preview.blik`, `PaymentAttemptRecord.payment_method_details.bizum`, `PaymentMethod.bizum`, `PaymentMethod.blik`, and `PaymentRecord.payment_method_details.bizum`
 * Add support for `transaction_link_id` on `Charge.payment_method_details.card`
 * ⚠️ Add support for new value `sui` on enums `Charge.payment_method_details.crypto.network`, `PaymentAttemptRecord.payment_method_details.crypto.network`, and `PaymentRecord.payment_method_details.crypto.network`
@@ -29,4 +28,4 @@
 * Add support for `payment_method_options` on `Topup#create`
 * Add support for new values `billing.credit_balance_transaction.created`, `billing.credit_grant.updated`, `billing.meter.created`, `billing.meter.deactivated`, `billing.meter.reactivated`, and `billing.meter.updated` on enums `WebhookEndpoint#create.enabled_events` and `WebhookEndpoint#update.enabled_events`
 * Add support for new value `2026-06-24.dahlia` on enum `WebhookEndpoint#create.api_version`
-* Add support for error codes `failed_tax_calculation`, `financial_account_balance_does_not_support_currency`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, `StripeError`, and `Terminal.Reader.action.api_error`
+* Add support for error codes `failed_tax_calculation`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, `StripeError`, and `Terminal.Reader.action.api_error`

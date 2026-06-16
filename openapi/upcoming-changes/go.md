@@ -20,4 +20,4 @@
 * Add support for `Satispay` on `SetupAttemptPaymentMethodDetails`
 * Add support for `CustomFields`, `Description`, and `Footer` on `SubscriptionInvoiceSettingsParams` and `SubscriptionInvoiceSettings`
 * Add support for `PaymentMethodOptions` on `TopupParams`
-* Add support for error codes `failed_tax_calculation`, `financial_account_balance_does_not_support_currency`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, `StripeError`, and `TerminalReaderActionApiError`
+* Add support for error codes `failed_tax_calculation`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, `StripeError`, and `TerminalReaderActionApiError`
