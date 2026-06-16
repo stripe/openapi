@@ -8,6 +8,7 @@
 * Add support for `StatusDetails` on `FinancialConnections.Account`
 * ⚠️ Remove support for `StoredCredentialUsage` on `PaymentAttemptRecord.PaymentMethodDetails.Card` and `PaymentRecord.PaymentMethodDetails.Card`
 * Add support for `SetupFutureUsage` on `PaymentIntent.PaymentMethodOptions.Satispay` and `PaymentIntentPaymentMethodOptionsSatispayOptions`
+* ⚠️ Remove support for `Payto` on `PaymentMethodUpdateOptions`
 * Add support for `Customer` on `Refund`
 * Add support for `PaymentMethod` on `Refund` and `TopupCreateOptions`
 * Add support for `Satispay` on `SetupAttempt.PaymentMethodDetails`

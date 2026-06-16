@@ -1,4 +1,5 @@
 * Add support for `release_details` on `Reserve::Hold`
+* Change `Billing::CreditGrant.priority` to be required
 * Add support for `buyer_id` on `Charge::PaymentMethodDetail::Bizum`, `ConfirmationToken::PaymentMethodPreview::Bizum`, `ConfirmationToken::PaymentMethodPreview::Blik`, `PaymentAttemptRecord::PaymentMethodDetail::Bizum`, `PaymentMethod::Bizum`, `PaymentMethod::Blik`, and `PaymentRecord::PaymentMethodDetail::Bizum`
 * Add support for `transaction_link_id` on `Charge::PaymentMethodDetail::Card`
 * Add support for `fingerprint` on `Charge::PaymentMethodDetail::Pix`, `ConfirmationToken::PaymentMethodPreview::Pix`, `PaymentMethod::Pix`, and `SetupAttempt::PaymentMethodDetail::Pix`
@@ -11,6 +12,7 @@
 * ⚠️ Change `PaymentAttemptRecord::PaymentMethodDetail::Card.iin` and `PaymentRecord::PaymentMethodDetail::Card.iin` to be optional
 * ⚠️ Change `PaymentAttemptRecord::PaymentMethodDetail::Card.issuer` and `PaymentRecord::PaymentMethodDetail::Card.issuer` to be optional
 * Add support for `setup_future_usage` on `PaymentIntent::PaymentMethodOption::Satispay`, `PaymentIntentConfirmParams::PaymentMethodOption::Satispay`, `PaymentIntentCreateParams::PaymentMethodOption::Satispay`, and `PaymentIntentUpdateParams::PaymentMethodOption::Satispay`
+* ⚠️ Remove support for `payto` on `PaymentMethodUpdateParams`
 * Change `PaymentRecordReportRefundParams.refunded` to be optional
 * Add support for `customer` on `Refund`
 * Add support for `payment_method` on `Refund` and `TopupCreateParams`

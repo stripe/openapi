@@ -1,5 +1,6 @@
 * Add support for `release_details` on `Reserve.Hold`
 * ⚠️ Add support for new value `tax_fund` on enum `BalanceTransaction.type`
+* Change `Billing.CreditGrant.priority` to be required
 * Add support for `buyer_id` on `Charge.PaymentMethodDetail.Bizum`, `ConfirmationToken.PaymentMethodPreview.Bizum`, `ConfirmationToken.PaymentMethodPreview.Blik`, `PaymentAttemptRecord.PaymentMethodDetail.Bizum`, `PaymentMethod.Bizum`, `PaymentMethod.Blik`, and `PaymentRecord.PaymentMethodDetail.Bizum`
 * Add support for `transaction_link_id` on `Charge.PaymentMethodDetail.Card`
 * ⚠️ Add support for new value `sui` on enums `Charge.PaymentMethodDetail.Crypto.network`, `PaymentAttemptRecord.PaymentMethodDetail.Crypto.network`, and `PaymentRecord.PaymentMethodDetail.Crypto.network`
@@ -18,6 +19,7 @@
 * ⚠️ Change `PaymentAttemptRecord.PaymentMethodDetail.Card.iin` and `PaymentRecord.PaymentMethodDetail.Card.iin` to be optional
 * ⚠️ Change `PaymentAttemptRecord.PaymentMethodDetail.Card.issuer` and `PaymentRecord.PaymentMethodDetail.Card.issuer` to be optional
 * Add support for `setup_future_usage` on `PaymentIntent.PaymentMethodOption.Satispay`, `PaymentIntentConfirmParamsPaymentMethodOptionSatispay`, `PaymentIntentCreateParamsPaymentMethodOptionSatispay`, and `PaymentIntentModifyParamsPaymentMethodOptionSatispay`
+* ⚠️ Remove support for `payto` on `PaymentMethodModifyParams`
 * Change `PaymentRecordReportRefundParams.refunded` to be optional
 * Add support for `customer` on `Refund`
 * Add support for `payment_method` on `Refund` and `TopupCreateParams`
@@ -25,4 +27,4 @@
 * Add support for `custom_fields`, `description`, and `footer` on `Subscription.InvoiceSetting`, `SubscriptionCreateParamsInvoiceSetting`, and `SubscriptionModifyParamsInvoiceSetting`
 * Add support for `payment_method_options` on `TopupCreateParams`
 * Add support for new value `2026-06-24.dahlia` on enum `WebhookEndpointCreateParams.api_version`
-* Add support for error codes `failed_tax_calculation`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Invoice.LastFinalizationError`, `PaymentIntent.LastPaymentError`, `SetupAttempt.SetupError`, `SetupIntent.LastSetupError`, `StripeError`, and `Terminal.Reader.Action.ApiError`
+* Add support for error codes `failed_tax_calculation`, `financial_account_balance_does_not_support_currency`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Invoice.LastFinalizationError`, `PaymentIntent.LastPaymentError`, `SetupAttempt.SetupError`, `SetupIntent.LastSetupError`, `StripeError`, and `Terminal.Reader.Action.ApiError`
