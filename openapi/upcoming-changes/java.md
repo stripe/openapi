@@ -9,6 +9,7 @@
 * Add support for new value `satispay` on enums `InvoiceCreateParams.payment_settings.paymentMethodTypes`, `InvoiceUpdateParams.payment_settings.paymentMethodTypes`, `SubscriptionCreateParams.payment_settings.paymentMethodTypes`, and `SubscriptionUpdateParams.payment_settings.paymentMethodTypes`
 * ⚠️ Remove support for `storedCredentialUsage` on `PaymentAttemptRecord.payment_method_details.card` and `PaymentRecord.payment_method_details.card`
 * Add support for `setupFutureUsage` on `PaymentIntent.payment_method_options.satispay`, `PaymentIntentConfirmParams.payment_method_options.satispay`, `PaymentIntentCreateParams.payment_method_options.satispay`, and `PaymentIntentUpdateParams.payment_method_options.satispay`
+* Change `PaymentRecordReportRefundParams.refunded` to be optional
 * Add support for `customer` on `Refund`
 * Add support for `paymentMethod` on `Refund` and `TopupCreateParams`
 * Add support for `satispay` on `SetupAttempt.payment_method_details`

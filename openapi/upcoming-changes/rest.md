@@ -19,6 +19,7 @@
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.iin` and `PaymentRecord.payment_method_details.card.iin` to be optional
 * ⚠️ Change `PaymentAttemptRecord.payment_method_details.card.issuer` and `PaymentRecord.payment_method_details.card.issuer` to be optional
 * Add support for `setup_future_usage` on `PaymentIntent#confirm.payment_method_options.satispay`, `PaymentIntent#create.payment_method_options.satispay`, `PaymentIntent#update.payment_method_options.satispay`, and `PaymentIntent.payment_method_options.satispay`
+* Change `PaymentRecord#report_refund.refunded` to be optional
 * Add support for `customer` on `Refund`
 * Add support for `payment_method` on `Refund` and `Topup#create`
 * Add support for `satispay` on `SetupAttempt.payment_method_details`
