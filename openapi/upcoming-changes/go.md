@@ -7,6 +7,7 @@
 * Add support for `Fingerprint` on `ChargePaymentMethodDetailsPix`, `ConfirmationTokenPaymentMethodPreviewPix`, `PaymentMethodPix`, and `SetupAttemptPaymentMethodDetailsPix`
 * Add support for `Sunbit` on `CheckoutSessionPaymentMethodOptionsParams`, `CheckoutSessionPaymentMethodOptions`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptionsParams`, and `PaymentIntentPaymentMethodOptions`
 * Add support for `BillingCycleAnchorConfig` on `CheckoutSessionSubscriptionDataParams`
+* Add support for `WeChatPay` on `CheckoutSessionPaymentMethodOptions`
 * Add support for `MastercardCompliance` on `DisputeEvidenceDetailsEnhancedEligibility`, `DisputeEvidenceEnhancedEvidenceParams`, and `DisputeEvidenceEnhancedEvidence`
 * Add support for new value `mastercard_compliance` on enum `Dispute.EnhancedEligibilityTypes`
 * Add support for `StatusDetails` on `FinancialConnectionsAccount`
@@ -15,9 +16,7 @@
 * ⚠️ Remove support for `StoredCredentialUsage` on `PaymentAttemptRecordPaymentMethodDetailsCard` and `PaymentRecordPaymentMethodDetailsCard`
 * Add support for `SetupFutureUsage` on `PaymentIntentConfirmPaymentMethodOptionsSatispayParams`, `PaymentIntentPaymentMethodOptionsSatispayParams`, and `PaymentIntentPaymentMethodOptionsSatispay`
 * ⚠️ Remove support for `Payto` on `PaymentMethodParams`
-* Add support for `Customer` on `Refund`
-* Add support for `PaymentMethod` on `Refund` and `TopupParams`
 * Add support for `Satispay` on `SetupAttemptPaymentMethodDetails`
 * Add support for `CustomFields`, `Description`, and `Footer` on `SubscriptionInvoiceSettingsParams` and `SubscriptionInvoiceSettings`
-* Add support for `PaymentMethodOptions` on `TopupParams`
-* Add support for error codes `failed_tax_calculation`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, `StripeError`, and `TerminalReaderActionApiError`
+* Add support for `PaymentMethodOptions` and `PaymentMethod` on `TopupParams`
+* Add support for error codes `failed_tax_calculation`, `financial_account_balance_does_not_support_currency`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, `StripeError`, and `TerminalReaderActionApiError`
