@@ -26,4 +26,4 @@
 * Add support for `custom_fields`, `description`, and `footer` on `Subscription.InvoiceSetting`, `SubscriptionCreateParamsInvoiceSetting`, and `SubscriptionModifyParamsInvoiceSetting`
 * Add support for `payment_method_options` and `payment_method` on `TopupCreateParams`
 * Add support for new value `2026-06-24.dahlia` on enum `WebhookEndpointCreateParams.api_version`
-* Add support for error codes `failed_tax_calculation`, `financial_account_balance_does_not_support_currency`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Invoice.LastFinalizationError`, `PaymentIntent.LastPaymentError`, `SetupAttempt.SetupError`, `SetupIntent.LastSetupError`, `StripeError`, and `Terminal.Reader.Action.ApiError`
+* Add support for error codes `anomalous_money_movement_request`, `failed_tax_calculation`, `financial_account_balance_does_not_support_currency`, `financial_account_capability_not_enabled`, and `financial_account_capability_restricted` on `Invoice.LastFinalizationError`, `PaymentIntent.LastPaymentError`, `SetupAttempt.SetupError`, `SetupIntent.LastSetupError`, `StripeError`, and `Terminal.Reader.Action.ApiError`
