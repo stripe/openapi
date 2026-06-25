@@ -1,1 +1,4 @@
+* ⚠️ Add support for new values `bnp_paribas`, `citibank`, and `mbsb_bank` on enums `Charge.payment_method_details.fpx.bank`, `ConfirmationToken.payment_method_preview.fpx.bank`, `PaymentAttemptRecord.payment_method_details.fpx.bank`, `PaymentMethod.fpx.bank`, and `PaymentRecord.payment_method_details.fpx.bank`
+* Add support for new values `bnp_paribas`, `citibank`, and `mbsb_bank` on enums `ConfirmationToken.testHelpers#create.payment_method_data.fpx.bank`, `PaymentIntent#confirm.payment_method_data.fpx.bank`, `PaymentIntent#create.payment_method_data.fpx.bank`, `PaymentIntent#update.payment_method_data.fpx.bank`, `PaymentMethod#create.fpx.bank`, `SetupIntent#confirm.payment_method_data.fpx.bank`, `SetupIntent#create.payment_method_data.fpx.bank`, and `SetupIntent#update.payment_method_data.fpx.bank`
+* Add support for `shipping_options` on `PaymentLink#update`
 * Add support for `setup_future_usage` on `PaymentLink#update.payment_intent_data`
