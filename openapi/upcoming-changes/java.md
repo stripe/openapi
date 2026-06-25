@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for `setupFutureUsage` on `PaymentLinkUpdateParams.payment_intent_data`
