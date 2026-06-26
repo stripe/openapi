@@ -2,3 +2,4 @@
 * Add support for new values `bnp_paribas`, `citibank`, and `mbsb_bank` on enums `ConfirmationTokenCreateParamsPaymentMethodDatumFpx.bank`, `PaymentIntentConfirmParamsPaymentMethodDatumFpx.bank`, `PaymentIntentCreateParamsPaymentMethodDatumFpx.bank`, `PaymentIntentModifyParamsPaymentMethodDatumFpx.bank`, `PaymentMethodCreateParamsFpx.bank`, `SetupIntentConfirmParamsPaymentMethodDatumFpx.bank`, `SetupIntentCreateParamsPaymentMethodDatumFpx.bank`, and `SetupIntentModifyParamsPaymentMethodDatumFpx.bank`
 * Add support for `shipping_options` on `PaymentLinkModifyParams`
 * Add support for `setup_future_usage` on `PaymentLinkModifyParamsPaymentIntentDatum`
+* Add support for new value `2026-07-29.dahlia` on enum `WebhookEndpointCreateParams.api_version`
