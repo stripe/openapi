@@ -1,6 +1,9 @@
 * ⚠️ Add support for new values `bnp_paribas`, `citibank`, and `mbsb_bank` on enums `Charge.payment_method_details.fpx.bank`, `ConfirmationToken.payment_method_preview.fpx.bank`, `PaymentAttemptRecord.payment_method_details.fpx.bank`, `PaymentMethod.fpx.bank`, and `PaymentRecord.payment_method_details.fpx.bank`
+* ⚠️ Remove support for `dynamic_tax_rates` on `Checkout.SessionCreateParams.line_items[]`
 * Add support for new values `bnp_paribas`, `citibank`, and `mbsb_bank` on enums `ConfirmationTokenCreateParams.testHelpers.payment_method_data.fpx.bank`, `PaymentIntentConfirmParams.payment_method_data.fpx.bank`, `PaymentIntentCreateParams.payment_method_data.fpx.bank`, `PaymentIntentUpdateParams.payment_method_data.fpx.bank`, `PaymentMethodCreateParams.fpx.bank`, `SetupIntentConfirmParams.payment_method_data.fpx.bank`, `SetupIntentCreateParams.payment_method_data.fpx.bank`, and `SetupIntentUpdateParams.payment_method_data.fpx.bank`
 * Add support for `network` on `Dispute.payment_method_details.card`
+* Add support for `bank_account_token` on `FinancialConnections.Session`
 * Add support for `shipping_options` on `PaymentLinkUpdateParams`
 * Add support for `setup_future_usage` on `PaymentLinkUpdateParams.payment_intent_data`
+* Add support for `custom_fields`, `description`, and `footer` on `Quote.invoice_settings`, `QuoteCreateParams.invoice_settings`, `QuoteUpdateParams.invoice_settings`, `SubscriptionSchedule.default_settings.invoice_settings`, `SubscriptionSchedule.phases[].invoice_settings`, `SubscriptionScheduleCreateParams.default_settings.invoice_settings`, `SubscriptionScheduleCreateParams.phases[].invoice_settings`, `SubscriptionScheduleUpdateParams.default_settings.invoice_settings`, and `SubscriptionScheduleUpdateParams.phases[].invoice_settings`
 * Add support for new value `2026-07-29.dahlia` on enum `WebhookEndpointCreateParams.api_version`

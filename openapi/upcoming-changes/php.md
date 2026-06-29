@@ -1,4 +1,7 @@
 * Add support for new values `bnp_paribas`, `citibank`, and `mbsb_bank` on enums `Charge.payment_method_details.fpx.bank`, `ConfirmationToken.payment_method_preview.fpx.bank`, `PaymentAttemptRecord.payment_method_details.fpx.bank`, `PaymentMethod.fpx.bank`, and `PaymentRecord.payment_method_details.fpx.bank`
+* ⚠️ Remove support for `dynamic_tax_rates` on `Checkout\Session.create().$params.line_item`
 * Add support for `network` on `Dispute.payment_method_details.card`
+* Add support for `bank_account_token` on `FinancialConnections.Session`
 * Add support for `shipping_options` on `PaymentLink.update().$params`
 * Add support for `setup_future_usage` on `PaymentLink.update().$params.payment_intent_datum`
+* Add support for `custom_fields`, `description`, and `footer` on `Quote.create().$params.invoice_setting`, `Quote.invoice_settings`, `Quote.update().$params.invoice_setting`, `SubscriptionSchedule.create().$params.default_setting.invoice_setting`, `SubscriptionSchedule.create().$params.phase.invoice_setting`, `SubscriptionSchedule.default_settings.invoice_settings`, `SubscriptionSchedule.phases[].invoice_settings`, `SubscriptionSchedule.update().$params.default_setting.invoice_setting`, and `SubscriptionSchedule.update().$params.phase.invoice_setting`
