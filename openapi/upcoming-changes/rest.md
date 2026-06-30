@@ -2,6 +2,8 @@
 * ⚠️ Remove support for `dynamic_tax_rates` on `Checkout.Session#create.line_items[]`
 * Add support for new values `bnp_paribas`, `citibank`, and `mbsb_bank` on enums `ConfirmationToken.testHelpers#create.payment_method_data.fpx.bank`, `PaymentIntent#confirm.payment_method_data.fpx.bank`, `PaymentIntent#create.payment_method_data.fpx.bank`, `PaymentIntent#update.payment_method_data.fpx.bank`, `PaymentMethod#create.fpx.bank`, `SetupIntent#confirm.payment_method_data.fpx.bank`, `SetupIntent#create.payment_method_data.fpx.bank`, and `SetupIntent#update.payment_method_data.fpx.bank`
 * Add support for `network` on `Dispute.payment_method_details.card`
+* Add support for `limits` and `manual_entry` on `FinancialConnections.Session#create` and `FinancialConnections.Session`
+* Add support for `require_payment_method_support` on `FinancialConnections.Session#create.filters` and `FinancialConnections.Session.filters`
 * Add support for `bank_account_token` on `FinancialConnections.Session`
 * Add support for `shipping_options` on `PaymentLink#update`
 * Add support for `setup_future_usage` on `PaymentLink#update.payment_intent_data`

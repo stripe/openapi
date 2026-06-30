@@ -1,5 +1,7 @@
 * ⚠️ Remove support for `DynamicTaxRates` on `CheckoutSessionLineItemOptions`
 * Add support for `Network` on `Dispute.PaymentMethodDetails.Card`
+* Add support for `Limits` and `ManualEntry` on `FinancialConnections.SessionCreateOptions` and `FinancialConnections.Session`
+* Add support for `RequirePaymentMethodSupport` on `FinancialConnections.Session.Filters` and `FinancialConnectionsSessionFiltersOptions`
 * Add support for `BankAccountToken` on `FinancialConnections.Session`
 * Add support for `ShippingOptions` on `PaymentLinkUpdateOptions`
 * Add support for `SetupFutureUsage` on `PaymentLinkPaymentIntentDataOptions`
