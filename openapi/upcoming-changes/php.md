@@ -6,7 +6,8 @@
 * Add support for `limits` and `manual_entry` on `FinancialConnections.Session` and `FinancialConnections\Session.create().$params`
 * Add support for `require_payment_method_support` on `FinancialConnections.Session.filters` and `FinancialConnections\Session.create().$params.filter`
 * Add support for `bank_account_token` on `FinancialConnections.Session`
-* Add support for `shipping_options` on `PaymentLink.update().$params`
+* Add support for `consent_collection` and `shipping_options` on `PaymentLink.update().$params`
 * Add support for `custom_fields`, `description`, and `footer` on `Quote.create().$params.invoice_setting`, `Quote.invoice_settings`, `Quote.update().$params.invoice_setting`, `SubscriptionSchedule.create().$params.default_setting.invoice_setting`, `SubscriptionSchedule.create().$params.phase.invoice_setting`, `SubscriptionSchedule.default_settings.invoice_settings`, `SubscriptionSchedule.phases[].invoice_settings`, `SubscriptionSchedule.update().$params.default_setting.invoice_setting`, and `SubscriptionSchedule.update().$params.phase.invoice_setting`
 * Add support for `mass_transit_parking_tax` and `parking_tax` on `Tax.Registration.country_options.us` and `Tax\Registration.create().$params.country_option.me`
 * Add support for new values `mass_transit_parking_tax` and `parking_tax` on enum `Tax.Registration.country_options.us.type`
+* Add support for `initiated_by` on `Topup`

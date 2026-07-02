@@ -6,7 +6,8 @@
 * Add support for `Limits` and `ManualEntry` on `FinancialConnectionsSessionParams` and `FinancialConnectionsSession`
 * Add support for `RequirePaymentMethodSupport` on `FinancialConnectionsSessionFiltersParams` and `FinancialConnectionsSessionFilters`
 * Add support for `BankAccountToken` on `FinancialConnectionsSession`
-* Add support for `ShippingOptions` on `PaymentLinkParams`
+* Add support for `ConsentCollection` and `ShippingOptions` on `PaymentLinkParams`
 * Add support for `CustomFields`, `Description`, and `Footer` on `QuoteInvoiceSettingsParams`, `QuoteInvoiceSettings`, `SubscriptionScheduleDefaultSettingsInvoiceSettingsParams`, `SubscriptionScheduleDefaultSettingsInvoiceSettings`, `SubscriptionSchedulePhaseInvoiceSettingsParams`, and `SubscriptionSchedulePhaseInvoiceSettings`
 * Add support for `MassTransitParkingTax` and `ParkingTax` on `TaxRegistrationCountryOptionsUsParams` and `TaxRegistrationCountryOptionsUs`
 * Add support for new values `mass_transit_parking_tax` and `parking_tax` on enum `TaxRegistrationCountryOptionsUs.Type`
+* Add support for `InitiatedBy` on `Topup`

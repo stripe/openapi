@@ -4,6 +4,7 @@
 * Add support for `Limits` and `ManualEntry` on `FinancialConnections.SessionCreateOptions` and `FinancialConnections.Session`
 * Add support for `RequirePaymentMethodSupport` on `FinancialConnections.Session.Filters` and `FinancialConnectionsSessionFiltersOptions`
 * Add support for `BankAccountToken` on `FinancialConnections.Session`
-* Add support for `ShippingOptions` on `PaymentLinkUpdateOptions`
+* Add support for `ConsentCollection` and `ShippingOptions` on `PaymentLinkUpdateOptions`
 * Add support for `CustomFields`, `Description`, and `Footer` on `Quote.InvoiceSettings`, `QuoteInvoiceSettingsOptions`, `SubscriptionSchedule.DefaultSettings.InvoiceSettings`, `SubscriptionSchedule.Phase.InvoiceSettings`, `SubscriptionScheduleDefaultSettingsInvoiceSettingsOptions`, and `SubscriptionSchedulePhaseInvoiceSettingsOptions`
 * Add support for `MassTransitParkingTax` and `ParkingTax` on `Tax.Registration.CountryOptions.Us` and `TaxRegistrationCountryOptionsUsOptions`
+* Add support for `InitiatedBy` on `Topup`

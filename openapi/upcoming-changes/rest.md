@@ -8,9 +8,10 @@
 * Add support for `require_payment_method_support` on `FinancialConnections.Session#create.filters` and `FinancialConnections.Session.filters`
 * Add support for `bank_account_token` on `FinancialConnections.Session`
 * Add support for new values `mass_transit_parking_tax` and `parking_tax` on enums `Invoice#add_lines.lines[].tax_amounts[].tax_rate_data.tax_type`, `Invoice#update_lines.lines[].tax_amounts[].tax_rate_data.tax_type`, `InvoiceLineItem#update.tax_amounts[].tax_rate_data.tax_type`, `TaxRate#create.tax_type`, and `TaxRate#update.tax_type`
-* Add support for `shipping_options` on `PaymentLink#update`
+* Add support for `consent_collection` and `shipping_options` on `PaymentLink#update`
 * Add support for `custom_fields`, `description`, and `footer` on `Quote#create.invoice_settings`, `Quote#update.invoice_settings`, `Quote.invoice_settings`, `SubscriptionSchedule#create.default_settings.invoice_settings`, `SubscriptionSchedule#create.phases[].invoice_settings`, `SubscriptionSchedule#update.default_settings.invoice_settings`, `SubscriptionSchedule#update.phases[].invoice_settings`, `SubscriptionSchedule.default_settings.invoice_settings`, and `SubscriptionSchedule.phases[].invoice_settings`
 * Add support for `mass_transit_parking_tax` and `parking_tax` on `Tax.Registration#create.country_options.us` and `Tax.Registration.country_options.us`
 * Add support for new values `mass_transit_parking_tax` and `parking_tax` on enum `Tax.Registration#create.country_options.us.type`
 * ⚠️ Add support for new values `mass_transit_parking_tax` and `parking_tax` on enum `Tax.Registration.country_options.us.type`
+* Add support for `initiated_by` on `Topup`
 * Add support for new value `2026-07-29.dahlia` on enum `WebhookEndpoint#create.api_version`

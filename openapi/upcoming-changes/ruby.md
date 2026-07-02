@@ -4,6 +4,7 @@
 * Add support for `limits` and `manual_entry` on `FinancialConnections::SessionCreateParams` and `FinancialConnections::Session`
 * Add support for `require_payment_method_support` on `FinancialConnections::Session::Filter` and `FinancialConnections::SessionCreateParams::Filter`
 * Add support for `bank_account_token` on `FinancialConnections::Session`
-* Add support for `shipping_options` on `PaymentLinkUpdateParams`
+* Add support for `consent_collection` and `shipping_options` on `PaymentLinkUpdateParams`
 * Add support for `custom_fields`, `description`, and `footer` on `Quote::InvoiceSetting`, `QuoteCreateParams::InvoiceSetting`, `QuoteUpdateParams::InvoiceSetting`, `SubscriptionSchedule::DefaultSetting::InvoiceSetting`, `SubscriptionSchedule::Phase::InvoiceSetting`, `SubscriptionScheduleCreateParams::DefaultSetting::InvoiceSetting`, `SubscriptionScheduleCreateParams::Phase::InvoiceSetting`, `SubscriptionScheduleUpdateParams::DefaultSetting::InvoiceSetting`, and `SubscriptionScheduleUpdateParams::Phase::InvoiceSetting`
 * Add support for `mass_transit_parking_tax` and `parking_tax` on `Tax::Registration::CountryOption::Me` and `Tax::RegistrationCreateParams::CountryOption::Me`
+* Add support for `initiated_by` on `Topup`
