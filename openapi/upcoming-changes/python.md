@@ -1,4 +1,6 @@
+* Add support for `list` method on resource `PaymentRecord`
 * ⚠️ Add support for new values `mass_transit_parking_tax` and `parking_tax` on enums `Tax.Calculation.ShippingCost.TaxBreakdown.TaxRateDetail.tax_type`, `Tax.Calculation.TaxBreakdown.TaxRateDetail.tax_type`, `Tax.CalculationLineItem.TaxBreakdown.TaxRateDetail.tax_type`, `Tax.Transaction.ShippingCost.TaxBreakdown.TaxRateDetail.tax_type`, and `TaxRate.tax_type`
+* Add support for `administrative_address` and `principal_place_of_business` on `Account.Company`, `AccountCreateParamsCompany`, `AccountModifyParamsCompany`, and `TokenCreateParamsAccountCompany`
 * ⚠️ Add support for new values `bnp_paribas`, `citibank`, and `mbsb_bank` on enums `Charge.PaymentMethodDetail.Fpx.bank`, `ConfirmationToken.PaymentMethodPreview.Fpx.bank`, `PaymentAttemptRecord.PaymentMethodDetail.Fpx.bank`, `PaymentMethod.Fpx.bank`, and `PaymentRecord.PaymentMethodDetail.Fpx.bank`
 * ⚠️ Remove support for `dynamic_tax_rates` on `checkout.SessionCreateParamsLineItem`
 * Add support for `setup_future_usage` on `Checkout.Session.PaymentMethodOption.Payco`, `Checkout.Session.PaymentMethodOption.SamsungPay`, `PaymentIntent.PaymentMethodOption.Payco`, `PaymentIntent.PaymentMethodOption.SamsungPay`, `PaymentIntentConfirmParamsPaymentMethodOptionPayco`, `PaymentIntentConfirmParamsPaymentMethodOptionSamsungPay`, `PaymentIntentCreateParamsPaymentMethodOptionPayco`, `PaymentIntentCreateParamsPaymentMethodOptionSamsungPay`, `PaymentIntentModifyParamsPaymentMethodOptionPayco`, `PaymentIntentModifyParamsPaymentMethodOptionSamsungPay`, `PaymentLinkModifyParamsPaymentIntentDatum`, `checkout.SessionCreateParamsPaymentMethodOptionPayco`, and `checkout.SessionCreateParamsPaymentMethodOptionSamsungPay`
@@ -13,5 +15,5 @@
 * Add support for `mass_transit_parking_tax` and `parking_tax` on `Tax.Registration.CountryOption.Me` and `tax.RegistrationCreateParamsCountryOptionMe`
 * Add support for new values `mass_transit_parking_tax` and `parking_tax` on enum `tax.RegistrationCreateParamsCountryOptionMe.type`
 * ⚠️ Add support for new values `mass_transit_parking_tax` and `parking_tax` on enum `Tax.Registration.CountryOption.Me.type`
-* Add support for `initiated_by` on `Topup`
+* Add support for `initiated_by`, `payment_method_options`, and `payment_method` on `Topup`
 * Add support for new value `2026-07-29.dahlia` on enum `WebhookEndpointCreateParams.api_version`

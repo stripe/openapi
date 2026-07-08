@@ -1,3 +1,5 @@
+* Add support for `List` method on resource `PaymentRecord`
+* Add support for `AdministrativeAddress` and `PrincipalPlaceOfBusiness` on `Account.Company`, `AccountCompanyOptions`, and `TokenAccountCompanyOptions`
 * ⚠️ Remove support for `DynamicTaxRates` on `CheckoutSessionLineItemOptions`
 * Add support for `SetupFutureUsage` on `Checkout.Session.PaymentMethodOptions.Payco`, `Checkout.Session.PaymentMethodOptions.SamsungPay`, `CheckoutSessionPaymentMethodOptionsPaycoOptions`, `CheckoutSessionPaymentMethodOptionsSamsungPayOptions`, `PaymentIntent.PaymentMethodOptions.Payco`, `PaymentIntent.PaymentMethodOptions.SamsungPay`, `PaymentIntentPaymentMethodOptionsPaycoOptions`, `PaymentIntentPaymentMethodOptionsSamsungPayOptions`, and `PaymentLinkPaymentIntentDataOptions`
 * Add support for `Network` on `Dispute.PaymentMethodDetails.Card`
@@ -7,4 +9,4 @@
 * Add support for `ConsentCollection` and `ShippingOptions` on `PaymentLinkUpdateOptions`
 * Add support for `CustomFields`, `Description`, and `Footer` on `Quote.InvoiceSettings`, `QuoteInvoiceSettingsOptions`, `SubscriptionSchedule.DefaultSettings.InvoiceSettings`, `SubscriptionSchedule.Phase.InvoiceSettings`, `SubscriptionScheduleDefaultSettingsInvoiceSettingsOptions`, and `SubscriptionSchedulePhaseInvoiceSettingsOptions`
 * Add support for `MassTransitParkingTax` and `ParkingTax` on `Tax.Registration.CountryOptions.Us` and `TaxRegistrationCountryOptionsUsOptions`
-* Add support for `InitiatedBy` on `Topup`
+* Add support for `InitiatedBy`, `PaymentMethodOptions`, and `PaymentMethod` on `Topup`

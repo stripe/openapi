@@ -1,3 +1,5 @@
+* Add support for `list` method on resource `PaymentRecord`
+* Add support for `administrative_address` and `principal_place_of_business` on `Account.company`, `AccountCreateParams.company`, `AccountUpdateParams.company`, and `TokenCreateParams.account.company`
 * ⚠️ Add support for new values `mass_transit_parking_tax` and `parking_tax` on enums `Tax.Calculation.shipping_cost.tax_breakdown[].tax_rate_details.tax_type`, `Tax.Calculation.tax_breakdown[].tax_rate_details.tax_type`, `Tax.CalculationLineItem.tax_breakdown[].tax_rate_details.tax_type`, `Tax.Transaction.shipping_cost.tax_breakdown[].tax_rate_details.tax_type`, and `TaxRate.tax_type`
 * ⚠️ Add support for new values `bnp_paribas`, `citibank`, and `mbsb_bank` on enums `Charge.payment_method_details.fpx.bank`, `ConfirmationToken.payment_method_preview.fpx.bank`, `PaymentAttemptRecord.payment_method_details.fpx.bank`, `PaymentMethod.fpx.bank`, and `PaymentRecord.payment_method_details.fpx.bank`
 * ⚠️ Remove support for `dynamic_tax_rates` on `Checkout.SessionCreateParams.line_items[]`
@@ -13,5 +15,5 @@
 * Add support for `mass_transit_parking_tax` and `parking_tax` on `Tax.Registration.country_options.us` and `Tax.RegistrationCreateParams.country_options.us`
 * Add support for new values `mass_transit_parking_tax` and `parking_tax` on enum `Tax.RegistrationCreateParams.country_options.us.type`
 * ⚠️ Add support for new values `mass_transit_parking_tax` and `parking_tax` on enum `Tax.Registration.country_options.us.type`
-* Add support for `initiated_by` on `Topup`
+* Add support for `initiated_by`, `payment_method_options`, and `payment_method` on `Topup`
 * Add support for new value `2026-07-29.dahlia` on enum `WebhookEndpointCreateParams.api_version`

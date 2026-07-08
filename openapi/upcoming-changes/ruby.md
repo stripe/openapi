@@ -1,3 +1,5 @@
+* Add support for `list` method on resource `PaymentRecord`
+* Add support for `administrative_address` and `principal_place_of_business` on `Account::Company`, `AccountCreateParams::Company`, `AccountUpdateParams::Company`, and `TokenCreateParams::Account::Company`
 * ⚠️ Remove support for `dynamic_tax_rates` on `Checkout::SessionCreateParams::LineItem`
 * Add support for `setup_future_usage` on `Checkout::Session::PaymentMethodOption::Payco`, `Checkout::Session::PaymentMethodOption::SamsungPay`, `Checkout::SessionCreateParams::PaymentMethodOption::Payco`, `Checkout::SessionCreateParams::PaymentMethodOption::SamsungPay`, `PaymentIntent::PaymentMethodOption::Payco`, `PaymentIntent::PaymentMethodOption::SamsungPay`, `PaymentIntentConfirmParams::PaymentMethodOption::Payco`, `PaymentIntentConfirmParams::PaymentMethodOption::SamsungPay`, `PaymentIntentCreateParams::PaymentMethodOption::Payco`, `PaymentIntentCreateParams::PaymentMethodOption::SamsungPay`, `PaymentIntentUpdateParams::PaymentMethodOption::Payco`, `PaymentIntentUpdateParams::PaymentMethodOption::SamsungPay`, and `PaymentLinkUpdateParams::PaymentIntentDatum`
 * Add support for `network` on `Dispute::PaymentMethodDetail::Card`
@@ -7,4 +9,4 @@
 * Add support for `consent_collection` and `shipping_options` on `PaymentLinkUpdateParams`
 * Add support for `custom_fields`, `description`, and `footer` on `Quote::InvoiceSetting`, `QuoteCreateParams::InvoiceSetting`, `QuoteUpdateParams::InvoiceSetting`, `SubscriptionSchedule::DefaultSetting::InvoiceSetting`, `SubscriptionSchedule::Phase::InvoiceSetting`, `SubscriptionScheduleCreateParams::DefaultSetting::InvoiceSetting`, `SubscriptionScheduleCreateParams::Phase::InvoiceSetting`, `SubscriptionScheduleUpdateParams::DefaultSetting::InvoiceSetting`, and `SubscriptionScheduleUpdateParams::Phase::InvoiceSetting`
 * Add support for `mass_transit_parking_tax` and `parking_tax` on `Tax::Registration::CountryOption::Me` and `Tax::RegistrationCreateParams::CountryOption::Me`
-* Add support for `initiated_by` on `Topup`
+* Add support for `initiated_by`, `payment_method_options`, and `payment_method` on `Topup`

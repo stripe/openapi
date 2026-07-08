@@ -1,4 +1,6 @@
+* Add support for `List` method on resource `PaymentRecord`
 * Add support for new values `mass_transit_parking_tax` and `parking_tax` on enums `TaxCalculationLineItemTaxBreakdownTaxRateDetails.TaxType`, `TaxCalculationShippingCostTaxBreakdownTaxRateDetails.TaxType`, `TaxCalculationTaxBreakdownTaxRateDetails.TaxType`, `TaxRate.TaxType`, and `TaxTransactionShippingCostTaxBreakdownTaxRateDetails.TaxType`
+* Add support for `AdministrativeAddress` and `PrincipalPlaceOfBusiness` on `AccountCompanyParams`, `AccountCompany`, and `TokenAccountCompanyParams`
 * ⚠️ Remove support for `DynamicTaxRates` on `CheckoutSessionLineItemParams`
 * Add support for `SetupFutureUsage` on `CheckoutSessionPaymentMethodOptionsPaycoParams`, `CheckoutSessionPaymentMethodOptionsPayco`, `CheckoutSessionPaymentMethodOptionsSamsungPayParams`, `CheckoutSessionPaymentMethodOptionsSamsungPay`, `PaymentIntentConfirmPaymentMethodOptionsPaycoParams`, `PaymentIntentConfirmPaymentMethodOptionsSamsungPayParams`, `PaymentIntentPaymentMethodOptionsPaycoParams`, `PaymentIntentPaymentMethodOptionsPayco`, `PaymentIntentPaymentMethodOptionsSamsungPayParams`, `PaymentIntentPaymentMethodOptionsSamsungPay`, and `PaymentLinkPaymentIntentDataParams`
 * Add support for new values `bnp_paribas`, `citibank`, and `mbsb_bank` on enums `ConfirmationTokenPaymentMethodPreviewFpx.Bank`, `PaymentAttemptRecordPaymentMethodDetailsFpx.Bank`, and `PaymentRecordPaymentMethodDetailsFpx.Bank`
@@ -10,4 +12,4 @@
 * Add support for `CustomFields`, `Description`, and `Footer` on `QuoteInvoiceSettingsParams`, `QuoteInvoiceSettings`, `SubscriptionScheduleDefaultSettingsInvoiceSettingsParams`, `SubscriptionScheduleDefaultSettingsInvoiceSettings`, `SubscriptionSchedulePhaseInvoiceSettingsParams`, and `SubscriptionSchedulePhaseInvoiceSettings`
 * Add support for `MassTransitParkingTax` and `ParkingTax` on `TaxRegistrationCountryOptionsUsParams` and `TaxRegistrationCountryOptionsUs`
 * Add support for new values `mass_transit_parking_tax` and `parking_tax` on enum `TaxRegistrationCountryOptionsUs.Type`
-* Add support for `InitiatedBy` on `Topup`
+* Add support for `InitiatedBy`, `PaymentMethodOptions`, and `PaymentMethod` on `Topup`
