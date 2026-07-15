@@ -1,39 +1,27 @@
-name: 'stripe-mock'
-description: 'Starts stripe-mock'
+name: "stripe-mock"
+description: "Starts stripe-mock"
 
 inputs:
   base:
-    description: 'Base branch'
+    description: "Base branch"
     required: true
     default: "${{ github.base_ref || github.ref_name }}"
   beta:
-    description: 'Explicitly use beta'
+    description: "Explicitly use beta"
     required: false
   fixtures:
-    description: 'Path to custom fixtures file'
+    description: "Path to custom fixtures file"
     required: false
   spec_path:
-    description: 'Path to OpenAPI specification. Pass `openapi_version` OR `spec_path` OR neither, never both'
+    description: "Path to OpenAPI specification. Pass `openapi_version` OR `spec_path` OR neither, never both"
     required: false
   openapi_version:
-    description: 'Use the OpenAPI specification at a specific version. Pass `openapi_version` OR `spec_path` OR neither, never both'
+    description: "Use the OpenAPI specification at a specific version. Pass `openapi_version` OR `spec_path` OR neither, never both"
     required: false
 
 runs:
   using: "composite"
   steps:
-    - name: Pull stripe-mock Docker image
-      shell: bash
-      run: |
-        for i in 1 2 3 4 5; do
-          if docker pull stripe/stripe-mock; then
-            exit 0
-          fi
-          echo "docker pull failed (attempt $i/5), retrying in 5s..."
-          sleep 5
-        done
-        echo "docker pull failed after 5 attempts"
-        exit 1
     - name: Start stripe-mock
       shell: bash
       run: |
@@ -89,6 +77,26 @@ runs:
         SPEC_PATH_ARG=${CURRENT_OPENAPI_SPEC:+-spec $CURRENT_OPENAPI_SPEC}
         FIXTURES_ARG=${CURRENT_FIXTURES_JSON:+-fixtures $CURRENT_FIXTURES_JSON}
 
-        docker run -d -p 12111-12112:12111-12112 \
-          -v "${{ github.workspace }}:/workspace" \
-          stripe/stripe-mock $BETA_ARG $FIXTURES_ARG $SPEC_PATH_ARG && sleep 7
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          MOCK_VERSION=$(curl "${CURL_OPTS[@]}" -s https://api.github.com/repos/stripe/stripe-mock/releases/latest | jq -r '.tag_name' | sed 's/^v//')
+          curl "${CURL_OPTS[@]}" -L "https://github.com/stripe/stripe-mock/releases/download/v${MOCK_VERSION}/stripe-mock_${MOCK_VERSION}_windows_amd64.zip" -o stripe-mock.zip
+          unzip stripe-mock.zip -d stripe-mock
+          ./stripe-mock/stripe-mock.exe $BETA_ARG $FIXTURES_ARG $SPEC_PATH_ARG &
+          sleep 5
+        else
+          for i in 1 2 3 4 5; do
+            if docker pull stripe/stripe-mock; then
+              break
+            fi
+            echo "docker pull failed (attempt $i/5), retrying in 5s..."
+            sleep 5
+            if [ $i -eq 5 ]; then
+              echo "docker pull failed after 5 attempts"
+              exit 1
+            fi
+          done
+
+          docker run -d -p 12111-12112:12111-12112 \
+            -v "${{ github.workspace }}:/workspace" \
+            stripe/stripe-mock $BETA_ARG $FIXTURES_ARG $SPEC_PATH_ARG && sleep 7
+        fi
