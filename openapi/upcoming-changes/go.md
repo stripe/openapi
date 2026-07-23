@@ -1,31 +1,22 @@
-* Add support for new resource `FinancialConnectionsAuthorization`
-* Add support for `List` method on resource `PaymentRecord`
-* Add support for new values `mass_transit_parking_tax` and `parking_tax` on enums `TaxCalculationLineItemTaxBreakdownTaxRateDetails.TaxType`, `TaxCalculationShippingCostTaxBreakdownTaxRateDetails.TaxType`, `TaxCalculationTaxBreakdownTaxRateDetails.TaxType`, `TaxRate.TaxType`, and `TaxTransactionShippingCostTaxBreakdownTaxRateDetails.TaxType`
-* Add support for new value `chaps` on enums `FundingInstructionsBankTransferFinancialAddress.SupportedNetworks` and `PaymentIntentNextActionDisplayBankTransferInstructionsFinancialAddress.SupportedNetworks`
-* Add support for `SmartDisputesManagement` on `AccountSessionComponentsDisputesListFeaturesParams`, `AccountSessionComponentsDisputesListFeatures`, `AccountSessionComponentsPaymentDetailsFeaturesParams`, `AccountSessionComponentsPaymentDetailsFeatures`, `AccountSessionComponentsPaymentDisputesFeaturesParams`, `AccountSessionComponentsPaymentDisputesFeatures`, `AccountSessionComponentsPaymentsFeaturesParams`, and `AccountSessionComponentsPaymentsFeatures`
-* Add support for `AdministrativeAddress` and `PrincipalPlaceOfBusiness` on `AccountCompanyParams`, `AccountCompany`, and `TokenAccountCompanyParams`
-* Add support for `SEPADebitPayments` on `AccountSettingsParams`
-* ⚠️ Remove support for `DynamicTaxRates` on `CheckoutSessionLineItemParams`
-* Add support for `SetupFutureUsage` on `CheckoutSessionPaymentMethodOptionsPaycoParams`, `CheckoutSessionPaymentMethodOptionsPayco`, `CheckoutSessionPaymentMethodOptionsSamsungPayParams`, `CheckoutSessionPaymentMethodOptionsSamsungPay`, `PaymentIntentConfirmPaymentMethodOptionsPaycoParams`, `PaymentIntentConfirmPaymentMethodOptionsSamsungPayParams`, `PaymentIntentPaymentMethodOptionsPaycoParams`, `PaymentIntentPaymentMethodOptionsPayco`, `PaymentIntentPaymentMethodOptionsSamsungPayParams`, `PaymentIntentPaymentMethodOptionsSamsungPay`, and `PaymentLinkPaymentIntentDataParams`
-* Add support for new value `ic_nif` on enums `CheckoutSessionCustomerDetailsTaxIds.Type`, `TaxCalculationCustomerDetailsTaxId.Type`, `TaxId.Type`, and `TaxTransactionCustomerDetailsTaxId.Type`
-* Add support for new values `bnp_paribas`, `citibank`, and `mbsb_bank` on enums `ConfirmationTokenPaymentMethodPreviewFpx.Bank`, `PaymentAttemptRecordPaymentMethodDetailsFpx.Bank`, and `PaymentRecordPaymentMethodDetailsFpx.Bank`
-* Add support for `Network` on `DisputePaymentMethodDetailsCard`
-* Add support for new values `financial_connections.account.expected_deactivation_date_updated`, `financial_connections.account.supported_payment_method_types_updated`, `financial_connections.account.upcoming_deactivation`, `financial_connections.authorization.expected_deactivation_date_updated`, and `financial_connections.authorization.upcoming_deactivation` on enum `Event.Type`
-* Add support for `Limits` and `ManualEntry` on `FinancialConnectionsSessionParams` and `FinancialConnectionsSession`
-* Add support for `RequirePaymentMethodSupport` on `FinancialConnectionsSessionFiltersParams` and `FinancialConnectionsSessionFilters`
-* Add support for `BankAccountToken` on `FinancialConnectionsSession`
-* Add support for `Metadata` on `InvoiceCreatePreviewSubscriptionDetailsParams`
-* Add support for new value `alipay` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
-* Add support for new value `stripe_internal_error` on enum `IssuingAuthorizationRequestHistory.Reason`
-* Add support for `BusinessName` on `IssuingCardShippingParams` and `IssuingCardShipping`
-* Add support for new value `correos` on enum `IssuingCardShipping.Carrier`
-* Add support for `ConsentCollection` and `ShippingOptions` on `PaymentLinkParams`
-* Add support for `CustomFields`, `Description`, and `Footer` on `QuoteInvoiceSettingsParams`, `QuoteInvoiceSettings`, `SubscriptionScheduleDefaultSettingsInvoiceSettingsParams`, `SubscriptionScheduleDefaultSettingsInvoiceSettings`, `SubscriptionSchedulePhaseInvoiceSettingsParams`, and `SubscriptionSchedulePhaseInvoiceSettings`
-* Add support for `CustomerAccount` and `Customer` on `Refund`
-* Add support for `PaymentMethod` on `Refund` and `Topup`
-* Add support for `Trial` on `SubscriptionSchedulePhase`
-* Add support for `MassTransitParkingTax` and `ParkingTax` on `TaxRegistrationCountryOptionsUsParams` and `TaxRegistrationCountryOptionsUs`
-* Add support for new values `mass_transit_parking_tax` and `parking_tax` on enum `TaxRegistrationCountryOptionsUs.Type`
-* Add support for `InitiatedBy` and `PaymentMethodOptions` on `Topup`
-* Add support for snapshot events `EventTypeFinancialConnectionsAccountExpectedDeactivationDateUpdated`, `EventTypeFinancialConnectionsAccountSupportedPaymentMethodTypesUpdated`, and `EventTypeFinancialConnectionsAccountUpcomingDeactivation` with resource `FinancialConnectionsAccount`
-* Add support for snapshot events `EventTypeFinancialConnectionsAuthorizationExpectedDeactivationDateUpdated` and `EventTypeFinancialConnectionsAuthorizationUpcomingDeactivation` with resource `FinancialConnectionsAuthorization`
+* Add support for new resources `BillingAlertNotification` and `CryptoDepositAddress`
+* Add support for `Get`, `List`, and `New` methods on resource `CryptoDepositAddress`
+* Add support for `List` method on resource `BillingAlertNotification`
+* Add support for new values `partner_disabled_dispute_rate`, `partner_disabled_responsibilities`, `partner_disabled_restricted_business`, and `partner_disabled_suspected_fraud` on enums `BankAccountFutureRequirementsErrors.Code` and `BankAccountRequirementsErrors.Code`
+* Add support for new value `data_share_only` on enums `ChargePaymentMethodDetailsCardThreeDSecure.Result`, `PaymentAttemptRecordPaymentMethodDetailsCardThreeDSecure.Result`, `PaymentRecordPaymentMethodDetailsCardThreeDSecure.Result`, and `SetupAttemptPaymentMethodDetailsCardThreeDSecure.Result`
+* Add support for `Vipps` on `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentIntentPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `SetupIntentConfirmPaymentMethodDataParams`, and `SetupIntentPaymentMethodDataParams`
+* Add support for new value `vipps` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
+* Add support for new value `sui` on enum `CryptoCustomerConsumerWallet.Network`
+* Add support for new value `sui` on enum `CryptoOnrampSessionTransactionDetails.DestinationNetwork`
+* Add support for new value `sui` on enum `CryptoOnrampSessionTransactionDetails.DestinationNetworks`
+* Add support for `Sui` on `CryptoOnrampSessionTransactionDetailsWalletAddresses`
+* Add support for `UseStripeSDK` on `DelegatedCheckoutRequestedSessionConfirmParams`
+* Add support for new value `mb_way` on enums `InvoicePaymentSettings.PaymentMethodTypes`, `QuotePreviewInvoicePaymentSettings.PaymentMethodTypes`, and `SubscriptionPaymentSettings.PaymentMethodTypes`
+* Add support for `EvCharging` on `PaymentIntentAmountDetailsLineItemPaymentMethodOptionsCard`, `PaymentIntentAmountDetailsLineItemsPaymentMethodOptionsCardParams`, `PaymentIntentCaptureAmountDetailsLineItemsPaymentMethodOptionsCardParams`, `PaymentIntentConfirmAmountDetailsLineItemsPaymentMethodOptionsCardParams`, `PaymentIntentDecrementAuthorizationAmountDetailsLineItemsPaymentMethodOptionsCardParams`, and `PaymentIntentIncrementAuthorizationAmountDetailsLineItemsPaymentMethodOptionsCardParams`
+* ⚠️ Change type of `PaymentIntent.AllowedPaymentMethodTypes` from `string` to `enum`
+* Add support for new value `vipps` on enums `PaymentIntent.ExcludedPaymentMethodTypes` and `SetupIntent.ExcludedPaymentMethodTypes`
+* Add support for `TaxItems` on `PaymentIntentPaymentDetailsCarRentalDatumTotalTax`, `PaymentIntentPaymentDetailsFlightDatumTotalTax`, and `PaymentIntentPaymentDetailsLodgingDatumTotalTax`
+* ⚠️ Remove support for `Taxes` on `PaymentIntentPaymentDetailsCarRentalDatumTotalTax`, `PaymentIntentPaymentDetailsFlightDatumTotalTax`, and `PaymentIntentPaymentDetailsLodgingDatumTotalTax`
+* Add support for `Card` on `RadarPaymentEvaluationPaymentDetailsPaymentMethodDetailsParams`
+* ⚠️ Remove support for `ACSSDebit`, `AUBECSDebit`, `AfterpayClearpay`, `Alipay`, `Alma`, `AmazonPay`, `BACSDebit`, `BLIK`, `Bancontact`, `Billie`, `Bizum`, `Boleto`, `CardPresent`, `CashApp`, `Crypto`, `CustomerBalance`, `EPS`, `FPX`, `GiftCard`, `Giropay`, `Gopay`, `Grabpay`, `IDBankTransfer`, `IDEAL`, `InteracPresent`, `KakaoPay`, `Konbini`, `KrCard`, `MbWay`, `Mobilepay`, `Multibanco`, `NaverPay`, `NzBankAccount`, `OXXO`, `P24`, `PayByBank`, `PayNow`, `Payco`, `Paypal`, `Paypay`, `Payto`, `Pix`, `PromptPay`, `Qris`, `Rechnung`, `RevolutPay`, `SEPADebit`, `SamsungPay`, `Satispay`, `Scalapay`, `Shopeepay`, `Sofort`, `StripeBalance`, `Sunbit`, `Swish`, `TWINT`, `Tamara`, `USBankAccount`, `Upi`, `WeChatPay`, and `Zip` on `SharedPaymentGrantedTokenPaymentMethodDetails`
+* ⚠️ Add support for new value `shop_pay` on enum `SharedPaymentGrantedTokenPaymentMethodDetails.Type`
+* ⚠️ Remove support for values `acss_debit`, `afterpay_clearpay`, `alipay`, `alma`, `amazon_pay`, `au_becs_debit`, `bacs_debit`, `bancontact`, `billie`, `bizum`, `blik`, `boleto`, `card_present`, `cashapp`, `crypto`, `custom`, `customer_balance`, `eps`, `fpx`, `gift_card`, `giropay`, `gopay`, `grabpay`, `id_bank_transfer`, `ideal`, `interac_present`, `kakao_pay`, `konbini`, `kr_card`, `mb_way`, `mobilepay`, `multibanco`, `naver_pay`, `nz_bank_account`, `oxxo`, `p24`, `pay_by_bank`, `payco`, `paynow`, `paypal`, `paypay`, `payto`, `pix`, `promptpay`, `qris`, `rechnung`, `revolut_pay`, `samsung_pay`, `satispay`, `scalapay`, `sepa_debit`, `shopeepay`, `sofort`, `stripe_balance`, `sunbit`, `swish`, `tamara`, `twint`, `upi`, `us_bank_account`, `wechat_pay`, and `zip` from enum `SharedPaymentGrantedTokenPaymentMethodDetails.Type`
