@@ -1,20 +1,13 @@
-* Add support for new resource `FinancialConnections::Authorization`
-* Add support for `list` method on resource `PaymentRecord`
-* Add support for `smart_disputes_management` on `AccountSession::Component::DisputesList::Feature`, `AccountSession::Component::Payment::Feature`, `AccountSession::Component::PaymentDetail::Feature`, `AccountSession::Component::PaymentDispute::Feature`, `AccountSessionCreateParams::Component::DisputesList::Feature`, `AccountSessionCreateParams::Component::Payment::Feature`, `AccountSessionCreateParams::Component::PaymentDetail::Feature`, and `AccountSessionCreateParams::Component::PaymentDispute::Feature`
-* Add support for `administrative_address` and `principal_place_of_business` on `Account::Company`, `AccountCreateParams::Company`, `AccountUpdateParams::Company`, and `TokenCreateParams::Account::Company`
-* Add support for `sepa_debit_payments` on `AccountUpdateParams::Setting`
-* ⚠️ Remove support for `dynamic_tax_rates` on `Checkout::SessionCreateParams::LineItem`
-* Add support for `setup_future_usage` on `Checkout::Session::PaymentMethodOption::Payco`, `Checkout::Session::PaymentMethodOption::SamsungPay`, `Checkout::SessionCreateParams::PaymentMethodOption::Payco`, `Checkout::SessionCreateParams::PaymentMethodOption::SamsungPay`, `PaymentIntent::PaymentMethodOption::Payco`, `PaymentIntent::PaymentMethodOption::SamsungPay`, `PaymentIntentConfirmParams::PaymentMethodOption::Payco`, `PaymentIntentConfirmParams::PaymentMethodOption::SamsungPay`, `PaymentIntentCreateParams::PaymentMethodOption::Payco`, `PaymentIntentCreateParams::PaymentMethodOption::SamsungPay`, `PaymentIntentUpdateParams::PaymentMethodOption::Payco`, `PaymentIntentUpdateParams::PaymentMethodOption::SamsungPay`, and `PaymentLinkUpdateParams::PaymentIntentDatum`
-* Add support for `network` on `Dispute::PaymentMethodDetail::Card`
-* Add support for `limits` and `manual_entry` on `FinancialConnections::SessionCreateParams` and `FinancialConnections::Session`
-* Add support for `require_payment_method_support` on `FinancialConnections::Session::Filter` and `FinancialConnections::SessionCreateParams::Filter`
-* Add support for `bank_account_token` on `FinancialConnections::Session`
-* Add support for `metadata` on `InvoiceCreatePreviewParams::SubscriptionDetail`
-* Add support for `business_name` on `Issuing::Card::Shipping`, `Issuing::CardCreateParams::Shipping`, and `Issuing::CardUpdateParams::Shipping`
-* Add support for `consent_collection` and `shipping_options` on `PaymentLinkUpdateParams`
-* Add support for `custom_fields`, `description`, and `footer` on `Quote::InvoiceSetting`, `QuoteCreateParams::InvoiceSetting`, `QuoteUpdateParams::InvoiceSetting`, `SubscriptionSchedule::DefaultSetting::InvoiceSetting`, `SubscriptionSchedule::Phase::InvoiceSetting`, `SubscriptionScheduleCreateParams::DefaultSetting::InvoiceSetting`, `SubscriptionScheduleCreateParams::Phase::InvoiceSetting`, `SubscriptionScheduleUpdateParams::DefaultSetting::InvoiceSetting`, and `SubscriptionScheduleUpdateParams::Phase::InvoiceSetting`
-* Add support for `customer_account` and `customer` on `Refund`
-* Add support for `payment_method` on `Refund` and `Topup`
-* Add support for `trial` on `SubscriptionSchedule::Phase`
-* Add support for `mass_transit_parking_tax` and `parking_tax` on `Tax::Registration::CountryOption::Me` and `Tax::RegistrationCreateParams::CountryOption::Me`
-* Add support for `initiated_by` and `payment_method_options` on `Topup`
+* Add support for new resources `Billing::AlertNotification` and `Crypto::DepositAddress`
+* Add support for `create`, `list`, and `retrieve` methods on resource `Crypto::DepositAddress`
+* Add support for `list` method on resource `Billing::AlertNotification`
+* Add support for `vipps` on `ConfirmationToken::PaymentMethodPreview`, `ConfirmationTokenCreateParams::PaymentMethodDatum`, `PaymentIntent::PaymentMethodOption`, `PaymentIntentConfirmParams::PaymentMethodDatum`, `PaymentIntentConfirmParams::PaymentMethodOption`, `PaymentIntentCreateParams::PaymentMethodDatum`, `PaymentIntentCreateParams::PaymentMethodOption`, `PaymentIntentUpdateParams::PaymentMethodDatum`, `PaymentIntentUpdateParams::PaymentMethodOption`, `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, `PaymentMethodConfiguration`, `PaymentMethodCreateParams`, `PaymentMethod`, `SetupIntentConfirmParams::PaymentMethodDatum`, `SetupIntentCreateParams::PaymentMethodDatum`, and `SetupIntentUpdateParams::PaymentMethodDatum`
+* Add support for `sui` on `Crypto::OnrampSession::TransactionDetail::WalletAddress`
+* Add support for `use_stripe_sdk` on `DelegatedCheckout::RequestedSessionConfirmParams`
+* Add support for `ev_charging` on `PaymentIntentAmountDetailsLineItem::PaymentMethodOption::Card`, `PaymentIntentCaptureParams::AmountDetail::LineItem::PaymentMethodOption::Card`, `PaymentIntentConfirmParams::AmountDetail::LineItem::PaymentMethodOption::Card`, `PaymentIntentCreateParams::AmountDetail::LineItem::PaymentMethodOption::Card`, `PaymentIntentDecrementAuthorizationParams::AmountDetail::LineItem::PaymentMethodOption::Card`, `PaymentIntentIncrementAuthorizationParams::AmountDetail::LineItem::PaymentMethodOption::Card`, and `PaymentIntentUpdateParams::AmountDetail::LineItem::PaymentMethodOption::Card`
+* Add support for `tax_items` on `PaymentIntent::PaymentDetail::CarRentalDatum::Total::Tax`, `PaymentIntent::PaymentDetail::FlightDatum::Total::Tax`, and `PaymentIntent::PaymentDetail::LodgingDatum::Total::Tax`
+* ⚠️ Remove support for `taxes` on `PaymentIntent::PaymentDetail::CarRentalDatum::Total::Tax`, `PaymentIntent::PaymentDetail::FlightDatum::Total::Tax`, and `PaymentIntent::PaymentDetail::LodgingDatum::Total::Tax`
+* Change `PaymentRecordCreateParams.closed` to be optional
+* Change `PaymentRecordCreateParams.funded` to be optional
+* Add support for `card` on `Radar::PaymentEvaluationCreateParams::PaymentDetail::PaymentMethodDetail`
+* ⚠️ Remove support for `acss_debit`, `afterpay_clearpay`, `alipay`, `alma`, `amazon_pay`, `au_becs_debit`, `bacs_debit`, `bancontact`, `billie`, `bizum`, `blik`, `boleto`, `card_present`, `cashapp`, `crypto`, `customer_balance`, `eps`, `fpx`, `gift_card`, `giropay`, `gopay`, `grabpay`, `id_bank_transfer`, `ideal`, `interac_present`, `kakao_pay`, `konbini`, `kr_card`, `mb_way`, `mobilepay`, `multibanco`, `naver_pay`, `nz_bank_account`, `oxxo`, `p24`, `pay_by_bank`, `payco`, `paynow`, `paypal`, `paypay`, `payto`, `pix`, `promptpay`, `qris`, `rechnung`, `revolut_pay`, `samsung_pay`, `satispay`, `scalapay`, `sepa_debit`, `shopeepay`, `sofort`, `stripe_balance`, `sunbit`, `swish`, `tamara`, `twint`, `upi`, `us_bank_account`, `wechat_pay`, and `zip` on `SharedPayment::GrantedToken::PaymentMethodDetail`

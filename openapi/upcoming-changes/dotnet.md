@@ -1,22 +1,11 @@
-* Add support for new resource `FinancialConnections.Authorization`
-* Add support for `List` method on resource `PaymentRecord`
-* Add support for `SmartDisputesManagement` on `AccountSession.Components.DisputesList.Features`, `AccountSession.Components.PaymentDetails.Features`, `AccountSession.Components.PaymentDisputes.Features`, `AccountSession.Components.Payments.Features`, `AccountSessionComponentsDisputesListFeaturesOptions`, `AccountSessionComponentsPaymentDetailsFeaturesOptions`, `AccountSessionComponentsPaymentDisputesFeaturesOptions`, and `AccountSessionComponentsPaymentsFeaturesOptions`
-* Add support for `AdministrativeAddress` and `PrincipalPlaceOfBusiness` on `Account.Company`, `AccountCompanyOptions`, and `TokenAccountCompanyOptions`
-* Add support for `SepaDebitPayments` on `AccountSettingsOptions`
-* ⚠️ Remove support for `DynamicTaxRates` on `CheckoutSessionLineItemOptions`
-* Add support for `SetupFutureUsage` on `Checkout.Session.PaymentMethodOptions.Payco`, `Checkout.Session.PaymentMethodOptions.SamsungPay`, `CheckoutSessionPaymentMethodOptionsPaycoOptions`, `CheckoutSessionPaymentMethodOptionsSamsungPayOptions`, `PaymentIntent.PaymentMethodOptions.Payco`, `PaymentIntent.PaymentMethodOptions.SamsungPay`, `PaymentIntentPaymentMethodOptionsPaycoOptions`, `PaymentIntentPaymentMethodOptionsSamsungPayOptions`, and `PaymentLinkPaymentIntentDataOptions`
-* Add support for `Network` on `Dispute.PaymentMethodDetails.Card`
-* Add support for `Limits` and `ManualEntry` on `FinancialConnections.SessionCreateOptions` and `FinancialConnections.Session`
-* Add support for `RequirePaymentMethodSupport` on `FinancialConnections.Session.Filters` and `FinancialConnectionsSessionFiltersOptions`
-* Add support for `BankAccountToken` on `FinancialConnections.Session`
-* Add support for `Metadata` on `InvoiceSubscriptionDetailsOptions`
-* Add support for `BusinessName` on `Issuing.Card.Shipping` and `IssuingCardShippingOptions`
-* Add support for `ConsentCollection` and `ShippingOptions` on `PaymentLinkUpdateOptions`
-* Add support for `CustomFields`, `Description`, and `Footer` on `Quote.InvoiceSettings`, `QuoteInvoiceSettingsOptions`, `SubscriptionSchedule.DefaultSettings.InvoiceSettings`, `SubscriptionSchedule.Phase.InvoiceSettings`, `SubscriptionScheduleDefaultSettingsInvoiceSettingsOptions`, and `SubscriptionSchedulePhaseInvoiceSettingsOptions`
-* Add support for `CustomerAccount` and `Customer` on `Refund`
-* Add support for `PaymentMethod` on `Refund` and `Topup`
-* Add support for `Trial` on `SubscriptionSchedule.Phase`
-* Add support for `MassTransitParkingTax` and `ParkingTax` on `Tax.Registration.CountryOptions.Us` and `TaxRegistrationCountryOptionsUsOptions`
-* Add support for `InitiatedBy` and `PaymentMethodOptions` on `Topup`
-* Add support for snapshot events `FinancialConnectionsAccountExpectedDeactivationDateUpdated`, `FinancialConnectionsAccountSupportedPaymentMethodTypesUpdated`, and `FinancialConnectionsAccountUpcomingDeactivation` with resource `FinancialConnections.Account`
-* Add support for snapshot events `FinancialConnectionsAuthorizationExpectedDeactivationDateUpdated` and `FinancialConnectionsAuthorizationUpcomingDeactivation` with resource `FinancialConnections.Authorization`
+* Add support for new resources `Billing.AlertNotification` and `Crypto.DepositAddress`
+* Add support for `Create`, `Get`, and `List` methods on resource `Crypto.DepositAddress`
+* Add support for `List` method on resource `Billing.AlertNotification`
+* Add support for `Vipps` on `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, and `SetupIntentPaymentMethodDataOptions`
+* Add support for `Sui` on `Crypto.OnrampSession.TransactionDetails.WalletAddresses`
+* Add support for `UseStripeSdk` on `DelegatedCheckout.RequestedSessionConfirmOptions`
+* Add support for `EvCharging` on `PaymentIntentAmountDetailsLineItem.PaymentMethodOptions.Card` and `PaymentIntentAmountDetailsLineItemsPaymentMethodOptionsCardOptions`
+* Add support for `TaxItems` on `PaymentIntent.PaymentDetails.CarRentalDatum.Total.Tax`, `PaymentIntent.PaymentDetails.FlightDatum.Total.Tax`, and `PaymentIntent.PaymentDetails.LodgingDatum.Total.Tax`
+* ⚠️ Remove support for `Taxes` on `PaymentIntent.PaymentDetails.CarRentalDatum.Total.Tax`, `PaymentIntent.PaymentDetails.FlightDatum.Total.Tax`, and `PaymentIntent.PaymentDetails.LodgingDatum.Total.Tax`
+* Add support for `Card` on `RadarPaymentEvaluationPaymentDetailsPaymentMethodDetailsOptions`
+* ⚠️ Remove support for `AcssDebit`, `AfterpayClearpay`, `Alipay`, `Alma`, `AmazonPay`, `AuBecsDebit`, `BacsDebit`, `Bancontact`, `Billie`, `Bizum`, `Blik`, `Boleto`, `CardPresent`, `Cashapp`, `Crypto`, `CustomerBalance`, `Eps`, `Fpx`, `GiftCard`, `Giropay`, `Gopay`, `Grabpay`, `IdBankTransfer`, `Ideal`, `InteracPresent`, `KakaoPay`, `Konbini`, `KrCard`, `MbWay`, `Mobilepay`, `Multibanco`, `NaverPay`, `NzBankAccount`, `Oxxo`, `P24`, `PayByBank`, `Payco`, `Paynow`, `Paypal`, `Paypay`, `Payto`, `Pix`, `Promptpay`, `Qris`, `Rechnung`, `RevolutPay`, `SamsungPay`, `Satispay`, `Scalapay`, `SepaDebit`, `Shopeepay`, `Sofort`, `StripeBalance`, `Sunbit`, `Swish`, `Tamara`, `Twint`, `Upi`, `UsBankAccount`, `WechatPay`, and `Zip` on `SharedPayment.GrantedToken.PaymentMethodDetails`
