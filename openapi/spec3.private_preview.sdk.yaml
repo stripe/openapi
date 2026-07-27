@@ -2736,7 +2736,7 @@ components:
           description: >-
             Fields that need to be resolved to keep the account enabled. If not
             resolved by `current_deadline`, these fields will appear in
-            `past_due` as well, and the account is disabled.
+            `past_due` as well, and the account will be disabled.
           items:
             maxLength: 5000
             type: string
@@ -10476,6 +10476,21 @@ components:
       x-expandableFields: []
       x-stripeMostCommon:
         - id
+    billing_credit_grants_resource_applicable_rate_card:
+      description: ''
+      properties:
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+        - id
+      title: BillingCreditGrantsResourceApplicableRateCard
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - id
     billing_credit_grants_resource_balance_balance_update_details:
       description: ''
       properties:
@@ -10805,15 +10820,27 @@ components:
             $ref: >-
               #/components/schemas/billing_credit_grants_resource_applicable_price
           type: array
+        rate_cards:
+          description: >-
+            The rate cards that credit grants can apply to. The credit grant
+            applies to any metered item billed under one of these rate cards.
+            Cannot be used in combination with `price_type`, `prices`, or
+            `billable_items`.
+          items:
+            $ref: >-
+              #/components/schemas/billing_credit_grants_resource_applicable_rate_card
+          type: array
       title: BillingCreditGrantsResourceScope
       type: object
       x-expandableFields:
         - billable_items
         - prices
+        - rate_cards
       x-stripeMostCommon:
         - billable_items
         - price_type
         - prices
+        - rate_cards
     billing_details:
       description: ''
       properties:
@@ -22611,6 +22638,7 @@ components:
             - solana
             - stellar
             - sui
+            - tempo
             - worldchain
           type: string
           x-stripeBypassValidation: true
@@ -22637,6 +22665,8 @@ components:
                 value: stellar
               - description: Sui network.
                 value: sui
+              - description: Tempo network.
+                value: tempo
               - description: Worldchain network.
                 value: worldchain
         object:
@@ -23472,6 +23502,11 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        tempo:
+          description: A Tempo address
+          maxLength: 5000
+          nullable: true
+          type: string
         worldchain:
           description: A worldchain address
           maxLength: 5000
@@ -23488,6 +23523,7 @@ components:
         - solana
         - stellar
         - sui
+        - tempo
         - worldchain
       title: CryptocurrencyOnrampResourcePublicFixedWalletAddresses
       type: object
@@ -23504,6 +23540,7 @@ components:
         - solana
         - stellar
         - sui
+        - tempo
         - worldchain
     cryptocurrency_onramp_resource_public_transaction_details:
       description: ''
@@ -23605,6 +23642,7 @@ components:
             - solana
             - stellar
             - sui
+            - tempo
             - worldchain
           nullable: true
           type: string
@@ -23630,6 +23668,8 @@ components:
                 value: stellar
               - description: Sui network.
                 value: sui
+              - description: Tempo network.
+                value: tempo
               - description: Worldchain network.
                 value: worldchain
         destination_networks:
@@ -23648,6 +23688,7 @@ components:
               - solana
               - stellar
               - sui
+              - tempo
               - worldchain
             type: string
             x-stripeBypassValidation: true
@@ -23672,6 +23713,8 @@ components:
                   value: stellar
                 - description: Sui network.
                   value: sui
+                - description: Tempo network.
+                  value: tempo
                 - description: Worldchain network.
                   value: worldchain
           nullable: true
@@ -35559,8 +35602,8 @@ components:
 
         - View Stripe's current exchange rate for any given currency pair.
 
-        - Extend quoted rates for a 1-hour period or a 24-hour period,
-        minimizing uncertainty from FX fluctuations.
+        - Extend quoted rates for up to a 24-hour period, minimizing uncertainty
+        from FX fluctuations.
 
         - Preview the FX fees Stripe will charge on your FX transaction,
         allowing you to anticipate specific settlement amounts before payment
@@ -35581,10 +35624,8 @@ components:
           type: string
         lock_duration:
           description: >-
-            The duration the exchange rate quote remains valid from creation
-            time. Allowed values are none, hour, and day. Note that for the test
-            mode API available in alpha, you can request an extended quote, but
-            it won't be usable for any transactions.
+            The duration that the quote is locked for, from creation time. The
+            quote will be usable for the duration specified.
           enum:
             - day
             - five_minutes
@@ -37171,15 +37212,12 @@ components:
         brand:
           description: The brand of the gift card.
           enum:
-            - fiserv_valuelink
-            - givex
             - svs
           type: string
+          x-stripeBypassValidation: true
           x-stripeEnum:
             kind: semi_open
             values:
-              - value: fiserv_valuelink
-              - value: givex
               - description: SVS gift card.
                 value: svs
         exp_month:
@@ -37342,6 +37380,7 @@ components:
             - stolen_card
             - suspected_fraud
             - timeout
+            - try_again_later
           nullable: true
           type: string
           x-stripeEnum:
@@ -37389,6 +37428,8 @@ components:
                 value: suspected_fraud
               - description: The operation timed out.
                 value: timeout
+              - description: The operation failed but may succeed if retried.
+                value: try_again_later
         gift_card:
           anyOf:
             - maxLength: 5000
@@ -38604,6 +38645,34 @@ components:
         - email
         - name
         - phone
+    insights_resources_payment_evaluation_card_details:
+      description: Card details attached to this payment evaluation.
+      properties:
+        exp_month:
+          description: Two-digit number representing the card's expiration month.
+          type: integer
+        exp_year:
+          description: Four-digit number representing the card's expiration year.
+          type: integer
+        first6:
+          description: First six digits of the card number.
+          maxLength: 5000
+          type: string
+        last4:
+          description: Last four digits of the card number.
+          maxLength: 5000
+          type: string
+      required:
+        - exp_month
+        - exp_year
+      title: InsightsResourcesPaymentEvaluationCardDetails
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - exp_month
+        - exp_year
+        - first6
+        - last4
     insights_resources_payment_evaluation_client_device_metadata:
       description: Client device metadata attached to this payment evaluation.
       properties:
@@ -39185,6 +39254,12 @@ components:
                 #/components/schemas/insights_resources_payment_evaluation_billing_details
           description: Billing information associated with the payment evaluation.
           nullable: true
+        card:
+          anyOf:
+            - $ref: >-
+                #/components/schemas/insights_resources_payment_evaluation_card_details
+          description: Card details associated with the payment evaluation.
+          nullable: true
         payment_method:
           anyOf:
             - maxLength: 5000
@@ -39201,9 +39276,11 @@ components:
       type: object
       x-expandableFields:
         - billing_details
+        - card
         - payment_method
       x-stripeMostCommon:
         - billing_details
+        - card
         - payment_method
     insights_resources_payment_evaluation_refunded:
       description: Refunded Event details attached to this payment evaluation.
@@ -43740,6 +43817,13 @@ components:
             Typically this information is received from the merchant after the
             authorization has been approved and the fuel dispensed.
           nullable: true
+        healthcare:
+          anyOf:
+            - $ref: '#/components/schemas/issuing_authorization_healthcare_data'
+          description: >-
+            Details about the IIAS FSA/HSA healthcare amounts on this
+            authorization.
+          nullable: true
         id:
           description: Unique identifier for the object.
           maxLength: 5000
@@ -43946,6 +44030,7 @@ components:
         - fleet
         - fraud_challenges
         - fuel
+        - healthcare
         - merchant_data
         - network_data
         - pending_request
@@ -44177,6 +44262,21 @@ components:
           x-expansionResources:
             oneOf:
               - $ref: '#/components/schemas/issuing.personalization_design'
+        product_code:
+          description: >-
+            The product code the card is currently enrolled under.
+            `product_graduation_state` reflects any in-flight product graduation
+            and whether the card network has confirmed it.
+          maxLength: 5000
+          nullable: true
+          type: string
+        product_graduation_state:
+          anyOf:
+            - $ref: '#/components/schemas/issuing_card_product_graduation_state'
+          description: >-
+            State of the product graduation request on this card. Only present
+            when a product graduation has been requested.
+          nullable: true
         program:
           description: The program that this card belongs to — will not be nil.
           maxLength: 5000
@@ -44338,6 +44438,7 @@ components:
         - latest_fraud_warning
         - lifecycle_controls
         - personalization_design
+        - product_graduation_state
         - redaction
         - replaced_by
         - replacement_for
@@ -47026,6 +47127,95 @@ components:
         - type
         - unit
         - unit_cost_decimal
+    issuing_authorization_healthcare_data:
+      description: ''
+      properties:
+        clinic_amount:
+          description: >-
+            Clinic and urgent care sub-amount for Visa only. Null if the
+            merchant did not include this amount.
+          nullable: true
+          type: integer
+        currency:
+          description: >-
+            Three-letter [ISO currency
+            code](https://www.iso.org/iso-4217-currency-codes.html), in
+            lowercase. Must be a [supported
+            currency](https://stripe.com/docs/currencies).
+          format: currency
+          type: string
+        dental_amount:
+          description: >-
+            Dental care sub-amount for Visa only. Null if the merchant did not
+            include this amount.
+          nullable: true
+          type: integer
+        prescription_amount:
+          description: >-
+            Prescription drug sub-amount. Null if the merchant did not include
+            this amount.
+          nullable: true
+          type: integer
+        purchase_type:
+          description: >-
+            The type of healthcare transaction. `medical` for FSA/HSA-eligible
+            healthcare purchases; `transit_for_healthcare` for FSA/HSA-eligible
+            transit for healthcare purchases.
+          enum:
+            - medical
+            - transit_for_healthcare
+          nullable: true
+          type: string
+          x-stripeEnum:
+            kind: closed
+            values:
+              - description: FSA/HSA-eligible healthcare purchase.
+                value: medical
+              - description: FSA/HSA-eligible transit for healthcare purchase.
+                value: transit_for_healthcare
+        total_qualified_amount:
+          description: Total FSA/HSA-eligible amount in the smallest currency unit.
+          type: integer
+        verification_status:
+          description: >-
+            IIAS verification status from the merchant terminal. For Visa, this
+            value will always be iias_verified.
+          enum:
+            - iias_merchant_exempt
+            - iias_merchant_not_certified
+            - iias_verified
+            - not_verified
+          nullable: true
+          type: string
+          x-stripeEnum:
+            kind: closed
+            values:
+              - description: The merchant is exempt from IIAS certification.
+                value: iias_merchant_exempt
+              - description: The merchant is not IIAS certified.
+                value: iias_merchant_not_certified
+              - description: The merchant terminal verified IIAS eligibility.
+                value: iias_verified
+              - description: These items are not IIAS verified
+                value: not_verified
+        vision_amount:
+          description: >-
+            Vision/optical sub-amount. Null if the merchant did not include this
+            amount.
+          nullable: true
+          type: integer
+      title: IssuingAuthorizationHealthcareData
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - clinic_amount
+        - currency
+        - dental_amount
+        - prescription_amount
+        - purchase_type
+        - total_qualified_amount
+        - verification_status
+        - vision_amount
     issuing_authorization_merchant_data:
       description: ''
       properties:
@@ -49704,6 +49894,49 @@ components:
         - cancel_after
       x-stripeMostCommon:
         - cancel_after
+    issuing_card_product_graduation_state:
+      description: ''
+      properties:
+        state:
+          description: >-
+            Status of the product graduation request. `pending` while awaiting
+            card network confirmation, `succeeded` once confirmed, `failed` if
+            rejected.
+          enum:
+            - failed
+            - pending
+            - succeeded
+          type: string
+          x-stripeEnum:
+            kind: closed
+            values:
+              - description: >-
+                  The card network rejected the product graduation request. You
+                  may retry by calling the card update endpoint with the same
+                  product_code.
+                value: failed
+              - description: >-
+                  The product graduation request has been submitted and is
+                  awaiting confirmation from the card network.
+                value: pending
+              - description: >-
+                  The card network has confirmed the product graduation. The
+                  card has been promoted to the requested product tier.
+                value: succeeded
+        target_product_code:
+          description: The product code the card graduation is targeting.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+        - state
+        - target_product_code
+      title: IssuingCardProductGraduationState
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - state
+        - target_product_code
     issuing_card_redaction:
       description: ''
       properties:
@@ -57732,6 +57965,7 @@ components:
         - phone
         - principal_place_of_business
         - registration_date
+        - representative_declaration
         - structure
         - tax_id_provided
         - tax_id_registrar
@@ -65171,37 +65405,6 @@ components:
       title: PaymentFlowsPrivatePaymentMethodsAlipay
       type: object
       x-expandableFields: []
-    payment_flows_private_payment_methods_alipay_details:
-      description: ''
-      properties:
-        buyer_id:
-          description: >-
-            Uniquely identifies this particular Alipay account. You can use this
-            attribute to check whether two Alipay accounts are the same.
-          maxLength: 5000
-          type: string
-        fingerprint:
-          description: >-
-            Uniquely identifies this particular Alipay account. You can use this
-            attribute to check whether two Alipay accounts are the same.
-          maxLength: 5000
-          nullable: true
-          type: string
-        transaction_id:
-          description: Transaction ID of this particular Alipay transaction.
-          maxLength: 5000
-          nullable: true
-          type: string
-      required:
-        - fingerprint
-        - transaction_id
-      title: PaymentFlowsPrivatePaymentMethodsAlipayDetails
-      type: object
-      x-expandableFields: []
-      x-stripeMostCommon:
-        - buyer_id
-        - fingerprint
-        - transaction_id
     payment_flows_private_payment_methods_card_details_api_resource_enterprise_features_account_funding_account_funding:
       description: ''
       properties:
@@ -76189,8 +76392,7 @@ components:
         afterpay_clearpay:
           $ref: '#/components/schemas/payment_method_details_afterpay_clearpay'
         alipay:
-          $ref: >-
-            #/components/schemas/payment_flows_private_payment_methods_alipay_details
+          $ref: '#/components/schemas/payment_method_details_alipay'
         alma:
           $ref: '#/components/schemas/payment_method_details_alma'
         amazon_pay:
@@ -76677,6 +76879,37 @@ components:
       x-stripeMostCommon:
         - order_id
         - reference
+    payment_method_details_alipay:
+      description: ''
+      properties:
+        buyer_id:
+          description: >-
+            Uniquely identifies this particular Alipay account. You can use this
+            attribute to check whether two Alipay accounts are the same.
+          maxLength: 5000
+          type: string
+        fingerprint:
+          description: >-
+            Uniquely identifies this particular Alipay account. You can use this
+            attribute to check whether two Alipay accounts are the same.
+          maxLength: 5000
+          nullable: true
+          type: string
+        transaction_id:
+          description: Transaction ID of this particular Alipay transaction.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+        - fingerprint
+        - transaction_id
+      title: payment_method_details_alipay
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - buyer_id
+        - fingerprint
+        - transaction_id
     payment_method_details_alma:
       description: ''
       properties:
@@ -82326,15 +82559,12 @@ components:
         brand:
           description: The brand of the gift card.
           enum:
-            - fiserv_valuelink
-            - givex
             - svs
           type: string
+          x-stripeBypassValidation: true
           x-stripeEnum:
             kind: semi_open
             values:
-              - value: fiserv_valuelink
-              - value: givex
               - description: SVS gift card.
                 value: svs
         exp_month:
@@ -93248,6 +93478,7 @@ components:
             - subscription_update
             - subscription_update_confirm
           type: string
+          x-stripeBypassValidation: true
           x-stripeEnum:
             kind: open
             values:
@@ -107879,8 +108110,8 @@ components:
             - card
             - klarna
             - link
-            - shop_pay
           type: string
+          x-stripeBypassValidation: true
           x-stripeEnum:
             kind: open
             values:
@@ -107904,10 +108135,6 @@ components:
                   UK)](https://docs.stripe.com/payments/link) allows customers
                   to pay with their saved payment details.
                 value: link
-              - description: >-
-                  [Shop Pay](https://docs.stripe.com/payments/shop-pay) is a buy
-                  now, pay later payment method from Shopify.
-                value: shop_pay
       required:
         - billing_details
         - type
@@ -129332,7 +129559,7 @@ info:
   termsOfService: 'https://stripe.com/us/terms/'
   title: Stripe API
   version: >-
-    2026-07-08.preview; embedded_connect_beta=v2;
+    2026-07-29.preview; embedded_connect_beta=v2;
     server_side_confirmation_beta=v1; orders_beta=v4; unified_accounts_beta=v1;
     terminal_collect_inputs_beta=v2; terminal_collect_confirm_beta=v1;
     retrieve_tax_forms_beta=v1; checkout_server_update_beta=v1;
@@ -132994,6 +133221,7 @@ paths:
                     - apple_pay_later_payments
                     - au_bank_transfer_payments
                     - au_becs_debit_payments
+                    - australia_sender
                     - automatic_indirect_tax
                     - bacs_debit_payments
                     - bacs_debit_stripe_sun_payments
@@ -133030,6 +133258,7 @@ paths:
                     - crypto_payments
                     - crypto_transfers
                     - crypto_transfers_platform
+                    - demo_onboarding
                     - demo_pay_payments
                     - dispute_arbitration
                     - dispute_deflection
@@ -133121,8 +133350,10 @@ paths:
                     - sequra_payments
                     - shop_pay_payments
                     - shopeepay_payments
+                    - skip_the_dishes
                     - sofort_payments
                     - south_korea_market_payments
+                    - steam_marketplace
                     - storer_financial_addresses_bank_accounts
                     - storer_holds_currencies_eur
                     - storer_holds_currencies_eurc
@@ -133643,6 +133874,7 @@ paths:
                     - registered_email
                     - registration_date
                     - registration_number
+                    - representative_declaration
                     - stock_data
                     - structure
                     - tax_deduction_account_number
@@ -134016,10 +134248,10 @@ paths:
                       type: object
                       x-stripeMostCommon:
                         - files
-                    proof_of_registration:
+                    proof_of_ultimate_beneficial_ownership:
                       description: >-
-                        One or more documents showing the company’s proof of
-                        registration with the national business registry.
+                        One or more documents that demonstrate proof of ultimate
+                        beneficial ownership.
                       properties:
                         files:
                           description: >-
@@ -134050,10 +134282,10 @@ paths:
                       x-stripeMostCommon:
                         - files
                         - signer
-                    proof_of_ultimate_beneficial_ownership:
+                    proof_of_registration:
                       description: >-
-                        One or more documents that demonstrate proof of ultimate
-                        beneficial ownership.
+                        One or more documents showing the company’s proof of
+                        registration with the national business registry.
                       properties:
                         files:
                           description: >-
@@ -134101,7 +134333,6 @@ paths:
                     - proof_of_business_activity
                     - proof_of_business_activity_additional
                     - proof_of_partnership_deed
-                    - proof_of_registration
                     - proof_of_ultimate_beneficial_ownership
                 email:
                   description: >-
@@ -137372,6 +137603,7 @@ paths:
                     - apple_pay_later_payments
                     - au_bank_transfer_payments
                     - au_becs_debit_payments
+                    - australia_sender
                     - automatic_indirect_tax
                     - bacs_debit_payments
                     - bacs_debit_stripe_sun_payments
@@ -137408,6 +137640,7 @@ paths:
                     - crypto_payments
                     - crypto_transfers
                     - crypto_transfers_platform
+                    - demo_onboarding
                     - demo_pay_payments
                     - dispute_arbitration
                     - dispute_deflection
@@ -137499,8 +137732,10 @@ paths:
                     - sequra_payments
                     - shop_pay_payments
                     - shopeepay_payments
+                    - skip_the_dishes
                     - sofort_payments
                     - south_korea_market_payments
+                    - steam_marketplace
                     - storer_financial_addresses_bank_accounts
                     - storer_holds_currencies_eur
                     - storer_holds_currencies_eurc
@@ -138020,6 +138255,7 @@ paths:
                     - registered_email
                     - registration_date
                     - registration_number
+                    - representative_declaration
                     - stock_data
                     - structure
                     - tax_deduction_account_number
@@ -138242,7 +138478,7 @@ paths:
                       x-stripeMostCommon:
                         - files
                         - signer
-                  title: documents_specs
+                  title: documents_specs_update
                   type: object
                   x-stripeMostCommon:
                     - articles_of_association
@@ -146682,12 +146918,32 @@ paths:
                       x-stripeMostCommon:
                         - id
                     type: array
+                  rate_cards:
+                    description: >-
+                      A list of rate cards that the credit grant can apply to.
+                      The credit grant applies to any metered item billed under
+                      one of these rate cards. Cannot be used in combination
+                      with `price_type`, `prices`, or `billable_items`.
+                    items:
+                      properties:
+                        id:
+                          description: The rate card ID this credit grant should apply to.
+                          maxLength: 5000
+                          type: string
+                      required:
+                        - id
+                      title: applicable_rate_card_param
+                      type: object
+                      x-stripeMostCommon:
+                        - id
+                    type: array
                 title: scope_param
                 type: object
                 x-stripeMostCommon:
                   - billable_items
                   - price_type
                   - prices
+                  - rate_cards
               credit_grant:
                 description: The credit grant for which to fetch credit balance summary.
                 maxLength: 5000
@@ -147211,12 +147467,35 @@ paths:
                             x-stripeMostCommon:
                               - id
                           type: array
+                        rate_cards:
+                          description: >-
+                            A list of rate cards that the credit grant can apply
+                            to. The credit grant applies to any metered item
+                            billed under one of these rate cards. Cannot be used
+                            in combination with `price_type`, `prices`, or
+                            `billable_items`.
+                          items:
+                            properties:
+                              id:
+                                description: >-
+                                  The rate card ID this credit grant should
+                                  apply to.
+                                maxLength: 5000
+                                type: string
+                            required:
+                              - id
+                            title: applicable_rate_card_param
+                            type: object
+                            x-stripeMostCommon:
+                              - id
+                          type: array
                       title: scope_param
                       type: object
                       x-stripeMostCommon:
                         - billable_items
                         - price_type
                         - prices
+                        - rate_cards
                   required:
                     - scope
                   title: applicability_config_param
@@ -150375,6 +150654,7 @@ paths:
                         - subscription_update
                         - subscription_update_confirm
                       type: string
+                      x-stripeBypassValidation: true
                       x-stripeEnum:
                         kind: open
                         values:
@@ -172866,6 +173146,7 @@ paths:
               - solana
               - stellar
               - sui
+              - tempo
               - worldchain
             type: string
             x-stripeBypassValidation: true
@@ -172890,6 +173171,8 @@ paths:
                   value: stellar
                 - description: Sui network.
                   value: sui
+                - description: Tempo network.
+                  value: tempo
                 - description: Worldchain network.
                   value: worldchain
           style: form
@@ -173206,6 +173489,7 @@ paths:
                     - solana
                     - stellar
                     - sui
+                    - tempo
                     - worldchain
                   type: string
                   x-stripeBypassValidation: true
@@ -173230,6 +173514,8 @@ paths:
                         value: stellar
                       - description: Sui network.
                         value: sui
+                      - description: Tempo network.
+                        value: tempo
                       - description: Worldchain network.
                         value: worldchain
                 destination_networks:
@@ -173256,6 +173542,7 @@ paths:
                       - solana
                       - stellar
                       - sui
+                      - tempo
                       - worldchain
                     type: string
                     x-stripeBypassValidation: true
@@ -173280,6 +173567,8 @@ paths:
                           value: stellar
                         - description: Sui network.
                           value: sui
+                        - description: Tempo network.
+                          value: tempo
                         - description: Worldchain network.
                           value: worldchain
                   type: array
@@ -173688,6 +173977,7 @@ paths:
               - solana
               - stellar
               - sui
+              - tempo
               - worldchain
             type: string
             x-stripeBypassValidation: true
@@ -173712,6 +174002,8 @@ paths:
                   value: stellar
                 - description: Sui network.
                   value: sui
+                - description: Tempo network.
+                  value: tempo
                 - description: Worldchain network.
                   value: worldchain
           style: form
@@ -184617,9 +184909,8 @@ paths:
   /v1/fx_quotes:
     get:
       description: >-
-        <p>Returns a list of FX quotes that have been issued. The FX quotes are
-        returned in sorted order, with the most recent FX quotes appearing
-        first.</p>
+        <p>Returns a list of active FX quotes. The FX quotes are returned in
+        sorted order, with the most recent FX quotes appearing first.</p>
       operationId: GetFxQuotes
       parameters:
         - description: >-
@@ -185007,15 +185298,12 @@ paths:
                 brand:
                   description: The brand of the gift card.
                   enum:
-                    - fiserv_valuelink
-                    - givex
                     - svs
                   type: string
+                  x-stripeBypassValidation: true
                   x-stripeEnum:
                     kind: semi_open
                     values:
-                      - value: fiserv_valuelink
-                      - value: givex
                       - description: SVS gift card.
                         value: svs
                 exp_month:
@@ -206050,6 +206338,10 @@ paths:
                   type: object
                   x-stripeMostCommon:
                     - encrypted_number
+                product_code:
+                  description: The product code to request via product graduation.
+                  maxLength: 5000
+                  type: string
                 replacement_for:
                   description: The card this is meant to be a replacement for (if any).
                   maxLength: 5000
@@ -207529,6 +207821,10 @@ paths:
                   type: object
                   x-stripeMostCommon:
                     - encrypted_number
+                product_code:
+                  description: The product code to request via product graduation.
+                  maxLength: 5000
+                  type: string
                 shipping:
                   description: Updated shipping information for the card.
                   properties:
@@ -317144,9 +317440,13 @@ paths:
                             - phone
                         card:
                           description: >-
-                            Masked PAN card details to use as an alternative to
-                            a payment_method token.
+                            Masked/raw PAN card details to use as an alternative
+                            to a payment_method token.
                           properties:
+                            cvc:
+                              description: The CVC of the card.
+                              maxLength: 5000
+                              type: string
                             exp_month:
                               description: >-
                                 Two-digit number representing the card's
@@ -317165,18 +317465,24 @@ paths:
                               description: Last four digits of the card number.
                               maxLength: 5000
                               type: string
+                            number:
+                              description: >-
+                                The card number, as a string without any
+                                separators.
+                              maxLength: 5000
+                              type: string
                           required:
                             - exp_month
                             - exp_year
-                            - first6
-                            - last4
-                          title: masked_pan_card_param
+                          title: card_details_param
                           type: object
                           x-stripeMostCommon:
+                            - cvc
                             - exp_month
                             - exp_year
                             - first6
                             - last4
+                            - number
                         payment_method:
                           description: >-
                             ID of the payment method used in this payment
@@ -319387,6 +319693,7 @@ paths:
                     - account
                     - account_status
                     - account_type
+                    - account_types
                     - accounts
                     - acquirer_bin
                     - acquirer_mid
@@ -319402,15 +319709,21 @@ paths:
                     - aggregation_type
                     - all
                     - amount
+                    - amount_due
                     - amount_filter
                     - amount_max
                     - amount_min
                     - apple_subscriber
                     - application_id
                     - async_fees
+                    - attempt_count
                     - authentication_outcome_detailed
+                    - automatic_tax_enabled
+                    - automatically_finalizes_at
                     - billable_item_ids
                     - billing_analytics_metric
+                    - billing_cadence
+                    - billing_reason
                     - browser_fingerprinting
                     - bucket_seconds
                     - bucket_size
@@ -319421,6 +319734,10 @@ paths:
                     - campaign_id
                     - campaigns
                     - capability
+                    - capability_status_card_payments
+                    - capability_status_issuing
+                    - capability_status_payouts
+                    - capability_status_treasury
                     - capability_type
                     - card_bin
                     - card_brand
@@ -319443,6 +319760,7 @@ paths:
                     - cof
                     - cohort
                     - cohort_file
+                    - collection_method
                     - columns
                     - compare_to_end
                     - compare_to_start
@@ -319480,7 +319798,10 @@ paths:
                     - cursor_payment_attempt_id
                     - customer
                     - customer_created
+                    - customer_email
                     - customer_filters
+                    - customer_metadata
+                    - customer_name
                     - customer_query
                     - customer_type
                     - customers
@@ -319497,9 +319818,11 @@ paths:
                     - display_date
                     - display_mode
                     - dispute_reasons
+                    - dispute_status
                     - dispute_volume
                     - distribution_type
                     - download
+                    - due_date
                     - dynamic_reporting_params
                     - earliest_due_on
                     - email
@@ -319527,6 +319850,7 @@ paths:
                     - filter_values
                     - filters
                     - filters_by_meter
+                    - finalized_at
                     - financial_account
                     - financial_account_currency_pairs
                     - financial_accounts
@@ -319626,6 +319950,7 @@ paths:
                     - message_category
                     - metadata
                     - metadata_columns
+                    - metadata_key_filter
                     - meter_id
                     - meter_ids
                     - metric
@@ -319639,9 +319964,11 @@ paths:
                     - nci_mcc
                     - net_volume
                     - network_types
+                    - next_payment_attempt
                     - numeric_filters
                     - object_definition_id
                     - offset
+                    - on_behalf_of
                     - onboarding_status
                     - onboarding_surface
                     - orchestrated_commerce_agreements
@@ -319649,6 +319976,8 @@ paths:
                     - outstanding_balance
                     - override_artificial_delay
                     - pagination_direction
+                    - paid
+                    - pause_collection
                     - payment_balance_filter
                     - payment_count
                     - payment_link_id
@@ -319707,7 +320036,9 @@ paths:
                     - recon_space_type
                     - reconciliation_status
                     - reference_id
+                    - refund_status
                     - refund_volume
+                    - regions
                     - rejected_by
                     - rejected_on
                     - rejected_reason
@@ -319715,6 +320046,7 @@ paths:
                     - reporting_string_filters
                     - requirement
                     - requirement_collection
+                    - requirement_group
                     - requirement_status
                     - requirement_trigger
                     - requirement_update
@@ -319762,6 +320094,8 @@ paths:
                     - statuses
                     - string_filters
                     - string_query
+                    - subscription
+                    - subscription_status
                     - sync_fees
                     - t30_pv_active
                     - t365_pv_active
@@ -319785,6 +320119,7 @@ paths:
                     - time_granularity
                     - timezone
                     - top_connected_accounts
+                    - total
                     - total_charges_per_card_number_daily
                     - total_fraud_volume
                     - total_legitimate_volume
@@ -323677,6 +324012,7 @@ paths:
                         - commerce_type
                         - mandate_options
                         - moto
+                        - name_verification
                         - network
                         - network_token
                         - request_name_verification
@@ -327433,6 +327769,7 @@ paths:
                         - commerce_type
                         - mandate_options
                         - moto
+                        - name_verification
                         - network
                         - network_token
                         - request_name_verification
@@ -330782,6 +331119,7 @@ paths:
                         - commerce_type
                         - mandate_options
                         - moto
+                        - name_verification
                         - network
                         - network_token
                         - request_name_verification
@@ -347765,8 +348103,7 @@ paths:
                 cancel_at_period_end:
                   description: >-
                     Indicate whether this subscription should cancel at the end
-                    of the current period (`current_period_end`). Defaults to
-                    `false`.
+                    of the current period (`current_period_end`).
                   type: boolean
                 cancellation_details:
                   description: Details about why this subscription was cancelled
@@ -351531,10 +351868,13 @@ paths:
                     - tax_code
                 tax_date:
                   description: >-
-                    Timestamp of date at which the tax rules and rates in effect
-                    applies for the calculation. Measured in seconds since the
-                    Unix epoch. Can be up to 48 hours in the past, and up to 48
-                    hours in the future.
+                    The calculation uses the tax rules and rates that are in
+                    effect at this timestamp. You can use a date up to 31 days
+                    in the past or up to 31 days in the future. If you use a
+                    future date, Stripe doesn't guarantee that the expected tax
+                    rules and rate being used match the actual rules and rate
+                    that will be in effect on that date. We deploy tax changes
+                    before their effective date, but not within a fixed window.
                   type: integer
               required:
                 - currency
@@ -362113,8 +362453,11 @@ paths:
                     - country
                     - line1
                     - line2
+                    - line3
+                    - line4
                     - postal_code
                     - state
+                    - town
                 address_kana:
                   description: >-
                     The Kana variation of the full address of the location
@@ -363291,15 +363634,12 @@ paths:
                 brand:
                   description: The brand of the gift card.
                   enum:
-                    - fiserv_valuelink
-                    - givex
                     - svs
                   type: string
+                  x-stripeBypassValidation: true
                   x-stripeEnum:
                     kind: semi_open
                     values:
-                      - value: fiserv_valuelink
-                      - value: givex
                       - description: SVS gift card.
                         value: svs
                 expand:
@@ -363411,15 +363751,12 @@ paths:
                 brand:
                   description: The brand of the gift card.
                   enum:
-                    - fiserv_valuelink
-                    - givex
                     - svs
                   type: string
+                  x-stripeBypassValidation: true
                   x-stripeEnum:
                     kind: semi_open
                     values:
-                      - value: fiserv_valuelink
-                      - value: givex
                       - description: SVS gift card.
                         value: svs
                 expand:
@@ -363479,15 +363816,12 @@ paths:
                 brand:
                   description: The brand of the gift card.
                   enum:
-                    - fiserv_valuelink
-                    - givex
                     - svs
                   type: string
+                  x-stripeBypassValidation: true
                   x-stripeEnum:
                     kind: semi_open
                     values:
-                      - value: fiserv_valuelink
-                      - value: givex
                       - description: SVS gift card.
                         value: svs
                 expand:
@@ -363834,15 +364168,12 @@ paths:
                     gift_card_brand:
                       description: The gift card brand to use in the transaction.
                       enum:
-                        - fiserv_valuelink
-                        - givex
                         - svs
                       type: string
+                      x-stripeBypassValidation: true
                       x-stripeEnum:
                         kind: semi_open
                         values:
-                          - value: fiserv_valuelink
-                          - value: givex
                           - description: SVS gift card.
                             value: svs
                     skip_tipping:
@@ -364066,15 +364397,12 @@ paths:
                     gift_card_brand:
                       description: The gift card brand to use in the transaction.
                       enum:
-                        - fiserv_valuelink
-                        - givex
                         - svs
                       type: string
+                      x-stripeBypassValidation: true
                       x-stripeEnum:
                         kind: semi_open
                         values:
-                          - value: fiserv_valuelink
-                          - value: givex
                           - description: SVS gift card.
                             value: svs
                     return_url:
@@ -364390,15 +364718,12 @@ paths:
                 brand:
                   description: The brand of the gift card.
                   enum:
-                    - fiserv_valuelink
-                    - givex
                     - svs
                   type: string
+                  x-stripeBypassValidation: true
                   x-stripeEnum:
                     kind: semi_open
                     values:
-                      - value: fiserv_valuelink
-                      - value: givex
                       - description: SVS gift card.
                         value: svs
                 currency:
@@ -371388,6 +371713,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              gift_card:
+                explode: true
+                style: deepObject
               interac_present:
                 explode: true
                 style: deepObject
@@ -371446,6 +371774,32 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                gift_card:
+                  description: Simulated data for the gift_card payment method.
+                  properties:
+                    brand:
+                      description: The brand of the gift card.
+                      enum:
+                        - svs
+                      type: string
+                      x-stripeBypassValidation: true
+                      x-stripeEnum:
+                        kind: semi_open
+                        values:
+                          - description: SVS gift card.
+                            value: svs
+                    track_2:
+                      description: Simulated track 2 data for the gift card payment method.
+                      maxLength: 5000
+                      type: string
+                  required:
+                    - brand
+                    - track_2
+                  title: gift_card_params
+                  type: object
+                  x-stripeMostCommon:
+                    - brand
+                    - track_2
                 interac_present:
                   description: Simulated data for the interac_present payment method.
                   properties:
@@ -371462,6 +371816,7 @@ paths:
                   enum:
                     - card
                     - card_present
+                    - gift_card
                     - interac_present
                   type: string
                   x-stripeEnum:
@@ -371471,6 +371826,8 @@ paths:
                         value: card
                       - description: Simulate a `card_present` payment method
                         value: card_present
+                      - description: Simulate a `gift_card` payment method
+                        value: gift_card
                       - description: Simulate a `interac_present` payment method
                         value: interac_present
               type: object
@@ -373686,6 +374043,7 @@ paths:
                         - registered_email
                         - registration_date
                         - registration_number
+                        - representative_declaration
                         - stock_data
                         - structure
                         - tax_deduction_account_number
