@@ -1,1 +1,2 @@
+* Add support for `SequraPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
 * Add support for error code `capability_not_active` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, `StripeError`, and `TerminalReaderActionApiError`

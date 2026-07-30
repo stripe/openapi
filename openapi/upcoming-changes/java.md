@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for `sequraPayments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
