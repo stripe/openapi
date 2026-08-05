@@ -13276,6 +13276,26 @@
               ]
             }
           },
+          "feedback_option": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/billing.feedback_options"
+              }
+            ],
+            "description": "Customized feedback options that provide deeper insight into why the subscription was canceled, if the subscription was canceled explicitly by the user.",
+            "nullable": true,
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/billing.feedback_options"
+                }
+              ]
+            }
+          },
           "reason": {
             "description": "Why this subscription was canceled.",
             "enum": [
@@ -13316,10 +13336,13 @@
         ],
         "title": "CancellationDetails",
         "type": "object",
-        "x-expandableFields": [],
+        "x-expandableFields": [
+          "feedback_option"
+        ],
         "x-stripeMostCommon": [
           "comment",
           "feedback",
+          "feedback_option",
           "reason"
         ]
       },
@@ -19529,6 +19552,33 @@
           "target_date"
         ]
       },
+      "checkout_sequra_payment_method_options": {
+        "description": "",
+        "properties": {
+          "capture_method": {
+            "description": "Controls when the funds will be captured from the customer's account.",
+            "enum": [
+              "manual"
+            ],
+            "type": "string",
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "description": "Use `manual` if you intend to place the funds on hold and want to override the top-level `capture_method` value for this payment method.",
+                  "value": "manual"
+                }
+              ]
+            }
+          }
+        },
+        "title": "CheckoutSequraPaymentMethodOptions",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "capture_method"
+        ]
+      },
       "checkout_session_payment_method_options": {
         "description": "",
         "properties": {
@@ -19652,6 +19702,9 @@
           "sepa_debit": {
             "$ref": "#/components/schemas/checkout_sepa_debit_payment_method_options"
           },
+          "sequra": {
+            "$ref": "#/components/schemas/checkout_sequra_payment_method_options"
+          },
           "sofort": {
             "$ref": "#/components/schemas/checkout_sofort_payment_method_options"
           },
@@ -19717,6 +19770,7 @@
           "satispay",
           "scalapay",
           "sepa_debit",
+          "sequra",
           "sofort",
           "sunbit",
           "swish",
@@ -19766,6 +19820,7 @@
           "satispay",
           "scalapay",
           "sepa_debit",
+          "sequra",
           "sofort",
           "sunbit",
           "swish",
@@ -37489,6 +37544,26 @@
             "balance_transaction_source"
           ]
         }
+      },
+      "feedback_options_status_transitions": {
+        "description": "",
+        "properties": {
+          "deactivated_at": {
+            "description": "The time the feedback option was deactivated, if any. Measured in seconds since Unix epoch.",
+            "format": "unix-time",
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "deactivated_at"
+        ],
+        "title": "FeedbackOptionsStatusTransitions",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "deactivated_at"
+        ]
       },
       "file": {
         "description": "This object represents files hosted on Stripe's servers. You can upload\nfiles with the [create file](https://api.stripe.com#create_file) request\n(for example, when uploading dispute evidence). Stripe also\ncreates files independently (for example, the results of a [Sigma scheduled\nquery](#scheduled_queries)).\n\nRelated guide: [File upload guide](https://docs.stripe.com/file-upload)",
@@ -109188,6 +109263,29 @@
             "description": "Whether the feature is enabled.",
             "type": "boolean"
           },
+          "feedback_options": {
+            "description": "The IDs of custom feedback options configured for this cancellation reason.",
+            "items": {
+              "anyOf": [
+                {
+                  "maxLength": 5000,
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/components/schemas/billing.feedback_options"
+                }
+              ],
+              "x-expansionResources": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/billing.feedback_options"
+                  }
+                ]
+              }
+            },
+            "nullable": true,
+            "type": "array"
+          },
           "options": {
             "description": "Which cancellation reasons will be given as options to the customer.",
             "items": {
@@ -109249,9 +109347,12 @@
         ],
         "title": "PortalSubscriptionCancellationReason",
         "type": "object",
-        "x-expandableFields": [],
+        "x-expandableFields": [
+          "feedback_options"
+        ],
         "x-stripeMostCommon": [
           "enabled",
+          "feedback_options",
           "options"
         ]
       },
@@ -151926,6 +152027,83 @@
           "has_collection_class": true,
           "in_package": ""
         }
+      },
+      "billing.feedback_options": {
+        "description": "A resource for the feedback options model (for custom cancellation reasons)",
+        "properties": {
+          "description": {
+            "description": "An arbitrary string attached to the object. Often useful for displaying to users.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique identifier for the object.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "livemode": {
+            "description": "If the object exists in live mode, the value is `true`. If the object exists in test mode, the value is `false`.",
+            "type": "boolean"
+          },
+          "object": {
+            "description": "String representing the object's type. Objects of the same type share the same value.",
+            "enum": [
+              "billing.feedback_options"
+            ],
+            "type": "string"
+          },
+          "status": {
+            "description": "The feedback option's status.",
+            "enum": [
+              "active",
+              "inactive"
+            ],
+            "type": "string",
+            "x-stripeEnum": {
+              "kind": "closed",
+              "values": [
+                {
+                  "description": "The feedback option is active and available for use.",
+                  "value": "active"
+                },
+                {
+                  "description": "The feedback option has been deactivated and is no longer available for use.",
+                  "value": "inactive"
+                }
+              ]
+            }
+          },
+          "status_transitions": {
+            "$ref": "#/components/schemas/feedback_options_status_transitions"
+          }
+        },
+        "required": [
+          "description",
+          "id",
+          "livemode",
+          "object",
+          "status",
+          "status_transitions"
+        ],
+        "title": "FeedbackOptionsFeedbackOptions",
+        "type": "object",
+        "x-expandableFields": [
+          "status_transitions"
+        ],
+        "x-resourceId": "billing.feedback_options",
+        "x-stripeMostCommon": [
+          "description",
+          "id",
+          "livemode",
+          "object",
+          "status",
+          "status_transitions"
+        ],
+        "x-stripeResource": {
+          "class_name": "FeedbackOptions",
+          "has_collection_class": true,
+          "in_package": "Billing"
+        }
       }
     },
     "securitySchemes": {
@@ -155935,6 +156113,7 @@
                         ]
                       },
                       "administrative_address": {
+                        "description": "The location where the business is administered.",
                         "properties": {
                           "city": {
                             "description": "City, district, suburb, town, or village.",
@@ -156093,6 +156272,7 @@
                         "type": "string"
                       },
                       "principal_place_of_business": {
+                        "description": "The primary location where the business conducts operations.",
                         "properties": {
                           "city": {
                             "description": "City, district, suburb, town, or village.",
@@ -160302,6 +160482,7 @@
                         ]
                       },
                       "administrative_address": {
+                        "description": "The location where the business is administered.",
                         "properties": {
                           "city": {
                             "description": "City, district, suburb, town, or village.",
@@ -160460,6 +160641,7 @@
                         "type": "string"
                       },
                       "principal_place_of_business": {
+                        "description": "The primary location where the business conducts operations.",
                         "properties": {
                           "city": {
                             "description": "City, district, suburb, town, or village.",
@@ -186695,7 +186877,7 @@
                           "description": "Configuration for `type=dropdown` fields.",
                           "properties": {
                             "default_value": {
-                              "description": "The value that pre-fills the field on the payment page.Must match a `value` in the `options` array.",
+                              "description": "The value that pre-fills the field on the payment page. Must match a `value` in the `options` array.",
                               "maxLength": 100,
                               "type": "string"
                             },
@@ -192176,6 +192358,7 @@
                       "satispay",
                       "scalapay",
                       "sepa_debit",
+                      "sequra",
                       "sofort",
                       "sunbit",
                       "swish",
@@ -194734,7 +194917,7 @@
                               "country",
                               "line1"
                             ],
-                            "title": "address",
+                            "title": "shipping_address",
                             "type": "object",
                             "x-stripeMostCommon": [
                               "city",
@@ -320884,7 +321067,7 @@
                           "description": "Configuration for `type=dropdown` fields.",
                           "properties": {
                             "default_value": {
-                              "description": "The value that pre-fills the field on the payment page.Must match a `value` in the `options` array.",
+                              "description": "The value that pre-fills the field on the payment page. Must match a `value` in the `options` array.",
                               "maxLength": 100,
                               "type": "string"
                             },
@@ -323899,7 +324082,7 @@
                               "description": "Configuration for `type=dropdown` fields.",
                               "properties": {
                                 "default_value": {
-                                  "description": "The value that pre-fills the field on the payment page.Must match a `value` in the `options` array.",
+                                  "description": "The value that pre-fills the field on the payment page. Must match a `value` in the `options` array.",
                                   "maxLength": 100,
                                   "type": "string"
                                 },
@@ -362343,6 +362526,8 @@
                       "authentication_outcome_detailed",
                       "automatic_tax_enabled",
                       "automatically_finalizes_at",
+                      "balance_source_types",
+                      "balance_types",
                       "billable_item_ids",
                       "billing_analytics_metric",
                       "billing_cadence",
@@ -362477,10 +362662,12 @@
                       "finalized_at",
                       "financial_account",
                       "financial_account_currency_pairs",
+                      "financial_account_types",
                       "financial_accounts",
                       "first_day_of_week_offset",
                       "first_payment",
                       "flow_granted",
+                      "flow_ids",
                       "flow_preference",
                       "flow_types",
                       "gateway_conversation_avs_outcome",
@@ -426188,6 +426375,7 @@
                             ]
                           },
                           "administrative_address": {
+                            "description": "The location where the business is administered.",
                             "properties": {
                               "city": {
                                 "description": "City, district, suburb, town, or village.",
@@ -426350,6 +426538,7 @@
                             "type": "string"
                           },
                           "principal_place_of_business": {
+                            "description": "The primary location where the business conducts operations.",
                             "properties": {
                               "city": {
                                 "description": "City, district, suburb, town, or village.",
