@@ -40352,6 +40352,11 @@ components:
             will equal `customer.address`. Once the invoice is finalized, this
             field will no longer be updated.
           nullable: true
+        customer_balance:
+          anyOf:
+            - $ref: '#/components/schemas/invoices_resource_customer_balance'
+          description: The customer balance amounts applied to this invoice.
+          nullable: true
         customer_email:
           description: >-
             The customer's email. Until the invoice is finalized, this field
@@ -40955,6 +40960,7 @@ components:
         - custom_fields
         - customer
         - customer_address
+        - customer_balance
         - customer_shipping
         - customer_tax_ids
         - default_margins
@@ -43562,6 +43568,35 @@ components:
       x-stripeMostCommon:
         - client_secret
         - type
+    invoices_resource_customer_balance:
+      description: ''
+      properties:
+        applied_balance:
+          description: >-
+            The total amount of customer balance applied to this invoice
+            (automatically + manually).
+          type: integer
+        automatically_applied_balance:
+          description: >-
+            The amount of customer balance automatically applied during invoice
+            finalization.
+          type: integer
+        manually_applied_balance:
+          description: >-
+            The total amount of customer balance manually applied after
+            finalization.
+          type: integer
+      required:
+        - applied_balance
+        - automatically_applied_balance
+        - manually_applied_balance
+      title: InvoicesResourceCustomerBalance
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - applied_balance
+        - automatically_applied_balance
+        - manually_applied_balance
     invoices_resource_from_invoice:
       description: ''
       properties:
@@ -98127,6 +98162,11 @@ components:
             will equal `customer.address`. Once the invoice is finalized, this
             field will no longer be updated.
           nullable: true
+        customer_balance:
+          anyOf:
+            - $ref: '#/components/schemas/invoices_resource_customer_balance'
+          description: The customer balance amounts applied to this invoice.
+          nullable: true
         customer_email:
           description: >-
             The customer's email. Until the invoice is finalized, this field
@@ -98717,6 +98757,7 @@ components:
         - confirmation_secret
         - custom_fields
         - customer_address
+        - customer_balance
         - customer_shipping
         - customer_tax_ids
         - default_margins
@@ -178055,6 +178096,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              applied_to_invoice:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -178069,6 +178113,23 @@ paths:
                     The integer amount in **cents (or local equivalent)** to
                     apply to the customer's credit balance.
                   type: integer
+                applied_to_invoice:
+                  description: >-
+                    Required when `type` is `applied_to_invoice`. Identifies the
+                    open invoice to apply the customer's balance credit to.
+                  properties:
+                    invoice:
+                      description: >-
+                        The ID of the open invoice to apply the customer's
+                        balance credit to.
+                      maxLength: 5000
+                      type: string
+                  required:
+                    - invoice
+                  title: applied_to_invoice_params
+                  type: object
+                  x-stripeMostCommon:
+                    - invoice
                 currency:
                   description: >-
                     Three-letter [ISO currency
@@ -178108,6 +178169,22 @@ paths:
                     format. Individual keys can be unset by posting an empty
                     value to them. All keys can be unset by posting an empty
                     value to `metadata`.
+                type:
+                  description: >-
+                    The type of customer balance transaction. Defaults to
+                    `adjustment`, which updates the customer's credit balance
+                    directly. Set to `applied_to_invoice` to apply the
+                    customer's existing credit balance to a specific open
+                    invoice.
+                  enum:
+                    - adjustment
+                    - applied_to_invoice
+                  type: string
+                  x-stripeEnum:
+                    kind: open
+                    values:
+                      - value: adjustment
+                      - value: applied_to_invoice
               required:
                 - amount
                 - currency
