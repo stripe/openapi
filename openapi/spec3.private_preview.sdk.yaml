@@ -5867,6 +5867,7 @@ components:
             - weekly
           nullable: true
           type: string
+          x-stripeBypassValidation: true
           x-stripeEnum:
             kind: open
             values:
@@ -22693,6 +22694,7 @@ components:
             - avalanche
             - base
             - bitcoin
+            - celo
             - ethereum
             - optimism
             - polygon
@@ -22714,6 +22716,8 @@ components:
                 value: base
               - description: Bitcoin network.
                 value: bitcoin
+              - description: Celo network.
+                value: celo
               - description: Ethereum network.
                 value: ethereum
               - description: Optimism network.
@@ -23547,6 +23551,11 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        celo:
+          description: A Celo address
+          maxLength: 5000
+          nullable: true
+          type: string
         destination_tags:
           anyOf:
             - $ref: >-
@@ -23599,6 +23608,7 @@ components:
         - avalanche
         - base_network
         - bitcoin
+        - celo
         - destination_tags
         - ethereum
         - optimism
@@ -23616,6 +23626,7 @@ components:
         - avalanche
         - base_network
         - bitcoin
+        - celo
         - destination_tags
         - ethereum
         - optimism
@@ -23719,6 +23730,7 @@ components:
             - avalanche
             - base
             - bitcoin
+            - celo
             - ethereum
             - optimism
             - polygon
@@ -23739,6 +23751,8 @@ components:
                 value: base
               - description: Bitcoin network.
                 value: bitcoin
+              - description: Celo network.
+                value: celo
               - description: Ethereum network.
                 value: ethereum
               - description: Optimism network.
@@ -23765,6 +23779,7 @@ components:
               - avalanche
               - base
               - bitcoin
+              - celo
               - ethereum
               - optimism
               - polygon
@@ -23784,6 +23799,8 @@ components:
                   value: base
                 - description: Bitcoin network.
                   value: bitcoin
+                - description: Celo network.
+                  value: celo
                 - description: Ethereum network.
                   value: ethereum
                 - description: Optimism network.
@@ -43059,6 +43076,7 @@ components:
               - payco
               - paynow
               - paypal
+              - paypay
               - payto
               - pix
               - promptpay
@@ -43228,6 +43246,8 @@ components:
                   value: paynow
                 - description: PayPal
                   value: paypal
+                - description: PayPay Payment Method
+                  value: paypay
                 - description: PayTo
                   value: payto
                 - description: Pix
@@ -47320,6 +47340,48 @@ components:
         - total_qualified_amount
         - verification_status
         - vision_amount
+    issuing_authorization_hold_amount:
+      description: ''
+      properties:
+        currency:
+          description: Three-letter ISO currency code.
+          format: currency
+          type: string
+        value:
+          description: The amount in the smallest currency unit.
+          type: integer
+      required:
+        - currency
+        - value
+      title: IssuingAuthorizationHoldAmount
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - currency
+        - value
+    issuing_authorization_hold_amount_details:
+      description: ''
+      properties:
+        network:
+          $ref: '#/components/schemas/issuing_authorization_hold_amount'
+        reserve:
+          anyOf:
+            - $ref: '#/components/schemas/issuing_authorization_hold_amount'
+          description: >-
+            The reserve amount held for this authorization. Present for certain
+            MCCs that may have overcaptures.
+          nullable: true
+      required:
+        - network
+        - reserve
+      title: IssuingAuthorizationHoldAmountDetails
+      type: object
+      x-expandableFields:
+        - network
+        - reserve
+      x-stripeMostCommon:
+        - network
+        - reserve
     issuing_authorization_merchant_data:
       description: ''
       properties:
@@ -47508,6 +47570,16 @@ components:
             currency](https://stripe.com/docs/currencies).
           format: currency
           type: string
+        hold_amount:
+          anyOf:
+            - $ref: '#/components/schemas/issuing_authorization_hold_amount'
+          description: The total amount to be held for this authorization request.
+          nullable: true
+        hold_amount_details:
+          anyOf:
+            - $ref: '#/components/schemas/issuing_authorization_hold_amount_details'
+          description: Breakdown of the amounts contributing to hold_amount.
+          nullable: true
         is_amount_controllable:
           description: >-
             If set `true`, you may provide
@@ -47542,10 +47614,14 @@ components:
       type: object
       x-expandableFields:
         - amount_details
+        - hold_amount
+        - hold_amount_details
       x-stripeMostCommon:
         - amount
         - amount_details
         - currency
+        - hold_amount
+        - hold_amount_details
         - is_amount_controllable
         - merchant_amount
         - merchant_currency
@@ -47630,6 +47706,16 @@ components:
             currency](https://stripe.com/docs/currencies).
           maxLength: 5000
           type: string
+        hold_amount:
+          anyOf:
+            - $ref: '#/components/schemas/issuing_authorization_hold_amount'
+          description: The total amount that was held for this authorization request.
+          nullable: true
+        hold_amount_details:
+          anyOf:
+            - $ref: '#/components/schemas/issuing_authorization_hold_amount_details'
+          description: Breakdown of the amounts contributing to hold_amount.
+          nullable: true
         merchant_amount:
           description: >-
             The `pending_request.merchant_amount` at the time of the request,
@@ -47835,6 +47921,8 @@ components:
       type: object
       x-expandableFields:
         - amount_details
+        - hold_amount
+        - hold_amount_details
         - network_data
       x-stripeMostCommon:
         - amount
@@ -47843,6 +47931,8 @@ components:
         - authorization_code
         - created
         - currency
+        - hold_amount
+        - hold_amount_details
         - merchant_amount
         - merchant_currency
         - network_data
@@ -79527,12 +79617,16 @@ components:
           maxLength: 5000
           nullable: true
           type: string
-        pricing_group:
+        funding_source_group:
           description: >-
-            The pricing bundle applied to this Link payment at confirmation
-            time. Maps to a bundle in your Stripe pricing contract and on
-            Stripe's published pricing page. Omitted if bundle lookup failed at
-            confirmation time.
+            The funding source group applied to this Link payment at
+            confirmation time. Maps to a bundle in your Stripe pricing contract
+            and on Stripe's published pricing page. Omitted if group lookup
+            failed at confirmation time.
+          maxLength: 5000
+          type: string
+        pricing_group:
+          description: 'Deprecated: use funding_source_group instead.'
           maxLength: 5000
           type: string
       required:
@@ -79542,6 +79636,7 @@ components:
       x-expandableFields: []
       x-stripeMostCommon:
         - country
+        - funding_source_group
         - pricing_group
     payment_method_details_mb_way:
       description: ''
@@ -115092,6 +115187,7 @@ components:
               - payco
               - paynow
               - paypal
+              - paypay
               - payto
               - pix
               - promptpay
@@ -115261,6 +115357,8 @@ components:
                   value: paynow
                 - description: PayPal
                   value: paypal
+                - description: PayPay Payment Method
+                  value: paypay
                 - description: PayTo
                   value: payto
                 - description: Pix
@@ -136791,6 +136889,7 @@ paths:
                     - smart_disputes
                     - tax_forms
                     - treasury
+                    - verified
                 tos_acceptance:
                   description: >-
                     Details on the account's acceptance of the [Stripe Services
@@ -141074,6 +141173,7 @@ paths:
                     - smart_disputes
                     - tax_forms
                     - treasury
+                    - verified
                 tos_acceptance:
                   description: >-
                     Details on the account's acceptance of the [Stripe Services
@@ -145585,6 +145685,7 @@ paths:
                                 - monthly
                                 - weekly
                               type: string
+                              x-stripeBypassValidation: true
                               x-stripeEnum:
                                 kind: open
                                 values:
@@ -174509,6 +174610,7 @@ paths:
               - avalanche
               - base
               - bitcoin
+              - celo
               - ethereum
               - optimism
               - polygon
@@ -174528,6 +174630,8 @@ paths:
                   value: base
                 - description: Bitcoin network.
                   value: bitcoin
+                - description: Celo network.
+                  value: celo
                 - description: Ethereum network.
                   value: ethereum
                 - description: Optimism network.
@@ -174852,6 +174956,7 @@ paths:
                     - avalanche
                     - base
                     - bitcoin
+                    - celo
                     - ethereum
                     - optimism
                     - polygon
@@ -174871,6 +174976,8 @@ paths:
                         value: base
                       - description: Bitcoin network.
                         value: bitcoin
+                      - description: Celo network.
+                        value: celo
                       - description: Ethereum network.
                         value: ethereum
                       - description: Optimism network.
@@ -174905,6 +175012,7 @@ paths:
                       - avalanche
                       - base
                       - bitcoin
+                      - celo
                       - ethereum
                       - optimism
                       - polygon
@@ -174924,6 +175032,8 @@ paths:
                           value: base
                         - description: Bitcoin network.
                           value: bitcoin
+                        - description: Celo network.
+                          value: celo
                         - description: Ethereum network.
                           value: ethereum
                         - description: Optimism network.
@@ -175340,6 +175450,7 @@ paths:
               - avalanche
               - base
               - bitcoin
+              - celo
               - ethereum
               - optimism
               - polygon
@@ -175359,6 +175470,8 @@ paths:
                   value: base
                 - description: Bitcoin network.
                   value: bitcoin
+                - description: Celo network.
+                  value: celo
                 - description: Ethereum network.
                   value: ethereum
                 - description: Optimism network.
@@ -191904,6 +192017,7 @@ paths:
                               - payco
                               - paynow
                               - paypal
+                              - paypay
                               - payto
                               - pix
                               - promptpay
@@ -192119,6 +192233,8 @@ paths:
                                   value: paynow
                                 - description: PayPal
                                   value: paypal
+                                - description: PayPay Payment Method
+                                  value: paypay
                                 - description: PayTo
                                   value: payto
                                 - description: Pix
@@ -200025,6 +200141,7 @@ paths:
                               - payco
                               - paynow
                               - paypal
+                              - paypay
                               - payto
                               - pix
                               - promptpay
@@ -200240,6 +200357,8 @@ paths:
                                   value: paynow
                                 - description: PayPal
                                   value: paypal
+                                - description: PayPay Payment Method
+                                  value: paypay
                                 - description: PayTo
                                   value: payto
                                 - description: Pix
@@ -322323,6 +322442,7 @@ paths:
                     - decimal_separator
                     - delinquent
                     - description
+                    - digital_only_countries
                     - digital_wallet
                     - direction
                     - display_date
@@ -341255,7 +341375,7 @@ paths:
                                   Controls whether Stripe attempts payment on
                                   the resumption invoice and how payment affects
                                   the subscription's status. The default is
-                                  `resume_on_payment_attempt`.
+                                  `resume_on_payment_success`.
                                 enum:
                                   - resume_on_payment_attempt
                                   - resume_on_payment_success
@@ -341334,8 +341454,6 @@ paths:
                         x-stripeMostCommon:
                           - resume_at
                           - settings
-                    required:
-                      - pause
                     title: pause_schedules_create_params
                     type: object
                     x-stripeMostCommon:
@@ -343760,185 +343878,191 @@ paths:
                               - pause_at
                               - settings
                           resume:
+                            anyOf:
+                              - properties:
+                                  resume_at:
+                                    description: When to resume the subscription.
+                                    properties:
+                                      duration:
+                                        description: >-
+                                          The duration after which to resume the
+                                          subscription. Required when `type` is
+                                          `duration`.
+                                        properties:
+                                          interval:
+                                            description: >-
+                                              The time unit for the resume duration.
+                                              One of `day`, `week`, `month`, or
+                                              `year`.
+                                            enum:
+                                              - day
+                                              - month
+                                              - week
+                                              - year
+                                            type: string
+                                          interval_count:
+                                            description: >-
+                                              The number of intervals after which the
+                                              subscription resumes.
+                                            type: integer
+                                        required:
+                                          - interval
+                                        title: resume_at_duration_params
+                                        type: object
+                                        x-stripeMostCommon:
+                                          - interval
+                                          - interval_count
+                                      timestamp:
+                                        description: >-
+                                          The Unix timestamp at which to resume
+                                          the subscription. Required when `type`
+                                          is `timestamp`.
+                                        format: unix-time
+                                        type: integer
+                                      type:
+                                        description: >-
+                                          When to resume the subscription. Use
+                                          `now` to resume immediately, `duration`
+                                          to resume after a set duration, or
+                                          `timestamp` to resume at a specific
+                                          time.
+                                        enum:
+                                          - duration
+                                          - now
+                                          - timestamp
+                                        type: string
+                                        x-stripeEnum:
+                                          kind: open
+                                          values:
+                                            - description: >-
+                                                Resume the subscription after the
+                                                specified duration.
+                                              value: duration
+                                            - description: Resume the subscription immediately.
+                                              value: now
+                                            - description: >-
+                                                Resume the subscription at the specified
+                                                timestamp.
+                                              value: timestamp
+                                    required:
+                                      - type
+                                    title: resume_at_params
+                                    type: object
+                                    x-stripeMostCommon:
+                                      - duration
+                                      - timestamp
+                                      - type
+                                  settings:
+                                    description: >-
+                                      Settings controlling how the subscription
+                                      resumes.
+                                    properties:
+                                      billing_cycle_anchor:
+                                        description: >-
+                                          Controls the billing cycle anchor when
+                                          the subscription resumes.
+                                        enum:
+                                          - resume_at
+                                          - unchanged
+                                        type: string
+                                        x-stripeEnum:
+                                          kind: semi_open
+                                          values:
+                                            - description: >-
+                                                Set the billing cycle anchor to the date
+                                                the subscription resumes.
+                                              value: resume_at
+                                            - description: Keep the existing billing cycle anchor.
+                                              value: unchanged
+                                      payment_behavior:
+                                        description: >-
+                                          Controls whether Stripe attempts payment
+                                          on the resumption invoice and how
+                                          payment affects the subscription's
+                                          status. The default is
+                                          `resume_on_payment_success`.
+                                        enum:
+                                          - resume_on_payment_attempt
+                                          - resume_on_payment_success
+                                        type: string
+                                        x-stripeEnum:
+                                          kind: semi_open
+                                          values:
+                                            - description: >-
+                                                If you create a resumption invoice,
+                                                Stripe finalizes the invoice immediately
+                                                but doesn't attempt payment. You can
+                                                then manually attempt payment on the
+                                                invoice using the [Pay invoice
+                                                endpoint](/api/invoices/pay). If the
+                                                payment attempt succeeds, the
+                                                subscription becomes `active`. If the
+                                                payment attempt fails, the subscription
+                                                becomes `past_due`. If the invoice has
+                                                no payment attempts after 23 hours,
+                                                Stripe voids the invoice and the
+                                                subscription remains `paused`.
+                                              value: resume_on_payment_attempt
+                                            - description: >-
+                                                If you create a resumption invoice,
+                                                Stripe finalizes and attempts payment on
+                                                the invoice immediately. If that payment
+                                                attempt succeeds, the subscription
+                                                becomes `active`. If that payment
+                                                attempt fails, the subscription remains
+                                                `paused`. You can then manually attempt
+                                                payment on the invoice using the [Pay
+                                                invoice endpoint](/api/invoices/pay). If
+                                                the invoice isn't paid successfully
+                                                within 23 hours of its creation, Stripe
+                                                voids the invoice and the subscription
+                                                remains `paused`.
+                                              value: resume_on_payment_success
+                                      proration_behavior:
+                                        description: >-
+                                          Determines how to handle prorations when
+                                          the subscription resumes. The default is
+                                          `create_prorations`.
+                                        enum:
+                                          - always_invoice
+                                          - create_prorations
+                                          - none
+                                        type: string
+                                        x-stripeEnum:
+                                          kind: open
+                                          values:
+                                            - description: >-
+                                                Always invoice immediately for
+                                                prorations.
+                                              value: always_invoice
+                                            - description: >-
+                                                Will cause proration invoice items to be
+                                                created when applicable. These proration
+                                                items will only be invoiced immediately
+                                                under [certain
+                                                conditions](https://docs.stripe.com/subscriptions/upgrading-downgrading#immediate-payment).
+                                              value: create_prorations
+                                            - description: >-
+                                                Disable creating prorations in this
+                                                request.
+                                              value: none
+                                    title: resume_settings_params
+                                    type: object
+                                    x-stripeMostCommon:
+                                      - billing_cycle_anchor
+                                      - payment_behavior
+                                      - proration_behavior
+                                title: pause_schedule_update_resume_params
+                                type: object
+                                x-stripeMostCommon:
+                                  - resume_at
+                                  - settings
+                              - enum:
+                                  - ''
+                                type: string
                             description: >-
                               Configuration for when and how the subscription
                               resumes.
-                            properties:
-                              resume_at:
-                                description: When to resume the subscription.
-                                properties:
-                                  duration:
-                                    description: >-
-                                      The duration after which to resume the
-                                      subscription. Required when `type` is
-                                      `duration`.
-                                    properties:
-                                      interval:
-                                        description: >-
-                                          The time unit for the resume duration.
-                                          One of `day`, `week`, `month`, or
-                                          `year`.
-                                        enum:
-                                          - day
-                                          - month
-                                          - week
-                                          - year
-                                        type: string
-                                      interval_count:
-                                        description: >-
-                                          The number of intervals after which the
-                                          subscription resumes.
-                                        type: integer
-                                    required:
-                                      - interval
-                                    title: resume_at_duration_params
-                                    type: object
-                                    x-stripeMostCommon:
-                                      - interval
-                                      - interval_count
-                                  timestamp:
-                                    description: >-
-                                      The Unix timestamp at which to resume the
-                                      subscription. Required when `type` is
-                                      `timestamp`.
-                                    format: unix-time
-                                    type: integer
-                                  type:
-                                    description: >-
-                                      When to resume the subscription. Use `now`
-                                      to resume immediately, `duration` to
-                                      resume after a set duration, or
-                                      `timestamp` to resume at a specific time.
-                                    enum:
-                                      - duration
-                                      - now
-                                      - timestamp
-                                    type: string
-                                    x-stripeEnum:
-                                      kind: open
-                                      values:
-                                        - description: >-
-                                            Resume the subscription after the
-                                            specified duration.
-                                          value: duration
-                                        - description: Resume the subscription immediately.
-                                          value: now
-                                        - description: >-
-                                            Resume the subscription at the specified
-                                            timestamp.
-                                          value: timestamp
-                                required:
-                                  - type
-                                title: resume_at_params
-                                type: object
-                                x-stripeMostCommon:
-                                  - duration
-                                  - timestamp
-                                  - type
-                              settings:
-                                description: >-
-                                  Settings controlling how the subscription
-                                  resumes.
-                                properties:
-                                  billing_cycle_anchor:
-                                    description: >-
-                                      Controls the billing cycle anchor when the
-                                      subscription resumes.
-                                    enum:
-                                      - resume_at
-                                      - unchanged
-                                    type: string
-                                    x-stripeEnum:
-                                      kind: semi_open
-                                      values:
-                                        - description: >-
-                                            Set the billing cycle anchor to the date
-                                            the subscription resumes.
-                                          value: resume_at
-                                        - description: Keep the existing billing cycle anchor.
-                                          value: unchanged
-                                  payment_behavior:
-                                    description: >-
-                                      Controls whether Stripe attempts payment
-                                      on the resumption invoice and how payment
-                                      affects the subscription's status. The
-                                      default is `resume_on_payment_attempt`.
-                                    enum:
-                                      - resume_on_payment_attempt
-                                      - resume_on_payment_success
-                                    type: string
-                                    x-stripeEnum:
-                                      kind: semi_open
-                                      values:
-                                        - description: >-
-                                            If you create a resumption invoice,
-                                            Stripe finalizes the invoice immediately
-                                            but doesn't attempt payment. You can
-                                            then manually attempt payment on the
-                                            invoice using the [Pay invoice
-                                            endpoint](/api/invoices/pay). If the
-                                            payment attempt succeeds, the
-                                            subscription becomes `active`. If the
-                                            payment attempt fails, the subscription
-                                            becomes `past_due`. If the invoice has
-                                            no payment attempts after 23 hours,
-                                            Stripe voids the invoice and the
-                                            subscription remains `paused`.
-                                          value: resume_on_payment_attempt
-                                        - description: >-
-                                            If you create a resumption invoice,
-                                            Stripe finalizes and attempts payment on
-                                            the invoice immediately. If that payment
-                                            attempt succeeds, the subscription
-                                            becomes `active`. If that payment
-                                            attempt fails, the subscription remains
-                                            `paused`. You can then manually attempt
-                                            payment on the invoice using the [Pay
-                                            invoice endpoint](/api/invoices/pay). If
-                                            the invoice isn't paid successfully
-                                            within 23 hours of its creation, Stripe
-                                            voids the invoice and the subscription
-                                            remains `paused`.
-                                          value: resume_on_payment_success
-                                  proration_behavior:
-                                    description: >-
-                                      Determines how to handle prorations when
-                                      the subscription resumes. The default is
-                                      `create_prorations`.
-                                    enum:
-                                      - always_invoice
-                                      - create_prorations
-                                      - none
-                                    type: string
-                                    x-stripeEnum:
-                                      kind: open
-                                      values:
-                                        - description: >-
-                                            Always invoice immediately for
-                                            prorations.
-                                          value: always_invoice
-                                        - description: >-
-                                            Will cause proration invoice items to be
-                                            created when applicable. These proration
-                                            items will only be invoiced immediately
-                                            under [certain
-                                            conditions](https://docs.stripe.com/subscriptions/upgrading-downgrading#immediate-payment).
-                                          value: create_prorations
-                                        - description: >-
-                                            Disable creating prorations in this
-                                            request.
-                                          value: none
-                                title: resume_settings_params
-                                type: object
-                                x-stripeMostCommon:
-                                  - billing_cycle_anchor
-                                  - payment_behavior
-                                  - proration_behavior
-                            title: pause_schedule_update_resume_params
-                            type: object
-                            x-stripeMostCommon:
-                              - resume_at
-                              - settings
                         title: pause_schedules_update_params
                         type: object
                         x-stripeMostCommon:
@@ -350723,6 +350847,7 @@ paths:
                               - payco
                               - paynow
                               - paypal
+                              - paypay
                               - payto
                               - pix
                               - promptpay
@@ -350938,6 +351063,8 @@ paths:
                                   value: paynow
                                 - description: PayPal
                                   value: paypal
+                                - description: PayPay Payment Method
+                                  value: paypay
                                 - description: PayTo
                                   value: payto
                                 - description: Pix
@@ -354326,6 +354453,7 @@ paths:
                               - payco
                               - paynow
                               - paypal
+                              - paypay
                               - payto
                               - pix
                               - promptpay
@@ -354541,6 +354669,8 @@ paths:
                                   value: paynow
                                 - description: PayPal
                                   value: paypal
+                                - description: PayPay Payment Method
+                                  value: paypay
                                 - description: PayTo
                                   value: payto
                                 - description: Pix
