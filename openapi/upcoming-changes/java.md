@@ -12,4 +12,5 @@
 * Add support for new value `touch_n_go` on enums `PaymentIntentConfirmParams.allowedPaymentMethodTypes`, `PaymentIntentCreateParams.allowedPaymentMethodTypes`, `PaymentIntentUpdateParams.allowedPaymentMethodTypes`, `SetupIntentConfirmParams.allowedPaymentMethodTypes`, `SetupIntentCreateParams.allowedPaymentMethodTypes`, and `SetupIntentUpdateParams.allowedPaymentMethodTypes`
 * Add support for `aadeData` on `PaymentIntent.payment_method_options.card_present`, `PaymentIntentConfirmParams.payment_method_options.card_present`, `PaymentIntentCreateParams.payment_method_options.card_present`, and `PaymentIntentUpdateParams.payment_method_options.card_present`
 * Add support for new value `sequra` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
+* Add support for `applicationFeeAmount`, `applicationFeePercent`, `onBehalfOf`, and `transferData` on `PaymentLinkUpdateParams`
 * Add support for new value `2026-08-26.dahlia` on enum `WebhookEndpointCreateParams.apiVersion`
