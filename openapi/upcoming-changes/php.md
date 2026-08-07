@@ -5,6 +5,7 @@
 * Add support for `funding_types_blocked` on `Checkout.Session.payment_method_options.card.restrictions` and `Checkout\Session.create().$params.payment_method_option.card.restriction`
 * Add support for new value `sequra` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Add support for `customer_portal` on `CustomerSession.components` and `CustomerSession.create().$params.component`
+* Add support for `billie` on `Invoice.create().$params.payment_setting.payment_method_option`, `Invoice.payment_settings.payment_method_options`, `Invoice.update().$params.payment_setting.payment_method_option`, `Subscription.create().$params.payment_setting.payment_method_option`, `Subscription.payment_settings.payment_method_options`, and `Subscription.update().$params.payment_setting.payment_method_option`
 * Add support for new values `billie` and `paypay` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
 * Add support for `aade_data` on `PaymentIntent.confirm().$params.payment_method_option.card_present`, `PaymentIntent.create().$params.payment_method_option.card_present`, `PaymentIntent.payment_method_options.card_present`, and `PaymentIntent.update().$params.payment_method_option.card_present`
 * Add support for new value `touch_n_go` on enums `PaymentIntent.allowed_payment_method_types` and `SetupIntent.allowed_payment_method_types`
