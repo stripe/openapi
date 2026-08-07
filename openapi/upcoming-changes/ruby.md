@@ -4,6 +4,7 @@
 * Add support for `funding_source_group` on `Charge::PaymentMethodDetail::Link`
 * Add support for `funding_types_blocked` on `Checkout::Session::PaymentMethodOption::Card::Restriction` and `Checkout::SessionCreateParams::PaymentMethodOption::Card::Restriction`
 * Add support for `customer_portal` on `CustomerSession::Component` and `CustomerSessionCreateParams::Component`
+* Add support for `country` on `FinancialConnections::Session::Filter`
 * Add support for `billie` on `Invoice::PaymentSetting::PaymentMethodOption`, `InvoiceCreateParams::PaymentSetting::PaymentMethodOption`, `InvoiceUpdateParams::PaymentSetting::PaymentMethodOption`, `Subscription::PaymentSetting::PaymentMethodOption`, `SubscriptionCreateParams::PaymentSetting::PaymentMethodOption`, and `SubscriptionUpdateParams::PaymentSetting::PaymentMethodOption`
 * Add support for `aade_data` on `PaymentIntent::PaymentMethodOption::CardPresent`, `PaymentIntentConfirmParams::PaymentMethodOption::CardPresent`, `PaymentIntentCreateParams::PaymentMethodOption::CardPresent`, and `PaymentIntentUpdateParams::PaymentMethodOption::CardPresent`
 * Change `PaymentIntent.allowed_payment_method_types` and `SetupIntent.allowed_payment_method_types` to be required

@@ -4,6 +4,7 @@
 * Add support for `FundingSourceGroup` on `Charge.PaymentMethodDetails.Link`
 * Add support for `FundingTypesBlocked` on `Checkout.Session.PaymentMethodOptions.Card.Restrictions` and `CheckoutSessionPaymentMethodOptionsCardRestrictionsOptions`
 * Add support for `CustomerPortal` on `CustomerSession.Components` and `CustomerSessionComponentsOptions`
+* Add support for `Country` on `FinancialConnections.Session.Filters`
 * Add support for `Billie` on `Invoice.PaymentSettings.PaymentMethodOptions`, `InvoicePaymentSettingsPaymentMethodOptionsOptions`, `Subscription.PaymentSettings.PaymentMethodOptions`, and `SubscriptionPaymentSettingsPaymentMethodOptionsOptions`
 * Add support for `AadeData` on `PaymentIntent.PaymentMethodOptions.CardPresent` and `PaymentIntentPaymentMethodOptionsCardPresentOptions`
 * Add support for `ApplicationFeeAmount`, `ApplicationFeePercent`, `OnBehalfOf`, and `TransferData` on `PaymentLinkUpdateOptions`

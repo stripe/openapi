@@ -5,6 +5,7 @@
 * Add support for `FundingTypesBlocked` on `CheckoutSessionPaymentMethodOptionsCardRestrictionsParams` and `CheckoutSessionPaymentMethodOptionsCardRestrictions`
 * Add support for new value `sequra` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
 * Add support for `CustomerPortal` on `CustomerSessionComponentsParams` and `CustomerSessionComponents`
+* Add support for `Country` on `FinancialConnectionsSessionFilters`
 * Add support for `Billie` on `InvoicePaymentSettingsPaymentMethodOptionsParams`, `InvoicePaymentSettingsPaymentMethodOptions`, `SubscriptionPaymentSettingsPaymentMethodOptionsParams`, and `SubscriptionPaymentSettingsPaymentMethodOptions`
 * Add support for new values `billie` and `paypay` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
 * Add support for `AadeData` on `PaymentIntentConfirmPaymentMethodOptionsCardPresentParams`, `PaymentIntentPaymentMethodOptionsCardPresentParams`, and `PaymentIntentPaymentMethodOptionsCardPresent`
