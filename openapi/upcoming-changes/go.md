@@ -5,6 +5,7 @@
 * Add support for `RetrievalReferenceNumber` on `ChargePaymentMethodDetailsCardPresent`, `ConfirmationTokenPaymentMethodPreviewCardGeneratedFromPaymentMethodDetailsCardPresent`, `PaymentAttemptRecordPaymentMethodDetailsCardPresent`, `PaymentMethodCardGeneratedFromPaymentMethodDetailsCardPresent`, and `PaymentRecordPaymentMethodDetailsCardPresent`
 * Add support for `FundingSourceGroup` on `ChargePaymentMethodDetailsLink`
 * Add support for `FundingTypesBlocked` on `CheckoutSessionPaymentMethodOptionsCardRestrictionsParams` and `CheckoutSessionPaymentMethodOptionsCardRestrictions`
+* Add support for `Metadata` on `ConfirmationToken`
 * Add support for new value `sequra` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
 * Add support for `CustomerPortal` on `CustomerSessionComponentsParams` and `CustomerSessionComponents`
 * Add support for `Country` on `FinancialConnectionsSessionFilters`

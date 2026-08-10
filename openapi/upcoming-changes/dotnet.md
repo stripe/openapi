@@ -4,6 +4,7 @@
 * Add support for `RetrievalReferenceNumber` on `Charge.PaymentMethodDetails.CardPresent`, `ConfirmationToken.PaymentMethodPreview.Card.GeneratedFrom.PaymentMethodDetails.CardPresent`, `PaymentAttemptRecord.PaymentMethodDetails.CardPresent`, `PaymentMethod.Card.GeneratedFrom.PaymentMethodDetails.CardPresent`, and `PaymentRecord.PaymentMethodDetails.CardPresent`
 * Add support for `FundingSourceGroup` on `Charge.PaymentMethodDetails.Link`
 * Add support for `FundingTypesBlocked` on `Checkout.Session.PaymentMethodOptions.Card.Restrictions` and `CheckoutSessionPaymentMethodOptionsCardRestrictionsOptions`
+* Add support for `Metadata` on `ConfirmationToken`
 * Add support for `CustomerPortal` on `CustomerSession.Components` and `CustomerSessionComponentsOptions`
 * Add support for `Country` on `FinancialConnections.Session.Filters`
 * Add support for `Billie` on `Invoice.PaymentSettings.PaymentMethodOptions`, `InvoicePaymentSettingsPaymentMethodOptionsOptions`, `Subscription.PaymentSettings.PaymentMethodOptions`, and `SubscriptionPaymentSettingsPaymentMethodOptionsOptions`

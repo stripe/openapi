@@ -4,6 +4,7 @@
 * Add support for `retrieval_reference_number` on `Charge::PaymentMethodDetail::CardPresent`, `ConfirmationToken::PaymentMethodPreview::Card::GeneratedFrom::PaymentMethodDetail::CardPresent`, `PaymentAttemptRecord::PaymentMethodDetail::CardPresent`, `PaymentMethod::Card::GeneratedFrom::PaymentMethodDetail::CardPresent`, and `PaymentRecord::PaymentMethodDetail::CardPresent`
 * Add support for `funding_source_group` on `Charge::PaymentMethodDetail::Link`
 * Add support for `funding_types_blocked` on `Checkout::Session::PaymentMethodOption::Card::Restriction` and `Checkout::SessionCreateParams::PaymentMethodOption::Card::Restriction`
+* Add support for `metadata` on `ConfirmationToken`
 * Add support for `customer_portal` on `CustomerSession::Component` and `CustomerSessionCreateParams::Component`
 * Add support for `country` on `FinancialConnections::Session::Filter`
 * Add support for `billie` on `Invoice::PaymentSetting::PaymentMethodOption`, `InvoiceCreateParams::PaymentSetting::PaymentMethodOption`, `InvoiceUpdateParams::PaymentSetting::PaymentMethodOption`, `Subscription::PaymentSetting::PaymentMethodOption`, `SubscriptionCreateParams::PaymentSetting::PaymentMethodOption`, and `SubscriptionUpdateParams::PaymentSetting::PaymentMethodOption`

@@ -8,6 +8,7 @@
 * Add support for `fundingTypesBlocked` on `checkout.Session.payment_method_options.card.restrictions` and `checkout.SessionCreateParams.payment_method_options.card.restrictions`
 * Add support for new value `sequra` on enum `checkout.SessionCreateParams.paymentMethodTypes`
 * Add support for new value `sequra` on enums `ConfirmationTokenCreateParams.payment_method_data.type`, `PaymentIntentConfirmParams.payment_method_data.type`, `PaymentIntentCreateParams.payment_method_data.type`, `PaymentIntentUpdateParams.payment_method_data.type`, `SetupIntentConfirmParams.payment_method_data.type`, `SetupIntentCreateParams.payment_method_data.type`, and `SetupIntentUpdateParams.payment_method_data.type`
+* Add support for `metadata` on `ConfirmationToken`
 * Add support for `customerPortal` on `CustomerSession.components` and `CustomerSessionCreateParams.components`
 * Add support for new value `sequra` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
 * Add support for `country` on `financialconnections.Session.filters`

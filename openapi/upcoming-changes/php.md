@@ -5,6 +5,7 @@
 * Add support for `retrieval_reference_number` on `Charge.payment_method_details.card_present`, `ConfirmationToken.payment_method_preview.card.generated_from.payment_method_details.card_present`, `PaymentAttemptRecord.payment_method_details.card_present`, `PaymentMethod.card.generated_from.payment_method_details.card_present`, and `PaymentRecord.payment_method_details.card_present`
 * Add support for `funding_source_group` on `Charge.payment_method_details.link`
 * Add support for `funding_types_blocked` on `Checkout.Session.payment_method_options.card.restrictions` and `Checkout\Session.create().$params.payment_method_option.card.restriction`
+* Add support for `metadata` on `ConfirmationToken`
 * Add support for new value `sequra` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Add support for `customer_portal` on `CustomerSession.components` and `CustomerSession.create().$params.component`
 * Add support for `country` on `FinancialConnections.Session.filters`
