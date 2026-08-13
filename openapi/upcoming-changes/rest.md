@@ -10,15 +10,17 @@
 * Add support for new value `sequra` on enums `ConfirmationToken.testHelpers#create.payment_method_data.type`, `PaymentIntent#confirm.payment_method_data.type`, `PaymentIntent#create.payment_method_data.type`, `PaymentIntent#update.payment_method_data.type`, `SetupIntent#confirm.payment_method_data.type`, `SetupIntent#create.payment_method_data.type`, and `SetupIntent#update.payment_method_data.type`
 * Add support for `metadata` on `ConfirmationToken`
 * Add support for new value `sequra` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
-* Add support for `customer_portal` on `CustomerSession#create.components` and `CustomerSession.components`
+* Add support for `active_entitlements` and `customer_portal` on `CustomerSession#create.components` and `CustomerSession.components`
 * Add support for new value `sequra` on enums `Customer#list_payment_methods.type`, `PaymentMethod#create.type`, and `PaymentMethod#list.type`
 * Add support for `country` on `FinancialConnections.Session.filters`
 * Add support for `billie` on `Invoice#create.payment_settings.payment_method_options`, `Invoice#update.payment_settings.payment_method_options`, `Invoice.payment_settings.payment_method_options`, `Subscription#create.payment_settings.payment_method_options`, `Subscription#update.payment_settings.payment_method_options`, and `Subscription.payment_settings.payment_method_options`
 * Add support for new values `billie` and `paypay` on enums `Invoice#create.payment_settings.payment_method_types`, `Invoice#update.payment_settings.payment_method_types`, `Invoice.payment_settings.payment_method_types`, `Subscription#create.payment_settings.payment_method_types`, `Subscription#update.payment_settings.payment_method_types`, and `Subscription.payment_settings.payment_method_types`
+* ⚠️ Remove support for `cryptogram` on `PaymentAttemptRecord.payment_method_details.card.three_d_secure` and `PaymentRecord.payment_method_details.card.three_d_secure`
 * Add support for new value `touch_n_go` on enums `PaymentIntent#confirm.allowed_payment_method_types`, `PaymentIntent#create.allowed_payment_method_types`, `PaymentIntent#update.allowed_payment_method_types`, `PaymentIntent.allowed_payment_method_types`, `SetupIntent#confirm.allowed_payment_method_types`, `SetupIntent#create.allowed_payment_method_types`, `SetupIntent#update.allowed_payment_method_types`, and `SetupIntent.allowed_payment_method_types`
 * Add support for `aade_data` on `PaymentIntent#confirm.payment_method_options.card_present`, `PaymentIntent#create.payment_method_options.card_present`, `PaymentIntent#update.payment_method_options.card_present`, and `PaymentIntent.payment_method_options.card_present`
 * Change `PaymentIntent.allowed_payment_method_types` and `SetupIntent.allowed_payment_method_types` to be required
 * Add support for new value `sequra` on enums `PaymentLink#create.payment_method_types`, `PaymentLink#update.payment_method_types`, and `PaymentLink.payment_method_types`
 * Add support for `application_fee_amount`, `application_fee_percent`, `on_behalf_of`, and `transfer_data` on `PaymentLink#update`
+* Add support for `cancel_at_period_end` on `Subscription.pending_update`
 * Add support for new value `2026-08-26.dahlia` on enum `WebhookEndpoint#create.api_version`
 * Add support for error codes `authentication_failure`, `capability_not_active`, `expired_payment_method`, `incorrect_postal_code`, and `payment_method_restricted` on `Invoice.last_finalization_error`, `PaymentIntent.last_payment_error`, `SetupAttempt.setup_error`, `SetupIntent.last_setup_error`, `StripeError`, and `Terminal.Reader.action.api_error`

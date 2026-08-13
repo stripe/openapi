@@ -5,8 +5,10 @@
 * Add support for `FundingSourceGroup` on `Charge.PaymentMethodDetails.Link`
 * Add support for `FundingTypesBlocked` on `Checkout.Session.PaymentMethodOptions.Card.Restrictions` and `CheckoutSessionPaymentMethodOptionsCardRestrictionsOptions`
 * Add support for `Metadata` on `ConfirmationToken`
-* Add support for `CustomerPortal` on `CustomerSession.Components` and `CustomerSessionComponentsOptions`
+* Add support for `ActiveEntitlements` and `CustomerPortal` on `CustomerSession.Components` and `CustomerSessionComponentsOptions`
 * Add support for `Country` on `FinancialConnections.Session.Filters`
 * Add support for `Billie` on `Invoice.PaymentSettings.PaymentMethodOptions`, `InvoicePaymentSettingsPaymentMethodOptionsOptions`, `Subscription.PaymentSettings.PaymentMethodOptions`, and `SubscriptionPaymentSettingsPaymentMethodOptionsOptions`
+* ⚠️ Remove support for `Cryptogram` on `PaymentAttemptRecord.PaymentMethodDetails.Card.ThreeDSecure` and `PaymentRecord.PaymentMethodDetails.Card.ThreeDSecure`
 * Add support for `AadeData` on `PaymentIntent.PaymentMethodOptions.CardPresent` and `PaymentIntentPaymentMethodOptionsCardPresentOptions`
 * Add support for `ApplicationFeeAmount`, `ApplicationFeePercent`, `OnBehalfOf`, and `TransferData` on `PaymentLinkUpdateOptions`
+* Add support for `CancelAtPeriodEnd` on `Subscription.PendingUpdate`
