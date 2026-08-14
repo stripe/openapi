@@ -18,6 +18,18 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
+    # The push trigger is already restricted to v[0-9]+ tags, but
+    # workflow_dispatch is not, and GITHUB_REF_NAME is then a branch name.
+    # action-gh-release used to refuse that case ("GitHub Releases requires a
+    # tag"); `gh release create` would instead happily cut a new tag named after
+    # the branch, so the refusal has to be explicit now.
+    - name: Require a tag
+      run: |
+        if [ "${GITHUB_REF_TYPE}" != "tag" ]; then
+          echo "::error::Releases require a tag. ${GITHUB_REF_NAME} is a ${GITHUB_REF_TYPE}."
+          exit 1
+        fi
+
     - name: Extract tag message
       run: |
         git fetch --tags --force
