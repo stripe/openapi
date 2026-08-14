@@ -18,12 +18,29 @@ runs:
   using: "composite"
   steps:
 
+    # create-github-app-token scopes by owner plus a list of bare repository
+    # names, while callers pass `repo` as owner/name for `gh -R`. Split it here
+    # rather than making every caller pass both halves.
+    - name: Resolve the target repository
+      id: target
+      shell: bash
+      env:
+        TARGET_REPO: ${{ inputs.repo }}
+      run: |
+        echo "owner=${TARGET_REPO%%/*}" >> "$GITHUB_OUTPUT"
+        echo "name=${TARGET_REPO#*/}" >> "$GITHUB_OUTPUT"
+
     - name: Fetch approver app installation token
-      uses: tibdex/github-app-token@32691ba7c9e7063bd457bd8f2a5703138591fa58 # v1.9.0
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: gh-approver-api-token
       with:
-        app_id: ${{ inputs.github_app_id }}
-        private_key: ${{ inputs.github_app_private_key }}
+        app-id: ${{ inputs.github_app_id }}
+        private-key: ${{ inputs.github_app_private_key }}
+        # The token's only use is reading one PR's review state and approving
+        # it, on the single repository the caller names.
+        owner: ${{ steps.target.outputs.owner }}
+        repositories: ${{ steps.target.outputs.name }}
+        permission-pull-requests: write
     - run: |
         set -e -x -o pipefail
 
