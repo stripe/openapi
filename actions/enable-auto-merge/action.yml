@@ -22,20 +22,28 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
+        INPUTS_PR_URL: ${{ inputs.pr_url }}
+        INPUTS_REPO: ${{ inputs.repo }}
+        INPUTS_MODE: ${{ inputs.mode }}
       continue-on-error: true
       run: |
         set -e -o pipefail
 
-        if [ "${{ inputs.pr_url }}" == "" ]; then
+        if [ "${INPUTS_PR_URL}" == "" ]; then
           echo "PR URL is required"
           exit 1
         fi
 
-        PR_ID=$(gh -R ${{ inputs.repo }} pr view ${{ inputs.pr_url }} --json id --jq ".id")
+        PR_ID=$(gh -R "${INPUTS_REPO}" pr view "${INPUTS_PR_URL}" --json id --jq ".id")
 
+        # mode travels as a typed GraphQL variable rather than being pasted into
+        # the query text: the server validates it against the
+        # PullRequestMergeMethod enum, so it cannot carry query syntax at all.
+        # It also has to be a variable — the query is single-quoted, so the shell
+        # would not expand it inside there.
         gh api graphql -f query='
-          mutation($pull: ID!) {
-            enablePullRequestAutoMerge(input: {pullRequestId: $pull, mergeMethod: ${{ inputs.mode }}}) {
+          mutation($pull: ID!, $mode: PullRequestMergeMethod) {
+            enablePullRequestAutoMerge(input: {pullRequestId: $pull, mergeMethod: $mode}) {
               pullRequest {
                 id
                 number
@@ -44,4 +52,4 @@ runs:
                 }
               }
             }
-          }' -f pull=$PR_ID
+          }' -f pull="$PR_ID" -f mode="$INPUTS_MODE"
