@@ -57,7 +57,16 @@ jobs:
         permission-contents: write
 
     - name: Release
-      uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
-      with:
-        body_path: ${{ runner.temp }}/release_notes.md
-        token: ${{ steps.gh-api-token.outputs.token }}
+      env:
+        GH_TOKEN: ${{ steps.gh-api-token.outputs.token }}
+        GH_REPO: ${{ github.repository }}
+        NOTES_FILE: ${{ runner.temp }}/release_notes.md
+      # Mirrors action-gh-release's create-or-update behaviour: it overwrites
+      # the notes on an existing release rather than failing, which is what
+      # makes re-running this workflow on a tag safe.
+      run: |
+        if gh release view "${GITHUB_REF_NAME}" > /dev/null 2>&1; then
+          gh release edit "${GITHUB_REF_NAME}" --notes-file "${NOTES_FILE}"
+        else
+          gh release create "${GITHUB_REF_NAME}" --notes-file "${NOTES_FILE}"
+        fi
