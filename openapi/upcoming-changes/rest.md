@@ -17,6 +17,7 @@
 * Add support for `active_entitlements` and `customer_portal` on `CustomerSession#create.components` and `CustomerSession.components`
 * Add support for new value `sequra` on enums `Customer#list_payment_methods.type`, `PaymentMethod#create.type`, and `PaymentMethod#list.type`
 * Add support for `country` on `FinancialConnections.Session.filters`
+* Add support for `frozen_fields` on `InvoiceItem`
 * Add support for `billie` on `Invoice#create.payment_settings.payment_method_options`, `Invoice#update.payment_settings.payment_method_options`, `Invoice.payment_settings.payment_method_options`, `Subscription#create.payment_settings.payment_method_options`, `Subscription#update.payment_settings.payment_method_options`, and `Subscription.payment_settings.payment_method_options`
 * Add support for new values `billie` and `paypay` on enums `Invoice#create.payment_settings.payment_method_types`, `Invoice#update.payment_settings.payment_method_types`, `Subscription#create.payment_settings.payment_method_types`, and `Subscription#update.payment_settings.payment_method_types`
 * ⚠️ Add support for new values `billie` and `paypay` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`

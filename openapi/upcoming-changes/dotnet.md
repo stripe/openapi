@@ -10,6 +10,7 @@
 * Add support for `Metadata` on `ConfirmationToken`
 * Add support for `ActiveEntitlements` and `CustomerPortal` on `CustomerSession.Components` and `CustomerSessionComponentsOptions`
 * Add support for `Country` on `FinancialConnections.Session.Filters`
+* Add support for `FrozenFields` on `InvoiceItem`
 * Add support for `Billie` on `Invoice.PaymentSettings.PaymentMethodOptions`, `InvoicePaymentSettingsPaymentMethodOptionsOptions`, `Subscription.PaymentSettings.PaymentMethodOptions`, and `SubscriptionPaymentSettingsPaymentMethodOptionsOptions`
 * ⚠️ Remove support for `Cryptogram` on `PaymentAttemptRecord.PaymentMethodDetails.Card.ThreeDSecure` and `PaymentRecord.PaymentMethodDetails.Card.ThreeDSecure`
 * Add support for `AadeData` on `PaymentIntent.PaymentMethodOptions.CardPresent` and `PaymentIntentPaymentMethodOptionsCardPresentOptions`
