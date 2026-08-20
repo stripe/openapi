@@ -3,10 +3,9 @@ name: Publish Private Preview
 # Publishes the private-preview specs for a given API version and cuts a release.
 #
 # Functionally equivalent to the `beta` (private-preview) path of pay-server's
-# api-codegen/tools/publish.sh, with two differences:
-#   1. Specs are pulled from the Statics Commander CDN instead of a local build dir.
-#   2. Per-language diffs are computed against the private-preview spec (not the GA
-#      spec), so the upcoming-changes reflect actual private-preview deltas.
+# api-codegen/tools/publish.sh. The only difference: specs are pulled from the
+# Statics Commander CDN instead of a local build dir. Per-language diffs are computed
+# against the GA spec (openapi/spec3.sdk.yaml), exactly as publish.sh does.
 #
 # Triggered by the zoolander LockAndReleasePrivatePreviewSpecs workflow, which
 # dispatches this workflow with the released version name.
@@ -90,6 +89,9 @@ jobs:
           git config user.name "Stripe OpenAPI"
           git config user.email "105521251+stripe-openapi[bot]@users.noreply.github.com"
 
+          # In a dry run, local commits are pushed here for inspection instead of master.
+          TEST_BRANCH="dry-run/private-preview"
+
           # --- Commit fixtures (if changed) ---
           for f in openapi/fixtures3.private_preview.yaml openapi/fixtures3.private_preview.json; do
             if [ -f "$f" ]; then git add "$f"; fi
@@ -107,9 +109,10 @@ jobs:
             NEW_TAG="v$(( ${LAST_TAG#v} + 1 ))"
             echo "Previous tag ${LAST_TAG}; new tag ${NEW_TAG}"
 
-            # Materialize the prior private-preview spec from the last release tag.
-            SPEC_PATH="openapi/spec3.private_preview.sdk.yaml"
-            OLD_SPEC="/tmp/oldspec.private_preview.sdk.yaml"
+            # Materialize the prior spec from the last release tag. Mirrors publish.sh,
+            # which diffs the GA spec (openapi/spec3.sdk.yaml) — old tag vs. working tree.
+            SPEC_PATH="openapi/spec3.sdk.yaml"
+            OLD_SPEC="/tmp/oldspec.sdk.yaml"
             git show "${LAST_TAG}:${SPEC_PATH}" > "$OLD_SPEC"
 
             DIFF_DIR="${GITHUB_WORKSPACE}/openapi/upcoming-changes"
@@ -137,11 +140,12 @@ jobs:
             fi
 
             # Private-preview releases don't surface a full diff in the release notes.
-            git tag "$NEW_TAG" -m "This release only includes changes to the private preview spec."
-
             if [ "$DRY_RUN" = "true" ]; then
-              echo "Dry run: not pushing. Would push master + tag ${NEW_TAG}. Local commits/diffs are available as an artifact."
+              # Never create/push a real tag in a dry run — a stray vN tag would corrupt
+              # the next real run's `git describe` increment.
+              echo "Dry run: would create tag ${NEW_TAG} and push master."
             else
+              git tag "$NEW_TAG" -m "This release only includes changes to the private preview spec."
               # Push branch and tag atomically so we never leave a dangling tag.
               git push --atomic origin master "$NEW_TAG"
             fi
@@ -150,21 +154,12 @@ jobs:
           fi
 
           if [ "$DRY_RUN" = "true" ]; then
-            echo "Dry run: not pushing master."
+            # Push all local commits to a disposable scratch branch for inspection
+            # instead of master (master and tags are left untouched). Force is expected:
+            # each dry run builds a fresh history off the current master.
+            echo "Dry run: force-pushing local commits to ${TEST_BRANCH} for inspection."
+            git push --force origin "HEAD:refs/heads/${TEST_BRANCH}"
           else
             # Catch-all: pushes a fixtures-only commit; no-op if the atomic push already ran.
             git push origin master
           fi
-
-      - name: Upload generated output (dry-run inspection)
-        if: ${{ inputs.dry_run }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: private-preview-output
-          path: |
-            openapi/spec3.private_preview.sdk.yaml
-            openapi/spec3.private_preview.sdk.json
-            openapi/fixtures3.private_preview.yaml
-            openapi/fixtures3.private_preview.json
-            openapi/upcoming-changes/
-          if-no-files-found: warn
