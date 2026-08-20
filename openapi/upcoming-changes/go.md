@@ -1,6 +1,5 @@
 * Add support for new resource `BillingFeedbackOption`
 * Add support for `Deactivate`, `Get`, `List`, `New`, and `Update` methods on resource `BillingFeedbackOption`
-* Add support for `SequraPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
 * Add support for `FeedbackOptions` on `BillingPortalConfigurationFeaturesSubscriptionCancelCancellationReasonParams` and `BillingPortalConfigurationFeaturesSubscriptionCancelCancellationReason`
 * Add support for `CustomerUpdate` on `BillingPortalSessionFlow`
 * Add support for new value `customer_update` on enum `BillingPortalSessionFlow.Type`

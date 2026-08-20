@@ -1,6 +1,5 @@
 * Add support for new resource `Billing.FeedbackOption`
 * Add support for `create`, `deactivate`, `list`, `retrieve`, and `update` methods on resource `Billing.FeedbackOption`
-* Add support for `sequra_payments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
 * Add support for `feedback_options` on `BillingPortal.Configuration.features.subscription_cancel.cancellation_reason`, `BillingPortal.ConfigurationCreateParams.features.subscription_cancel.cancellation_reason`, and `BillingPortal.ConfigurationUpdateParams.features.subscription_cancel.cancellation_reason`
 * Add support for new value `customer_update` on enum `BillingPortal.SessionCreateParams.flow_data.type`
 * Add support for `customer_update` on `BillingPortal.Session.flow`
