@@ -3,9 +3,9 @@
 * Add support for `SequraPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
 * Add support for `FeedbackOptions` on `BillingPortal.Configuration.Features.SubscriptionCancel.CancellationReason` and `BillingPortalConfigurationFeaturesSubscriptionCancelCancellationReasonOptions`
 * Add support for `CustomerUpdate` on `BillingPortal.Session.Flow`
-* Add support for `Sequra` on `Charge.PaymentMethodDetails`, `Checkout.Session.PaymentMethodOptions`, `CheckoutSessionPaymentMethodOptionsOptions`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentAttemptRecord.PaymentMethodDetails`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, `PaymentRecord.PaymentMethodDetails`, and `SetupIntentPaymentMethodDataOptions`
 * Add support for `FundingSourceGroup` on `Charge.PaymentMethodDetails.Card.Wallet.Link` and `Charge.PaymentMethodDetails.Link`
 * Add support for `RetrievalReferenceNumber` on `Charge.PaymentMethodDetails.CardPresent`, `ConfirmationToken.PaymentMethodPreview.Card.GeneratedFrom.PaymentMethodDetails.CardPresent`, `PaymentAttemptRecord.PaymentMethodDetails.CardPresent`, `PaymentMethod.Card.GeneratedFrom.PaymentMethodDetails.CardPresent`, and `PaymentRecord.PaymentMethodDetails.CardPresent`
+* Add support for `Sequra` on `Checkout.Session.PaymentMethodOptions` and `CheckoutSessionPaymentMethodOptionsOptions`
 * Add support for `FundingTypesBlocked` on `Checkout.Session.PaymentMethodOptions.Card.Restrictions` and `CheckoutSessionPaymentMethodOptionsCardRestrictionsOptions`
 * Add support for `Metadata` on `ConfirmationToken`
 * Add support for `ActiveEntitlements` and `CustomerPortal` on `CustomerSession.Components` and `CustomerSessionComponentsOptions`
