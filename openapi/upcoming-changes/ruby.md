@@ -1,5 +1,6 @@
 * Add support for new resource `Billing::FeedbackOption`
 * Add support for `create`, `deactivate`, `list`, `retrieve`, and `update` methods on resource `Billing::FeedbackOption`
+* Add support for `payment_method_settings` on `AccountSession::Component` and `AccountSessionCreateParams::Component`
 * Add support for `feedback_options` on `BillingPortal::Configuration::Feature::SubscriptionCancel::CancellationReason`, `BillingPortal::ConfigurationCreateParams::Feature::SubscriptionCancel::CancellationReason`, and `BillingPortal::ConfigurationUpdateParams::Feature::SubscriptionCancel::CancellationReason`
 * Add support for `customer_update` on `BillingPortal::Session::Flow`
 * Add support for `funding_source_group` on `Charge::PaymentMethodDetail::Card::Wallet::Link` and `Charge::PaymentMethodDetail::Link`

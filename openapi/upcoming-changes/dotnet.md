@@ -1,5 +1,6 @@
 * Add support for new resource `Billing.FeedbackOption`
 * Add support for `Create`, `Deactivate`, `Get`, `List`, and `Update` methods on resource `Billing.FeedbackOption`
+* Add support for `PaymentMethodSettings` on `AccountSession.Components` and `AccountSessionComponentsOptions`
 * Add support for `FeedbackOptions` on `BillingPortal.Configuration.Features.SubscriptionCancel.CancellationReason` and `BillingPortalConfigurationFeaturesSubscriptionCancelCancellationReasonOptions`
 * Add support for `CustomerUpdate` on `BillingPortal.Session.Flow`
 * Add support for `FundingSourceGroup` on `Charge.PaymentMethodDetails.Card.Wallet.Link` and `Charge.PaymentMethodDetails.Link`

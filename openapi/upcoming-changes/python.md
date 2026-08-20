@@ -1,5 +1,6 @@
 * Add support for new resource `billing.FeedbackOption`
 * Add support for `create`, `deactivate`, `list`, `modify`, and `retrieve` methods on resource `billing.FeedbackOption`
+* Add support for `payment_method_settings` on `AccountSession.Component` and `AccountSessionCreateParamsComponent`
 * Add support for `feedback_options` on `BillingPortal.Configuration.Feature.SubscriptionCancel.CancellationReason`, `billing_portal.ConfigurationCreateParamsFeatureSubscriptionCancelCancellationReason`, and `billing_portal.ConfigurationModifyParamsFeatureSubscriptionCancelCancellationReason`
 * Add support for new value `customer_update` on enum `billing_portal.SessionCreateParamsFlowDatum.type`
 * Add support for `customer_update` on `BillingPortal.Session.Flow`
