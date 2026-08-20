@@ -1,0 +1,170 @@
+name: Publish Private Preview
+
+# Publishes the private-preview specs for a given API version and cuts a release.
+#
+# Functionally equivalent to the `beta` (private-preview) path of pay-server's
+# api-codegen/tools/publish.sh, with two differences:
+#   1. Specs are pulled from the Statics Commander CDN instead of a local build dir.
+#   2. Per-language diffs are computed against the private-preview spec (not the GA
+#      spec), so the upcoming-changes reflect actual private-preview deltas.
+#
+# Triggered by the zoolander LockAndReleasePrivatePreviewSpecs workflow, which
+# dispatches this workflow with the released version name.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version name (e.g., 2026-07-08.preview)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run: fetch, build, and diff but do not push commits or tags'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch app installation token
+        uses: tibdex/github-app-token@v1.5.2
+        id: gh-api-token
+        with:
+          app_id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
+          private_key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+
+      - name: Checkout openapi
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.gh-api-token.outputs.token }}
+          # Full history + tags are required so `git describe --tags` can find the
+          # last release tag and `git show <tag>:...` can read the prior spec.
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Checkout sdk-codegen (provides the diff CLI)
+        uses: actions/checkout@v4
+        with:
+          repository: stripe/sdk-codegen
+          ref: v17.0.0
+          path: sdk-codegen
+
+      - name: Setup just
+        uses: extractions/setup-just@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Download private-preview specs from CDN
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          BASE="https://b.stripecdn.com/api-artifacts/assets/openapi/${VERSION}/private_preview"
+
+          # Required specs — fail the job if absent.
+          curl -fsSL "$BASE/spec3.private_preview.sdk.yaml" -o openapi/spec3.private_preview.sdk.yaml
+          curl -fsSL "$BASE/spec3.private_preview.sdk.json" -o openapi/spec3.private_preview.sdk.json
+
+          # Optional fixtures — skip cleanly if the CDN returns 404.
+          for f in fixtures3.private_preview.yaml fixtures3.private_preview.json; do
+            if ! curl -fsSL "$BASE/$f" -o "openapi/$f"; then
+              echo "Optional file $f absent from CDN; skipping."
+              rm -f "openapi/$f"
+            fi
+          done
+
+      - name: Commit specs, generate diffs, and cut release
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "Stripe OpenAPI"
+          git config user.email "105521251+stripe-openapi[bot]@users.noreply.github.com"
+
+          # --- Commit fixtures (if changed) ---
+          for f in openapi/fixtures3.private_preview.yaml openapi/fixtures3.private_preview.json; do
+            if [ -f "$f" ]; then git add "$f"; fi
+          done
+          if [ -n "$(git diff --name-only --staged)" ]; then
+            git commit -m "Update fixture data for private preview"
+          fi
+
+          # --- Commit spec (if changed); only cut a release when the spec moved ---
+          git add ./openapi/spec3.private_preview.sdk.yaml ./openapi/spec3.private_preview.sdk.json
+          if [ -n "$(git diff --name-only --staged)" ]; then
+            git commit -m "Update OpenAPI specification for private preview"
+
+            LAST_TAG=$(git describe --tags --abbrev=0)
+            NEW_TAG="v$(( ${LAST_TAG#v} + 1 ))"
+            echo "Previous tag ${LAST_TAG}; new tag ${NEW_TAG}"
+
+            # Materialize the prior private-preview spec from the last release tag.
+            SPEC_PATH="openapi/spec3.private_preview.sdk.yaml"
+            OLD_SPEC="/tmp/oldspec.private_preview.sdk.yaml"
+            git show "${LAST_TAG}:${SPEC_PATH}" > "$OLD_SPEC"
+
+            DIFF_DIR="${GITHUB_WORKSPACE}/openapi/upcoming-changes"
+            NEW_SPEC="${GITHUB_WORKSPACE}/${SPEC_PATH}"
+            mkdir -p "$DIFF_DIR"
+
+            # Build the sdk-codegen CLI once, then invoke it the same way the
+            # justfile's `main` recipe does (node dist/main.js with node_modules/.bin
+            # on PATH) to avoid re-running yarn+tsc for every language.
+            cd "${GITHUB_WORKSPACE}/sdk-codegen"
+            just build-tools
+            export PATH="${PWD}/node_modules/.bin:${PATH}"
+
+            # `rest.md` is the language-agnostic diff (no --lang), matching publish.sh.
+            node ./dist/main.js diff --old-path "$OLD_SPEC" --new-path "$NEW_SPEC" --output-path "$DIFF_DIR/rest.md"
+            for lang in go php node ruby java python dotnet; do
+              node ./dist/main.js diff --lang "$lang" --old-path "$OLD_SPEC" --new-path "$NEW_SPEC" --output-path "$DIFF_DIR/$lang.md"
+            done
+            cd "${GITHUB_WORKSPACE}"
+
+            # --- Commit upcoming-changes (if changed) ---
+            git add ./openapi/upcoming-changes
+            if [ -n "$(git diff --name-only --staged)" ]; then
+              git commit -m "Update upcoming changes"
+            fi
+
+            # Private-preview releases don't surface a full diff in the release notes.
+            git tag "$NEW_TAG" -m "This release only includes changes to the private preview spec."
+
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "Dry run: not pushing. Would push master + tag ${NEW_TAG}. Local commits/diffs are available as an artifact."
+            else
+              # Push branch and tag atomically so we never leave a dangling tag.
+              git push --atomic origin master "$NEW_TAG"
+            fi
+          else
+            echo "No private-preview spec changes; skipping release."
+          fi
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Dry run: not pushing master."
+          else
+            # Catch-all: pushes a fixtures-only commit; no-op if the atomic push already ran.
+            git push origin master
+          fi
+
+      - name: Upload generated output (dry-run inspection)
+        if: ${{ inputs.dry_run }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: private-preview-output
+          path: |
+            openapi/spec3.private_preview.sdk.yaml
+            openapi/spec3.private_preview.sdk.json
+            openapi/fixtures3.private_preview.yaml
+            openapi/fixtures3.private_preview.json
+            openapi/upcoming-changes/
+          if-no-files-found: warn
