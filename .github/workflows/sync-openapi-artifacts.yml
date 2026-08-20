@@ -16,15 +16,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch app installation token
-        uses: tibdex/github-app-token@v1.5.2
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: gh-api-token
         with:
-          app_id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
-          private_key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+          app-id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
+          private-key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+          # The token checks out this repository and pushes the synced spec
+          # artifacts back to it. Scope defaults to the current repository.
+          permission-contents: write
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # This is the one checkout in the repo that keeps its persisted
+          # credential, because the last step is a plain `git push` that needs
+          # it. zizmor's artipacked finding is about the credential escaping via
+          # an uploaded artifact; this workflow uploads none, and the push is the
+          # final step, so there is nothing after it to leak through.
           token: ${{ steps.gh-api-token.outputs.token }}
 
       - name: Get current version
@@ -38,37 +46,49 @@ jobs:
 
       - name: Download latest (GA) JSON specs
         run: |
-          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/ga/public.json" \
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${INPUTS_VERSION}/ga/public.json" \
             -o ./latest/openapi.spec3.json
-          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/ga/sdk.json" \
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${INPUTS_VERSION}/ga/sdk.json" \
             -o ./latest/openapi.spec3.sdk.json
+        env:
+          INPUTS_VERSION: ${{ inputs.version }}
 
       - name: Download latest (GA) YAML specs
         run: |
-          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/ga/public.yaml" \
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${INPUTS_VERSION}/ga/public.yaml" \
             -o ./latest/openapi.spec3.yaml
-          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/ga/sdk.yaml" \
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${INPUTS_VERSION}/ga/sdk.yaml" \
             -o ./latest/openapi.spec3.sdk.yaml
+        env:
+          INPUTS_VERSION: ${{ inputs.version }}
 
       - name: Download preview JSON specs
         run: |
-          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/public_preview/sdk.json" \
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${INPUTS_VERSION}/public_preview/sdk.json" \
             -o ./preview/openapi.spec3.sdk.json
+        env:
+          INPUTS_VERSION: ${{ inputs.version }}
 
       - name: Download preview YAML specs
         run: |
-          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/public_preview/sdk.yaml" \
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${INPUTS_VERSION}/public_preview/sdk.yaml" \
             -o ./preview/openapi.spec3.sdk.yaml
+        env:
+          INPUTS_VERSION: ${{ inputs.version }}
 
       - name: Download private preview JSON specs
         run: |
-          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/private_preview/sdk.json" \
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${INPUTS_VERSION}/private_preview/sdk.json" \
             -o ./preview/openapi.private_preview.spec3.sdk.json
+        env:
+          INPUTS_VERSION: ${{ inputs.version }}
 
       - name: Download private preview YAML specs
         run: |
-          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${{ inputs.version }}/private_preview/sdk.yaml" \
+          curl -fsSL "https://b.stripecdn.com/api-artifacts/assets/openapi/${INPUTS_VERSION}/private_preview/sdk.yaml" \
             -o ./preview/openapi.private_preview.spec3.sdk.yaml
+        env:
+          INPUTS_VERSION: ${{ inputs.version }}
 
       - name: Check for changes
         id: changes
@@ -86,5 +106,7 @@ jobs:
           git config user.name "Stripe OpenAPI"
           git config user.email "105521251+stripe-openapi[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Update OpenAPI for ${{ inputs.version }}"
+          git commit -m "Update OpenAPI for ${INPUTS_VERSION}"
           git push
+        env:
+          INPUTS_VERSION: ${{ inputs.version }}

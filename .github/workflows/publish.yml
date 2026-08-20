@@ -22,20 +22,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout openapi
-      uses: actions/checkout@v2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
 
     - name: Fetch app installation token
-      uses: tibdex/github-app-token@v1.5.2
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: gh-api-token
       with:
-        app_id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
-        private_key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+        app-id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
+        private-key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+        # The token's only use is dispatching sdk-codegen's codegen workflow,
+        # which needs actions: write on that one repository.
+        owner: stripe
+        repositories: sdk-codegen
+        permission-actions: write
 
     - name: Trigger generated code update
+      env:
+        GH_API_TOKEN: ${{ steps.gh-api-token.outputs.token }}
       run: |
         curl --fail-with-body \
           -X POST \
-          -H 'Authorization: token ${{ steps.gh-api-token.outputs.token }}' \
+          -H "Authorization: token ${GH_API_TOKEN}" \
           -H "Accept: application/vnd.github.everest-preview+json" \
           -H "Content-Type: application/json" \
           https://api.github.com/repos/stripe/sdk-codegen/actions/workflows/codegen.yml/dispatches \
@@ -55,21 +64,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout openapi
-      uses: actions/checkout@v2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
 
     - name: Fetch app installation token
-      uses: tibdex/github-app-token@v1.5.2
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: gh-api-token
       with:
-        app_id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
-        private_key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+        app-id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
+        private-key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+        # The token checks out stripe-mock, pushes the update-openapi branch,
+        # and opens plus auto-merges the PR there. Nothing else.
+        owner: stripe
+        repositories: stripe-mock
+        permission-contents: write
+        permission-pull-requests: write
 
     # Fetch repositories to modify
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         token: ${{ steps.gh-api-token.outputs.token }}
         repository: stripe/stripe-mock
         path: stripe-mock
+        # create-pull-request installs its own credential from the token input
+        # below, and unsets any persisted one first, so nothing here needs the
+        # App token left behind in .git/config.
+        persist-credentials: false
 
     - run: |
         rm -f ./stripe-mock/embedded/openapi/spec3.json
@@ -86,7 +107,7 @@ jobs:
 
     - name: Create Pull Request on stripe-mock
       id: cpr
-      uses: peter-evans/create-pull-request@v6
+      uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
       with:
         path: stripe-mock
         title: OpenAPI Update
