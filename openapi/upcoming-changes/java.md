@@ -6,7 +6,6 @@
 * Add support for `customerUpdate` on `billingportal.Session.flow`
 * Add support for `fundingSourceGroup` on `Charge.payment_method_details.card.wallet.link` and `Charge.payment_method_details.link`
 * Add support for `retrievalReferenceNumber` on `Charge.payment_method_details.card_present`, `ConfirmationToken.payment_method_preview.card.generated_from.payment_method_details.card_present`, `PaymentAttemptRecord.payment_method_details.card_present`, `PaymentMethod.card.generated_from.payment_method_details.card_present`, and `PaymentRecord.payment_method_details.card_present`
-* Add support for `sequra` on `checkout.Session.payment_method_options` and `checkout.SessionCreateParams.payment_method_options`
 * Add support for `fundingTypesBlocked` on `checkout.Session.payment_method_options.card.restrictions` and `checkout.SessionCreateParams.payment_method_options.card.restrictions`
 * Add support for `metadata` on `ConfirmationToken`
 * Add support for `activeEntitlements` and `customerPortal` on `CustomerSession.components` and `CustomerSessionCreateParams.components`
