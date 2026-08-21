@@ -1,14 +1,18 @@
-name: Publish Private Preview
+name: Publish v1 Specs
 
-# Publishes the private-preview specs for a given API version and cuts a release.
+# Publishes v1 OpenAPI specs for a given API version and cuts a release, mirroring
+# the corresponding path of pay-server's api-codegen/tools/publish.sh. Specs are
+# pulled from the Statics Commander CDN instead of a local build dir.
 #
-# Functionally equivalent to the `beta` (private-preview) path of pay-server's
-# api-codegen/tools/publish.sh. The only difference: specs are pulled from the
-# Statics Commander CDN instead of a local build dir. Per-language diffs are computed
-# against the GA spec (openapi/spec3.sdk.yaml), exactly as publish.sh does.
+# Modes (see the `mode` input):
+#   - private-preview: implemented. Mirrors publish.sh's `beta` path.
+#   - public-preview / GA / all: NOT implemented yet. These channels are published
+#     today by a separate pipeline (zoolander PublishOpenApiArtifacts ->
+#     sync-openapi-artifacts.yml, which only mirrors raw specs — no fixtures, diffs,
+#     or tags). They are reserved here for a future change that extends the zoolander
+#     LockAndReleasePrivatePreviewSpecs dispatcher to cover them.
 #
-# Triggered by the zoolander LockAndReleasePrivatePreviewSpecs workflow, which
-# dispatches this workflow with the released version name.
+# Triggered by the zoolander LockAndReleasePrivatePreviewSpecs workflow.
 
 on:
   workflow_dispatch:
@@ -17,8 +21,18 @@ on:
         description: 'Version name (e.g., 2026-07-08.preview)'
         required: true
         type: string
+      mode:
+        description: 'Which spec channel to publish'
+        required: true
+        type: choice
+        default: private-preview
+        options:
+          - private-preview
+          - public-preview
+          - GA
+          - all
       dry_run:
-        description: 'Dry run: fetch, build, and diff but do not push commits or tags'
+        description: 'Dry run: fetch, build, and diff but do not push to master or tag'
         required: false
         type: boolean
         default: true
@@ -61,19 +75,49 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Download private-preview specs from CDN
+      - name: Resolve mode configuration
+        env:
+          MODE: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+          # Only private-preview is implemented today. The other channels exit here
+          # until the zoolander dispatcher and CDN keys for them are wired up.
+          case "$MODE" in
+            private-preview)
+              {
+                echo "CDN_DIR=private_preview"
+                echo "SPEC_FILES=spec3.private_preview.sdk.yaml spec3.private_preview.sdk.json"
+                echo "FIXTURE_FILES=fixtures3.private_preview.yaml fixtures3.private_preview.json"
+                echo "FIXTURE_MSG=Update fixture data for private preview"
+                echo "SPEC_MSG=Update OpenAPI specification for private preview"
+                echo "TAG_MSG=This release only includes changes to the private preview spec."
+                echo "TEST_BRANCH=dry-run/private-preview"
+              } >> "$GITHUB_ENV"
+              ;;
+            public-preview | GA | all)
+              echo "::error::mode '$MODE' is not implemented yet"
+              exit 1
+              ;;
+            *)
+              echo "::error::unknown mode '$MODE'"
+              exit 1
+              ;;
+          esac
+
+      - name: Download specs from CDN
         env:
           VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          BASE="https://b.stripecdn.com/api-artifacts/assets/openapi/${VERSION}/private_preview"
+          BASE="https://b.stripecdn.com/api-artifacts/assets/openapi/${VERSION}/${CDN_DIR}"
 
           # Required specs — fail the job if absent.
-          curl -fsSL "$BASE/spec3.private_preview.sdk.yaml" -o openapi/spec3.private_preview.sdk.yaml
-          curl -fsSL "$BASE/spec3.private_preview.sdk.json" -o openapi/spec3.private_preview.sdk.json
+          for f in $SPEC_FILES; do
+            curl -fsSL "$BASE/$f" -o "openapi/$f"
+          done
 
           # Optional fixtures — skip cleanly if the CDN returns 404.
-          for f in fixtures3.private_preview.yaml fixtures3.private_preview.json; do
+          for f in $FIXTURE_FILES; do
             if ! curl -fsSL "$BASE/$f" -o "openapi/$f"; then
               echo "Optional file $f absent from CDN; skipping."
               rm -f "openapi/$f"
@@ -82,6 +126,7 @@ jobs:
 
       - name: Commit specs, generate diffs, and cut release
         env:
+          MODE: ${{ inputs.mode }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
           set -euo pipefail
@@ -89,28 +134,26 @@ jobs:
           git config user.name "Stripe OpenAPI"
           git config user.email "105521251+stripe-openapi[bot]@users.noreply.github.com"
 
-          # In a dry run, local commits are pushed here for inspection instead of master.
-          TEST_BRANCH="dry-run/private-preview"
-
           # --- Commit fixtures (if changed) ---
-          for f in openapi/fixtures3.private_preview.yaml openapi/fixtures3.private_preview.json; do
-            if [ -f "$f" ]; then git add "$f"; fi
+          for f in $FIXTURE_FILES; do
+            if [ -f "openapi/$f" ]; then git add "openapi/$f"; fi
           done
           if [ -n "$(git diff --name-only --staged)" ]; then
-            git commit -m "Update fixture data for private preview"
+            git commit -m "$FIXTURE_MSG"
           fi
 
           # --- Commit spec (if changed); only cut a release when the spec moved ---
-          git add ./openapi/spec3.private_preview.sdk.yaml ./openapi/spec3.private_preview.sdk.json
+          for f in $SPEC_FILES; do
+            git add "openapi/$f"
+          done
           if [ -n "$(git diff --name-only --staged)" ]; then
-            git commit -m "Update OpenAPI specification for private preview"
+            git commit -m "$SPEC_MSG"
 
             LAST_TAG=$(git describe --tags --abbrev=0)
             NEW_TAG="v$(( ${LAST_TAG#v} + 1 ))"
             echo "Previous tag ${LAST_TAG}; new tag ${NEW_TAG}"
 
-            # Materialize the prior spec from the last release tag. Mirrors publish.sh,
-            # which diffs the GA spec (openapi/spec3.sdk.yaml) — old tag vs. working tree.
+            # Diff the GA spec (old tag vs. working tree), exactly as publish.sh does.
             SPEC_PATH="openapi/spec3.sdk.yaml"
             OLD_SPEC="/tmp/oldspec.sdk.yaml"
             git show "${LAST_TAG}:${SPEC_PATH}" > "$OLD_SPEC"
@@ -139,18 +182,17 @@ jobs:
               git commit -m "Update upcoming changes"
             fi
 
-            # Private-preview releases don't surface a full diff in the release notes.
             if [ "$DRY_RUN" = "true" ]; then
               # Never create/push a real tag in a dry run — a stray vN tag would corrupt
               # the next real run's `git describe` increment.
               echo "Dry run: would create tag ${NEW_TAG} and push master."
             else
-              git tag "$NEW_TAG" -m "This release only includes changes to the private preview spec."
+              git tag "$NEW_TAG" -m "$TAG_MSG"
               # Push branch and tag atomically so we never leave a dangling tag.
               git push --atomic origin master "$NEW_TAG"
             fi
           else
-            echo "No private-preview spec changes; skipping release."
+            echo "No spec changes for mode '${MODE}'; skipping release."
           fi
 
           if [ "$DRY_RUN" = "true" ]; then
