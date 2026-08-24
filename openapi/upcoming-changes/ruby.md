@@ -4,7 +4,6 @@
 * Add support for `feedback_options` on `BillingPortal::Configuration::Feature::SubscriptionCancel::CancellationReason`, `BillingPortal::ConfigurationCreateParams::Feature::SubscriptionCancel::CancellationReason`, and `BillingPortal::ConfigurationUpdateParams::Feature::SubscriptionCancel::CancellationReason`
 * Add support for `customer_update` on `BillingPortal::Session::Flow`
 * Add support for `funding_source_group` on `Charge::PaymentMethodDetail::Card::Wallet::Link` and `Charge::PaymentMethodDetail::Link`
-* Add support for `retrieval_reference_number` on `Charge::PaymentMethodDetail::CardPresent`, `ConfirmationToken::PaymentMethodPreview::Card::GeneratedFrom::PaymentMethodDetail::CardPresent`, `PaymentAttemptRecord::PaymentMethodDetail::CardPresent`, `PaymentMethod::Card::GeneratedFrom::PaymentMethodDetail::CardPresent`, and `PaymentRecord::PaymentMethodDetail::CardPresent`
 * Add support for `funding_types_blocked` on `Checkout::Session::PaymentMethodOption::Card::Restriction` and `Checkout::SessionCreateParams::PaymentMethodOption::Card::Restriction`
 * Add support for `metadata` on `ConfirmationToken`
 * Add support for `active_entitlements` and `customer_portal` on `CustomerSession::Component` and `CustomerSessionCreateParams::Component`
@@ -12,7 +11,6 @@
 * Add support for `frozen_fields` on `InvoiceItem`
 * Add support for `billie` on `Invoice::PaymentSetting::PaymentMethodOption`, `InvoiceCreateParams::PaymentSetting::PaymentMethodOption`, `InvoiceUpdateParams::PaymentSetting::PaymentMethodOption`, `Subscription::PaymentSetting::PaymentMethodOption`, `SubscriptionCreateParams::PaymentSetting::PaymentMethodOption`, and `SubscriptionUpdateParams::PaymentSetting::PaymentMethodOption`
 * ⚠️ Remove support for `cryptogram` on `PaymentAttemptRecord::PaymentMethodDetail::Card::ThreeDSecure` and `PaymentRecord::PaymentMethodDetail::Card::ThreeDSecure`
-* Add support for `aade_data` on `PaymentIntent::PaymentMethodOption::CardPresent`, `PaymentIntentConfirmParams::PaymentMethodOption::CardPresent`, `PaymentIntentCreateParams::PaymentMethodOption::CardPresent`, and `PaymentIntentUpdateParams::PaymentMethodOption::CardPresent`
 * Change `PaymentIntent.allowed_payment_method_types` and `SetupIntent.allowed_payment_method_types` to be required
 * Add support for `application_fee_amount`, `application_fee_percent`, `on_behalf_of`, and `transfer_data` on `PaymentLinkUpdateParams`
 * Add support for `feedback_option` on `Subscription::CancellationDetail`, `SubscriptionCancelParams::CancellationDetail`, and `SubscriptionUpdateParams::CancellationDetail`

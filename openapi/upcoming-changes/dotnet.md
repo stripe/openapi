@@ -4,7 +4,6 @@
 * Add support for `FeedbackOptions` on `BillingPortal.Configuration.Features.SubscriptionCancel.CancellationReason` and `BillingPortalConfigurationFeaturesSubscriptionCancelCancellationReasonOptions`
 * Add support for `CustomerUpdate` on `BillingPortal.Session.Flow`
 * Add support for `FundingSourceGroup` on `Charge.PaymentMethodDetails.Card.Wallet.Link` and `Charge.PaymentMethodDetails.Link`
-* Add support for `RetrievalReferenceNumber` on `Charge.PaymentMethodDetails.CardPresent`, `ConfirmationToken.PaymentMethodPreview.Card.GeneratedFrom.PaymentMethodDetails.CardPresent`, `PaymentAttemptRecord.PaymentMethodDetails.CardPresent`, `PaymentMethod.Card.GeneratedFrom.PaymentMethodDetails.CardPresent`, and `PaymentRecord.PaymentMethodDetails.CardPresent`
 * Add support for `FundingTypesBlocked` on `Checkout.Session.PaymentMethodOptions.Card.Restrictions` and `CheckoutSessionPaymentMethodOptionsCardRestrictionsOptions`
 * Add support for `Metadata` on `ConfirmationToken`
 * Add support for `ActiveEntitlements` and `CustomerPortal` on `CustomerSession.Components` and `CustomerSessionComponentsOptions`
@@ -12,7 +11,6 @@
 * Add support for `FrozenFields` on `InvoiceItem`
 * Add support for `Billie` on `Invoice.PaymentSettings.PaymentMethodOptions`, `InvoicePaymentSettingsPaymentMethodOptionsOptions`, `Subscription.PaymentSettings.PaymentMethodOptions`, and `SubscriptionPaymentSettingsPaymentMethodOptionsOptions`
 * ⚠️ Remove support for `Cryptogram` on `PaymentAttemptRecord.PaymentMethodDetails.Card.ThreeDSecure` and `PaymentRecord.PaymentMethodDetails.Card.ThreeDSecure`
-* Add support for `AadeData` on `PaymentIntent.PaymentMethodOptions.CardPresent` and `PaymentIntentPaymentMethodOptionsCardPresentOptions`
 * Add support for `ApplicationFeeAmount`, `ApplicationFeePercent`, `OnBehalfOf`, and `TransferData` on `PaymentLinkUpdateOptions`
 * Add support for `FeedbackOption` on `Subscription.CancellationDetails` and `SubscriptionCancellationDetailsOptions`
 * Add support for `CancelAtPeriodEnd` on `Subscription.PendingUpdate`

@@ -5,7 +5,6 @@
 * Add support for `CustomerUpdate` on `BillingPortalSessionFlow`
 * Add support for new value `customer_update` on enum `BillingPortalSessionFlow.Type`
 * Add support for `FundingSourceGroup` on `ChargePaymentMethodDetailsCardWalletLink` and `ChargePaymentMethodDetailsLink`
-* Add support for `RetrievalReferenceNumber` on `ChargePaymentMethodDetailsCardPresent`, `ConfirmationTokenPaymentMethodPreviewCardGeneratedFromPaymentMethodDetailsCardPresent`, `PaymentAttemptRecordPaymentMethodDetailsCardPresent`, `PaymentMethodCardGeneratedFromPaymentMethodDetailsCardPresent`, and `PaymentRecordPaymentMethodDetailsCardPresent`
 * Add support for `FundingTypesBlocked` on `CheckoutSessionPaymentMethodOptionsCardRestrictionsParams` and `CheckoutSessionPaymentMethodOptionsCardRestrictions`
 * Add support for `Metadata` on `ConfirmationToken`
 * Add support for `ActiveEntitlements` and `CustomerPortal` on `CustomerSessionComponentsParams` and `CustomerSessionComponents`
@@ -14,7 +13,6 @@
 * Add support for `Billie` on `InvoicePaymentSettingsPaymentMethodOptionsParams`, `InvoicePaymentSettingsPaymentMethodOptions`, `SubscriptionPaymentSettingsPaymentMethodOptionsParams`, and `SubscriptionPaymentSettingsPaymentMethodOptions`
 * Add support for new value `billie` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
 * ⚠️ Remove support for `Cryptogram` on `PaymentAttemptRecordPaymentMethodDetailsCardThreeDSecure` and `PaymentRecordPaymentMethodDetailsCardThreeDSecure`
-* Add support for `AadeData` on `PaymentIntentConfirmPaymentMethodOptionsCardPresentParams`, `PaymentIntentPaymentMethodOptionsCardPresentParams`, and `PaymentIntentPaymentMethodOptionsCardPresent`
 * Add support for new value `touch_n_go` on enums `PaymentIntent.AllowedPaymentMethodTypes` and `SetupIntent.AllowedPaymentMethodTypes`
 * Add support for `ApplicationFeeAmount`, `ApplicationFeePercent`, `OnBehalfOf`, and `TransferData` on `PaymentLinkParams`
 * Add support for `FeedbackOption` on `SubscriptionCancelCancellationDetailsParams`, `SubscriptionCancellationDetailsParams`, and `SubscriptionCancellationDetails`

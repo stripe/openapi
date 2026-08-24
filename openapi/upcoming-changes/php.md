@@ -5,7 +5,6 @@
 * Add support for `customer_update` on `BillingPortal.Session.flow`
 * Add support for new value `customer_update` on enum `BillingPortal.Session.flow.type`
 * Add support for `funding_source_group` on `Charge.payment_method_details.card.wallet.link` and `Charge.payment_method_details.link`
-* Add support for `retrieval_reference_number` on `Charge.payment_method_details.card_present`, `ConfirmationToken.payment_method_preview.card.generated_from.payment_method_details.card_present`, `PaymentAttemptRecord.payment_method_details.card_present`, `PaymentMethod.card.generated_from.payment_method_details.card_present`, and `PaymentRecord.payment_method_details.card_present`
 * Add support for `funding_types_blocked` on `Checkout.Session.payment_method_options.card.restrictions` and `Checkout\Session.create().$params.payment_method_option.card.restriction`
 * Add support for `metadata` on `ConfirmationToken`
 * Add support for `active_entitlements` and `customer_portal` on `CustomerSession.components` and `CustomerSession.create().$params.component`
@@ -14,7 +13,6 @@
 * Add support for `billie` on `Invoice.create().$params.payment_setting.payment_method_option`, `Invoice.payment_settings.payment_method_options`, `Invoice.update().$params.payment_setting.payment_method_option`, `Subscription.create().$params.payment_setting.payment_method_option`, `Subscription.payment_settings.payment_method_options`, and `Subscription.update().$params.payment_setting.payment_method_option`
 * Add support for new value `billie` on enums `Invoice.payment_settings.payment_method_types` and `Subscription.payment_settings.payment_method_types`
 * ⚠️ Remove support for `cryptogram` on `PaymentAttemptRecord.payment_method_details.card.three_d_secure` and `PaymentRecord.payment_method_details.card.three_d_secure`
-* Add support for `aade_data` on `PaymentIntent.confirm().$params.payment_method_option.card_present`, `PaymentIntent.create().$params.payment_method_option.card_present`, `PaymentIntent.payment_method_options.card_present`, and `PaymentIntent.update().$params.payment_method_option.card_present`
 * Add support for new value `touch_n_go` on enums `PaymentIntent.allowed_payment_method_types` and `SetupIntent.allowed_payment_method_types`
 * Change `PaymentIntent.allowed_payment_method_types` and `SetupIntent.allowed_payment_method_types` to be required
 * Add support for `application_fee_amount`, `application_fee_percent`, `on_behalf_of`, and `transfer_data` on `PaymentLink.update().$params`

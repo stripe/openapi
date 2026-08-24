@@ -5,7 +5,6 @@
 * Add support for new value `customer_update` on enum `billingportal.SessionCreateParams.flow_data.type`
 * Add support for `customerUpdate` on `billingportal.Session.flow`
 * Add support for `fundingSourceGroup` on `Charge.payment_method_details.card.wallet.link` and `Charge.payment_method_details.link`
-* Add support for `retrievalReferenceNumber` on `Charge.payment_method_details.card_present`, `ConfirmationToken.payment_method_preview.card.generated_from.payment_method_details.card_present`, `PaymentAttemptRecord.payment_method_details.card_present`, `PaymentMethod.card.generated_from.payment_method_details.card_present`, and `PaymentRecord.payment_method_details.card_present`
 * Add support for `fundingTypesBlocked` on `checkout.Session.payment_method_options.card.restrictions` and `checkout.SessionCreateParams.payment_method_options.card.restrictions`
 * Add support for `metadata` on `ConfirmationToken`
 * Add support for `activeEntitlements` and `customerPortal` on `CustomerSession.components` and `CustomerSessionCreateParams.components`
@@ -15,7 +14,6 @@
 * Add support for new value `billie` on enums `InvoiceCreateParams.payment_settings.paymentMethodTypes`, `InvoiceUpdateParams.payment_settings.paymentMethodTypes`, `SubscriptionCreateParams.payment_settings.paymentMethodTypes`, and `SubscriptionUpdateParams.payment_settings.paymentMethodTypes`
 * ⚠️ Remove support for `cryptogram` on `PaymentAttemptRecord.payment_method_details.card.three_d_secure` and `PaymentRecord.payment_method_details.card.three_d_secure`
 * Add support for new value `touch_n_go` on enums `PaymentIntentConfirmParams.allowedPaymentMethodTypes`, `PaymentIntentCreateParams.allowedPaymentMethodTypes`, `PaymentIntentUpdateParams.allowedPaymentMethodTypes`, `SetupIntentConfirmParams.allowedPaymentMethodTypes`, `SetupIntentCreateParams.allowedPaymentMethodTypes`, and `SetupIntentUpdateParams.allowedPaymentMethodTypes`
-* Add support for `aadeData` on `PaymentIntent.payment_method_options.card_present`, `PaymentIntentConfirmParams.payment_method_options.card_present`, `PaymentIntentCreateParams.payment_method_options.card_present`, and `PaymentIntentUpdateParams.payment_method_options.card_present`
 * Add support for `applicationFeeAmount`, `applicationFeePercent`, `onBehalfOf`, and `transferData` on `PaymentLinkUpdateParams`
 * Add support for `feedbackOption` on `Subscription.cancellation_details`, `SubscriptionCancelParams.cancellation_details`, and `SubscriptionUpdateParams.cancellation_details`
 * Add support for `cancelAtPeriodEnd` on `Subscription.pending_update`
