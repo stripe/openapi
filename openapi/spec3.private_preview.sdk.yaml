@@ -15036,6 +15036,7 @@ components:
           enum:
             - none
           type: string
+          x-stripeBypassValidation: true
       title: CheckoutBancontactPaymentMethodOptions
       type: object
       x-expandableFields: []
@@ -15451,6 +15452,83 @@ components:
       x-expandableFields: []
       x-stripeMostCommon:
         - setup_future_usage
+    checkout_financial_connections_payment_method_options:
+      description: ''
+      properties:
+        filters:
+          $ref: >-
+            #/components/schemas/checkout_financial_connections_payment_method_options_filters
+        manual_entry:
+          $ref: >-
+            #/components/schemas/payment_flows_private_payment_methods_financial_connections_common_linked_account_options_manual_entry
+        permissions:
+          description: >-
+            The list of permissions to request. The `payment_method` permission
+            must be included.
+          items:
+            enum:
+              - balances
+              - ownership
+              - payment_method
+              - transactions
+            type: string
+            x-stripeBypassValidation: true
+          type: array
+        prefetch:
+          description: Data features requested to be retrieved upon account creation.
+          items:
+            enum:
+              - balances
+              - inferred_balances
+              - ownership
+              - transactions
+            type: string
+            x-stripeBypassValidation: true
+          nullable: true
+          type: array
+        return_url:
+          description: >-
+            For webview integrations only. Upon completing OAuth login in the
+            native browser, the user will be redirected to this URL to return to
+            your app.
+          maxLength: 5000
+          type: string
+      required:
+        - prefetch
+      title: CheckoutFinancialConnectionsPaymentMethodOptions
+      type: object
+      x-expandableFields:
+        - filters
+        - manual_entry
+      x-stripeMostCommon:
+        - filters
+        - manual_entry
+        - permissions
+        - prefetch
+        - return_url
+    checkout_financial_connections_payment_method_options_filters:
+      description: ''
+      properties:
+        account_subcategories:
+          description: >-
+            The account subcategories to use to filter for possible accounts to
+            link. Valid subcategories are `checking` and `savings`.
+          items:
+            enum:
+              - checking
+              - savings
+            type: string
+          type: array
+        institution:
+          description: The institution to use to filter for possible accounts to link.
+          maxLength: 5000
+          type: string
+      title: CheckoutFinancialConnectionsPaymentMethodOptionsFilters
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - account_subcategories
+        - institution
     checkout_fpx_payment_method_options:
       description: ''
       properties:
@@ -16881,7 +16959,8 @@ components:
       description: ''
       properties:
         financial_connections:
-          $ref: '#/components/schemas/linked_account_options_common'
+          $ref: >-
+            #/components/schemas/checkout_financial_connections_payment_method_options
         setup_future_usage:
           description: >-
             Indicates that you intend to make future payments with this
@@ -79329,10 +79408,7 @@ components:
             server is allowed to update the shipping details.
 
 
-            When set to `server_only`, you must add the onShippingDetailsChange
-            event handler when initializing the Stripe Checkout client and
-            manually update the shipping details from your server using the
-            Stripe API.
+            This parameter is only supported when `ui_mode=elements`.
           enum:
             - client_only
             - server_only
@@ -80218,10 +80294,7 @@ components:
             server is allowed to update the shipping details.
 
 
-            When set to `server_only`, you must add the onShippingDetailsChange
-            event handler when initializing the Stripe Checkout client and
-            manually update the shipping details from your server using the
-            Stripe API.
+            This parameter is only supported when `ui_mode=elements`.
           enum:
             - client_only
             - server_only
@@ -104230,12 +104303,6 @@ components:
           format: unix-time
           nullable: true
           type: integer
-        cancel_at_period_end:
-          description: >-
-            Indicates whether this subscription should cancel at the end of the
-            current period if the update is applied.
-          nullable: true
-          type: boolean
         discount:
           anyOf:
             - $ref: '#/components/schemas/discount'
@@ -104306,7 +104373,6 @@ components:
           type: boolean
       required:
         - billing_cycle_anchor
-        - cancel_at_period_end
         - discount
         - discounts
         - expires_at
@@ -104322,7 +104388,6 @@ components:
         - subscription_items
       x-stripeMostCommon:
         - billing_cycle_anchor
-        - cancel_at_period_end
         - discount
         - discounts
         - expires_at
@@ -117772,7 +117837,7 @@ info:
   termsOfService: 'https://stripe.com/us/terms/'
   title: Stripe API
   version: >-
-    2026-08-12.preview; embedded_connect_beta=v2;
+    2026-08-26.preview; embedded_connect_beta=v2;
     server_side_confirmation_beta=v1; orders_beta=v4; unified_accounts_beta=v1;
     terminal_collect_inputs_beta=v2; terminal_collect_confirm_beta=v1;
     retrieve_tax_forms_beta=v1; checkout_server_update_beta=v1;
@@ -149163,6 +149228,7 @@ paths:
                           enum:
                             - none
                           type: string
+                          x-stripeBypassValidation: true
                       title: payment_method_options_param
                       type: object
                       x-stripeMostCommon:
@@ -151744,11 +151810,8 @@ paths:
                             update the shipping details.
 
 
-                            When set to `server_only`, you must add the
-                            onShippingDetailsChange event handler when
-                            initializing the Stripe Checkout client and manually
-                            update the shipping details from your server using
-                            the Stripe API.
+                            This parameter is only supported when
+                            `ui_mode=elements`.
                           enum:
                             - client_only
                             - server_only
@@ -151805,10 +151868,8 @@ paths:
                         shipping details.
 
 
-                        When set to `server_only`, you must add the
-                        onShippingDetailsChange event handler when initializing
-                        the Stripe Checkout client and manually update the
-                        shipping details from your server using the Stripe API.
+                        This parameter is only supported when
+                        `ui_mode=elements`.
                       enum:
                         - client_only
                         - server_only
@@ -208151,9 +208212,6 @@ paths:
               payment_method_options:
                 explode: true
                 style: deepObject
-              payment_method_types:
-                explode: true
-                style: deepObject
               payments_orchestration:
                 explode: true
                 style: deepObject
@@ -221801,19 +221859,6 @@ paths:
                     - vipps
                     - wechat_pay
                     - zip
-                payment_method_types:
-                  description: >-
-                    The list of payment method types (for example, a card) that
-                    this PaymentIntent can use. If you don't provide this,
-                    Stripe will dynamically show relevant payment methods from
-                    your [payment method
-                    settings](https://dashboard.stripe.com/settings/payment_methods).
-                    A list of valid payment method types can be found
-                    [here](https://docs.stripe.com/api/payment_methods/object#payment_method_object-type).
-                  items:
-                    maxLength: 5000
-                    type: string
-                  type: array
                 payments_orchestration:
                   description: >-
                     When you enable this parameter, this PaymentIntent will
@@ -222137,6 +222182,19 @@ paths:
                     Stripe.js, iOS, or Android client-side SDKs to handle the
                     next actions.
                   type: boolean
+                payment_method_types:
+                  description: >-
+                    The list of payment method types (for example, a card) that
+                    this PaymentIntent can use. If you don't provide this,
+                    Stripe will dynamically show relevant payment methods from
+                    your [payment method
+                    settings](https://dashboard.stripe.com/settings/payment_methods).
+                    A list of valid payment method types can be found
+                    [here](https://docs.stripe.com/api/payment_methods/object#payment_method_object-type).
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
               required:
                 - amount
                 - currency
@@ -222152,7 +222210,6 @@ paths:
                 - metadata
                 - off_session
                 - payment_method
-                - payment_method_types
                 - receipt_email
                 - setup_future_usage
                 - shipping
@@ -222436,9 +222493,6 @@ paths:
                 explode: true
                 style: deepObject
               payment_method_options:
-                explode: true
-                style: deepObject
-              payment_method_types:
                 explode: true
                 style: deepObject
               receipt_email:
@@ -235991,18 +236045,6 @@ paths:
                     - vipps
                     - wechat_pay
                     - zip
-                payment_method_types:
-                  description: >-
-                    The list of payment method types (for example, card) that
-                    this PaymentIntent can use. Use `automatic_payment_methods`
-                    to manage payment methods from the [Stripe
-                    Dashboard](https://dashboard.stripe.com/settings/payment_methods).
-                    A list of valid payment method types can be found
-                    [here](https://docs.stripe.com/api/payment_methods/object#payment_method_object-type).
-                  items:
-                    maxLength: 5000
-                    type: string
-                  type: array
                 receipt_email:
                   anyOf:
                     - type: string
@@ -236234,6 +236276,18 @@ paths:
                     been set. Learn more about the [use case for connected
                     accounts](https://docs.stripe.com/payments/connected-accounts).
                   type: string
+                payment_method_types:
+                  description: >-
+                    The list of payment method types (for example, card) that
+                    this PaymentIntent can use. Use `automatic_payment_methods`
+                    to manage payment methods from the [Stripe
+                    Dashboard](https://dashboard.stripe.com/settings/payment_methods).
+                    A list of valid payment method types can be found
+                    [here](https://docs.stripe.com/api/payment_methods/object#payment_method_object-type).
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
               type: object
               x-stripeMostCommon:
                 - amount
@@ -236244,7 +236298,6 @@ paths:
                 - mandate_data
                 - metadata
                 - payment_method
-                - payment_method_types
                 - receipt_email
                 - setup_future_usage
                 - shipping
@@ -240219,9 +240272,6 @@ paths:
                 explode: true
                 style: deepObject
               payment_method_options:
-                explode: true
-                style: deepObject
-              payment_method_types:
                 explode: true
                 style: deepObject
               radar_options:
@@ -253805,19 +253855,6 @@ paths:
                     - vipps
                     - wechat_pay
                     - zip
-                payment_method_types:
-                  description: >-
-                    The list of payment method types (for example, a card) that
-                    this PaymentIntent can use. If you don't provide this,
-                    Stripe will dynamically show relevant payment methods from
-                    your [payment method
-                    settings](https://dashboard.stripe.com/settings/payment_methods).
-                    A list of valid payment method types can be found
-                    [here](https://docs.stripe.com/api/payment_methods/object#payment_method_object-type).
-                  items:
-                    maxLength: 5000
-                    type: string
-                  type: array
                 radar_options:
                   description: >-
                     Options to configure Radar. Learn more about [Radar
@@ -254001,10 +254038,22 @@ paths:
                     Stripe.js, iOS, or Android client-side SDKs to handle the
                     next actions.
                   type: boolean
+                payment_method_types:
+                  description: >-
+                    The list of payment method types (for example, a card) that
+                    this PaymentIntent can use. If you don't provide this,
+                    Stripe will dynamically show relevant payment methods from
+                    your [payment method
+                    settings](https://dashboard.stripe.com/settings/payment_methods).
+                    A list of valid payment method types can be found
+                    [here](https://docs.stripe.com/api/payment_methods/object#payment_method_object-type).
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
               type: object
               x-stripeMostCommon:
                 - payment_method
-                - payment_method_types
                 - receipt_email
                 - setup_future_usage
                 - shipping
@@ -289595,9 +289644,6 @@ paths:
               payment_method_options:
                 explode: true
                 style: deepObject
-              payment_method_types:
-                explode: true
-                style: deepObject
               setup_details:
                 explode: true
                 style: deepObject
@@ -292738,19 +292784,6 @@ paths:
                     - upi
                     - us_bank_account
                     - wechat_pay
-                payment_method_types:
-                  description: >-
-                    The list of payment method types (for example, card) that
-                    this SetupIntent can use. If you don't provide this, Stripe
-                    will dynamically show relevant payment methods from your
-                    [payment method
-                    settings](https://dashboard.stripe.com/settings/payment_methods).
-                    A list of valid payment method types can be found
-                    [here](https://docs.stripe.com/api/payment_methods/object#payment_method_object-type).
-                  items:
-                    maxLength: 5000
-                    type: string
-                  type: array
                 return_url:
                   description: >-
                     The URL to redirect your customer back to after they
@@ -292873,6 +292906,19 @@ paths:
                     Stripe.js, iOS, or Android client-side SDKs to handle the
                     next actions.
                   type: boolean
+                payment_method_types:
+                  description: >-
+                    The list of payment method types (for example, card) that
+                    this SetupIntent can use. If you don't provide this, Stripe
+                    will dynamically show relevant payment methods from your
+                    [payment method
+                    settings](https://dashboard.stripe.com/settings/payment_methods).
+                    A list of valid payment method types can be found
+                    [here](https://docs.stripe.com/api/payment_methods/object#payment_method_object-type).
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
               type: object
               x-stripeMostCommon:
                 - automatic_payment_methods
@@ -292882,7 +292928,6 @@ paths:
                 - description
                 - metadata
                 - payment_method
-                - payment_method_types
                 - usage
         required: false
       responses:
@@ -293005,9 +293050,6 @@ paths:
                 explode: true
                 style: deepObject
               payment_method_options:
-                explode: true
-                style: deepObject
-              payment_method_types:
                 explode: true
                 style: deepObject
               setup_details:
@@ -296049,19 +296091,6 @@ paths:
                     - upi
                     - us_bank_account
                     - wechat_pay
-                payment_method_types:
-                  description: >-
-                    The list of payment method types (for example, card) that
-                    this SetupIntent can set up. If you don't provide this,
-                    Stripe will dynamically show relevant payment methods from
-                    your [payment method
-                    settings](https://dashboard.stripe.com/settings/payment_methods).
-                    A list of valid payment method types can be found
-                    [here](https://docs.stripe.com/api/payment_methods/object#payment_method_object-type).
-                  items:
-                    maxLength: 5000
-                    type: string
-                  type: array
                 setup_details:
                   description: >-
                     Provides industry-specific information about the
@@ -296120,6 +296149,19 @@ paths:
                   x-stripeMostCommon:
                     - benefit
                     - location
+                payment_method_types:
+                  description: >-
+                    The list of payment method types (for example, card) that
+                    this SetupIntent can set up. If you don't provide this,
+                    Stripe will dynamically show relevant payment methods from
+                    your [payment method
+                    settings](https://dashboard.stripe.com/settings/payment_methods).
+                    A list of valid payment method types can be found
+                    [here](https://docs.stripe.com/api/payment_methods/object#payment_method_object-type).
+                  items:
+                    maxLength: 5000
+                    type: string
+                  type: array
               type: object
               x-stripeMostCommon:
                 - customer
@@ -296127,7 +296169,6 @@ paths:
                 - description
                 - metadata
                 - payment_method
-                - payment_method_types
         required: false
       responses:
         '200':
