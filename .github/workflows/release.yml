@@ -76,9 +76,20 @@ jobs:
       # Mirrors action-gh-release's create-or-update behaviour: it overwrites
       # the notes on an existing release rather than failing, which is what
       # makes re-running this workflow on a tag safe.
+      #
+      # --title is load-bearing. action-gh-release defaulted the release name to
+      # the tag, but `gh release create` omits name from the request entirely
+      # when --title is unset, which leaves the release titled null. On an
+      # existing release the current title wins, so a hand-edited one survives a
+      # re-run and an untitled one gets backfilled -- the same precedence the
+      # action applied (input_name || existing name || tag).
       run: |
-        if gh release view "${GITHUB_REF_NAME}" > /dev/null 2>&1; then
-          gh release edit "${GITHUB_REF_NAME}" --notes-file "${NOTES_FILE}"
+        if title=$(gh release view "${GITHUB_REF_NAME}" --json name --jq '.name // ""' 2>/dev/null); then
+          gh release edit "${GITHUB_REF_NAME}" \
+            --title "${title:-${GITHUB_REF_NAME}}" \
+            --notes-file "${NOTES_FILE}"
         else
-          gh release create "${GITHUB_REF_NAME}" --notes-file "${NOTES_FILE}"
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file "${NOTES_FILE}"
         fi
