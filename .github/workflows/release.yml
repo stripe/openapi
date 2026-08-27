@@ -18,11 +18,10 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
-    # The push trigger is already restricted to v[0-9]+ tags, but
-    # workflow_dispatch is not, and GITHUB_REF_NAME is then a branch name.
-    # action-gh-release used to refuse that case ("GitHub Releases requires a
-    # tag"); `gh release create` would instead happily cut a new tag named after
-    # the branch, so the refusal has to be explicit now.
+    # The push trigger only fires on v[0-9]+ tags, but workflow_dispatch accepts
+    # any ref, and GITHUB_REF_NAME is then a branch name. `gh release create`
+    # would cut a new tag named after that branch rather than refusing, so the
+    # refusal has to be explicit.
     - name: Require a tag
       run: |
         if [ "${GITHUB_REF_TYPE}" != "tag" ]; then
@@ -73,20 +72,18 @@ jobs:
         GH_TOKEN: ${{ steps.gh-api-token.outputs.token }}
         GH_REPO: ${{ github.repository }}
         NOTES_FILE: ${{ runner.temp }}/release_notes.md
-      # Mirrors action-gh-release's create-or-update behaviour: it overwrites
-      # the notes on an existing release rather than failing, which is what
-      # makes re-running this workflow on a tag safe.
+      # Create or update, so re-running the workflow on a tag overwrites that
+      # release's notes instead of failing.
       #
-      # --title is load-bearing. action-gh-release defaulted the release name to
-      # the tag, but `gh release create` omits name from the request entirely
-      # when --title is unset, which leaves the release titled null. On an
-      # existing release the current title wins, so a hand-edited one survives a
-      # re-run and an untitled one gets backfilled -- the same precedence the
-      # action applied (input_name || existing name || tag).
+      # --title is required, not decoration: `gh release create` omits name from
+      # the request when it is unset and the API has no default for it, so
+      # without this the release is published with a null title and the web UI
+      # falls back to showing the tag. Setting it on the edit path too backfills
+      # any release that was already published untitled.
       run: |
-        if title=$(gh release view "${GITHUB_REF_NAME}" --json name --jq '.name // ""' 2>/dev/null); then
+        if gh release view "${GITHUB_REF_NAME}" > /dev/null 2>&1; then
           gh release edit "${GITHUB_REF_NAME}" \
-            --title "${title:-${GITHUB_REF_NAME}}" \
+            --title "${GITHUB_REF_NAME}" \
             --notes-file "${NOTES_FILE}"
         else
           gh release create "${GITHUB_REF_NAME}" \
