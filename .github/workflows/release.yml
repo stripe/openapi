@@ -78,12 +78,15 @@ jobs:
       # --title is required, not decoration: `gh release create` omits name from
       # the request when it is unset and the API has no default for it, so
       # without this the release is published with a null title and the web UI
-      # falls back to showing the tag. Setting it on the edit path too backfills
-      # any release that was already published untitled.
+      # falls back to showing the tag.
+      #
+      # On an existing release the current title wins and the tag is only the
+      # fallback, so a title set by hand survives a re-run while one left empty
+      # gets backfilled.
       run: |
-        if gh release view "${GITHUB_REF_NAME}" > /dev/null 2>&1; then
+        if title=$(gh release view "${GITHUB_REF_NAME}" --json name --jq '.name // ""' 2>/dev/null); then
           gh release edit "${GITHUB_REF_NAME}" \
-            --title "${GITHUB_REF_NAME}" \
+            --title "${title:-${GITHUB_REF_NAME}}" \
             --notes-file "${NOTES_FILE}"
         else
           gh release create "${GITHUB_REF_NAME}" \
