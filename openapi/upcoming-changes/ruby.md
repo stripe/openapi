@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for `sequra_payments` on `Account::Capability`, `AccountCreateParams::Capability`, and `AccountUpdateParams::Capability`

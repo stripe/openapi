@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for `sequra_payments` on `Account.capabilities`, `Account.create().$params.capability`, and `Account.update().$params.capability`

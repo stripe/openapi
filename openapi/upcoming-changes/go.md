@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for `SequraPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`

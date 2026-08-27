@@ -1,1 +1,2 @@
+* Add support for `sequra_payments` on `Account#create.capabilities`, `Account#update.capabilities`, and `Account.capabilities`
 * Add support for new value `2026-09-30.endive` on enum `WebhookEndpoint#create.api_version`
