@@ -1,1 +1,3 @@
 * Add support for `sequra_payments` on `Account::Capability`, `AccountCreateParams::Capability`, and `AccountUpdateParams::Capability`
+* Change type of `Checkout::SessionCreateParams::PaymentMethodOption::Bancontact.setup_future_usage` from `literal('none')` to `enum('none'|'off_session')`
+* ⚠️ Change type of `Checkout::Session::PaymentMethodOption::Bancontact.setup_future_usage` from `literal('none')` to `enum('none'|'off_session')`
