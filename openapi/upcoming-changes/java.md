@@ -9,4 +9,5 @@
 * Add support for new value `sequra` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
 * Add support for `canceled` on `PaymentRecordReportPaymentAttemptParams` and `PaymentRecordReportPaymentParams`
 * Add support for new value `canceled` on enums `PaymentRecordReportPaymentAttemptParams.outcome` and `PaymentRecordReportPaymentParams.outcome`
+* Change `SubscriptionCreateParams.trial_settings.end_behavior.missingPaymentMethod` and `SubscriptionUpdateParams.trial_settings.end_behavior.missingPaymentMethod` to be optional
 * Add support for new value `2026-09-30.endive` on enum `WebhookEndpointCreateParams.apiVersion`

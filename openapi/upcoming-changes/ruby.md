@@ -3,3 +3,4 @@
 * Change type of `Checkout::SessionCreateParams::PaymentMethodOption::Bancontact.setup_future_usage` from `literal('none')` to `enum('none'|'off_session')`
 * ⚠️ Change type of `Checkout::Session::PaymentMethodOption::Bancontact.setup_future_usage` from `literal('none')` to `enum('none'|'off_session')`
 * Add support for `canceled` on `PaymentRecordReportPaymentAttemptParams` and `PaymentRecordReportPaymentParams`
+* Change `SubscriptionCreateParams::TrialSetting::EndBehavior.missing_payment_method` and `SubscriptionUpdateParams::TrialSetting::EndBehavior.missing_payment_method` to be optional

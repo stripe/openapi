@@ -6,3 +6,4 @@
 * Add support for new value `sequra` on enums `PaymentIntent.excluded_payment_method_types` and `SetupIntent.excluded_payment_method_types`
 * Add support for new value `sequra` on enum `PaymentLink.payment_method_types`
 * Add support for `canceled` on `PaymentRecord.report_payment().$params` and `PaymentRecord.report_payment_attempt().$params`
+* Change `Subscription.create().$params.trial_setting.end_behavior.missing_payment_method` and `Subscription.update().$params.trial_setting.end_behavior.missing_payment_method` to be optional
