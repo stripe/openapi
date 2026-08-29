@@ -86333,13 +86333,6 @@ components:
             If the object exists in live mode, the value is `true`. If the
             object exists in test mode, the value is `false`.
           type: boolean
-        name:
-          description: >-
-            A brief, user-friendly name for the trial offer-for identification
-            purposes.
-          maxLength: 255
-          nullable: true
-          type: string
         object:
           description: >-
             String representing the object's type. Objects of the same type
@@ -86358,12 +86351,19 @@ components:
             oneOf:
               - $ref: '#/components/schemas/price'
               - $ref: '#/components/schemas/deleted_price'
+        name:
+          description: >-
+            A brief, user-friendly name for the trial offer-for identification
+            purposes.
+          maxLength: 255
+          nullable: true
+          type: string
       required:
         - duration
         - end_behavior
         - id
         - livemode
-        - name
+        - nickname
         - object
         - price
       title: Trial Offer
@@ -86378,7 +86378,7 @@ components:
         - duration
         - end_behavior
         - id
-        - name
+        - nickname
         - price
       x-stripeOperations:
         - method_name: list
@@ -153130,6 +153130,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              payment_intent_data:
+                explode: true
+                style: deepObject
               shipping_options:
                 explode: true
                 style: deepObject
@@ -153719,6 +153722,142 @@ paths:
                     format. Individual keys can be unset by posting an empty
                     value to them. All keys can be unset by posting an empty
                     value to `metadata`.
+                payment_intent_data:
+                  description: >-
+                    A subset of parameters to be passed to PaymentIntent
+                    creation for Checkout Sessions in `payment` mode.
+
+
+                    You can only update these parameters when `ui_mode` is
+                    `elements` and while the session is active.
+                  properties:
+                    description:
+                      anyOf:
+                        - maxLength: 1000
+                          type: string
+                        - enum:
+                            - ''
+                          type: string
+                      description: >-
+                        An arbitrary string attached to the object. Often useful
+                        for displaying to users. Pass an empty string to clear a
+                        previously configured value.
+                    metadata:
+                      anyOf:
+                        - additionalProperties:
+                            type: string
+                          type: object
+                        - enum:
+                            - ''
+                          type: string
+                      description: >-
+                        Set of [key-value
+                        pairs](https://docs.stripe.com/api/metadata) that you
+                        can attach to an object. This can be useful for storing
+                        additional information about the object in a structured
+                        format. Individual keys can be unset by posting an empty
+                        value to them. All keys can be unset by posting an empty
+                        value to `metadata`.
+                    receipt_email:
+                      anyOf:
+                        - type: string
+                        - enum:
+                            - ''
+                          type: string
+                      description: >-
+                        Email address that the receipt for the resulting payment
+                        will be sent to. If `receipt_email` is specified for a
+                        payment in live mode, a receipt will be sent regardless
+                        of your [email
+                        settings](https://dashboard.stripe.com/account/emails).
+                        Pass an empty string to clear a previously configured
+                        recipient.
+                    setup_future_usage:
+                      description: >-
+                        Indicates that you intend to [make future
+                        payments](https://docs.stripe.com/payments/payment-intents#future-usage)
+                        with the payment method collected by this Checkout
+                        Session.
+
+
+                        When setting this to `on_session`, Checkout will show a
+                        notice to the customer that their payment details will
+                        be saved.
+
+
+                        When setting this to `off_session`, Checkout will show a
+                        notice to the customer that their payment details will
+                        be saved and used for future payments.
+
+
+                        If a Customer has been provided or Checkout creates a
+                        new Customer, Checkout will attach the payment method to
+                        the Customer.
+
+
+                        If Checkout does not create a Customer, the payment
+                        method is not attached to a Customer. To reuse the
+                        payment method, you can retrieve it from the Checkout
+                        Session's PaymentIntent.
+
+
+                        When processing card payments, Checkout also uses
+                        `setup_future_usage` to dynamically optimize your
+                        payment flow and comply with regional legislation and
+                        network rules, such as SCA.
+
+
+                        Pass an empty string to remove a previously supplied
+                        configuration.
+                      enum:
+                        - ''
+                        - off_session
+                        - on_session
+                      type: string
+                    statement_descriptor:
+                      anyOf:
+                        - maxLength: 22
+                          type: string
+                        - enum:
+                            - ''
+                          type: string
+                      description: >-
+                        Text that appears on the customer's statement as the
+                        statement descriptor for a non-card charge. This value
+                        overrides the account's default statement descriptor.
+                        For information about requirements, including the
+                        22-character limit, see [the Statement Descriptor
+                        docs](https://docs.stripe.com/get-started/account/statement-descriptors).
+
+
+                        Setting this value for a card charge returns an error.
+                        For card charges, set the
+                        [statement_descriptor_suffix](https://docs.stripe.com/get-started/account/statement-descriptors#dynamic)
+                        instead.
+                         Pass an empty string to clear a previously configured value.
+                    statement_descriptor_suffix:
+                      anyOf:
+                        - maxLength: 22
+                          type: string
+                        - enum:
+                            - ''
+                          type: string
+                      description: >-
+                        Provides information about a card charge. Concatenated
+                        to the account's [statement descriptor
+                        prefix](https://docs.stripe.com/get-started/account/statement-descriptors#static)
+                        to form the complete statement descriptor that appears
+                        on the customer's statement.
+                         Pass an empty string to clear a previously configured value.
+                  title: payment_intent_data_params
+                  type: object
+                  x-stripeMostCommon:
+                    - description
+                    - metadata
+                    - receipt_email
+                    - setup_future_usage
+                    - statement_descriptor
+                    - statement_descriptor_suffix
                 shipping_options:
                   anyOf:
                     - items:
@@ -180478,7 +180617,6 @@ paths:
                           - plan
                           - price
                           - quantity
-                          - service_starts_at
                           - tax_rates
                       type: array
                     metadata:
@@ -273532,17 +273670,17 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
-                name:
-                  description: >-
-                    A brief, user-friendly name for the trial offer-for
-                    identification purposes.
-                  maxLength: 255
-                  type: string
                 price:
                   description: >-
                     Price configuration during the trial period (amount, billing
                     scheme, etc).
                   maxLength: 5000
+                  type: string
+                name:
+                  description: >-
+                    A brief, user-friendly name for the trial offer-for
+                    identification purposes.
+                  maxLength: 255
                   type: string
               required:
                 - duration
@@ -273552,7 +273690,7 @@ paths:
               x-stripeMostCommon:
                 - duration
                 - end_behavior
-                - name
+                - nickname
                 - price
         required: true
       responses:
@@ -310402,12 +310540,12 @@ paths:
                             - create_invoice
                             - pause
                           type: string
-                      required:
-                        - missing_payment_method
                       title: end_behavior
                       type: object
                       x-stripeMostCommon:
                         - billing_cycle_anchor
+                        - missing_payment_method
+                      required:
                         - missing_payment_method
                   required:
                     - end_behavior
@@ -312194,7 +312332,6 @@ paths:
                       - plan
                       - price
                       - quantity
-                      - service_starts_at
                       - tax_rates
                   type: array
                 metadata:
@@ -313423,12 +313560,12 @@ paths:
                             - create_invoice
                             - pause
                           type: string
-                      required:
-                        - missing_payment_method
                       title: end_behavior
                       type: object
                       x-stripeMostCommon:
                         - billing_cycle_anchor
+                        - missing_payment_method
+                      required:
                         - missing_payment_method
                   required:
                     - end_behavior
