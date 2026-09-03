@@ -1,13 +1,19 @@
+* Add support for new resource `productcatalog.TrialOffer`
+* Add support for `create`, `list`, `retrieve`, and `update` methods on resource `productcatalog.TrialOffer`
 * Add support for `sequraPayments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
 * Add support for `sequra` on `Charge.payment_method_details`, `ConfirmationToken.payment_method_preview`, `ConfirmationTokenCreateParams.payment_method_data`, `PaymentAttemptRecord.payment_method_details`, `PaymentIntent.payment_method_options`, `PaymentIntentConfirmParams.payment_method_data`, `PaymentIntentConfirmParams.payment_method_options`, `PaymentIntentCreateParams.payment_method_data`, `PaymentIntentCreateParams.payment_method_options`, `PaymentIntentUpdateParams.payment_method_data`, `PaymentIntentUpdateParams.payment_method_options`, `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, `PaymentMethodConfiguration`, `PaymentMethodCreateParams`, `PaymentMethod`, `PaymentRecord.payment_method_details`, `SetupIntentConfirmParams.payment_method_data`, `SetupIntentCreateParams.payment_method_data`, `SetupIntentUpdateParams.payment_method_data`, `checkout.Session.payment_method_options`, and `checkout.SessionCreateParams.payment_method_options`
+* Add support for `allowedPaymentMethodTypes` on `checkout.SessionCreateParams` and `checkout.Session`
 * Add support for new value `sequra` on enums `PaymentIntentConfirmParams.excludedPaymentMethodTypes`, `PaymentIntentCreateParams.excludedPaymentMethodTypes`, `PaymentIntentUpdateParams.excludedPaymentMethodTypes`, `SetupIntentCreateParams.excludedPaymentMethodTypes`, `SetupIntentUpdateParams.excludedPaymentMethodTypes`, and `checkout.SessionCreateParams.excludedPaymentMethodTypes`
 * Change type of `checkout.SessionCreateParams.payment_method_options.bancontact.setupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * Add support for new value `sequra` on enum `checkout.SessionCreateParams.paymentMethodTypes`
 * ⚠️ Change type of `checkout.Session.payment_method_options.bancontact.setupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * Add support for new value `sequra` on enums `ConfirmationTokenCreateParams.payment_method_data.type`, `PaymentIntentConfirmParams.payment_method_data.type`, `PaymentIntentCreateParams.payment_method_data.type`, `PaymentIntentUpdateParams.payment_method_data.type`, `SetupIntentConfirmParams.payment_method_data.type`, `SetupIntentCreateParams.payment_method_data.type`, and `SetupIntentUpdateParams.payment_method_data.type`
 * Add support for new value `sequra` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
+* Add support for `currentTrial` on `InvoiceCreatePreviewParams.subscription_details.items[]`, `SubscriptionCreateParams.items[]`, `SubscriptionItemCreateParams`, `SubscriptionItemUpdateParams`, `SubscriptionItem`, and `SubscriptionUpdateParams.items[]`
+* Add support for `paymentRecord` on `PaymentIntent`
 * Add support for new value `sequra` on enums `PaymentLinkCreateParams.paymentMethodTypes` and `PaymentLinkUpdateParams.paymentMethodTypes`
 * Add support for `canceled` on `PaymentRecordReportPaymentAttemptParams` and `PaymentRecordReportPaymentParams`
 * Add support for new value `canceled` on enums `PaymentRecordReportPaymentAttemptParams.outcome` and `PaymentRecordReportPaymentParams.outcome`
+* Add support for `billingCycleAnchor` on `Subscription.trial_settings.end_behavior`, `SubscriptionCreateParams.trial_settings.end_behavior`, and `SubscriptionUpdateParams.trial_settings.end_behavior`
 * Change `SubscriptionCreateParams.trial_settings.end_behavior.missingPaymentMethod` and `SubscriptionUpdateParams.trial_settings.end_behavior.missingPaymentMethod` to be optional
 * Add support for new value `2026-09-30.endive` on enum `WebhookEndpointCreateParams.apiVersion`

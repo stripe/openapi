@@ -1,6 +1,12 @@
+* Add support for new resource `ProductCatalog::TrialOffer`
+* Add support for `create`, `list`, `retrieve`, and `update` methods on resource `ProductCatalog::TrialOffer`
 * Add support for `sequra_payments` on `Account::Capability`, `AccountCreateParams::Capability`, and `AccountUpdateParams::Capability`
 * Add support for `sequra` on `Charge::PaymentMethodDetail`, `Checkout::Session::PaymentMethodOption`, `Checkout::SessionCreateParams::PaymentMethodOption`, `ConfirmationToken::PaymentMethodPreview`, `ConfirmationTokenCreateParams::PaymentMethodDatum`, `PaymentAttemptRecord::PaymentMethodDetail`, `PaymentIntent::PaymentMethodOption`, `PaymentIntentConfirmParams::PaymentMethodDatum`, `PaymentIntentConfirmParams::PaymentMethodOption`, `PaymentIntentCreateParams::PaymentMethodDatum`, `PaymentIntentCreateParams::PaymentMethodOption`, `PaymentIntentUpdateParams::PaymentMethodDatum`, `PaymentIntentUpdateParams::PaymentMethodOption`, `PaymentMethodConfigurationCreateParams`, `PaymentMethodConfigurationUpdateParams`, `PaymentMethodConfiguration`, `PaymentMethodCreateParams`, `PaymentMethod`, `PaymentRecord::PaymentMethodDetail`, `SetupIntentConfirmParams::PaymentMethodDatum`, `SetupIntentCreateParams::PaymentMethodDatum`, and `SetupIntentUpdateParams::PaymentMethodDatum`
+* Add support for `allowed_payment_method_types` on `Checkout::SessionCreateParams` and `Checkout::Session`
 * Change type of `Checkout::SessionCreateParams::PaymentMethodOption::Bancontact.setup_future_usage` from `literal('none')` to `enum('none'|'off_session')`
 * ⚠️ Change type of `Checkout::Session::PaymentMethodOption::Bancontact.setup_future_usage` from `literal('none')` to `enum('none'|'off_session')`
+* Add support for `current_trial` on `InvoiceCreatePreviewParams::SubscriptionDetail::Item`, `SubscriptionCreateParams::Item`, `SubscriptionItemCreateParams`, `SubscriptionItemUpdateParams`, `SubscriptionItem`, and `SubscriptionUpdateParams::Item`
+* Add support for `payment_record` on `PaymentIntent`
 * Add support for `canceled` on `PaymentRecordReportPaymentAttemptParams` and `PaymentRecordReportPaymentParams`
+* Add support for `billing_cycle_anchor` on `Subscription::TrialSetting::EndBehavior`, `SubscriptionCreateParams::TrialSetting::EndBehavior`, and `SubscriptionUpdateParams::TrialSetting::EndBehavior`
 * Change `SubscriptionCreateParams::TrialSetting::EndBehavior.missing_payment_method` and `SubscriptionUpdateParams::TrialSetting::EndBehavior.missing_payment_method` to be optional
