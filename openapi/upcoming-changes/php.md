@@ -16,3 +16,5 @@
 * Add support for `canceled` on `PaymentRecord.report_payment().$params` and `PaymentRecord.report_payment_attempt().$params`
 * Add support for `billing_cycle_anchor` on `Subscription.create().$params.trial_setting.end_behavior`, `Subscription.trial_settings.end_behavior`, and `Subscription.update().$params.trial_setting.end_behavior`
 * Change `Subscription.create().$params.trial_setting.end_behavior.missing_payment_method` and `Subscription.update().$params.trial_setting.end_behavior.missing_payment_method` to be optional
+* Add support for new value `rtp` on enum `Treasury.FinancialAccount.financial_addresses[].supported_networks`
+* Add support for new value `rtp` on enum `Treasury.ReceivedCredit.network`

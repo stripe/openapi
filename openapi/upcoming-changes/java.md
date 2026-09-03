@@ -17,4 +17,5 @@
 * Add support for new value `canceled` on enums `PaymentRecordReportPaymentAttemptParams.outcome` and `PaymentRecordReportPaymentParams.outcome`
 * Add support for `billingCycleAnchor` on `Subscription.trial_settings.end_behavior`, `SubscriptionCreateParams.trial_settings.end_behavior`, and `SubscriptionUpdateParams.trial_settings.end_behavior`
 * Change `SubscriptionCreateParams.trial_settings.end_behavior.missingPaymentMethod` and `SubscriptionUpdateParams.trial_settings.end_behavior.missingPaymentMethod` to be optional
+* Add support for new value `rtp` on enum `treasury.ReceivedCreditCreateParams.network`
 * Add support for new value `2026-09-30.endive` on enum `WebhookEndpointCreateParams.apiVersion`

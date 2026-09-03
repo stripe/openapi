@@ -15,3 +15,5 @@
 * Add support for new value `sequra` on enum `PaymentLink.PaymentMethodTypes`
 * Add support for `Canceled` on `PaymentRecordReportPaymentAttemptParams` and `PaymentRecordReportPaymentParams`
 * Add support for `BillingCycleAnchor` on `SubscriptionTrialSettingsEndBehaviorParams` and `SubscriptionTrialSettingsEndBehavior`
+* Add support for new value `rtp` on enum `TreasuryFinancialAccountFinancialAddress.SupportedNetworks`
+* Add support for new value `rtp` on enum `TreasuryReceivedCredit.Network`
