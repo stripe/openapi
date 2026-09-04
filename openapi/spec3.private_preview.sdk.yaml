@@ -11261,11 +11261,13 @@ components:
       title: Customer Portal Session
       type: object
       x-expandableFields:
+        - after_expiration
         - configuration
         - flow
       x-resourceId: billing_portal.session
       x-stableId: billing_portal_session
       x-stripeMostCommon:
+        - after_expiration
         - configuration
         - created
         - customer
@@ -12311,6 +12313,7 @@ components:
             - requested_by_user
             - user_initiated
           type: string
+          x-stripeBypassValidation: true
         reversed_transaction:
           description: |-
             The reversed transaction. This field only applies to financing
@@ -61782,6 +61785,7 @@ components:
         - payment_method_configuration_details
         - payment_method_options
         - payment_method_types
+        - payment_record
         - processing
         - receipt_email
         - review
@@ -84708,6 +84712,55 @@ components:
       x-stripeMostCommon:
         - invoice
         - type
+    portal_after_expiration:
+      description: ''
+      properties:
+        customer_login:
+          anyOf:
+            - $ref: '#/components/schemas/portal_after_expiration_customer_login'
+          description: >-
+            Configuration for authenticating the customer after the session
+            expires.
+          nullable: true
+        type:
+          description: The behavior to apply when the session expires.
+          enum:
+            - customer_login
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: >-
+                  Allow the customer to authenticate by email to create a
+                  replacement session.
+                value: customer_login
+      required:
+        - customer_login
+        - type
+      title: PortalAfterExpiration
+      type: object
+      x-expandableFields:
+        - customer_login
+      x-stripeMostCommon:
+        - customer_login
+        - type
+    portal_after_expiration_customer_login:
+      description: ''
+      properties:
+        expires_at:
+          description: >-
+            The time after which the customer can no longer recover this
+            session.
+          format: unix-time
+          nullable: true
+          type: integer
+      required:
+        - expires_at
+      title: PortalAfterExpirationCustomerLogin
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - expires_at
     portal_business_profile:
       description: ''
       properties:
@@ -139031,6 +139084,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              after_expiration:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -139370,6 +139426,7 @@ paths:
                   type: string
               type: object
               x-stripeMostCommon:
+                - after_expiration
                 - configuration
                 - customer
                 - customer_account
