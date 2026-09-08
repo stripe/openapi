@@ -1,16 +1,8 @@
-name: Publish v1 Specs
+name: Publish v1 Private Preview Specs
 
-# Publishes v1 OpenAPI specs for a given API version and cuts a release, mirroring
-# the corresponding path of pay-server's api-codegen/tools/publish.sh. Specs are
-# pulled from the Statics Commander CDN instead of a local build dir.
-#
-# Modes (see the `mode` input):
-#   - private-preview: implemented. Mirrors publish.sh's `beta` path.
-#   - public-preview / GA / all: NOT implemented yet. These channels are published
-#     today by a separate pipeline (zoolander PublishOpenApiArtifacts ->
-#     sync-openapi-artifacts.yml, which only mirrors raw specs — no fixtures, diffs,
-#     or tags). They are reserved here for a future change that extends the zoolander
-#     LockAndReleasePrivatePreviewSpecs dispatcher to cover them.
+# Publishes v1 private-preview OpenAPI specs for a given API version and cuts a
+# release, mirroring the `beta` path of pay-server's api-codegen/tools/publish.sh.
+# Specs are pulled from the Statics Commander CDN instead of a local build dir.
 #
 # Triggered by the zoolander LockAndReleasePrivatePreviewSpecs workflow.
 
@@ -21,88 +13,64 @@ on:
         description: 'Version name (e.g., 2026-07-08.preview)'
         required: true
         type: string
-      mode:
-        description: 'Which spec channel to publish'
-        required: true
-        type: choice
-        default: private-preview
-        options:
-          - private-preview
-          - public-preview
-          - GA
-          - all
-      dry_run:
-        description: 'Dry run: fetch, build, and diff but do not push to master or tag'
+      publish_release:
+        description: 'Publish to master and create a tag; otherwise push to dry-run/private-preview'
         required: false
         type: boolean
-        default: true
+        default: false
 
-permissions:
-  contents: write
+permissions: {}
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      CDN_DIR: private_preview
+      SPEC_FILES: spec3.private_preview.sdk.yaml spec3.private_preview.sdk.json
+      FIXTURE_FILES: fixtures3.private_preview.yaml fixtures3.private_preview.json
+      FIXTURE_MSG: Update fixture data for private preview
+      SPEC_MSG: Update OpenAPI specification for private preview
+      TAG_MSG: This release only includes changes to the private preview spec.
+      TEST_BRANCH: dry-run/private-preview
     steps:
       - name: Fetch app installation token
-        uses: tibdex/github-app-token@v1.5.2
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: gh-api-token
         with:
-          app_id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
-          private_key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+          app-id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
+          private-key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+          # The token checks out this repository and pushes the published specs
+          # back to it. Scope defaults to the current repository.
+          permission-contents: write
 
       - name: Checkout openapi
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.gh-api-token.outputs.token }}
           # Full history + tags are required so `git describe --tags` can find the
           # last release tag and `git show <tag>:...` can read the prior spec.
           fetch-depth: 0
           fetch-tags: true
+          # The final step uses plain `git push`, so retain the narrowly scoped
+          # App token. This workflow uploads no artifacts that could contain it.
 
       - name: Checkout sdk-codegen (provides the diff CLI)
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: stripe/sdk-codegen
-          ref: v17.0.0
+          ref: 1b117c3457c094060636cdfc7936e30a86b2e3ca # v17.0.0
           path: sdk-codegen
+          persist-credentials: false
 
       - name: Setup just
-        uses: extractions/setup-just@v2
+        uses: extractions/setup-just@dd310ad5a97d8e7b41793f8ef055398d51ad4de6 # v2
 
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '24'
-
-      - name: Resolve mode configuration
-        env:
-          MODE: ${{ inputs.mode }}
-        run: |
-          set -euo pipefail
-          # Only private-preview is implemented today. The other channels exit here
-          # until the zoolander dispatcher and CDN keys for them are wired up.
-          case "$MODE" in
-            private-preview)
-              {
-                echo "CDN_DIR=private_preview"
-                echo "SPEC_FILES=spec3.private_preview.sdk.yaml spec3.private_preview.sdk.json"
-                echo "FIXTURE_FILES=fixtures3.private_preview.yaml fixtures3.private_preview.json"
-                echo "FIXTURE_MSG=Update fixture data for private preview"
-                echo "SPEC_MSG=Update OpenAPI specification for private preview"
-                echo "TAG_MSG=This release only includes changes to the private preview spec."
-                echo "TEST_BRANCH=dry-run/private-preview"
-              } >> "$GITHUB_ENV"
-              ;;
-            public-preview | GA | all)
-              echo "::error::mode '$MODE' is not implemented yet"
-              exit 1
-              ;;
-            *)
-              echo "::error::unknown mode '$MODE'"
-              exit 1
-              ;;
-          esac
 
       - name: Download specs from CDN
         env:
@@ -126,8 +94,7 @@ jobs:
 
       - name: Commit specs, generate diffs, and cut release
         env:
-          MODE: ${{ inputs.mode }}
-          DRY_RUN: ${{ inputs.dry_run }}
+          PUBLISH_RELEASE: ${{ inputs.publish_release }}
         run: |
           set -euo pipefail
 
@@ -162,17 +129,15 @@ jobs:
             NEW_SPEC="${GITHUB_WORKSPACE}/${SPEC_PATH}"
             mkdir -p "$DIFF_DIR"
 
-            # Build the sdk-codegen CLI once, then invoke it the same way the
-            # justfile's `main` recipe does (node dist/main.js with node_modules/.bin
-            # on PATH) to avoid re-running yarn+tsc for every language.
+            # Build the sdk-codegen CLI once. `diff` delegates entirely to `main`,
+            # so call `main` without its build dependency for each generated diff.
             cd "${GITHUB_WORKSPACE}/sdk-codegen"
             just build-tools
-            export PATH="${PWD}/node_modules/.bin:${PATH}"
 
             # `rest.md` is the language-agnostic diff (no --lang), matching publish.sh.
-            node ./dist/main.js diff --old-path "$OLD_SPEC" --new-path "$NEW_SPEC" --output-path "$DIFF_DIR/rest.md"
+            just --no-deps main diff --old-path "$OLD_SPEC" --new-path "$NEW_SPEC" --output-path "$DIFF_DIR/rest.md"
             for lang in go php node ruby java python dotnet; do
-              node ./dist/main.js diff --lang "$lang" --old-path "$OLD_SPEC" --new-path "$NEW_SPEC" --output-path "$DIFF_DIR/$lang.md"
+              just --no-deps main diff --lang "$lang" --old-path "$OLD_SPEC" --new-path "$NEW_SPEC" --output-path "$DIFF_DIR/$lang.md"
             done
             cd "${GITHUB_WORKSPACE}"
 
@@ -182,7 +147,7 @@ jobs:
               git commit -m "Update upcoming changes"
             fi
 
-            if [ "$DRY_RUN" = "true" ]; then
+            if [ "$PUBLISH_RELEASE" != "true" ]; then
               # Never create/push a real tag in a dry run — a stray vN tag would corrupt
               # the next real run's `git describe` increment.
               echo "Dry run: would create tag ${NEW_TAG} and push master."
@@ -192,10 +157,10 @@ jobs:
               git push --atomic origin master "$NEW_TAG"
             fi
           else
-            echo "No spec changes for mode '${MODE}'; skipping release."
+            echo "No private-preview spec changes; skipping release."
           fi
 
-          if [ "$DRY_RUN" = "true" ]; then
+          if [ "$PUBLISH_RELEASE" != "true" ]; then
             # Push all local commits to a disposable scratch branch for inspection
             # instead of master (master and tags are left untouched). Force is expected:
             # each dry run builds a fresh history off the current master.
