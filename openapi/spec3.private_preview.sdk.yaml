@@ -105693,7 +105693,6 @@ components:
             - us_1099_misc
             - us_1099_nec
           type: string
-          x-stripeBypassValidation: true
         us_1099_k:
           $ref: '#/components/schemas/tax_reporting_resource_tax_form_us1099_k'
         us_1099_misc:
@@ -107312,7 +107311,7 @@ components:
             #/components/schemas/tax_product_registrations_resource_country_options_simplified
         es:
           $ref: >-
-            #/components/schemas/tax_product_registrations_resource_country_options_spain
+            #/components/schemas/tax_product_registrations_resource_country_options_europe
         et:
           $ref: >-
             #/components/schemas/tax_product_registrations_resource_country_options_default
@@ -107829,6 +107828,9 @@ components:
     tax_product_registrations_resource_country_options_europe:
       description: ''
       properties:
+        igic:
+          $ref: >-
+            #/components/schemas/tax_product_registrations_resource_country_options_igic
         standard:
           $ref: >-
             #/components/schemas/tax_product_registrations_resource_country_options_eu_standard
@@ -107840,13 +107842,16 @@ components:
             - oss_union
             - standard
           type: string
+          x-stripeBypassValidation: true
       required:
         - type
       title: TaxProductRegistrationsResourceCountryOptionsEurope
       type: object
       x-expandableFields:
+        - igic
         - standard
       x-stripeMostCommon:
+        - igic
         - standard
         - type
     tax_product_registrations_resource_country_options_igic:
@@ -107890,58 +107895,6 @@ components:
       type: object
       x-expandableFields: []
       x-stripeMostCommon:
-        - type
-    tax_product_registrations_resource_country_options_spain:
-      description: ''
-      properties:
-        igic:
-          $ref: >-
-            #/components/schemas/tax_product_registrations_resource_country_options_igic
-        standard:
-          $ref: >-
-            #/components/schemas/tax_product_registrations_resource_country_options_eu_standard
-        type:
-          description: Type of registration in ES.
-          enum:
-            - igic
-            - ioss
-            - oss_non_union
-            - oss_union
-            - standard
-          type: string
-          x-stripeEnum:
-            kind: open
-            values:
-              - description: >-
-                  Impuesto General Indirecto Canario. For businesses selling
-                  goods and services in the Canary Islands.
-                value: igic
-              - description: >-
-                  Common for businesses shipping goods below EUR 150 from non-EU
-                  countries to EU customers.
-                value: ioss
-              - description: >-
-                  Common for businesses established outside of the EU selling
-                  services to customers in the EU.
-                value: oss_non_union
-              - description: >-
-                  Common for businesses established in the EU selling goods and
-                  services to customers in the EU.
-                value: oss_union
-              - description: >-
-                  Common for businesses selling goods and services to customers
-                  in this country.
-                value: standard
-      required:
-        - type
-      title: TaxProductRegistrationsResourceCountryOptionsSpain
-      type: object
-      x-expandableFields:
-        - igic
-        - standard
-      x-stripeMostCommon:
-        - igic
-        - standard
         - type
     tax_product_registrations_resource_country_options_thailand:
       description: ''
@@ -110018,7 +109971,7 @@ components:
           nullable: true
           type: string
         type:
-          description: Specifies the payee type.
+          description: Either `account` or `external_reference`.
           enum:
             - account
             - external_reference
@@ -152715,7 +152668,6 @@ paths:
                       - satispay
                       - scalapay
                       - sepa_debit
-                      - sequra
                       - shopeepay
                       - sofort
                       - sunbit
@@ -181925,10 +181877,8 @@ paths:
         <p>Draft invoices are fully editable. Once an invoice is <a
         href="/docs/billing/invoices/workflow#finalized">finalized</a>,
 
-        you can no longer change most of its details, including monetary values
-        and <code>collection_method</code>. For most invoices,
-
-        this also includes <code>description</code>.</p>
+        monetary values, as well as <code>collection_method</code>, become
+        uneditable.</p>
 
 
         <p>If you would like to stop the Stripe Billing engine from
@@ -288435,7 +288385,6 @@ paths:
                     - amount_max
                     - amount_min
                     - amount_total
-                    - api_version
                     - apple_subscriber
                     - application_id
                     - async_fees
@@ -288625,7 +288574,6 @@ paths:
                     - gateway_country
                     - gl_code
                     - google_order
-                    - grain
                     - grams
                     - granularity
                     - gross_amount
@@ -316376,7 +316324,9 @@ paths:
                 maxLength: 5000
                 type: string
               type:
-                description: Specifies the payee type.
+                description: >-
+                  Specifies the payee type. Either `account` or
+                  `external_reference`.
                 enum:
                   - account
                   - external_reference
@@ -316422,7 +316372,6 @@ paths:
               - us_1099_misc
               - us_1099_nec
             type: string
-            x-stripeBypassValidation: true
           style: form
       requestBody:
         content:
@@ -317188,32 +317137,6 @@ paths:
                     at:
                       description: Options for the registration in AT.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -317244,11 +317167,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     au:
@@ -317418,32 +317369,6 @@ paths:
                     be:
                       description: Options for the registration in BE.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -317474,11 +317399,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     bf:
@@ -317514,32 +317467,6 @@ paths:
                     bg:
                       description: Options for the registration in BG.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -317570,11 +317497,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     bh:
@@ -317830,32 +317785,6 @@ paths:
                     cy:
                       description: Options for the registration in CY.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -317886,42 +317815,44 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     cz:
                       description: Options for the registration in CZ.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -317952,42 +317883,44 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     de:
                       description: Options for the registration in DE.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318018,42 +317951,44 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     dk:
                       description: Options for the registration in DK.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318084,11 +318019,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     ec:
@@ -318108,32 +318071,6 @@ paths:
                     ee:
                       description: Options for the registration in EE.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318164,11 +318101,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     eg:
@@ -318247,7 +318212,7 @@ paths:
                           x-stripeBypassValidation: true
                       required:
                         - type
-                      title: spain
+                      title: europe
                       type: object
                       x-stripeMostCommon:
                         - igic
@@ -318286,32 +318251,6 @@ paths:
                     fi:
                       description: Options for the registration in FI.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318342,42 +318281,44 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     fr:
                       description: Options for the registration in FR.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318408,11 +318349,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     gb:
@@ -318492,32 +318461,6 @@ paths:
                     gr:
                       description: Options for the registration in GR.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318548,42 +318491,44 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     hr:
                       description: Options for the registration in HR.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318614,42 +318559,44 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     hu:
                       description: Options for the registration in HU.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318680,11 +318627,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     id:
@@ -318704,32 +318679,6 @@ paths:
                     ie:
                       description: Options for the registration in IE.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318760,11 +318709,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     in:
@@ -318814,32 +318791,6 @@ paths:
                     it:
                       description: Options for the registration in IT.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318870,11 +318821,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     jp:
@@ -319008,32 +318987,6 @@ paths:
                     lt:
                       description: Options for the registration in LT.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319064,42 +319017,44 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     lu:
                       description: Options for the registration in LU.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319130,42 +319085,44 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     lv:
                       description: Options for the registration in LV.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319196,11 +319153,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     ma:
@@ -319324,32 +319309,6 @@ paths:
                     mt:
                       description: Options for the registration in MT.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319380,11 +319339,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     mx:
@@ -319432,32 +319419,6 @@ paths:
                     nl:
                       description: Options for the registration in NL.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319488,11 +319449,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     'no':
@@ -319630,32 +319619,6 @@ paths:
                     pl:
                       description: Options for the registration in PL.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319686,42 +319649,44 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     pt:
                       description: Options for the registration in PT.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319752,42 +319717,44 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     ro:
                       description: Options for the registration in RO.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319818,11 +319785,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     rs:
@@ -319886,32 +319881,6 @@ paths:
                     se:
                       description: Options for the registration in SE.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319942,11 +319911,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     sg:
@@ -319982,32 +319979,6 @@ paths:
                     si:
                       description: Options for the registration in SI.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -320038,42 +320009,44 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     sk:
                       description: Options for the registration in SK.
                       properties:
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -320104,11 +320077,39 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
+                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
+                        - igic
                         - standard
                         - type
                     sn:
