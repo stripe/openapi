@@ -16791,6 +16791,26 @@
             "description": "Controls when Stripe will attempt to debit the funds from the customer's account. The date must be a string in YYYY-MM-DD format. The date must be in the future and between 3 and 15 calendar days from now.",
             "maxLength": 5000,
             "type": "string"
+          },
+          "verification_method": {
+            "enum": [
+              "automatic",
+              "payer_name_verification"
+            ],
+            "type": "string",
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "description": "No specific verification method is requested.",
+                  "value": "automatic"
+                },
+                {
+                  "description": "Verifies the payer name against the bank account holder name.",
+                  "value": "payer_name_verification"
+                }
+              ]
+            }
           }
         },
         "title": "CheckoutBacsDebitPaymentMethodOptions",
@@ -16801,7 +16821,8 @@
         "x-stripeMostCommon": [
           "mandate_options",
           "setup_future_usage",
-          "target_date"
+          "target_date",
+          "verification_method"
         ]
       },
       "checkout_bancontact_payment_method_options": {
@@ -23947,8 +23968,11 @@
           "source_currency": {
             "description": "A fiat currency code",
             "enum": [
+              "cad",
+              "cop",
               "eur",
               "gbp",
+              "php",
               "usd"
             ],
             "nullable": true,
@@ -32109,6 +32133,47 @@
           ]
         }
       },
+      "dispute_appeal": {
+        "description": "",
+        "properties": {
+          "card": {
+            "$ref": "#/components/schemas/dispute_appeal_card"
+          }
+        },
+        "title": "DisputeAppeal",
+        "type": "object",
+        "x-expandableFields": [
+          "card"
+        ],
+        "x-stripeMostCommon": [
+          "card"
+        ]
+      },
+      "dispute_appeal_card": {
+        "description": "",
+        "properties": {
+          "reason_for_filing": {
+            "description": "The reason for filing the appeal.",
+            "maxLength": 20000,
+            "type": "string"
+          },
+          "supporting_files": {
+            "description": "One or more document IDs returned by a [file upload](https://api.stripe.com#create_file) with a `purpose` value of `dispute_evidence` to support the appeal.",
+            "items": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "title": "DisputeAppealCard",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "reason_for_filing",
+          "supporting_files"
+        ]
+      },
       "dispute_enhanced_eligibility": {
         "description": "",
         "properties": {
@@ -32336,6 +32401,9 @@
             "maxLength": 150000,
             "nullable": true,
             "type": "string"
+          },
+          "appeal": {
+            "$ref": "#/components/schemas/dispute_appeal"
           },
           "billing_address": {
             "description": "The billing address provided by the customer.",
@@ -32656,6 +32724,7 @@
         "title": "DisputeEvidence",
         "type": "object",
         "x-expandableFields": [
+          "appeal",
           "cancellation_policy",
           "customer_communication",
           "customer_signature",
@@ -32670,6 +32739,7 @@
         "x-stableId": "dispute_evidence",
         "x-stripeMostCommon": [
           "access_activity_log",
+          "appeal",
           "billing_address",
           "cancellation_policy",
           "cancellation_policy_disclosure",
@@ -44176,6 +44246,43 @@
           "transaction_type"
         ]
       },
+      "invoice_payment_method_options_bacs_debit": {
+        "description": "",
+        "properties": {
+          "target_date": {
+            "description": "Controls when Stripe will attempt to debit the funds from the customer's account. The date must be a string in YYYY-MM-DD format. The date must be in the future and between 3 and 15 calendar days from now.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "verification_method": {
+            "enum": [
+              "automatic",
+              "payer_name_verification"
+            ],
+            "type": "string",
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "description": "No specific verification method is requested.",
+                  "value": "automatic"
+                },
+                {
+                  "description": "Verifies the payer name against the bank account holder name.",
+                  "value": "payer_name_verification"
+                }
+              ]
+            }
+          }
+        },
+        "title": "invoice_payment_method_options_bacs_debit",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "target_date",
+          "verification_method"
+        ]
+      },
       "invoice_payment_method_options_bancontact": {
         "description": "",
         "properties": {
@@ -45630,6 +45737,7 @@
           "customer",
           "discounts",
           "invoice",
+          "invoicing_rules",
           "managed_payments",
           "margins",
           "parent",
@@ -45739,6 +45847,15 @@
               }
             ],
             "description": "If paying by `acss_debit`, this sub-hash contains details about the Canadian pre-authorized debit payment method options to pass to the invoice’s PaymentIntent.",
+            "nullable": true
+          },
+          "bacs_debit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/invoice_payment_method_options_bacs_debit"
+              }
+            ],
+            "description": "If paying by `bacs_debit`, this sub-hash contains details about the Bacs Direct Debit payment method options to pass to the invoice’s PaymentIntent.",
             "nullable": true
           },
           "bancontact": {
@@ -45893,6 +46010,7 @@
         "type": "object",
         "x-expandableFields": [
           "acss_debit",
+          "bacs_debit",
           "bancontact",
           "billie",
           "bizum",
@@ -45911,6 +46029,7 @@
         ],
         "x-stripeMostCommon": [
           "acss_debit",
+          "bacs_debit",
           "bancontact",
           "billie",
           "bizum",
@@ -46644,6 +46763,36 @@
           "marked_uncollectible_at",
           "paid_at",
           "voided_at"
+        ]
+      },
+      "invoicing_rule": {
+        "description": "",
+        "properties": {
+          "type": {
+            "description": "The type of invoicing rule.",
+            "enum": [
+              "defer_until_credited_items_resolved"
+            ],
+            "type": "string",
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "description": "Defers invoicing of this credit proration item until the referenced credited items are resolved.\n\nIf the credited items are of type `invoice_line_item`, the referenced invoice must be paid for this rule to be satisfied.\n\nIf the credited items are of type `invoice_item`, the referenced invoice item must be invoiced alongside this credit proration item or on an already paid invoice for this rule to be satisfied.",
+                  "value": "defer_until_credited_items_resolved"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "title": "InvoicingRule",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "type"
         ]
       },
       "issuing.authorization": {
@@ -72840,7 +72989,7 @@
             ],
             "type": "string",
             "x-stripeEnum": {
-              "kind": "closed",
+              "kind": "open",
               "values": [
                 {
                   "description": "No specific verification method is requested.",
@@ -82956,6 +83105,11 @@
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
+          },
+          "funding_source_group": {
+            "description": "The [funding source group code](https://docs.stripe.com/payments/link/link-payment-methods) applied to this Link payment at confirmation time.",
+            "maxLength": 5000,
+            "type": "string"
           }
         },
         "required": [
@@ -82965,7 +83119,8 @@
         "type": "object",
         "x-expandableFields": [],
         "x-stripeMostCommon": [
-          "country"
+          "country",
+          "funding_source_group"
         ]
       },
       "payment_method_details_payment_record_mb_way": {
@@ -92502,7 +92657,9 @@
             "enum": [
               "1.0.2",
               "2.1.0",
-              "2.2.0"
+              "2.2.0",
+              "2.3.0",
+              "2.3.1"
             ],
             "nullable": true,
             "type": "string"
@@ -98550,7 +98707,7 @@
             "nullable": true
           },
           "discount_amounts": {
-            "description": "Discount amounts applied when the proration was created.",
+            "description": "Discount amounts applied when the proration was created. This field is only populated for prorations created from subscriptions with `billing_mode=flexible`.",
             "items": {
               "$ref": "#/components/schemas/discounts_resource_discount_amount"
             },
@@ -106716,6 +106873,7 @@
           "created",
           "created_by",
           "currency",
+          "destination",
           "id",
           "livemode",
           "object",
@@ -109814,7 +109972,7 @@
         }
       },
       "setup_intent.succeeded": {
-        "description": "Occurs when an SetupIntent has successfully setup a payment method.",
+        "description": "Occurs when a SetupIntent has successfully setup a payment method.",
         "properties": {
           "object": {
             "$ref": "#/components/schemas/setup_intent"
@@ -110179,7 +110337,7 @@
             ],
             "type": "string",
             "x-stripeEnum": {
-              "kind": "closed",
+              "kind": "open",
               "values": [
                 {
                   "description": "No specific verification method is requested.",
@@ -115700,6 +115858,45 @@
           "usage_gte"
         ]
       },
+      "subscription_payment_method_options_bacs_debit": {
+        "description": "",
+        "properties": {
+          "debit_behavior": {
+            "description": "Controls when the funds will be captured from the customer's account.",
+            "type": "string"
+          },
+          "verification_method": {
+            "enum": [
+              "automatic",
+              "payer_name_verification"
+            ],
+            "type": "string",
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "description": "No specific verification method is requested.",
+                  "value": "automatic"
+                },
+                {
+                  "description": "Verifies the payer name against the bank account holder name.",
+                  "value": "payer_name_verification"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "debit_behavior"
+        ],
+        "title": "subscription_payment_method_options_bacs_debit",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "debit_behavior",
+          "verification_method"
+        ]
+      },
       "subscription_payment_method_options_billie": {
         "description": "",
         "properties": {
@@ -118505,6 +118702,15 @@
             "description": "This sub-hash contains details about the Canadian pre-authorized debit payment method options to pass to invoices created by the subscription.",
             "nullable": true
           },
+          "bacs_debit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/subscription_payment_method_options_bacs_debit"
+              }
+            ],
+            "description": "This sub-hash contains details about the Bacs Direct Debit payment method options to pass to invoices created by the subscription.",
+            "nullable": true
+          },
           "bancontact": {
             "anyOf": [
               {
@@ -118657,6 +118863,7 @@
         "type": "object",
         "x-expandableFields": [
           "acss_debit",
+          "bacs_debit",
           "bancontact",
           "billie",
           "bizum",
@@ -118675,6 +118882,7 @@
         ],
         "x-stripeMostCommon": [
           "acss_debit",
+          "bacs_debit",
           "bancontact",
           "billie",
           "bizum",
@@ -119738,7 +119946,8 @@
               "us_1099_misc",
               "us_1099_nec"
             ],
-            "type": "string"
+            "type": "string",
+            "x-stripeBypassValidation": true
           },
           "us_1099_k": {
             "$ref": "#/components/schemas/tax_reporting_resource_tax_form_us1099_k"
@@ -121569,7 +121778,7 @@
             "$ref": "#/components/schemas/tax_product_registrations_resource_country_options_simplified"
           },
           "es": {
-            "$ref": "#/components/schemas/tax_product_registrations_resource_country_options_europe"
+            "$ref": "#/components/schemas/tax_product_registrations_resource_country_options_spain"
           },
           "et": {
             "$ref": "#/components/schemas/tax_product_registrations_resource_country_options_default"
@@ -122126,9 +122335,6 @@
       "tax_product_registrations_resource_country_options_europe": {
         "description": "",
         "properties": {
-          "igic": {
-            "$ref": "#/components/schemas/tax_product_registrations_resource_country_options_igic"
-          },
           "standard": {
             "$ref": "#/components/schemas/tax_product_registrations_resource_country_options_eu_standard"
           },
@@ -122140,8 +122346,7 @@
               "oss_union",
               "standard"
             ],
-            "type": "string",
-            "x-stripeBypassValidation": true
+            "type": "string"
           }
         },
         "required": [
@@ -122150,11 +122355,9 @@
         "title": "TaxProductRegistrationsResourceCountryOptionsEurope",
         "type": "object",
         "x-expandableFields": [
-          "igic",
           "standard"
         ],
         "x-stripeMostCommon": [
-          "igic",
           "standard",
           "type"
         ]
@@ -122212,6 +122415,67 @@
         "type": "object",
         "x-expandableFields": [],
         "x-stripeMostCommon": [
+          "type"
+        ]
+      },
+      "tax_product_registrations_resource_country_options_spain": {
+        "description": "",
+        "properties": {
+          "igic": {
+            "$ref": "#/components/schemas/tax_product_registrations_resource_country_options_igic"
+          },
+          "standard": {
+            "$ref": "#/components/schemas/tax_product_registrations_resource_country_options_eu_standard"
+          },
+          "type": {
+            "description": "Type of registration in ES.",
+            "enum": [
+              "igic",
+              "ioss",
+              "oss_non_union",
+              "oss_union",
+              "standard"
+            ],
+            "type": "string",
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "description": "Impuesto General Indirecto Canario. For businesses selling goods and services in the Canary Islands.",
+                  "value": "igic"
+                },
+                {
+                  "description": "Common for businesses shipping goods below EUR 150 from non-EU countries to EU customers.",
+                  "value": "ioss"
+                },
+                {
+                  "description": "Common for businesses established outside of the EU selling services to customers in the EU.",
+                  "value": "oss_non_union"
+                },
+                {
+                  "description": "Common for businesses established in the EU selling goods and services to customers in the EU.",
+                  "value": "oss_union"
+                },
+                {
+                  "description": "Common for businesses selling goods and services to customers in this country.",
+                  "value": "standard"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "title": "TaxProductRegistrationsResourceCountryOptionsSpain",
+        "type": "object",
+        "x-expandableFields": [
+          "igic",
+          "standard"
+        ],
+        "x-stripeMostCommon": [
+          "igic",
+          "standard",
           "type"
         ]
       },
@@ -124586,7 +124850,7 @@
             "type": "string"
           },
           "type": {
-            "description": "Either `account` or `external_reference`.",
+            "description": "Specifies the payee type.",
             "enum": [
               "account",
               "external_reference"
@@ -135098,7 +135362,7 @@
     },
     "/v1/account_sessions": {
       "post": {
-        "description": "<p>Creates a AccountSession object that includes a single-use token that the platform can use on their front-end to grant client-side API access.</p>",
+        "description": "<p>Creates an AccountSession object that includes a single-use token that the platform can use on their front-end to grant client-side API access.</p>",
         "operationId": "PostAccountSessions",
         "requestBody": {
           "content": {
@@ -168958,6 +169222,26 @@
                             "description": "Controls when Stripe will attempt to debit the funds from the customer's account. The date must be a string in YYYY-MM-DD format. The date must be in the future and between 3 and 15 calendar days from now.",
                             "maxLength": 5000,
                             "type": "string"
+                          },
+                          "verification_method": {
+                            "enum": [
+                              "automatic",
+                              "payer_name_verification"
+                            ],
+                            "type": "string",
+                            "x-stripeEnum": {
+                              "kind": "open",
+                              "values": [
+                                {
+                                  "description": "No specific verification method is requested.",
+                                  "value": "automatic"
+                                },
+                                {
+                                  "description": "Verifies the payer name against the bank account holder name.",
+                                  "value": "payer_name_verification"
+                                }
+                              ]
+                            }
                           }
                         },
                         "title": "payment_method_options_param",
@@ -168965,7 +169249,8 @@
                         "x-stripeMostCommon": [
                           "mandate_options",
                           "setup_future_usage",
-                          "target_date"
+                          "target_date",
+                          "verification_method"
                         ]
                       },
                       "bancontact": {
@@ -170706,6 +170991,7 @@
                         "satispay",
                         "scalapay",
                         "sepa_debit",
+                        "sequra",
                         "shopeepay",
                         "sofort",
                         "sunbit",
@@ -171507,6 +171793,10 @@
                         "title": "invoice_settings_params",
                         "type": "object",
                         "x-stripeMostCommon": [
+                          "account_tax_ids",
+                          "custom_fields",
+                          "description",
+                          "footer",
                           "issuer"
                         ]
                       },
@@ -178134,8 +178424,11 @@
                   "source_currency": {
                     "description": "The default source fiat currency for the onramp session.\n\n* When left null, a default currency is selected based on user locale.\n* When set, it must be one of the fiat currencies supported by onramp. Users can still select a different currency in the onramp UI.",
                     "enum": [
+                      "cad",
+                      "cop",
                       "eur",
                       "gbp",
+                      "php",
                       "usd"
                     ],
                     "type": "string"
@@ -197405,6 +197698,52 @@
                             ],
                             "description": "If paying by `acss_debit`, this sub-hash contains details about the Canadian pre-authorized debit payment method options to pass to the invoice’s PaymentIntent."
                           },
+                          "bacs_debit": {
+                            "anyOf": [
+                              {
+                                "properties": {
+                                  "target_date": {
+                                    "description": "Controls when Stripe will attempt to debit the funds from the customer's account. The date must be a string in YYYY-MM-DD format. The date must be in the future and between 3 and 15 calendar days from now.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "verification_method": {
+                                    "enum": [
+                                      "automatic",
+                                      "payer_name_verification"
+                                    ],
+                                    "type": "string",
+                                    "x-stripeEnum": {
+                                      "kind": "open",
+                                      "values": [
+                                        {
+                                          "description": "No specific verification method is requested.",
+                                          "value": "automatic"
+                                        },
+                                        {
+                                          "description": "Verifies the payer name against the bank account holder name.",
+                                          "value": "payer_name_verification"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                },
+                                "title": "invoice_payment_method_options_param",
+                                "type": "object",
+                                "x-stripeMostCommon": [
+                                  "target_date",
+                                  "verification_method"
+                                ]
+                              },
+                              {
+                                "enum": [
+                                  ""
+                                ],
+                                "type": "string"
+                              }
+                            ],
+                            "description": "If paying by `bacs_debit`, this sub-hash contains details about the Bacs Direct Debit payment method options to pass to the invoice’s PaymentIntent."
+                          },
                           "bancontact": {
                             "anyOf": [
                               {
@@ -199625,6 +199964,11 @@
                       "next",
                       "recurring"
                     ],
+                    "type": "string"
+                  },
+                  "pricing_token": {
+                    "description": "A pricing token whose presentment currency and exchange rate are used to convert the amounts on the previewed invoice into the customer-facing presentment currency. When omitted, amounts are returned in the settlement currency.",
+                    "maxLength": 5000,
                     "type": "string"
                   },
                   "schedule": {
@@ -202961,12 +203305,12 @@
                               "type": "string"
                             },
                             "price": {
-                              "description": "The ID of the price object. One of `price` or `price_data` is required. When changing a subscription item's price, `quantity` is set to 1 unless a `quantity` parameter is provided.",
+                              "description": "The ID of the price object. You can use either `price` or `price_data`, but not both, to set or change this item's price. If you're updating an existing item without changing its price, omit both. When changing a subscription item's price, `quantity` is set to 1 unless a `quantity` parameter is provided.",
                               "maxLength": 5000,
                               "type": "string"
                             },
                             "price_data": {
-                              "description": "Data used to generate a new [Price](https://docs.stripe.com/api/prices) object inline. One of `price` or `price_data` is required.",
+                              "description": "Data used to generate a new [Price](https://docs.stripe.com/api/prices) object inline. You can use either `price` or `price_data`, but not both, to set or change this item's price. If you're updating an existing item without changing its price, omit both.",
                               "properties": {
                                 "currency": {
                                   "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -203318,6 +203662,7 @@
                   "billing_cadence",
                   "customer",
                   "customer_account",
+                  "pricing_token",
                   "subscription"
                 ]
               }
@@ -203619,7 +203964,7 @@
         "x-stableId": "retrieve_invoice"
       },
       "post": {
-        "description": "<p>Draft invoices are fully editable. Once an invoice is <a href=\"/docs/billing/invoices/workflow#finalized\">finalized</a>,\nmonetary values, as well as <code>collection_method</code>, become uneditable.</p>\n\n<p>If you would like to stop the Stripe Billing engine from automatically finalizing, reattempting payments on,\nsending reminders for, or <a href=\"/docs/billing/invoices/reconciliation\">automatically reconciling</a> invoices, pass\n<code>auto_advance=false</code>.</p>",
+        "description": "<p>Draft invoices are fully editable. Once an invoice is <a href=\"/docs/billing/invoices/workflow#finalized\">finalized</a>,\nyou can no longer change most of its details, including monetary values and <code>collection_method</code>. For most invoices,\nthis also includes <code>description</code>.</p>\n\n<p>If you would like to stop the Stripe Billing engine from automatically finalizing, reattempting payments on,\nsending reminders for, or <a href=\"/docs/billing/invoices/reconciliation\">automatically reconciling</a> invoices, pass\n<code>auto_advance=false</code>.</p>",
         "operationId": "PostInvoicesInvoice",
         "parameters": [
           {
@@ -204226,6 +204571,52 @@
                               }
                             ],
                             "description": "If paying by `acss_debit`, this sub-hash contains details about the Canadian pre-authorized debit payment method options to pass to the invoice’s PaymentIntent."
+                          },
+                          "bacs_debit": {
+                            "anyOf": [
+                              {
+                                "properties": {
+                                  "target_date": {
+                                    "description": "Controls when Stripe will attempt to debit the funds from the customer's account. The date must be a string in YYYY-MM-DD format. The date must be in the future and between 3 and 15 calendar days from now.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "verification_method": {
+                                    "enum": [
+                                      "automatic",
+                                      "payer_name_verification"
+                                    ],
+                                    "type": "string",
+                                    "x-stripeEnum": {
+                                      "kind": "open",
+                                      "values": [
+                                        {
+                                          "description": "No specific verification method is requested.",
+                                          "value": "automatic"
+                                        },
+                                        {
+                                          "description": "Verifies the payer name against the bank account holder name.",
+                                          "value": "payer_name_verification"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                },
+                                "title": "invoice_payment_method_options_param",
+                                "type": "object",
+                                "x-stripeMostCommon": [
+                                  "target_date",
+                                  "verification_method"
+                                ]
+                              },
+                              {
+                                "enum": [
+                                  ""
+                                ],
+                                "type": "string"
+                              }
+                            ],
+                            "description": "If paying by `bacs_debit`, this sub-hash contains details about the Bacs Direct Debit payment method options to pass to the invoice’s PaymentIntent."
                           },
                           "bancontact": {
                             "anyOf": [
@@ -239330,7 +239721,7 @@
                                 ],
                                 "type": "string",
                                 "x-stripeEnum": {
-                                  "kind": "closed",
+                                  "kind": "open",
                                   "values": [
                                     {
                                       "description": "No specific verification method is requested.",
@@ -252252,7 +252643,7 @@
                                 ],
                                 "type": "string",
                                 "x-stripeEnum": {
-                                  "kind": "closed",
+                                  "kind": "open",
                                   "values": [
                                     {
                                       "description": "No specific verification method is requested.",
@@ -269328,7 +269719,7 @@
                                 ],
                                 "type": "string",
                                 "x-stripeEnum": {
-                                  "kind": "closed",
+                                  "kind": "open",
                                   "values": [
                                     {
                                       "description": "No specific verification method is requested.",
@@ -279370,6 +279761,10 @@
                         "title": "subscription_data_invoice_settings_params",
                         "type": "object",
                         "x-stripeMostCommon": [
+                          "account_tax_ids",
+                          "custom_fields",
+                          "description",
+                          "footer",
                           "issuer"
                         ]
                       },
@@ -281289,6 +281684,10 @@
                         "title": "subscription_data_invoice_settings_params",
                         "type": "object",
                         "x-stripeMostCommon": [
+                          "account_tax_ids",
+                          "custom_fields",
+                          "description",
+                          "footer",
                           "issuer"
                         ]
                       },
@@ -294567,6 +294966,10 @@
                 "metadata": {
                   "explode": true,
                   "style": "deepObject"
+                },
+                "payout_method_options": {
+                  "explode": true,
+                  "style": "deepObject"
                 }
               },
               "schema": {
@@ -294618,6 +295021,31 @@
                   "payout_method": {
                     "description": "The ID of a v2 FinancialAccount to send funds to.",
                     "type": "string"
+                  },
+                  "payout_method_options": {
+                    "description": "Additional options that complement the payout_method. The keys in this dictionary identify the type of payout method the options apply to.",
+                    "properties": {
+                      "financial_account": {
+                        "description": "Additional options for a Financial Account payout method. Only valid when payout_method is a Financial Account ID.",
+                        "properties": {
+                          "destination_currency": {
+                            "description": "Identifies the currency to credit in the destination Financial Account. Must be a currency supported by the target Financial Account. When omitted, the payout uses the currency parameter.",
+                            "format": "currency",
+                            "type": "string"
+                          }
+                        },
+                        "title": "financial_account_param",
+                        "type": "object",
+                        "x-stripeMostCommon": [
+                          "destination_currency"
+                        ]
+                      }
+                    },
+                    "title": "payout_method_options_param",
+                    "type": "object",
+                    "x-stripeMostCommon": [
+                      "financial_account"
+                    ]
                   },
                   "source_type": {
                     "description": "The balance type of your Stripe balance to draw this payout from. Balances for different payment sources are kept separately. You can find the amounts with the Balances API. One of `bank_account`, `card`, or `fpx`.",
@@ -313695,8 +314123,10 @@
                       "amount_max",
                       "amount_min",
                       "amount_total",
+                      "api_version",
                       "apple_subscriber",
                       "application_id",
+                      "arrival_date",
                       "async_fees",
                       "attempt_count",
                       "attempted",
@@ -313752,6 +314182,7 @@
                       "cohort",
                       "cohort_file",
                       "collection_method",
+                      "collection_statuses",
                       "columns",
                       "compare_to_end",
                       "compare_to_start",
@@ -313884,6 +314315,7 @@
                       "gateway_country",
                       "gl_code",
                       "google_order",
+                      "grain",
                       "grams",
                       "granularity",
                       "gross_amount",
@@ -314176,6 +314608,7 @@
                       "transaction_id",
                       "transaction_initiators",
                       "transaction_type",
+                      "transfer_instruction",
                       "transferred_to",
                       "type",
                       "unit",
@@ -314187,6 +314620,7 @@
                       "used_network_tokens",
                       "utm_medium",
                       "utm_source",
+                      "utm_sources",
                       "verification_attempt_timestamp",
                       "view_type",
                       "volume_filter",
@@ -317523,7 +317957,7 @@
                             ],
                             "type": "string",
                             "x-stripeEnum": {
-                              "kind": "closed",
+                              "kind": "open",
                               "values": [
                                 {
                                   "description": "No specific verification method is requested.",
@@ -320420,7 +320854,7 @@
                             ],
                             "type": "string",
                             "x-stripeEnum": {
-                              "kind": "closed",
+                              "kind": "open",
                               "values": [
                                 {
                                   "description": "No specific verification method is requested.",
@@ -323268,7 +323702,7 @@
                             ],
                             "type": "string",
                             "x-stripeEnum": {
-                              "kind": "closed",
+                              "kind": "open",
                               "values": [
                                 {
                                   "description": "No specific verification method is requested.",
@@ -328351,12 +328785,12 @@
                     "type": "string"
                   },
                   "price": {
-                    "description": "The ID of the price object. One of `price` or `price_data` is required. When changing a subscription item's price, `quantity` is set to 1 unless a `quantity` parameter is provided.",
+                    "description": "The ID of the price object. You can use either `price` or `price_data`, but not both, to set or change this item's price. If you're updating an existing item without changing its price, omit both. When changing a subscription item's price, `quantity` is set to 1 unless a `quantity` parameter is provided.",
                     "maxLength": 5000,
                     "type": "string"
                   },
                   "price_data": {
-                    "description": "Data used to generate a new [Price](https://docs.stripe.com/api/prices) object inline. One of `price` or `price_data` is required.",
+                    "description": "Data used to generate a new [Price](https://docs.stripe.com/api/prices) object inline. You can use either `price` or `price_data`, but not both, to set or change this item's price. If you're updating an existing item without changing its price, omit both.",
                     "properties": {
                       "currency": {
                         "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -337054,6 +337488,51 @@
                             ],
                             "description": "This sub-hash contains details about the Canadian pre-authorized debit payment method options to pass to the invoice’s PaymentIntent."
                           },
+                          "bacs_debit": {
+                            "anyOf": [
+                              {
+                                "properties": {
+                                  "debit_behavior": {
+                                    "description": "Controls when the funds will be captured from the customer's account.",
+                                    "type": "string"
+                                  },
+                                  "verification_method": {
+                                    "enum": [
+                                      "automatic",
+                                      "payer_name_verification"
+                                    ],
+                                    "type": "string",
+                                    "x-stripeEnum": {
+                                      "kind": "open",
+                                      "values": [
+                                        {
+                                          "description": "No specific verification method is requested.",
+                                          "value": "automatic"
+                                        },
+                                        {
+                                          "description": "Verifies the payer name against the bank account holder name.",
+                                          "value": "payer_name_verification"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                },
+                                "title": "subscription_payment_method_options_param",
+                                "type": "object",
+                                "x-stripeMostCommon": [
+                                  "debit_behavior",
+                                  "verification_method"
+                                ]
+                              },
+                              {
+                                "enum": [
+                                  ""
+                                ],
+                                "type": "string"
+                              }
+                            ],
+                            "description": "This sub-hash contains details about the Bacs Direct Debit payment method options to pass to the invoice’s PaymentIntent."
+                          },
                           "bancontact": {
                             "anyOf": [
                               {
@@ -339834,12 +340313,12 @@
                           "type": "string"
                         },
                         "price": {
-                          "description": "The ID of the price object. One of `price` or `price_data` is required. When changing a subscription item's price, `quantity` is set to 1 unless a `quantity` parameter is provided.",
+                          "description": "The ID of the price object. You can use either `price` or `price_data`, but not both, to set or change this item's price. If you're updating an existing item without changing its price, omit both. When changing a subscription item's price, `quantity` is set to 1 unless a `quantity` parameter is provided.",
                           "maxLength": 5000,
                           "type": "string"
                         },
                         "price_data": {
-                          "description": "Data used to generate a new [Price](https://docs.stripe.com/api/prices) object inline. One of `price` or `price_data` is required.",
+                          "description": "Data used to generate a new [Price](https://docs.stripe.com/api/prices) object inline. You can use either `price` or `price_data`, but not both, to set or change this item's price. If you're updating an existing item without changing its price, omit both.",
                           "properties": {
                             "currency": {
                               "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
@@ -340127,6 +340606,51 @@
                               }
                             ],
                             "description": "This sub-hash contains details about the Canadian pre-authorized debit payment method options to pass to the invoice’s PaymentIntent."
+                          },
+                          "bacs_debit": {
+                            "anyOf": [
+                              {
+                                "properties": {
+                                  "debit_behavior": {
+                                    "description": "Controls when the funds will be captured from the customer's account.",
+                                    "type": "string"
+                                  },
+                                  "verification_method": {
+                                    "enum": [
+                                      "automatic",
+                                      "payer_name_verification"
+                                    ],
+                                    "type": "string",
+                                    "x-stripeEnum": {
+                                      "kind": "open",
+                                      "values": [
+                                        {
+                                          "description": "No specific verification method is requested.",
+                                          "value": "automatic"
+                                        },
+                                        {
+                                          "description": "Verifies the payer name against the bank account holder name.",
+                                          "value": "payer_name_verification"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                },
+                                "title": "subscription_payment_method_options_param",
+                                "type": "object",
+                                "x-stripeMostCommon": [
+                                  "debit_behavior",
+                                  "verification_method"
+                                ]
+                              },
+                              {
+                                "enum": [
+                                  ""
+                                ],
+                                "type": "string"
+                              }
+                            ],
+                            "description": "This sub-hash contains details about the Bacs Direct Debit payment method options to pass to the invoice’s PaymentIntent."
                           },
                           "bancontact": {
                             "anyOf": [
@@ -342913,7 +343437,7 @@
                   "type": "string"
                 },
                 "type": {
-                  "description": "Specifies the payee type. Either `account` or `external_reference`.",
+                  "description": "Specifies the payee type.",
                   "enum": [
                     "account",
                     "external_reference"
@@ -342960,7 +343484,8 @@
                 "us_1099_misc",
                 "us_1099_nec"
               ],
-              "type": "string"
+              "type": "string",
+              "x-stripeBypassValidation": true
             },
             "style": "form"
           }
@@ -343936,6 +344461,38 @@
                       "at": {
                         "description": "Options for the registration in AT.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -343969,39 +344526,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -344010,7 +344534,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -344233,6 +344756,38 @@
                       "be": {
                         "description": "Options for the registration in BE.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -344266,39 +344821,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -344307,7 +344829,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -344354,6 +344875,38 @@
                       "bg": {
                         "description": "Options for the registration in BG.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -344387,39 +344940,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -344428,7 +344948,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -344773,6 +345292,38 @@
                       "cy": {
                         "description": "Options for the registration in CY.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -344806,39 +345357,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -344847,7 +345365,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -344855,6 +345372,38 @@
                       "cz": {
                         "description": "Options for the registration in CZ.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -344888,39 +345437,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -344929,7 +345445,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -344937,6 +345452,38 @@
                       "de": {
                         "description": "Options for the registration in DE.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -344970,39 +345517,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -345011,7 +345525,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -345019,6 +345532,38 @@
                       "dk": {
                         "description": "Options for the registration in DK.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -345052,39 +345597,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -345093,7 +345605,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -345121,6 +345632,38 @@
                       "ee": {
                         "description": "Options for the registration in EE.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -345154,39 +345697,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -345195,7 +345705,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -345294,7 +345803,7 @@
                         "required": [
                           "type"
                         ],
-                        "title": "europe",
+                        "title": "spain",
                         "type": "object",
                         "x-stripeMostCommon": [
                           "igic",
@@ -345344,6 +345853,38 @@
                       "fi": {
                         "description": "Options for the registration in FI.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -345377,39 +345918,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -345418,7 +345926,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -345426,6 +345933,38 @@
                       "fr": {
                         "description": "Options for the registration in FR.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -345459,39 +345998,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -345500,7 +346006,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -345606,6 +346111,38 @@
                       "gr": {
                         "description": "Options for the registration in GR.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -345639,39 +346176,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -345680,7 +346184,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -345688,6 +346191,38 @@
                       "hr": {
                         "description": "Options for the registration in HR.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -345721,39 +346256,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -345762,7 +346264,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -345770,6 +346271,38 @@
                       "hu": {
                         "description": "Options for the registration in HU.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -345803,39 +346336,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -345844,7 +346344,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -345872,6 +346371,38 @@
                       "ie": {
                         "description": "Options for the registration in IE.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -345905,39 +346436,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -345946,7 +346444,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -346013,6 +346510,38 @@
                       "it": {
                         "description": "Options for the registration in IT.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -346046,39 +346575,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -346087,7 +346583,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -346274,6 +346769,38 @@
                       "lt": {
                         "description": "Options for the registration in LT.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -346307,39 +346834,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -346348,7 +346842,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -346356,6 +346849,38 @@
                       "lu": {
                         "description": "Options for the registration in LU.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -346389,39 +346914,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -346430,7 +346922,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -346438,6 +346929,38 @@
                       "lv": {
                         "description": "Options for the registration in LV.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -346471,39 +346994,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -346512,7 +347002,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -346677,6 +347166,38 @@
                       "mt": {
                         "description": "Options for the registration in MT.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -346710,39 +347231,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -346751,7 +347239,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -346819,6 +347306,38 @@
                       "nl": {
                         "description": "Options for the registration in NL.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -346852,39 +347371,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -346893,7 +347379,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -347078,6 +347563,38 @@
                       "pl": {
                         "description": "Options for the registration in PL.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -347111,39 +347628,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -347152,7 +347636,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -347160,6 +347643,38 @@
                       "pt": {
                         "description": "Options for the registration in PT.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -347193,39 +347708,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -347234,7 +347716,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -347242,6 +347723,38 @@
                       "ro": {
                         "description": "Options for the registration in RO.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -347275,39 +347788,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -347316,7 +347796,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -347403,6 +347882,38 @@
                       "se": {
                         "description": "Options for the registration in SE.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -347436,39 +347947,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -347477,7 +347955,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -347524,6 +348001,38 @@
                       "si": {
                         "description": "Options for the registration in SI.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -347557,39 +348066,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -347598,7 +348074,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]
@@ -347606,6 +348081,38 @@
                       "sk": {
                         "description": "Options for the registration in SK.",
                         "properties": {
+                          "standard": {
+                            "description": "Options for the standard registration.",
+                            "properties": {
+                              "place_of_supply_scheme": {
+                                "description": "Place of supply scheme used in an EU standard registration.",
+                                "enum": [
+                                  "inbound_goods",
+                                  "small_seller",
+                                  "standard"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "place_of_supply_scheme"
+                            ],
+                            "title": "standard",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "place_of_supply_scheme"
+                            ]
+                          },
+                          "type": {
+                            "description": "Type of registration to be created in an EU country.",
+                            "enum": [
+                              "ioss",
+                              "oss_non_union",
+                              "oss_union",
+                              "standard"
+                            ],
+                            "type": "string"
+                          },
                           "igic": {
                             "description": "Options for the IGIC registration.",
                             "properties": {
@@ -347639,39 +348146,6 @@
                             "x-stripeMostCommon": [
                               "place_of_supply_scheme"
                             ]
-                          },
-                          "standard": {
-                            "description": "Options for the standard registration.",
-                            "properties": {
-                              "place_of_supply_scheme": {
-                                "description": "Place of supply scheme used in an EU standard registration.",
-                                "enum": [
-                                  "inbound_goods",
-                                  "small_seller",
-                                  "standard"
-                                ],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "place_of_supply_scheme"
-                            ],
-                            "title": "standard",
-                            "type": "object",
-                            "x-stripeMostCommon": [
-                              "place_of_supply_scheme"
-                            ]
-                          },
-                          "type": {
-                            "description": "Type of registration to be created in an EU country.",
-                            "enum": [
-                              "ioss",
-                              "oss_non_union",
-                              "oss_union",
-                              "standard"
-                            ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
                           }
                         },
                         "required": [
@@ -347680,7 +348154,6 @@
                         "title": "europe",
                         "type": "object",
                         "x-stripeMostCommon": [
-                          "igic",
                           "standard",
                           "type"
                         ]

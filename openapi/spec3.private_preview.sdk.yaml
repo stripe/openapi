@@ -15141,6 +15141,18 @@ components:
             from now.
           maxLength: 5000
           type: string
+        verification_method:
+          enum:
+            - automatic
+            - payer_name_verification
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: No specific verification method is requested.
+                value: automatic
+              - description: Verifies the payer name against the bank account holder name.
+                value: payer_name_verification
       title: CheckoutBacsDebitPaymentMethodOptions
       type: object
       x-expandableFields:
@@ -15149,6 +15161,7 @@ components:
         - mandate_options
         - setup_future_usage
         - target_date
+        - verification_method
     checkout_bancontact_payment_method_options:
       description: ''
       properties:
@@ -22030,8 +22043,11 @@ components:
         source_currency:
           description: A fiat currency code
           enum:
+            - cad
+            - cop
             - eur
             - gbp
+            - php
             - usd
           nullable: true
           type: string
@@ -28743,6 +28759,39 @@ components:
         in_package: ''
         polymorphic_groups:
           - balance_transaction_source
+    dispute_appeal:
+      description: ''
+      properties:
+        card:
+          $ref: '#/components/schemas/dispute_appeal_card'
+      title: DisputeAppeal
+      type: object
+      x-expandableFields:
+        - card
+      x-stripeMostCommon:
+        - card
+    dispute_appeal_card:
+      description: ''
+      properties:
+        reason_for_filing:
+          description: The reason for filing the appeal.
+          maxLength: 20000
+          type: string
+        supporting_files:
+          description: >-
+            One or more document IDs returned by a [file
+            upload](https://api.stripe.com#create_file) with a `purpose` value
+            of `dispute_evidence` to support the appeal.
+          items:
+            maxLength: 5000
+            type: string
+          type: array
+      title: DisputeAppealCard
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - reason_for_filing
+        - supporting_files
     dispute_enhanced_eligibility:
       description: ''
       properties:
@@ -28938,6 +28987,8 @@ components:
           maxLength: 150000
           nullable: true
           type: string
+        appeal:
+          $ref: '#/components/schemas/dispute_appeal'
         billing_address:
           description: The billing address provided by the customer.
           maxLength: 5000
@@ -29199,6 +29250,7 @@ components:
       title: DisputeEvidence
       type: object
       x-expandableFields:
+        - appeal
         - cancellation_policy
         - customer_communication
         - customer_signature
@@ -29212,6 +29264,7 @@ components:
       x-stableId: dispute_evidence
       x-stripeMostCommon:
         - access_activity_log
+        - appeal
         - billing_address
         - cancellation_policy
         - cancellation_policy_disclosure
@@ -39232,6 +39285,35 @@ components:
       x-expandableFields: []
       x-stripeMostCommon:
         - transaction_type
+    invoice_payment_method_options_bacs_debit:
+      description: ''
+      properties:
+        target_date:
+          description: >-
+            Controls when Stripe will attempt to debit the funds from the
+            customer's account. The date must be a string in YYYY-MM-DD format.
+            The date must be in the future and between 3 and 15 calendar days
+            from now.
+          maxLength: 5000
+          type: string
+        verification_method:
+          enum:
+            - automatic
+            - payer_name_verification
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: No specific verification method is requested.
+                value: automatic
+              - description: Verifies the payer name against the bank account holder name.
+                value: payer_name_verification
+      title: invoice_payment_method_options_bacs_debit
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - target_date
+        - verification_method
     invoice_payment_method_options_bancontact:
       description: ''
       properties:
@@ -40450,6 +40532,7 @@ components:
         - customer
         - discounts
         - invoice
+        - invoicing_rules
         - managed_payments
         - margins
         - parent
@@ -40534,6 +40617,14 @@ components:
             If paying by `acss_debit`, this sub-hash contains details about the
             Canadian pre-authorized debit payment method options to pass to the
             invoice’s PaymentIntent.
+          nullable: true
+        bacs_debit:
+          anyOf:
+            - $ref: '#/components/schemas/invoice_payment_method_options_bacs_debit'
+          description: >-
+            If paying by `bacs_debit`, this sub-hash contains details about the
+            Bacs Direct Debit payment method options to pass to the invoice’s
+            PaymentIntent.
           nullable: true
         bancontact:
           anyOf:
@@ -40667,6 +40758,7 @@ components:
       type: object
       x-expandableFields:
         - acss_debit
+        - bacs_debit
         - bancontact
         - billie
         - bizum
@@ -40684,6 +40776,7 @@ components:
         - wechat_pay
       x-stripeMostCommon:
         - acss_debit
+        - bacs_debit
         - bancontact
         - billie
         - bizum
@@ -41303,6 +41396,38 @@ components:
         - marked_uncollectible_at
         - paid_at
         - voided_at
+    invoicing_rule:
+      description: ''
+      properties:
+        type:
+          description: The type of invoicing rule.
+          enum:
+            - defer_until_credited_items_resolved
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: >-
+                  Defers invoicing of this credit proration item until the
+                  referenced credited items are resolved.
+
+
+                  If the credited items are of type `invoice_line_item`, the
+                  referenced invoice must be paid for this rule to be satisfied.
+
+
+                  If the credited items are of type `invoice_item`, the
+                  referenced invoice item must be invoiced alongside this credit
+                  proration item or on an already paid invoice for this rule to
+                  be satisfied.
+                value: defer_until_credited_items_resolved
+      required:
+        - type
+      title: InvoicingRule
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - type
     issuing.authorization:
       description: >-
         When an [issued card](https://docs.stripe.com/issuing) is used to make a
@@ -63710,7 +63835,7 @@ components:
             - payer_name_verification
           type: string
           x-stripeEnum:
-            kind: closed
+            kind: open
             values:
               - description: No specific verification method is requested.
                 value: automatic
@@ -73093,6 +73218,13 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        funding_source_group:
+          description: >-
+            The [funding source group
+            code](https://docs.stripe.com/payments/link/link-payment-methods)
+            applied to this Link payment at confirmation time.
+          maxLength: 5000
+          type: string
       required:
         - country
       title: payment_method_details_payment_record_link
@@ -73100,6 +73232,7 @@ components:
       x-expandableFields: []
       x-stripeMostCommon:
         - country
+        - funding_source_group
     payment_method_details_payment_record_mb_way:
       description: ''
       properties: {}
@@ -82321,6 +82454,8 @@ components:
             - 1.0.2
             - 2.1.0
             - 2.2.0
+            - 2.3.0
+            - 2.3.1
           nullable: true
           type: string
       required:
@@ -87552,7 +87687,10 @@ components:
             invoice item that the credit applies to.
           nullable: true
         discount_amounts:
-          description: Discount amounts applied when the proration was created.
+          description: >-
+            Discount amounts applied when the proration was created. This field
+            is only populated for prorations created from subscriptions with
+            `billing_mode=flexible`.
           items:
             $ref: '#/components/schemas/discounts_resource_discount_amount'
           type: array
@@ -94623,6 +94761,7 @@ components:
         - created
         - created_by
         - currency
+        - destination
         - id
         - livemode
         - object
@@ -97290,7 +97429,7 @@ components:
       x-stripeEvent:
         type: setup_intent.setup_failed
     setup_intent.succeeded:
-      description: Occurs when an SetupIntent has successfully setup a payment method.
+      description: Occurs when a SetupIntent has successfully setup a payment method.
       properties:
         object:
           $ref: '#/components/schemas/setup_intent'
@@ -97601,7 +97740,7 @@ components:
             - payer_name_verification
           type: string
           x-stripeEnum:
-            kind: closed
+            kind: open
             values:
               - description: No specific verification method is requested.
                 value: automatic
@@ -102287,6 +102426,34 @@ components:
       x-expandableFields: []
       x-stripeMostCommon:
         - usage_gte
+    subscription_payment_method_options_bacs_debit:
+      description: ''
+      properties:
+        debit_behavior:
+          description: >-
+            Controls when the funds will be captured from the customer's
+            account.
+          type: string
+        verification_method:
+          enum:
+            - automatic
+            - payer_name_verification
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: No specific verification method is requested.
+                value: automatic
+              - description: Verifies the payer name against the bank account holder name.
+                value: payer_name_verification
+      required:
+        - debit_behavior
+      title: subscription_payment_method_options_bacs_debit
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - debit_behavior
+        - verification_method
     subscription_payment_method_options_billie:
       description: ''
       properties:
@@ -104593,6 +104760,14 @@ components:
             debit payment method options to pass to invoices created by the
             subscription.
           nullable: true
+        bacs_debit:
+          anyOf:
+            - $ref: >-
+                #/components/schemas/subscription_payment_method_options_bacs_debit
+          description: >-
+            This sub-hash contains details about the Bacs Direct Debit payment
+            method options to pass to invoices created by the subscription.
+          nullable: true
         bancontact:
           anyOf:
             - $ref: '#/components/schemas/invoice_payment_method_options_bancontact'
@@ -104717,6 +104892,7 @@ components:
       type: object
       x-expandableFields:
         - acss_debit
+        - bacs_debit
         - bancontact
         - billie
         - bizum
@@ -104734,6 +104910,7 @@ components:
         - wechat_pay
       x-stripeMostCommon:
         - acss_debit
+        - bacs_debit
         - bancontact
         - billie
         - bizum
@@ -105693,6 +105870,7 @@ components:
             - us_1099_misc
             - us_1099_nec
           type: string
+          x-stripeBypassValidation: true
         us_1099_k:
           $ref: '#/components/schemas/tax_reporting_resource_tax_form_us1099_k'
         us_1099_misc:
@@ -107311,7 +107489,7 @@ components:
             #/components/schemas/tax_product_registrations_resource_country_options_simplified
         es:
           $ref: >-
-            #/components/schemas/tax_product_registrations_resource_country_options_europe
+            #/components/schemas/tax_product_registrations_resource_country_options_spain
         et:
           $ref: >-
             #/components/schemas/tax_product_registrations_resource_country_options_default
@@ -107828,9 +108006,6 @@ components:
     tax_product_registrations_resource_country_options_europe:
       description: ''
       properties:
-        igic:
-          $ref: >-
-            #/components/schemas/tax_product_registrations_resource_country_options_igic
         standard:
           $ref: >-
             #/components/schemas/tax_product_registrations_resource_country_options_eu_standard
@@ -107842,16 +108017,13 @@ components:
             - oss_union
             - standard
           type: string
-          x-stripeBypassValidation: true
       required:
         - type
       title: TaxProductRegistrationsResourceCountryOptionsEurope
       type: object
       x-expandableFields:
-        - igic
         - standard
       x-stripeMostCommon:
-        - igic
         - standard
         - type
     tax_product_registrations_resource_country_options_igic:
@@ -107895,6 +108067,58 @@ components:
       type: object
       x-expandableFields: []
       x-stripeMostCommon:
+        - type
+    tax_product_registrations_resource_country_options_spain:
+      description: ''
+      properties:
+        igic:
+          $ref: >-
+            #/components/schemas/tax_product_registrations_resource_country_options_igic
+        standard:
+          $ref: >-
+            #/components/schemas/tax_product_registrations_resource_country_options_eu_standard
+        type:
+          description: Type of registration in ES.
+          enum:
+            - igic
+            - ioss
+            - oss_non_union
+            - oss_union
+            - standard
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: >-
+                  Impuesto General Indirecto Canario. For businesses selling
+                  goods and services in the Canary Islands.
+                value: igic
+              - description: >-
+                  Common for businesses shipping goods below EUR 150 from non-EU
+                  countries to EU customers.
+                value: ioss
+              - description: >-
+                  Common for businesses established outside of the EU selling
+                  services to customers in the EU.
+                value: oss_non_union
+              - description: >-
+                  Common for businesses established in the EU selling goods and
+                  services to customers in the EU.
+                value: oss_union
+              - description: >-
+                  Common for businesses selling goods and services to customers
+                  in this country.
+                value: standard
+      required:
+        - type
+      title: TaxProductRegistrationsResourceCountryOptionsSpain
+      type: object
+      x-expandableFields:
+        - igic
+        - standard
+      x-stripeMostCommon:
+        - igic
+        - standard
         - type
     tax_product_registrations_resource_country_options_thailand:
       description: ''
@@ -109971,7 +110195,7 @@ components:
           nullable: true
           type: string
         type:
-          description: Either `account` or `external_reference`.
+          description: Specifies the payee type.
           enum:
             - account
             - external_reference
@@ -118830,8 +119054,8 @@ paths:
   /v1/account_sessions:
     post:
       description: >-
-        <p>Creates a AccountSession object that includes a single-use token that
-        the platform can use on their front-end to grant client-side API
+        <p>Creates an AccountSession object that includes a single-use token
+        that the platform can use on their front-end to grant client-side API
         access.</p>
       operationId: PostAccountSessions
       requestBody:
@@ -150089,12 +150313,27 @@ paths:
                             future and between 3 and 15 calendar days from now.
                           maxLength: 5000
                           type: string
+                        verification_method:
+                          enum:
+                            - automatic
+                            - payer_name_verification
+                          type: string
+                          x-stripeEnum:
+                            kind: open
+                            values:
+                              - description: No specific verification method is requested.
+                                value: automatic
+                              - description: >-
+                                  Verifies the payer name against the bank
+                                  account holder name.
+                                value: payer_name_verification
                       title: payment_method_options_param
                       type: object
                       x-stripeMostCommon:
                         - mandate_options
                         - setup_future_usage
                         - target_date
+                        - verification_method
                     bancontact:
                       description: >-
                         contains details about the Bancontact payment method
@@ -152668,6 +152907,7 @@ paths:
                       - satispay
                       - scalapay
                       - sepa_debit
+                      - sequra
                       - shopeepay
                       - sofort
                       - sunbit
@@ -153570,6 +153810,10 @@ paths:
                       title: invoice_settings_params
                       type: object
                       x-stripeMostCommon:
+                        - account_tax_ids
+                        - custom_fields
+                        - description
+                        - footer
                         - issuer
                     metadata:
                       additionalProperties:
@@ -159575,8 +159819,11 @@ paths:
                     by onramp. Users can still select a different currency in
                     the onramp UI.
                   enum:
+                    - cad
+                    - cop
                     - eur
                     - gbp
+                    - php
                     - usd
                   type: string
                 wallet_addresses:
@@ -175639,6 +175886,46 @@ paths:
                             details about the Canadian pre-authorized debit
                             payment method options to pass to the invoice’s
                             PaymentIntent.
+                        bacs_debit:
+                          anyOf:
+                            - properties:
+                                target_date:
+                                  description: >-
+                                    Controls when Stripe will attempt to debit
+                                    the funds from the customer's account. The
+                                    date must be a string in YYYY-MM-DD format.
+                                    The date must be in the future and between 3
+                                    and 15 calendar days from now.
+                                  maxLength: 5000
+                                  type: string
+                                verification_method:
+                                  enum:
+                                    - automatic
+                                    - payer_name_verification
+                                  type: string
+                                  x-stripeEnum:
+                                    kind: open
+                                    values:
+                                      - description: >-
+                                          No specific verification method is
+                                          requested.
+                                        value: automatic
+                                      - description: >-
+                                          Verifies the payer name against the bank
+                                          account holder name.
+                                        value: payer_name_verification
+                              title: invoice_payment_method_options_param
+                              type: object
+                              x-stripeMostCommon:
+                                - target_date
+                                - verification_method
+                            - enum:
+                                - ''
+                              type: string
+                          description: >-
+                            If paying by `bacs_debit`, this sub-hash contains
+                            details about the Bacs Direct Debit payment method
+                            options to pass to the invoice’s PaymentIntent.
                         bancontact:
                           anyOf:
                             - properties:
@@ -177841,6 +178128,14 @@ paths:
                   enum:
                     - next
                     - recurring
+                  type: string
+                pricing_token:
+                  description: >-
+                    A pricing token whose presentment currency and exchange rate
+                    are used to convert the amounts on the previewed invoice
+                    into the customer-facing presentment currency. When omitted,
+                    amounts are returned in the settlement currency.
+                  maxLength: 5000
                   type: string
                 schedule:
                   description: >-
@@ -181265,18 +181560,23 @@ paths:
                             type: string
                           price:
                             description: >-
-                              The ID of the price object. One of `price` or
-                              `price_data` is required. When changing a
-                              subscription item's price, `quantity` is set to 1
-                              unless a `quantity` parameter is provided.
+                              The ID of the price object. You can use either
+                              `price` or `price_data`, but not both, to set or
+                              change this item's price. If you're updating an
+                              existing item without changing its price, omit
+                              both. When changing a subscription item's price,
+                              `quantity` is set to 1 unless a `quantity`
+                              parameter is provided.
                             maxLength: 5000
                             type: string
                           price_data:
                             description: >-
                               Data used to generate a new
                               [Price](https://docs.stripe.com/api/prices) object
-                              inline. One of `price` or `price_data` is
-                              required.
+                              inline. You can use either `price` or
+                              `price_data`, but not both, to set or change this
+                              item's price. If you're updating an existing item
+                              without changing its price, omit both.
                             properties:
                               currency:
                                 description: >-
@@ -181641,6 +181941,7 @@ paths:
                 - billing_cadence
                 - customer
                 - customer_account
+                - pricing_token
                 - subscription
         required: false
       responses:
@@ -181877,8 +182178,10 @@ paths:
         <p>Draft invoices are fully editable. Once an invoice is <a
         href="/docs/billing/invoices/workflow#finalized">finalized</a>,
 
-        monetary values, as well as <code>collection_method</code>, become
-        uneditable.</p>
+        you can no longer change most of its details, including monetary values
+        and <code>collection_method</code>. For most invoices,
+
+        this also includes <code>description</code>.</p>
 
 
         <p>If you would like to stop the Stripe Billing engine from
@@ -182433,6 +182736,46 @@ paths:
                             details about the Canadian pre-authorized debit
                             payment method options to pass to the invoice’s
                             PaymentIntent.
+                        bacs_debit:
+                          anyOf:
+                            - properties:
+                                target_date:
+                                  description: >-
+                                    Controls when Stripe will attempt to debit
+                                    the funds from the customer's account. The
+                                    date must be a string in YYYY-MM-DD format.
+                                    The date must be in the future and between 3
+                                    and 15 calendar days from now.
+                                  maxLength: 5000
+                                  type: string
+                                verification_method:
+                                  enum:
+                                    - automatic
+                                    - payer_name_verification
+                                  type: string
+                                  x-stripeEnum:
+                                    kind: open
+                                    values:
+                                      - description: >-
+                                          No specific verification method is
+                                          requested.
+                                        value: automatic
+                                      - description: >-
+                                          Verifies the payer name against the bank
+                                          account holder name.
+                                        value: payer_name_verification
+                              title: invoice_payment_method_options_param
+                              type: object
+                              x-stripeMostCommon:
+                                - target_date
+                                - verification_method
+                            - enum:
+                                - ''
+                              type: string
+                          description: >-
+                            If paying by `bacs_debit`, this sub-hash contains
+                            details about the Bacs Direct Debit payment method
+                            options to pass to the invoice’s PaymentIntent.
                         bancontact:
                           anyOf:
                             - properties:
@@ -215279,7 +215622,7 @@ paths:
                                 - payer_name_verification
                               type: string
                               x-stripeEnum:
-                                kind: closed
+                                kind: open
                                 values:
                                   - description: >-
                                       No specific verification method is
@@ -229089,7 +229432,7 @@ paths:
                                 - payer_name_verification
                               type: string
                               x-stripeEnum:
-                                kind: closed
+                                kind: open
                                 values:
                                   - description: >-
                                       No specific verification method is
@@ -246532,7 +246875,7 @@ paths:
                                 - payer_name_verification
                               type: string
                               x-stripeEnum:
-                                kind: closed
+                                kind: open
                                 values:
                                   - description: >-
                                       No specific verification method is
@@ -257807,6 +258150,10 @@ paths:
                       title: subscription_data_invoice_settings_params
                       type: object
                       x-stripeMostCommon:
+                        - account_tax_ids
+                        - custom_fields
+                        - description
+                        - footer
                         - issuer
                     metadata:
                       additionalProperties:
@@ -259587,6 +259934,10 @@ paths:
                       title: subscription_data_invoice_settings_params
                       type: object
                       x-stripeMostCommon:
+                        - account_tax_ids
+                        - custom_fields
+                        - description
+                        - footer
                         - issuer
                     metadata:
                       anyOf:
@@ -271270,6 +271621,9 @@ paths:
               metadata:
                 explode: true
                 style: deepObject
+              payout_method_options:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -271330,6 +271684,34 @@ paths:
                 payout_method:
                   description: The ID of a v2 FinancialAccount to send funds to.
                   type: string
+                payout_method_options:
+                  description: >-
+                    Additional options that complement the payout_method. The
+                    keys in this dictionary identify the type of payout method
+                    the options apply to.
+                  properties:
+                    financial_account:
+                      description: >-
+                        Additional options for a Financial Account payout
+                        method. Only valid when payout_method is a Financial
+                        Account ID.
+                      properties:
+                        destination_currency:
+                          description: >-
+                            Identifies the currency to credit in the destination
+                            Financial Account. Must be a currency supported by
+                            the target Financial Account. When omitted, the
+                            payout uses the currency parameter.
+                          format: currency
+                          type: string
+                      title: financial_account_param
+                      type: object
+                      x-stripeMostCommon:
+                        - destination_currency
+                  title: payout_method_options_param
+                  type: object
+                  x-stripeMostCommon:
+                    - financial_account
                 source_type:
                   description: >-
                     The balance type of your Stripe balance to draw this payout
@@ -288385,8 +288767,10 @@ paths:
                     - amount_max
                     - amount_min
                     - amount_total
+                    - api_version
                     - apple_subscriber
                     - application_id
+                    - arrival_date
                     - async_fees
                     - attempt_count
                     - attempted
@@ -288442,6 +288826,7 @@ paths:
                     - cohort
                     - cohort_file
                     - collection_method
+                    - collection_statuses
                     - columns
                     - compare_to_end
                     - compare_to_start
@@ -288574,6 +288959,7 @@ paths:
                     - gateway_country
                     - gl_code
                     - google_order
+                    - grain
                     - grams
                     - granularity
                     - gross_amount
@@ -288866,6 +289252,7 @@ paths:
                     - transaction_id
                     - transaction_initiators
                     - transaction_type
+                    - transfer_instruction
                     - transferred_to
                     - type
                     - unit
@@ -288877,6 +289264,7 @@ paths:
                     - used_network_tokens
                     - utm_medium
                     - utm_source
+                    - utm_sources
                     - verification_attempt_timestamp
                     - view_type
                     - volume_filter
@@ -291885,7 +292273,7 @@ paths:
                             - payer_name_verification
                           type: string
                           x-stripeEnum:
-                            kind: closed
+                            kind: open
                             values:
                               - description: No specific verification method is requested.
                                 value: automatic
@@ -294784,7 +295172,7 @@ paths:
                             - payer_name_verification
                           type: string
                           x-stripeEnum:
-                            kind: closed
+                            kind: open
                             values:
                               - description: No specific verification method is requested.
                                 value: automatic
@@ -297608,7 +297996,7 @@ paths:
                             - payer_name_verification
                           type: string
                           x-stripeEnum:
-                            kind: closed
+                            kind: open
                             values:
                               - description: No specific verification method is requested.
                                 value: automatic
@@ -302314,17 +302702,21 @@ paths:
                   type: string
                 price:
                   description: >-
-                    The ID of the price object. One of `price` or `price_data`
-                    is required. When changing a subscription item's price,
-                    `quantity` is set to 1 unless a `quantity` parameter is
-                    provided.
+                    The ID of the price object. You can use either `price` or
+                    `price_data`, but not both, to set or change this item's
+                    price. If you're updating an existing item without changing
+                    its price, omit both. When changing a subscription item's
+                    price, `quantity` is set to 1 unless a `quantity` parameter
+                    is provided.
                   maxLength: 5000
                   type: string
                 price_data:
                   description: >-
                     Data used to generate a new
                     [Price](https://docs.stripe.com/api/prices) object inline.
-                    One of `price` or `price_data` is required.
+                    You can use either `price` or `price_data`, but not both, to
+                    set or change this item's price. If you're updating an
+                    existing item without changing its price, omit both.
                   properties:
                     currency:
                       description: >-
@@ -310822,6 +311214,42 @@ paths:
                             This sub-hash contains details about the Canadian
                             pre-authorized debit payment method options to pass
                             to the invoice’s PaymentIntent.
+                        bacs_debit:
+                          anyOf:
+                            - properties:
+                                debit_behavior:
+                                  description: >-
+                                    Controls when the funds will be captured
+                                    from the customer's account.
+                                  type: string
+                                verification_method:
+                                  enum:
+                                    - automatic
+                                    - payer_name_verification
+                                  type: string
+                                  x-stripeEnum:
+                                    kind: open
+                                    values:
+                                      - description: >-
+                                          No specific verification method is
+                                          requested.
+                                        value: automatic
+                                      - description: >-
+                                          Verifies the payer name against the bank
+                                          account holder name.
+                                        value: payer_name_verification
+                              title: subscription_payment_method_options_param
+                              type: object
+                              x-stripeMostCommon:
+                                - debit_behavior
+                                - verification_method
+                            - enum:
+                                - ''
+                              type: string
+                          description: >-
+                            This sub-hash contains details about the Bacs Direct
+                            Debit payment method options to pass to the
+                            invoice’s PaymentIntent.
                         bancontact:
                           anyOf:
                             - properties:
@@ -313509,17 +313937,22 @@ paths:
                         type: string
                       price:
                         description: >-
-                          The ID of the price object. One of `price` or
-                          `price_data` is required. When changing a subscription
-                          item's price, `quantity` is set to 1 unless a
-                          `quantity` parameter is provided.
+                          The ID of the price object. You can use either `price`
+                          or `price_data`, but not both, to set or change this
+                          item's price. If you're updating an existing item
+                          without changing its price, omit both. When changing a
+                          subscription item's price, `quantity` is set to 1
+                          unless a `quantity` parameter is provided.
                         maxLength: 5000
                         type: string
                       price_data:
                         description: >-
                           Data used to generate a new
                           [Price](https://docs.stripe.com/api/prices) object
-                          inline. One of `price` or `price_data` is required.
+                          inline. You can use either `price` or `price_data`,
+                          but not both, to set or change this item's price. If
+                          you're updating an existing item without changing its
+                          price, omit both.
                         properties:
                           currency:
                             description: >-
@@ -313824,6 +314257,42 @@ paths:
                             This sub-hash contains details about the Canadian
                             pre-authorized debit payment method options to pass
                             to the invoice’s PaymentIntent.
+                        bacs_debit:
+                          anyOf:
+                            - properties:
+                                debit_behavior:
+                                  description: >-
+                                    Controls when the funds will be captured
+                                    from the customer's account.
+                                  type: string
+                                verification_method:
+                                  enum:
+                                    - automatic
+                                    - payer_name_verification
+                                  type: string
+                                  x-stripeEnum:
+                                    kind: open
+                                    values:
+                                      - description: >-
+                                          No specific verification method is
+                                          requested.
+                                        value: automatic
+                                      - description: >-
+                                          Verifies the payer name against the bank
+                                          account holder name.
+                                        value: payer_name_verification
+                              title: subscription_payment_method_options_param
+                              type: object
+                              x-stripeMostCommon:
+                                - debit_behavior
+                                - verification_method
+                            - enum:
+                                - ''
+                              type: string
+                          description: >-
+                            This sub-hash contains details about the Bacs Direct
+                            Debit payment method options to pass to the
+                            invoice’s PaymentIntent.
                         bancontact:
                           anyOf:
                             - properties:
@@ -316324,9 +316793,7 @@ paths:
                 maxLength: 5000
                 type: string
               type:
-                description: >-
-                  Specifies the payee type. Either `account` or
-                  `external_reference`.
+                description: Specifies the payee type.
                 enum:
                   - account
                   - external_reference
@@ -316372,6 +316839,7 @@ paths:
               - us_1099_misc
               - us_1099_nec
             type: string
+            x-stripeBypassValidation: true
           style: form
       requestBody:
         content:
@@ -317137,6 +317605,32 @@ paths:
                     at:
                       description: Options for the registration in AT.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -317167,39 +317661,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     au:
@@ -317369,6 +317835,32 @@ paths:
                     be:
                       description: Options for the registration in BE.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -317399,39 +317891,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     bf:
@@ -317467,6 +317931,32 @@ paths:
                     bg:
                       description: Options for the registration in BG.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -317497,39 +317987,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     bh:
@@ -317785,6 +318247,32 @@ paths:
                     cy:
                       description: Options for the registration in CY.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -317815,44 +318303,42 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     cz:
                       description: Options for the registration in CZ.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -317883,44 +318369,42 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     de:
                       description: Options for the registration in DE.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -317951,44 +318435,42 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     dk:
                       description: Options for the registration in DK.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318019,39 +318501,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     ec:
@@ -318071,6 +318525,32 @@ paths:
                     ee:
                       description: Options for the registration in EE.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318101,39 +318581,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     eg:
@@ -318212,7 +318664,7 @@ paths:
                           x-stripeBypassValidation: true
                       required:
                         - type
-                      title: europe
+                      title: spain
                       type: object
                       x-stripeMostCommon:
                         - igic
@@ -318251,6 +318703,32 @@ paths:
                     fi:
                       description: Options for the registration in FI.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318281,44 +318759,42 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     fr:
                       description: Options for the registration in FR.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318349,39 +318825,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     gb:
@@ -318461,6 +318909,32 @@ paths:
                     gr:
                       description: Options for the registration in GR.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318491,44 +318965,42 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     hr:
                       description: Options for the registration in HR.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318559,44 +319031,42 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     hu:
                       description: Options for the registration in HU.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318627,39 +319097,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     id:
@@ -318679,6 +319121,32 @@ paths:
                     ie:
                       description: Options for the registration in IE.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318709,39 +319177,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     in:
@@ -318791,6 +319231,32 @@ paths:
                     it:
                       description: Options for the registration in IT.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -318821,39 +319287,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     jp:
@@ -318987,6 +319425,32 @@ paths:
                     lt:
                       description: Options for the registration in LT.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319017,44 +319481,42 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     lu:
                       description: Options for the registration in LU.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319085,44 +319547,42 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     lv:
                       description: Options for the registration in LV.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319153,39 +319613,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     ma:
@@ -319309,6 +319741,32 @@ paths:
                     mt:
                       description: Options for the registration in MT.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319339,39 +319797,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     mx:
@@ -319419,6 +319849,32 @@ paths:
                     nl:
                       description: Options for the registration in NL.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319449,39 +319905,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     'no':
@@ -319619,6 +320047,32 @@ paths:
                     pl:
                       description: Options for the registration in PL.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319649,44 +320103,42 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     pt:
                       description: Options for the registration in PT.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319717,44 +320169,42 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     ro:
                       description: Options for the registration in RO.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319785,39 +320235,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     rs:
@@ -319881,6 +320303,32 @@ paths:
                     se:
                       description: Options for the registration in SE.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -319911,39 +320359,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     sg:
@@ -319979,6 +320399,32 @@ paths:
                     si:
                       description: Options for the registration in SI.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -320009,44 +320455,42 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     sk:
                       description: Options for the registration in SK.
                       properties:
+                        standard:
+                          description: Options for the standard registration.
+                          properties:
+                            place_of_supply_scheme:
+                              description: >-
+                                Place of supply scheme used in an EU standard
+                                registration.
+                              enum:
+                                - inbound_goods
+                                - small_seller
+                                - standard
+                              type: string
+                          required:
+                            - place_of_supply_scheme
+                          title: standard
+                          type: object
+                          x-stripeMostCommon:
+                            - place_of_supply_scheme
+                        type:
+                          description: Type of registration to be created in an EU country.
+                          enum:
+                            - ioss
+                            - oss_non_union
+                            - oss_union
+                            - standard
+                          type: string
                         igic:
                           description: Options for the IGIC registration.
                           properties:
@@ -320077,39 +320521,11 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - place_of_supply_scheme
-                        standard:
-                          description: Options for the standard registration.
-                          properties:
-                            place_of_supply_scheme:
-                              description: >-
-                                Place of supply scheme used in an EU standard
-                                registration.
-                              enum:
-                                - inbound_goods
-                                - small_seller
-                                - standard
-                              type: string
-                          required:
-                            - place_of_supply_scheme
-                          title: standard
-                          type: object
-                          x-stripeMostCommon:
-                            - place_of_supply_scheme
-                        type:
-                          description: Type of registration to be created in an EU country.
-                          enum:
-                            - ioss
-                            - oss_non_union
-                            - oss_union
-                            - standard
-                          type: string
-                          x-stripeBypassValidation: true
                       required:
                         - type
                       title: europe
                       type: object
                       x-stripeMostCommon:
-                        - igic
                         - standard
                         - type
                     sn:
