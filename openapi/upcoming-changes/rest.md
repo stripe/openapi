@@ -4,6 +4,7 @@
 * ⚠️ Add support for new value `hold_expired` on enum `Reserve.Release.reason`
 * ⚠️ Remove support for value `bulk_hold_expiry` from enum `Reserve.Release.reason`
 * Add support for `sequra_payments` on `Account#create.capabilities`, `Account#update.capabilities`, and `Account.capabilities`
+* Add support for `paypay_payments` on `Account#create.settings`, `Account#update.settings`, and `Account.settings`
 * Add support for `sequra` on `Charge.payment_method_details`, `Checkout.Session#create.payment_method_options`, `Checkout.Session.payment_method_options`, `ConfirmationToken.payment_method_preview`, `ConfirmationToken.testHelpers#create.payment_method_data`, `PaymentAttemptRecord.payment_method_details`, `PaymentIntent#confirm.payment_method_data`, `PaymentIntent#confirm.payment_method_options`, `PaymentIntent#create.payment_method_data`, `PaymentIntent#create.payment_method_options`, `PaymentIntent#update.payment_method_data`, `PaymentIntent#update.payment_method_options`, `PaymentIntent.payment_method_options`, `PaymentMethod#create`, `PaymentMethodConfiguration#create`, `PaymentMethodConfiguration#update`, `PaymentMethodConfiguration`, `PaymentMethod`, `PaymentRecord.payment_method_details`, `SetupIntent#confirm.payment_method_data`, `SetupIntent#create.payment_method_data`, and `SetupIntent#update.payment_method_data`
 * Add support for `allowed_payment_method_types` on `Checkout.Session#create` and `Checkout.Session`
 * ⚠️ Remove support for `payment_method_types` on `Checkout.Session#create`

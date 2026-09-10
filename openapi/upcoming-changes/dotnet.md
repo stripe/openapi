@@ -2,6 +2,7 @@
 * Add support for `Create`, `Get`, `List`, and `Update` methods on resource `ProductCatalog.TrialOffer`
 * Add support for `Destination` on `Reserve.Release`
 * Add support for `SequraPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
+* Add support for `PaypayPayments` on `Account.Settings` and `AccountSettingsOptions`
 * Add support for `Sequra` on `Charge.PaymentMethodDetails`, `Checkout.Session.PaymentMethodOptions`, `CheckoutSessionPaymentMethodOptionsOptions`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentAttemptRecord.PaymentMethodDetails`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, `PaymentRecord.PaymentMethodDetails`, and `SetupIntentPaymentMethodDataOptions`
 * Add support for `AllowedPaymentMethodTypes` on `Checkout.SessionCreateOptions` and `Checkout.Session`
 * ⚠️ Remove support for `PaymentMethodTypes` on `Checkout.SessionCreateOptions`

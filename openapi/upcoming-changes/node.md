@@ -1,6 +1,7 @@
 * Add support for new resource `ProductCatalog.TrialOffer`
 * Add support for `create`, `list`, `retrieve`, and `update` methods on resource `ProductCatalog.TrialOffer`
 * Add support for `sequra_payments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
+* Add support for `paypay_payments` on `Account.settings`, `AccountCreateParams.settings`, and `AccountUpdateParams.settings`
 * Add support for `destination` on `Reserve.Release`
 * ⚠️ Add support for new value `hold_expired` on enum `Reserve.Release.reason`
 * ⚠️ Remove support for value `bulk_hold_expiry` from enum `Reserve.Release.reason`

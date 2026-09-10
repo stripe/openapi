@@ -4,6 +4,7 @@
 * ⚠️ Add support for new value `hold_expired` on enum `ReserveRelease.Reason`
 * ⚠️ Remove support for value `bulk_hold_expiry` from enum `ReserveRelease.Reason`
 * Add support for `SequraPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
+* Add support for `PaypayPayments` on `AccountSettingsParams` and `AccountSettings`
 * Add support for `Sequra` on `ChargePaymentMethodDetails`, `CheckoutSessionPaymentMethodOptionsParams`, `CheckoutSessionPaymentMethodOptions`, `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `PaymentAttemptRecordPaymentMethodDetails`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentIntentPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `PaymentRecordPaymentMethodDetails`, `SetupIntentConfirmPaymentMethodDataParams`, and `SetupIntentPaymentMethodDataParams`
 * Add support for `AllowedPaymentMethodTypes` on `CheckoutSessionParams` and `CheckoutSession`
 * ⚠️ Remove support for `PaymentMethodTypes` on `CheckoutSessionParams`
