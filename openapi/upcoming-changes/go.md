@@ -11,7 +11,7 @@
 * Change type of `CheckoutSessionPaymentMethodOptionsBancontactParams.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * ⚠️ Change type of `CheckoutSessionPaymentMethodOptionsBancontact.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * Add support for new value `sequra` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
-* Add support for `InvoicingRules` on `InvoiceItem`
+* Add support for `InvoicingRules` on `InvoiceItemParams` and `InvoiceItem`
 * Add support for `CompanyDetails` on `InvoicePaymentSettingsPaymentMethodOptionsBillieParams`, `InvoicePaymentSettingsPaymentMethodOptionsBillie`, `PaymentIntentConfirmPaymentMethodOptionsBillieParams`, `PaymentIntentPaymentMethodOptionsBillieParams`, `PaymentIntentPaymentMethodOptionsBillie`, `SubscriptionPaymentSettingsPaymentMethodOptionsBillieParams`, and `SubscriptionPaymentSettingsPaymentMethodOptionsBillie`
 * Add support for `Reference` on `InvoicePaymentSettingsPaymentMethodOptionsBillieParams`, `InvoicePaymentSettingsPaymentMethodOptionsBillie`, `PaymentIntentConfirmPaymentMethodOptionsBillieParams`, `PaymentIntentPaymentMethodOptionsBillieParams`, and `PaymentIntentPaymentMethodOptionsBillie`
 * Add support for `CurrentTrial` on `InvoiceCreatePreviewSubscriptionDetailsItemParams`, `SubscriptionItemParams`, and `SubscriptionItem`
