@@ -1,8 +1,11 @@
-name: Publish v1 Private Preview Specs
+name: Publish v1 Specs
 
-# Publishes v1 private-preview OpenAPI specs for a given API version and cuts a
-# release, mirroring the `beta` path of pay-server's api-codegen/tools/publish.sh.
-# Specs are pulled from the Statics Commander CDN instead of a local build dir.
+# Publishes v1 OpenAPI specs for a given API version and cuts a release,
+# mirroring pay-server's api-codegen/tools/publish.sh. Specs are pulled from the
+# Statics Commander CDN instead of a local build dir.
+#
+# Only private_preview is implemented. The other modes are reserved so the
+# workflow input contract does not need to change when those channels are added.
 #
 # Triggered by the zoolander LockAndReleasePrivatePreviewSpecs workflow.
 
@@ -13,6 +16,16 @@ on:
         description: 'Version name (e.g., 2026-07-08.preview)'
         required: true
         type: string
+      mode:
+        description: 'Which spec channel to publish'
+        required: true
+        type: choice
+        default: private_preview
+        options:
+          - private_preview
+          - public_preview
+          - ga
+          - all
       publish_release:
         description: 'Publish to master and create a tag; otherwise push to dry-run/private-preview'
         required: false
@@ -26,15 +39,35 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      CDN_DIR: private_preview
-      SPEC_FILES: spec3.private_preview.sdk.yaml spec3.private_preview.sdk.json
-      FIXTURE_FILES: fixtures3.private_preview.yaml fixtures3.private_preview.json
-      FIXTURE_MSG: Update fixture data for private preview
-      SPEC_MSG: Update OpenAPI specification for private preview
-      TAG_MSG: This release only includes changes to the private preview spec.
-      TEST_BRANCH: dry-run/private-preview
     steps:
+      - name: Resolve mode configuration
+        env:
+          MODE: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+
+          case "$MODE" in
+            private_preview)
+              {
+                echo "CDN_DIR=private_preview"
+                echo "SPEC_FILES=spec3.private_preview.sdk.yaml spec3.private_preview.sdk.json"
+                echo "FIXTURE_FILES=fixtures3.private_preview.yaml fixtures3.private_preview.json"
+                echo "FIXTURE_MSG=Update fixture data for private preview"
+                echo "SPEC_MSG=Update OpenAPI specification for private preview"
+                echo "TAG_MSG=This release only includes changes to the private preview spec."
+                echo "TEST_BRANCH=dry-run/private-preview"
+              } >> "$GITHUB_ENV"
+              ;;
+            public_preview|ga|all)
+              echo "::error::Mode '$MODE' is not yet implemented for v1 spec publishing."
+              exit 1
+              ;;
+            *)
+              echo "::error::Unknown v1 spec publishing mode: '$MODE'."
+              exit 1
+              ;;
+          esac
+
       - name: Fetch app installation token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: gh-api-token
