@@ -24681,6 +24681,20 @@ components:
               - unspecified
             type: string
           type: array
+        payment_method_preselect:
+          description: >-
+            The ID of a saved payment method to select when the Payment Element
+            renders, for example `pm_1MqLiJLkdIwHu7ixUEgbFdYF`. Takes precedence
+            over the customer's default payment method. If the ID doesn't match
+            one of the payment methods the Element is displaying, the Element
+            selects a payment method as it normally would and no error is
+            returned. Preselecting a payment method never changes which payment
+            methods the Element displays, and never modifies the payment method,
+            the customer, or this session. Customer Sessions can't be updated,
+            so create a new one to change the preselection.
+          maxLength: 5000
+          nullable: true
+          type: string
         payment_method_redisplay:
           description: >-
             Controls whether or not the Payment Element shows saved payment
@@ -24760,6 +24774,7 @@ components:
       x-expandableFields: []
       x-stripeMostCommon:
         - payment_method_allow_redisplay_filters
+        - payment_method_preselect
         - payment_method_redisplay
         - payment_method_redisplay_limit
         - payment_method_remove
@@ -94994,6 +95009,7 @@ components:
         - created
         - created_by
         - currency
+        - destination
         - id
         - livemode
         - object
@@ -95014,6 +95030,7 @@ components:
       x-stripeMostCommon:
         - amount
         - currency
+        - destination
         - id
         - metadata
         - release_schedule
@@ -155947,6 +155964,9 @@ paths:
               payment_intent_data:
                 explode: true
                 style: deepObject
+              payment_method_options:
+                explode: true
+                style: deepObject
               subscription_data:
                 explode: true
                 style: deepObject
@@ -155982,6 +156002,53 @@ paths:
                   type: object
                   x-stripeMostCommon:
                     - application_fee_amount
+                payment_method_options:
+                  description: >-
+                    Payment method-specific configuration to apply to the
+                    Checkout Session during approval. Currently only supports
+                    `card` payment method options.
+                  properties:
+                    card:
+                      description: >-
+                        Card-specific payment method options. Use this to
+                        control 3D Secure behavior during approval.
+                      properties:
+                        request_three_d_secure:
+                          description: >-
+                            We recommend that you rely on our SCA Engine to
+                            automatically prompt your customers for
+
+                            authentication based on risk level and [other
+                            requirements](https://docs.stripe.com/strong-customer-authentication).
+
+                            However, if you wish to request 3D Secure based on
+                            logic from your own fraud engine, provide this
+
+                            option. When supplied during approval, this value
+                            overrides the 3D Secure preference of the
+
+                            Checkout Session's underlying Intent. If omitted,
+                            Checkout does not modify the existing preference.
+
+                            Read our guide on [manually requesting 3D
+                            Secure](https://docs.stripe.com/payments/3d-secure/authentication-flow#manual-three-ds)
+
+                            for more information on how this configuration
+                            interacts with Radar and our SCA Engine.
+                          enum:
+                            - any
+                            - automatic
+                            - challenge
+                          type: string
+                          x-stripeBypassValidation: true
+                      title: card_params
+                      type: object
+                      x-stripeMostCommon:
+                        - request_three_d_secure
+                  title: payment_method_options_params
+                  type: object
+                  x-stripeMostCommon:
+                    - card
                 return_url:
                   description: >-
                     The URL to redirect your customer back to after they
@@ -161171,6 +161238,23 @@ paths:
                                   - unspecified
                                 type: string
                               type: array
+                            payment_method_preselect:
+                              description: >-
+                                The ID of a saved payment method to select when
+                                the Payment Element renders, for example
+                                `pm_1MqLiJLkdIwHu7ixUEgbFdYF`. Takes precedence
+                                over the customer's default payment method. If
+                                the ID doesn't match one of the payment methods
+                                the Element is displaying, the Element selects a
+                                payment method as it normally would and no error
+                                is returned. Preselecting a payment method never
+                                changes which payment methods the Element
+                                displays, and never modifies the payment method,
+                                the customer, or this session. Customer Sessions
+                                can't be updated, so create a new one to change
+                                the preselection.
+                              maxLength: 5000
+                              type: string
                             payment_method_redisplay:
                               description: >-
                                 Controls whether or not the Payment Element
@@ -161246,6 +161330,7 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - payment_method_allow_redisplay_filters
+                            - payment_method_preselect
                             - payment_method_redisplay
                             - payment_method_redisplay_limit
                             - payment_method_remove
@@ -269816,10 +269901,14 @@ paths:
                     installments.
                   properties:
                     amounts_due:
-                      description: Required when type is 'amounts_due'.
+                      description: >-
+                        Required when type is 'amounts_due'. Must contain at
+                        least 2 installment entries.
                       properties:
                         amounts:
-                          description: The list of installment entries.
+                          description: >-
+                            The list of installment entries. Must contain at
+                            least 2 entries.
                           items:
                             properties:
                               description:
@@ -270066,10 +270155,14 @@ paths:
                   description: The new schedule for this payment plan.
                   properties:
                     amounts_due:
-                      description: Required when type is 'amounts_due'.
+                      description: >-
+                        Required when type is 'amounts_due'. Must contain at
+                        least 2 installment entries.
                       properties:
                         amounts:
-                          description: The list of installment entries.
+                          description: >-
+                            The list of installment entries. Must contain at
+                            least 2 entries.
                           items:
                             properties:
                               description:
