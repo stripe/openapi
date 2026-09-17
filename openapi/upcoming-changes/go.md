@@ -19,6 +19,7 @@
 * ⚠️ Change type of `ChargePaymentMethodDetailsCard.Mandate` from `string` to `expandable($Mandate)`
 * Add support for `AllowedPaymentMethodTypes` on `CheckoutSessionParams` and `CheckoutSession`
 * ⚠️ Remove support for `PaymentMethodTypes` on `CheckoutSessionParams`, `PaymentIntentConfirmParams`, `PaymentIntentParams`, and `SetupIntentParams`
+* Add support for `TaxDetails` on `CheckoutSessionLineItemPriceDataProductDataParams`, `InvoiceAddLinesLinePriceDataProductDataParams`, `InvoiceLineItemPriceDataProductDataParams`, `InvoiceUpdateLinesLinePriceDataProductDataParams`, `PaymentLinkLineItemPriceDataProductDataParams`, `PlanProductParams`, `PriceProductDataParams`, `ProductParams`, and `Product`
 * Add support for `BLIK` on `CheckoutSessionPaymentMethodOptionsParams`, `InvoicePaymentSettingsPaymentMethodOptionsParams`, `InvoicePaymentSettingsPaymentMethodOptions`, `MandatePaymentMethodDetails`, `SetupAttemptPaymentMethodDetails`, `SetupIntentConfirmPaymentMethodOptionsParams`, `SetupIntentPaymentMethodOptionsParams`, `SetupIntentPaymentMethodOptions`, `SubscriptionPaymentSettingsPaymentMethodOptionsParams`, and `SubscriptionPaymentSettingsPaymentMethodOptions`
 * Change type of `CheckoutSessionPaymentMethodOptionsBancontactParams.SetupFutureUsage`, `PaymentIntentConfirmPaymentMethodOptionsBlikParams.SetupFutureUsage`, and `PaymentIntentPaymentMethodOptionsBlikParams.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * ⚠️ Change type of `CheckoutSessionPaymentMethodOptionsBancontact.SetupFutureUsage` and `PaymentIntentPaymentMethodOptionsBlik.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
@@ -56,4 +57,4 @@
 * Add support for new value `rtp` on enum `TreasuryFinancialAccountFinancialAddress.SupportedNetworks`
 * Add support for new value `rtp` on enum `TreasuryReceivedCredit.Network`
 * Add support for snapshot events `EventTypeAppsInstallCreated`, `EventTypeAppsInstallDeleted`, and `EventTypeAppsInstallUpdated` with resource `AppsInstall`
-* Add support for error codes `dispute_evidence_page_limit_exceeded` and `payment_evaluation_on_api_version_not_supported` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, `StripeError`, and `TerminalReaderActionApiError`
+* Add support for error codes `dispute_evidence_page_limit_exceeded`, `financial_connections_consent_locale_invalid`, `financial_connections_consent_locale_unsupported`, and `payment_evaluation_on_api_version_not_supported` on `Error`, `InvoiceLastFinalizationError`, `PaymentIntentLastPaymentError`, `SetupAttemptSetupError`, `SetupIntentLastSetupError`, `StripeError`, and `TerminalReaderActionApiError`
