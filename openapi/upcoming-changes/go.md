@@ -12,15 +12,16 @@
 * ⚠️ Add support for new value `hold_expired` on enum `ReserveRelease.Reason`
 * ⚠️ Remove support for value `bulk_hold_expiry` from enum `ReserveRelease.Reason`
 * Add support for `SpecifiedCommercialTransactionsActURL` on `AccountBusinessProfileParams` and `AccountBusinessProfile`
+* Add support for `BLIKRecurringPayments` and `SequraPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
 * Add support for `PaypayPayments` on `AccountCapabilitiesParams`, `AccountCapabilities`, `AccountSettingsParams`, and `AccountSettings`
-* Add support for `SequraPayments` on `AccountCapabilitiesParams` and `AccountCapabilities`
 * Add support for `Paypay` on `ChargePaymentMethodDetails`, `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `PaymentAttemptRecordPaymentMethodDetails`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentIntentPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `PaymentRecordPaymentMethodDetails`, `SetupIntentConfirmPaymentMethodDataParams`, and `SetupIntentPaymentMethodDataParams`
 * Add support for `Sequra` on `ChargePaymentMethodDetails`, `CheckoutSessionPaymentMethodOptionsParams`, `CheckoutSessionPaymentMethodOptions`, `ConfirmationTokenPaymentMethodDataParams`, `ConfirmationTokenPaymentMethodPreview`, `PaymentAttemptRecordPaymentMethodDetails`, `PaymentIntentConfirmPaymentMethodDataParams`, `PaymentIntentConfirmPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodDataParams`, `PaymentIntentPaymentMethodOptionsParams`, `PaymentIntentPaymentMethodOptions`, `PaymentMethodConfigurationParams`, `PaymentMethodConfiguration`, `PaymentMethodParams`, `PaymentMethod`, `PaymentRecordPaymentMethodDetails`, `SetupIntentConfirmPaymentMethodDataParams`, and `SetupIntentPaymentMethodDataParams`
 * ⚠️ Change type of `ChargePaymentMethodDetailsCard.Mandate` from `string` to `expandable($Mandate)`
 * Add support for `AllowedPaymentMethodTypes` on `CheckoutSessionParams` and `CheckoutSession`
 * ⚠️ Remove support for `PaymentMethodTypes` on `CheckoutSessionParams`, `PaymentIntentConfirmParams`, `PaymentIntentParams`, and `SetupIntentParams`
-* Change type of `CheckoutSessionPaymentMethodOptionsBancontactParams.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
-* ⚠️ Change type of `CheckoutSessionPaymentMethodOptionsBancontact.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
+* Add support for `BLIK` on `CheckoutSessionPaymentMethodOptionsParams`, `InvoicePaymentSettingsPaymentMethodOptionsParams`, `InvoicePaymentSettingsPaymentMethodOptions`, `MandatePaymentMethodDetails`, `SetupAttemptPaymentMethodDetails`, `SetupIntentConfirmPaymentMethodOptionsParams`, `SetupIntentPaymentMethodOptionsParams`, `SetupIntentPaymentMethodOptions`, `SubscriptionPaymentSettingsPaymentMethodOptionsParams`, and `SubscriptionPaymentSettingsPaymentMethodOptions`
+* Change type of `CheckoutSessionPaymentMethodOptionsBancontactParams.SetupFutureUsage`, `PaymentIntentConfirmPaymentMethodOptionsBlikParams.SetupFutureUsage`, and `PaymentIntentPaymentMethodOptionsBlikParams.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
+* ⚠️ Change type of `CheckoutSessionPaymentMethodOptionsBancontact.SetupFutureUsage` and `PaymentIntentPaymentMethodOptionsBlik.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * Add support for new values `paypay` and `sequra` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
 * Add support for new values `apps.install.created`, `apps.install.deleted`, and `apps.install.updated` on enum `Event.Type`
 * Add support for `InvoicingRules` on `InvoiceItemParams` and `InvoiceItem`
@@ -30,10 +31,12 @@
 * ⚠️ Change type of `InvoiceCreatePreviewSubscriptionDetailsParams.BillingCycleAnchor` from `enum('now'|'unchanged') | DateTime` to `billing_cycle_anchor_param`
 * Add support for `CurrentTrial` on `InvoiceCreatePreviewSubscriptionDetailsItemParams`, `SubscriptionItemParams`, and `SubscriptionItem`
 * Add support for `StatusDetails` on `Invoice` and `Subscription`
+* Add support for new value `blik` on enums `InvoicePaymentSettings.PaymentMethodTypes` and `SubscriptionPaymentSettings.PaymentMethodTypes`
 * Add support for `Momo` on `PaymentAttemptRecordPaymentMethodDetails` and `PaymentRecordPaymentMethodDetails`
 * Add support for new values `2.3.0` and `2.3.1` on enums `PaymentAttemptRecordPaymentMethodDetailsCardThreeDSecure.Version` and `PaymentRecordPaymentMethodDetailsCardThreeDSecure.Version`
 * Add support for `Link` on `PaymentAttemptRecordPaymentMethodDetailsCardWallet` and `PaymentRecordPaymentMethodDetailsCardWallet`
 * Add support for `FundingSourceGroup` on `PaymentAttemptRecordPaymentMethodDetailsLink` and `PaymentRecordPaymentMethodDetailsLink`
+* Add support for `MandateOptions` on `PaymentIntentConfirmPaymentMethodOptionsBlikParams`, `PaymentIntentPaymentMethodOptionsBlikParams`, and `PaymentIntentPaymentMethodOptionsBlik`
 * Add support for `PaymentRecord` on `PaymentIntent`
 * Add support for new values `card_present`, `interac_present`, and `line_pay` on enums `PaymentIntent.AllowedPaymentMethodTypes` and `SetupIntent.AllowedPaymentMethodTypes`
 * Add support for new values `paypay` and `sequra` on enums `PaymentIntent.ExcludedPaymentMethodTypes` and `SetupIntent.ExcludedPaymentMethodTypes`

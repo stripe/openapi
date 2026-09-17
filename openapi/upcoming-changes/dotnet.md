@@ -7,15 +7,16 @@
 * Add support for `Destination` on `Reserve.Plan` and `Reserve.Release`
 * Add support for `ManualRelease` on `Reserve.Plan`
 * Add support for `SpecifiedCommercialTransactionsActUrl` on `Account.BusinessProfile` and `AccountBusinessProfileOptions`
+* Add support for `BlikRecurringPayments` and `SequraPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
 * Add support for `PaypayPayments` on `Account.Capabilities`, `Account.Settings`, `AccountCapabilitiesOptions`, and `AccountSettingsOptions`
-* Add support for `SequraPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`
 * Add support for `Paypay` on `Charge.PaymentMethodDetails`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentAttemptRecord.PaymentMethodDetails`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, `PaymentRecord.PaymentMethodDetails`, and `SetupIntentPaymentMethodDataOptions`
 * Add support for `Sequra` on `Charge.PaymentMethodDetails`, `Checkout.Session.PaymentMethodOptions`, `CheckoutSessionPaymentMethodOptionsOptions`, `ConfirmationToken.PaymentMethodPreview`, `ConfirmationTokenPaymentMethodDataOptions`, `PaymentAttemptRecord.PaymentMethodDetails`, `PaymentIntent.PaymentMethodOptions`, `PaymentIntentPaymentMethodDataOptions`, `PaymentIntentPaymentMethodOptionsOptions`, `PaymentMethodConfigurationCreateOptions`, `PaymentMethodConfigurationUpdateOptions`, `PaymentMethodConfiguration`, `PaymentMethodCreateOptions`, `PaymentMethod`, `PaymentRecord.PaymentMethodDetails`, and `SetupIntentPaymentMethodDataOptions`
 * ⚠️ Change type of `Charge.PaymentMethodDetails.Card.Mandate` from `string` to `expandable($Mandate)`
 * Add support for `AllowedPaymentMethodTypes` on `Checkout.SessionCreateOptions` and `Checkout.Session`
 * ⚠️ Remove support for `PaymentMethodTypes` on `Checkout.SessionCreateOptions`, `PaymentIntentConfirmOptions`, `PaymentIntentCreateOptions`, `PaymentIntentUpdateOptions`, `SetupIntentCreateOptions`, and `SetupIntentUpdateOptions`
-* Change type of `CheckoutSessionPaymentMethodOptionsBancontactOptions.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
-* ⚠️ Change type of `Checkout.Session.PaymentMethodOptions.Bancontact.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
+* Add support for `Blik` on `CheckoutSessionPaymentMethodOptionsOptions`, `Invoice.PaymentSettings.PaymentMethodOptions`, `InvoicePaymentSettingsPaymentMethodOptionsOptions`, `Mandate.PaymentMethodDetails`, `SetupAttempt.PaymentMethodDetails`, `SetupIntent.PaymentMethodOptions`, `SetupIntentPaymentMethodOptionsOptions`, `Subscription.PaymentSettings.PaymentMethodOptions`, and `SubscriptionPaymentSettingsPaymentMethodOptionsOptions`
+* Change type of `CheckoutSessionPaymentMethodOptionsBancontactOptions.SetupFutureUsage` and `PaymentIntentPaymentMethodOptionsBlikOptions.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
+* ⚠️ Change type of `Checkout.Session.PaymentMethodOptions.Bancontact.SetupFutureUsage` and `PaymentIntent.PaymentMethodOptions.Blik.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * Add support for `InvoicingRules` on `InvoiceItemUpdateOptions` and `InvoiceItem`
 * Add support for `CompanyDetails` on `Invoice.PaymentSettings.PaymentMethodOptions.Billie`, `InvoicePaymentSettingsPaymentMethodOptionsBillieOptions`, `PaymentIntent.PaymentMethodOptions.Billie`, `PaymentIntentPaymentMethodOptionsBillieOptions`, `Subscription.PaymentSettings.PaymentMethodOptions.Billie`, and `SubscriptionPaymentSettingsPaymentMethodOptionsBillieOptions`
 * Add support for `Reference` on `Invoice.PaymentSettings.PaymentMethodOptions.Billie`, `InvoicePaymentSettingsPaymentMethodOptionsBillieOptions`, `PaymentIntent.PaymentMethodOptions.Billie`, and `PaymentIntentPaymentMethodOptionsBillieOptions`
@@ -26,6 +27,7 @@
 * Add support for `Momo` on `PaymentAttemptRecord.PaymentMethodDetails` and `PaymentRecord.PaymentMethodDetails`
 * Add support for `Link` on `PaymentAttemptRecord.PaymentMethodDetails.Card.Wallet` and `PaymentRecord.PaymentMethodDetails.Card.Wallet`
 * Add support for `FundingSourceGroup` on `PaymentAttemptRecord.PaymentMethodDetails.Link` and `PaymentRecord.PaymentMethodDetails.Link`
+* Add support for `MandateOptions` on `PaymentIntent.PaymentMethodOptions.Blik` and `PaymentIntentPaymentMethodOptionsBlikOptions`
 * Add support for `PaymentRecord` on `PaymentIntent`
 * Add support for `ExpiresAt` on `PaymentIntent.NextAction.SwishHandleRedirectOrDisplayQrCode.QrCode`
 * ⚠️ Remove support for `Payto` on `PaymentMethodUpdateOptions`
