@@ -4,7 +4,7 @@
 * Add support for `create`, `list`, and `retrieve` methods on resource `Tax::Location`
 * Add support for `pause` method on resource `Subscription`
 * Add support for `performance_location` on `Tax::CalculationCreateParams::LineItem` and `Tax::CalculationLineItem`
-* Add support for `destination` on `Reserve::Plan` and `Reserve::Release`
+* Add support for `destination` on `Reserve::Hold`, `Reserve::Plan`, and `Reserve::Release`
 * Add support for `manual_release` on `Reserve::Plan`
 * Add support for `specified_commercial_transactions_act_url` on `Account::BusinessProfile`, `AccountCreateParams::BusinessProfile`, and `AccountUpdateParams::BusinessProfile`
 * Add support for `blik_recurring_payments` and `sequra_payments` on `Account::Capability`, `AccountCreateParams::Capability`, and `AccountUpdateParams::Capability`

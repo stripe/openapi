@@ -4,7 +4,7 @@
 * Add support for `Create`, `Get`, and `List` methods on resource `Tax.Location`
 * Add support for `Pause` method on resource `Subscription`
 * Add support for `PerformanceLocation` on `Tax.CalculationLineItem` and `TaxCalculationLineItemOptions`
-* Add support for `Destination` on `Reserve.Plan` and `Reserve.Release`
+* Add support for `Destination` on `Reserve.Hold`, `Reserve.Plan`, and `Reserve.Release`
 * Add support for `ManualRelease` on `Reserve.Plan`
 * Add support for `SpecifiedCommercialTransactionsActUrl` on `Account.BusinessProfile` and `AccountBusinessProfileOptions`
 * Add support for `BlikRecurringPayments` and `SequraPayments` on `Account.Capabilities` and `AccountCapabilitiesOptions`

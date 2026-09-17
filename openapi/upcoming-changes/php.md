@@ -6,7 +6,7 @@
 * Add support for `performance_location` on `Tax.CalculationLineItem` and `Tax\Calculation.create().$params.line_item`
 * Add support for new value `performance` on enums `Tax.Calculation.shipping_cost.tax_breakdown[].sourcing`, `Tax.CalculationLineItem.tax_breakdown[].sourcing`, and `Tax.Transaction.shipping_cost.tax_breakdown[].sourcing`
 * Add support for new values `admissions_tax`, `attendance_tax`, `entertainment_tax`, `gross_receipts_tax`, `hospitality_tax`, `luxury_tax`, `resort_tax`, and `tourism_tax` on enums `Tax.Calculation.shipping_cost.tax_breakdown[].tax_rate_details.tax_type`, `Tax.Calculation.tax_breakdown[].tax_rate_details.tax_type`, `Tax.CalculationLineItem.tax_breakdown[].tax_rate_details.tax_type`, and `Tax.Transaction.shipping_cost.tax_breakdown[].tax_rate_details.tax_type`
-* Add support for `destination` on `Reserve.Plan` and `Reserve.Release`
+* Add support for `destination` on `Reserve.Hold`, `Reserve.Plan`, and `Reserve.Release`
 * Add support for `manual_release` on `Reserve.Plan`
 * Add support for new values `manual_release` and `other` on enum `Reserve.Plan.type`
 * ⚠️ Add support for new value `hold_expired` on enum `Reserve.Release.reason`
