@@ -6321,6 +6321,12 @@
             "maxLength": 5000,
             "type": "string"
           },
+          "payout_method": {
+            "description": "ID of the v2 Payout Method for this net balance (not expandable).",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
           "source_types": {
             "$ref": "#/components/schemas/balance_amount_by_source_type"
           }
@@ -6337,6 +6343,7 @@
         "x-stripeMostCommon": [
           "amount",
           "destination",
+          "payout_method",
           "source_types"
         ]
       },
@@ -42428,6 +42435,7 @@
               "failed",
               "merchant_blocked",
               "rejected",
+              "rerouted",
               "succeeded"
             ],
             "type": "string"
@@ -50925,7 +50933,8 @@
             "enum": [
               "sms"
             ],
-            "type": "string"
+            "type": "string",
+            "x-stripeBypassValidation": true
           },
           "status": {
             "description": "The status of the fraud challenge.",
@@ -50945,7 +50954,8 @@
               "unsupported_phone_number"
             ],
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-stripeBypassValidation": true
           }
         },
         "required": [
@@ -59214,7 +59224,7 @@
         "description": "",
         "properties": {
           "card_reference_id": {
-            "description": "A unique reference ID from MasterCard to represent the card account number.",
+            "description": "A unique reference ID from Mastercard to represent the card account number.",
             "maxLength": 5000,
             "type": "string"
           },
@@ -59224,12 +59234,12 @@
             "type": "string"
           },
           "token_requestor_id": {
-            "description": "The ID of the entity requesting tokenization, specific to MasterCard.",
+            "description": "The ID of the entity requesting tokenization, specific to Mastercard.",
             "maxLength": 5000,
             "type": "string"
           },
           "token_requestor_name": {
-            "description": "The name of the entity requesting tokenization, if known. This is directly provided from MasterCard.",
+            "description": "The name of the entity requesting tokenization, if known. This is directly provided from Mastercard.",
             "maxLength": 5000,
             "type": "string"
           }
@@ -73849,6 +73859,28 @@
             "description": "When enabled, using a card that is attached to a customer will require the CVC to be provided again (i.e. using the cvc_token parameter).",
             "type": "boolean"
           },
+          "setup_credential_usage": {
+            "description": "Set to indicate the future transaction type usage for the card being set up.",
+            "enum": [
+              "recurring",
+              "unscheduled"
+            ],
+            "type": "string",
+            "x-stripeBypassValidation": true,
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "description": "Use `recurring` if the payment method will be used for off-session payment that occurs at regularly scheduled intervals.",
+                  "value": "recurring"
+                },
+                {
+                  "description": "Use `unscheduled` if the payment method will be used for off-session payment that does not occur at regular intervals on a scheduled date.",
+                  "value": "unscheduled"
+                }
+              ]
+            }
+          },
           "setup_future_usage": {
             "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf you provide a Customer with the PaymentIntent, you can use this parameter to [attach the payment method](/payments/save-during-payment) to the Customer after the PaymentIntent is confirmed and the customer completes any required actions. If you don't provide a Customer, you can still [attach](/api/payment_methods/attach) the payment method to a Customer after the transaction completes.\n\nIf the payment method is `card_present` and isn't a digital wallet, Stripe creates and attaches a [generated_card](/api/charges/object#charge_object-payment_method_details-card_present-generated_card) payment method representing the card to the Customer instead.\n\nWhen processing card payments, Stripe uses `setup_future_usage` to help you comply with regional legislation and network rules, such as [SCA](/strong-customer-authentication).",
             "enum": [
@@ -73870,6 +73902,15 @@
           },
           "statement_details": {
             "$ref": "#/components/schemas/payment_flows_private_payment_methods_card_options_statement_details"
+          },
+          "stored_credential_usage": {
+            "description": "Selected usage to indicate the transaction type of the off-session payment.",
+            "enum": [
+              "recurring",
+              "unscheduled"
+            ],
+            "type": "string",
+            "x-stripeBypassValidation": true
           }
         },
         "required": [
@@ -73902,10 +73943,12 @@
           "request_reauthorization",
           "request_three_d_secure",
           "require_cvc_recollection",
+          "setup_credential_usage",
           "setup_future_usage",
           "statement_descriptor_suffix_kana",
           "statement_descriptor_suffix_kanji",
-          "statement_details"
+          "statement_details",
+          "stored_credential_usage"
         ]
       },
       "payment_intent_payment_method_options_card_capture_delay": {
@@ -80446,6 +80489,37 @@
             "nullable": true,
             "type": "string"
           },
+          "setup_credential_usage": {
+            "description": "The payment_method_options.card.setup_credential_usage value that was passed when setup_future_usage was present at confirmation, one of `recurring`, `unscheduled`, or `installment`",
+            "enum": [
+              "recurring",
+              "unscheduled"
+            ],
+            "type": "string",
+            "x-stripeBypassValidation": true,
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "description": "Use `recurring` if the payment method will be used for off-session payment that occurs at regularly scheduled intervals.",
+                  "value": "recurring"
+                },
+                {
+                  "description": "Use `unscheduled` if the payment method will be used for off-session payment that does not occur at regular intervals on a scheduled date.",
+                  "value": "unscheduled"
+                }
+              ]
+            }
+          },
+          "stored_credential_usage": {
+            "description": "The payment_method_options.card.stored_credential_usage value that was passed for an off session, merchant-initiated transaction, one of `recurring`, `unscheduled`, `on_session`, or `installment`",
+            "enum": [
+              "recurring",
+              "unscheduled"
+            ],
+            "type": "string",
+            "x-stripeBypassValidation": true
+          },
           "three_d_secure": {
             "anyOf": [
               {
@@ -80544,6 +80618,8 @@
           "reauthorization",
           "reauthorize_before",
           "regulated_status",
+          "setup_credential_usage",
+          "stored_credential_usage",
           "three_d_secure",
           "transaction_link_id",
           "wallet"
@@ -93132,6 +93208,16 @@
             "nullable": true,
             "type": "string"
           },
+          "stored_credential_usage": {
+            "description": "The transaction type that was passed for an off-session, Merchant-Initiated transaction, one of `recurring` or `unscheduled`.",
+            "enum": [
+              "recurring",
+              "unscheduled"
+            ],
+            "nullable": true,
+            "type": "string",
+            "x-stripeBypassValidation": true
+          },
           "three_d_secure": {
             "anyOf": [
               {
@@ -93198,6 +93284,7 @@
           "network_decline_code",
           "network_token",
           "network_transaction_id",
+          "stored_credential_usage",
           "three_d_secure",
           "wallet"
         ]
@@ -111232,6 +111319,28 @@
             "nullable": true,
             "type": "string",
             "x-stripeBypassValidation": true
+          },
+          "setup_credential_usage": {
+            "description": "Set to indicate the future transaction type usage for the card being set up.",
+            "enum": [
+              "recurring",
+              "unscheduled"
+            ],
+            "type": "string",
+            "x-stripeBypassValidation": true,
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "description": "Use `recurring` if the payment method will be used for off-session payment that occurs at regularly scheduled intervals.",
+                  "value": "recurring"
+                },
+                {
+                  "description": "Use `unscheduled` if the payment method will be used for off-session payment that does not occur at regular intervals on a scheduled date.",
+                  "value": "unscheduled"
+                }
+              ]
+            }
           }
         },
         "required": [
@@ -111247,7 +111356,8 @@
         "x-stripeMostCommon": [
           "mandate_options",
           "network",
-          "request_three_d_secure"
+          "request_three_d_secure",
+          "setup_credential_usage"
         ]
       },
       "setup_intent_payment_method_options_card_mandate_options": {
@@ -140370,17 +140480,17 @@
                       },
                       "name": {
                         "description": "The company's legal name.",
-                        "maxLength": 100,
+                        "maxLength": 200,
                         "type": "string"
                       },
                       "name_kana": {
                         "description": "The Kana variation of the company's legal name (Japan only).",
-                        "maxLength": 100,
+                        "maxLength": 200,
                         "type": "string"
                       },
                       "name_kanji": {
                         "description": "The Kanji variation of the company's legal name (Japan only).",
-                        "maxLength": 100,
+                        "maxLength": 200,
                         "type": "string"
                       },
                       "owners_provided": {
@@ -146093,17 +146203,17 @@
                       },
                       "name": {
                         "description": "The company's legal name.",
-                        "maxLength": 100,
+                        "maxLength": 200,
                         "type": "string"
                       },
                       "name_kana": {
                         "description": "The Kana variation of the company's legal name (Japan only).",
-                        "maxLength": 100,
+                        "maxLength": 200,
                         "type": "string"
                       },
                       "name_kanji": {
                         "description": "The Kanji variation of the company's legal name (Japan only).",
-                        "maxLength": 100,
+                        "maxLength": 200,
                         "type": "string"
                       },
                       "owners_provided": {
@@ -192903,7 +193013,7 @@
                         "type": "array"
                       },
                       "countries": {
-                        "description": "List of countries from which to collect accounts.",
+                        "description": "List of countries from which to filter accounts.",
                         "items": {
                           "maxLength": 5000,
                           "type": "string"
@@ -192947,6 +193057,7 @@
                     "x-stripeMostCommon": [
                       "account_subcategories",
                       "countries",
+                      "country",
                       "institution",
                       "require_payment_method_support"
                     ]
@@ -248354,7 +248465,6 @@
                         "kr_card",
                         "kr_market",
                         "kriya",
-                        "line_pay",
                         "link",
                         "mb_way",
                         "mobilepay",
@@ -255293,6 +255403,28 @@
                                 "description": "When enabled, using a card that is attached to a customer will require the CVC to be provided again (i.e. using the cvc_token parameter).",
                                 "type": "boolean"
                               },
+                              "setup_credential_usage": {
+                                "description": "Set to indicate the future transaction type usage for the card being set up.",
+                                "enum": [
+                                  "recurring",
+                                  "unscheduled"
+                                ],
+                                "type": "string",
+                                "x-stripeBypassValidation": true,
+                                "x-stripeEnum": {
+                                  "kind": "open",
+                                  "values": [
+                                    {
+                                      "description": "Use `recurring` if the payment method will be used for off-session payment that occurs at regularly scheduled intervals.",
+                                      "value": "recurring"
+                                    },
+                                    {
+                                      "description": "Use `unscheduled` if the payment method will be used for off-session payment that does not occur at regular intervals on a scheduled date.",
+                                      "value": "unscheduled"
+                                    }
+                                  ]
+                                }
+                              },
                               "setup_future_usage": {
                                 "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf you provide a Customer with the PaymentIntent, you can use this parameter to [attach the payment method](/payments/save-during-payment) to the Customer after the PaymentIntent is confirmed and the customer completes any required actions. If you don't provide a Customer, you can still [attach](/api/payment_methods/attach) the payment method to a Customer after the transaction completes.\n\nIf the payment method is `card_present` and isn't a digital wallet, Stripe creates and attaches a [generated_card](/api/charges/object#charge_object-payment_method_details-card_present-generated_card) payment method representing the card to the Customer instead.\n\nWhen processing card payments, Stripe uses `setup_future_usage` to help you comply with regional legislation and network rules, such as [SCA](/strong-customer-authentication).\n\nIf you've already set `setup_future_usage` and you're performing a request using a publishable key, you can only update the value from `on_session` to `off_session`.",
                                 "enum": [
@@ -255403,6 +255535,15 @@
                                   }
                                 ],
                                 "description": "Statement details for this payment intent. You can use this to override the merchant details shown on your customers' statements."
+                              },
+                              "stored_credential_usage": {
+                                "description": "Use this parameter in scenarios where you collect card details and [charge them later](https://stripe.com/docs/payments/cards/charging-saved-cards).\n\n When making an off session payment with a previously saved card (that was saved with a SetupIntent or with a PaymentIntent with `setup_future_usage`), set this parameter to indicate the type of transaction.\n\n You can set this parameter at any time before or during PaymentIntent confirmation, and confirm this PaymentIntent with `off_session=true`.\n\n Note that this parameter is currently unsupported with the `setup_future_usage` parameter.",
+                                "enum": [
+                                  "recurring",
+                                  "unscheduled"
+                                ],
+                                "type": "string",
+                                "x-stripeBypassValidation": true
                               },
                               "three_d_secure": {
                                 "description": "If 3D Secure authentication was performed with a third-party provider,\nthe authentication details to use for this payment.",
@@ -265653,7 +265794,6 @@
                         "kr_card",
                         "kr_market",
                         "kriya",
-                        "line_pay",
                         "link",
                         "mb_way",
                         "mobilepay",
@@ -272663,6 +272803,28 @@
                                 "description": "When enabled, using a card that is attached to a customer will require the CVC to be provided again (i.e. using the cvc_token parameter).",
                                 "type": "boolean"
                               },
+                              "setup_credential_usage": {
+                                "description": "Set to indicate the future transaction type usage for the card being set up.",
+                                "enum": [
+                                  "recurring",
+                                  "unscheduled"
+                                ],
+                                "type": "string",
+                                "x-stripeBypassValidation": true,
+                                "x-stripeEnum": {
+                                  "kind": "open",
+                                  "values": [
+                                    {
+                                      "description": "Use `recurring` if the payment method will be used for off-session payment that occurs at regularly scheduled intervals.",
+                                      "value": "recurring"
+                                    },
+                                    {
+                                      "description": "Use `unscheduled` if the payment method will be used for off-session payment that does not occur at regular intervals on a scheduled date.",
+                                      "value": "unscheduled"
+                                    }
+                                  ]
+                                }
+                              },
                               "setup_future_usage": {
                                 "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf you provide a Customer with the PaymentIntent, you can use this parameter to [attach the payment method](/payments/save-during-payment) to the Customer after the PaymentIntent is confirmed and the customer completes any required actions. If you don't provide a Customer, you can still [attach](/api/payment_methods/attach) the payment method to a Customer after the transaction completes.\n\nIf the payment method is `card_present` and isn't a digital wallet, Stripe creates and attaches a [generated_card](/api/charges/object#charge_object-payment_method_details-card_present-generated_card) payment method representing the card to the Customer instead.\n\nWhen processing card payments, Stripe uses `setup_future_usage` to help you comply with regional legislation and network rules, such as [SCA](/strong-customer-authentication).\n\nIf you've already set `setup_future_usage` and you're performing a request using a publishable key, you can only update the value from `on_session` to `off_session`.",
                                 "enum": [
@@ -272773,6 +272935,15 @@
                                   }
                                 ],
                                 "description": "Statement details for this payment intent. You can use this to override the merchant details shown on your customers' statements."
+                              },
+                              "stored_credential_usage": {
+                                "description": "Use this parameter in scenarios where you collect card details and [charge them later](https://stripe.com/docs/payments/cards/charging-saved-cards).\n\n When making an off session payment with a previously saved card (that was saved with a SetupIntent or with a PaymentIntent with `setup_future_usage`), set this parameter to indicate the type of transaction.\n\n You can set this parameter at any time before or during PaymentIntent confirmation, and confirm this PaymentIntent with `off_session=true`.\n\n Note that this parameter is currently unsupported with the `setup_future_usage` parameter.",
+                                "enum": [
+                                  "recurring",
+                                  "unscheduled"
+                                ],
+                                "type": "string",
+                                "x-stripeBypassValidation": true
                               },
                               "three_d_secure": {
                                 "description": "If 3D Secure authentication was performed with a third-party provider,\nthe authentication details to use for this payment.",
@@ -321485,7 +321656,6 @@
                             "kr_card",
                             "kr_market",
                             "kriya",
-                            "line_pay",
                             "link",
                             "mb_way",
                             "mobilepay",
@@ -323196,6 +323366,28 @@
                             "type": "string",
                             "x-stripeBypassValidation": true
                           },
+                          "setup_credential_usage": {
+                            "description": "Set to indicate the future transaction type usage for the card being set up.",
+                            "enum": [
+                              "recurring",
+                              "unscheduled"
+                            ],
+                            "type": "string",
+                            "x-stripeBypassValidation": true,
+                            "x-stripeEnum": {
+                              "kind": "open",
+                              "values": [
+                                {
+                                  "description": "Use `recurring` if the payment method will be used for off-session payment that occurs at regularly scheduled intervals.",
+                                  "value": "recurring"
+                                },
+                                {
+                                  "description": "Use `unscheduled` if the payment method will be used for off-session payment that does not occur at regular intervals on a scheduled date.",
+                                  "value": "unscheduled"
+                                }
+                              ]
+                            }
+                          },
                           "three_d_secure": {
                             "description": "If 3D Secure authentication was performed with a third-party provider,\nthe authentication details to use for this setup.",
                             "properties": {
@@ -324372,7 +324564,6 @@
                         "kr_card",
                         "kr_market",
                         "kriya",
-                        "line_pay",
                         "link",
                         "mb_way",
                         "mobilepay",
@@ -326083,6 +326274,28 @@
                             ],
                             "type": "string",
                             "x-stripeBypassValidation": true
+                          },
+                          "setup_credential_usage": {
+                            "description": "Set to indicate the future transaction type usage for the card being set up.",
+                            "enum": [
+                              "recurring",
+                              "unscheduled"
+                            ],
+                            "type": "string",
+                            "x-stripeBypassValidation": true,
+                            "x-stripeEnum": {
+                              "kind": "open",
+                              "values": [
+                                {
+                                  "description": "Use `recurring` if the payment method will be used for off-session payment that occurs at regularly scheduled intervals.",
+                                  "value": "recurring"
+                                },
+                                {
+                                  "description": "Use `unscheduled` if the payment method will be used for off-session payment that does not occur at regular intervals on a scheduled date.",
+                                  "value": "unscheduled"
+                                }
+                              ]
+                            }
                           },
                           "three_d_secure": {
                             "description": "If 3D Secure authentication was performed with a third-party provider,\nthe authentication details to use for this setup.",
@@ -370148,17 +370361,17 @@
                           },
                           "name": {
                             "description": "The company's legal name.",
-                            "maxLength": 100,
+                            "maxLength": 200,
                             "type": "string"
                           },
                           "name_kana": {
                             "description": "The Kana variation of the company's legal name (Japan only).",
-                            "maxLength": 100,
+                            "maxLength": 200,
                             "type": "string"
                           },
                           "name_kanji": {
                             "description": "The Kanji variation of the company's legal name (Japan only).",
-                            "maxLength": 100,
+                            "maxLength": 200,
                             "type": "string"
                           },
                           "owners_provided": {
