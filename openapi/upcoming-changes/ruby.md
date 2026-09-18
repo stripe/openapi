@@ -1,7 +1,8 @@
-* Add support for new resources `Apps::Install`, `ProductCatalog::TrialOffer`, and `Tax::Location`
+* Add support for new resources `Apps::Install`, `ProductCatalog::TrialOffer`, `Tax::Location`, and `ThreeDSecure::Authentication`
 * Add support for `create`, `list`, `retrieve`, `uninstall`, and `update` methods on resource `Apps::Install`
 * Add support for `create`, `list`, `retrieve`, and `update` methods on resource `ProductCatalog::TrialOffer`
 * Add support for `create`, `list`, and `retrieve` methods on resource `Tax::Location`
+* Add support for `cancel`, `create`, `list`, `retrieve`, and `submit` methods on resource `ThreeDSecure::Authentication`
 * Add support for `pause` method on resource `Subscription`
 * Add support for `performance_location` on `Tax::CalculationCreateParams::LineItem` and `Tax::CalculationLineItem`
 * Add support for `destination` on `Reserve::Hold`, `Reserve::Plan`, and `Reserve::Release`

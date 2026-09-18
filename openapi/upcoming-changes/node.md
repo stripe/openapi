@@ -1,7 +1,8 @@
-* Add support for new resources `Apps.Install`, `ProductCatalog.TrialOffer`, and `Tax.Location`
+* Add support for new resources `Apps.Install`, `ProductCatalog.TrialOffer`, `Tax.Location`, and `ThreeDSecure.Authentication`
 * Add support for `create`, `list`, `retrieve`, `uninstall`, and `update` methods on resource `Apps.Install`
 * Add support for `create`, `list`, `retrieve`, and `update` methods on resource `ProductCatalog.TrialOffer`
 * Add support for `create`, `list`, and `retrieve` methods on resource `Tax.Location`
+* Add support for `cancel`, `create`, `list`, `retrieve`, and `submit` methods on resource `ThreeDSecure.Authentication`
 * Add support for `pause` method on resource `Subscription`
 * Add support for `specified_commercial_transactions_act_url` on `Account.business_profile`, `AccountCreateParams.business_profile`, and `AccountUpdateParams.business_profile`
 * Add support for `blik_recurring_payments` and `sequra_payments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`

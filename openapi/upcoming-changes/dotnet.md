@@ -1,7 +1,8 @@
-* Add support for new resources `Apps.Install`, `ProductCatalog.TrialOffer`, and `Tax.Location`
+* Add support for new resources `Apps.Install`, `ProductCatalog.TrialOffer`, `Tax.Location`, and `ThreeDSecure.Authentication`
 * Add support for `Create`, `Get`, `List`, `Uninstall`, and `Update` methods on resource `Apps.Install`
 * Add support for `Create`, `Get`, `List`, and `Update` methods on resource `ProductCatalog.TrialOffer`
 * Add support for `Create`, `Get`, and `List` methods on resource `Tax.Location`
+* Add support for `Cancel`, `Create`, `Get`, `List`, and `Submit` methods on resource `ThreeDSecure.Authentication`
 * Add support for `Pause` method on resource `Subscription`
 * Add support for `PerformanceLocation` on `Tax.CalculationLineItem` and `TaxCalculationLineItemOptions`
 * Add support for `Destination` on `Reserve.Hold`, `Reserve.Plan`, and `Reserve.Release`

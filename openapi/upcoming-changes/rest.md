@@ -1,7 +1,8 @@
-* Add support for new resources `Apps.Install`, `ProductCatalog.TrialOffer`, and `Tax.Location`
+* Add support for new resources `Apps.Install`, `ProductCatalog.TrialOffer`, `Tax.Location`, and `ThreeDSecure.Authentication`
 * Add support for `create`, `list`, `retrieve`, `uninstall`, and `update` methods on resource `Apps.Install`
 * Add support for `create`, `list`, `retrieve`, and `update` methods on resource `ProductCatalog.TrialOffer`
 * Add support for `create`, `list`, and `retrieve` methods on resource `Tax.Location`
+* Add support for `cancel`, `create`, `list`, `retrieve`, and `submit` methods on resource `ThreeDSecure.Authentication`
 * Add support for `pause` method on resource `Subscription`
 * ⚠️ Add support for new values `invalid_address_cmra_address` and `invalid_address_registered_agent_address` on enums `Account.future_requirements.errors[].code`, `Account.requirements.errors[].code`, `BankAccount.future_requirements.errors[].code`, `BankAccount.requirements.errors[].code`, `Capability.future_requirements.errors[].code`, `Capability.requirements.errors[].code`, `Person.future_requirements.errors[].code`, and `Person.requirements.errors[].code`
 * Add support for `performance_location` on `Tax.Calculation#create.line_items[]` and `Tax.CalculationLineItem`

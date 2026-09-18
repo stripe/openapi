@@ -1,7 +1,8 @@
-* Add support for new resources `AppsInstall`, `ProductCatalogTrialOffer`, and `TaxLocation`
+* Add support for new resources `AppsInstall`, `ProductCatalogTrialOffer`, `TaxLocation`, and `ThreeDSecureAuthentication`
 * Add support for `Get`, `List`, `New`, `Uninstall`, and `Update` methods on resource `AppsInstall`
 * Add support for `Get`, `List`, `New`, and `Update` methods on resource `ProductCatalogTrialOffer`
 * Add support for `Get`, `List`, and `New` methods on resource `TaxLocation`
+* Add support for `Cancel`, `Get`, `List`, `New`, and `Submit` methods on resource `ThreeDSecureAuthentication`
 * Add support for `Pause` method on resource `Subscription`
 * Add support for new values `invalid_address_cmra_address` and `invalid_address_registered_agent_address` on enums `BankAccountFutureRequirementsErrors.Code` and `BankAccountRequirementsErrors.Code`
 * Add support for `PerformanceLocation` on `TaxCalculationLineItemParams` and `TaxCalculationLineItem`
