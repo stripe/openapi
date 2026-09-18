@@ -25,6 +25,7 @@
 * ⚠️ Change type of `CheckoutSessionPaymentMethodOptionsBancontact.SetupFutureUsage` and `PaymentIntentPaymentMethodOptionsBlik.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * Add support for new values `paypay` and `sequra` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
 * Add support for new values `apps.install.created`, `apps.install.deleted`, and `apps.install.updated` on enum `Event.Type`
+* Add support for new value `expired` on enum `FinancialConnectionsAccountAccountNumbers.Status`
 * Add support for `InvoicingRules` on `InvoiceItemParams` and `InvoiceItem`
 * Add support for `CompanyDetails` on `InvoicePaymentSettingsPaymentMethodOptionsBillieParams`, `InvoicePaymentSettingsPaymentMethodOptionsBillie`, `PaymentIntentConfirmPaymentMethodOptionsBillieParams`, `PaymentIntentPaymentMethodOptionsBillieParams`, `PaymentIntentPaymentMethodOptionsBillie`, `SubscriptionPaymentSettingsPaymentMethodOptionsBillieParams`, and `SubscriptionPaymentSettingsPaymentMethodOptionsBillie`
 * Add support for `Reference` on `InvoicePaymentSettingsPaymentMethodOptionsBillieParams`, `InvoicePaymentSettingsPaymentMethodOptionsBillie`, `PaymentIntentConfirmPaymentMethodOptionsBillieParams`, `PaymentIntentPaymentMethodOptionsBillieParams`, and `PaymentIntentPaymentMethodOptionsBillie`
