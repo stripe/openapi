@@ -47,6 +47,7 @@
 * Add support for `canceled` on `PaymentRecord.report_payment().$params` and `PaymentRecord.report_payment_attempt().$params`
 * Add support for `early_fraud_warning` and `fraudulent_dispute` on `Radar.PaymentEvaluation.signals`
 * ⚠️ Change type of `Radar.PaymentEvaluation.signals.fraudulent_payment.score` from `number` to `nullable(number)`
+* Add support for `pause_schedules` on `SubscriptionSchedule.create().$params`, `SubscriptionSchedule.update().$params`, and `SubscriptionSchedule`
 * ⚠️ Change type of `Subscription.resume().$params.billing_cycle_anchor` and `Subscription.update().$params.billing_cycle_anchor` from `enum('now'|'unchanged')` to `billing_cycle_anchor_param`
 * Add support for `billing_cycle_anchor` on `Subscription.create().$params.trial_setting.end_behavior`, `Subscription.trial_settings.end_behavior`, and `Subscription.update().$params.trial_setting.end_behavior`
 * Change `Subscription.create().$params.trial_setting.end_behavior.missing_payment_method` and `Subscription.update().$params.trial_setting.end_behavior.missing_payment_method` to be optional

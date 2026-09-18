@@ -46,6 +46,7 @@
 * ⚠️ Remove support for `Payto` on `PaymentMethodParams`
 * Add support for `Canceled` on `PaymentRecordReportPaymentAttemptParams` and `PaymentRecordReportPaymentParams`
 * Add support for `EarlyFraudWarning` and `FraudulentDispute` on `RadarPaymentEvaluationSignals`
+* Add support for `PauseSchedules` on `SubscriptionScheduleParams` and `SubscriptionSchedule`
 * ⚠️ Change type of `SubscriptionParams.BillingCycleAnchor` and `SubscriptionResumeParams.BillingCycleAnchor` from `enum('now'|'unchanged')` to `billing_cycle_anchor_param`
 * Add support for `BillingCycleAnchor` on `SubscriptionTrialSettingsEndBehaviorParams` and `SubscriptionTrialSettingsEndBehavior`
 * Add support for `PaymentBehavior` on `SubscriptionResumeParams`

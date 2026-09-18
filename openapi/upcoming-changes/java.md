@@ -41,6 +41,7 @@
 * Add support for `canceled` on `PaymentRecordReportPaymentAttemptParams` and `PaymentRecordReportPaymentParams`
 * Add support for new value `canceled` on enums `PaymentRecordReportPaymentAttemptParams.outcome` and `PaymentRecordReportPaymentParams.outcome`
 * Add support for `earlyFraudWarning` and `fraudulentDispute` on `radar.PaymentEvaluation.signals`
+* Add support for `pauseSchedules` on `SubscriptionScheduleCreateParams`, `SubscriptionScheduleUpdateParams`, and `SubscriptionSchedule`
 * ⚠️ Change type of `SubscriptionResumeParams.billingCycleAnchor` and `SubscriptionUpdateParams.billingCycleAnchor` from `enum('now'|'unchanged')` to `billing_cycle_anchor_param`
 * Add support for `billingCycleAnchor` on `Subscription.trial_settings.end_behavior`, `SubscriptionCreateParams.trial_settings.end_behavior`, and `SubscriptionUpdateParams.trial_settings.end_behavior`
 * Change `SubscriptionCreateParams.trial_settings.end_behavior.missingPaymentMethod` and `SubscriptionUpdateParams.trial_settings.end_behavior.missingPaymentMethod` to be optional
