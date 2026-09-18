@@ -3,6 +3,7 @@
 * Add support for `Get`, `List`, `New`, and `Update` methods on resource `ProductCatalogTrialOffer`
 * Add support for `Get`, `List`, and `New` methods on resource `TaxLocation`
 * Add support for `Pause` method on resource `Subscription`
+* Add support for new values `invalid_address_cmra_address` and `invalid_address_registered_agent_address` on enums `BankAccountFutureRequirementsErrors.Code` and `BankAccountRequirementsErrors.Code`
 * Add support for `PerformanceLocation` on `TaxCalculationLineItemParams` and `TaxCalculationLineItem`
 * Add support for new value `performance` on enums `TaxCalculationLineItemTaxBreakdown.Sourcing`, `TaxCalculationShippingCostTaxBreakdown.Sourcing`, and `TaxTransactionShippingCostTaxBreakdown.Sourcing`
 * Add support for new values `admissions_tax`, `attendance_tax`, `entertainment_tax`, `gross_receipts_tax`, `hospitality_tax`, `luxury_tax`, `resort_tax`, and `tourism_tax` on enums `TaxCalculationLineItemTaxBreakdownTaxRateDetails.TaxType`, `TaxCalculationShippingCostTaxBreakdownTaxRateDetails.TaxType`, `TaxCalculationTaxBreakdownTaxRateDetails.TaxType`, and `TaxTransactionShippingCostTaxBreakdownTaxRateDetails.TaxType`
