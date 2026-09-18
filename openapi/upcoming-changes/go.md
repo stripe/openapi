@@ -29,6 +29,7 @@
 * Add support for new values `paypay` and `sequra` on enums `ConfirmationTokenPaymentMethodPreview.Type` and `PaymentMethod.Type`
 * Add support for new values `apps.install.created`, `apps.install.deleted`, and `apps.install.updated` on enum `Event.Type`
 * Add support for new value `expired` on enum `FinancialConnectionsAccountAccountNumbers.Status`
+* Add support for `Country` on `FinancialConnectionsSessionFiltersParams`
 * Add support for `InvoicingRules` on `InvoiceItemParams` and `InvoiceItem`
 * Add support for `CompanyDetails` on `InvoicePaymentSettingsPaymentMethodOptionsBillieParams`, `InvoicePaymentSettingsPaymentMethodOptionsBillie`, `PaymentIntentConfirmPaymentMethodOptionsBillieParams`, `PaymentIntentPaymentMethodOptionsBillieParams`, `PaymentIntentPaymentMethodOptionsBillie`, `SubscriptionPaymentSettingsPaymentMethodOptionsBillieParams`, and `SubscriptionPaymentSettingsPaymentMethodOptionsBillie`
 * Add support for `Reference` on `InvoicePaymentSettingsPaymentMethodOptionsBillieParams`, `InvoicePaymentSettingsPaymentMethodOptionsBillie`, `PaymentIntentConfirmPaymentMethodOptionsBillieParams`, `PaymentIntentPaymentMethodOptionsBillieParams`, and `PaymentIntentPaymentMethodOptionsBillie`
@@ -43,12 +44,13 @@
 * Add support for `FundingSourceGroup` on `PaymentAttemptRecordPaymentMethodDetailsLink` and `PaymentRecordPaymentMethodDetailsLink`
 * Add support for `MandateOptions` on `PaymentIntentConfirmPaymentMethodOptionsBlikParams`, `PaymentIntentPaymentMethodOptionsBlikParams`, and `PaymentIntentPaymentMethodOptionsBlik`
 * Add support for `PaymentRecord` on `PaymentIntent`
-* Add support for new values `card_present`, `interac_present`, and `line_pay` on enums `PaymentIntent.AllowedPaymentMethodTypes` and `SetupIntent.AllowedPaymentMethodTypes`
+* Add support for new values `card_present` and `interac_present` on enums `PaymentIntent.AllowedPaymentMethodTypes` and `SetupIntent.AllowedPaymentMethodTypes`
 * Add support for new values `paypay` and `sequra` on enums `PaymentIntent.ExcludedPaymentMethodTypes` and `SetupIntent.ExcludedPaymentMethodTypes`
 * Add support for `ExpiresAt` on `PaymentIntentNextActionSwishHandleRedirectOrDisplayQrCodeQrCode`
 * Add support for new values `paypay` and `sequra` on enum `PaymentLink.PaymentMethodTypes`
 * ⚠️ Remove support for `Payto` on `PaymentMethodParams`
 * Add support for `Canceled` on `PaymentRecordReportPaymentAttemptParams` and `PaymentRecordReportPaymentParams`
+* Add support for new value `rerouted` on enum `RadarPaymentEvaluationOutcome.Type`
 * Add support for `EarlyFraudWarning` and `FraudulentDispute` on `RadarPaymentEvaluationSignals`
 * Add support for `PauseSchedules` on `SubscriptionScheduleParams` and `SubscriptionSchedule`
 * ⚠️ Change type of `SubscriptionParams.BillingCycleAnchor` and `SubscriptionResumeParams.BillingCycleAnchor` from `enum('now'|'unchanged')` to `billing_cycle_anchor_param`

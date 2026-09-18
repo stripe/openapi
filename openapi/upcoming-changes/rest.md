@@ -32,6 +32,7 @@
 * Add support for new values `paypay` and `sequra` on enums `Customer#list_payment_methods.type`, `PaymentMethod#create.type`, and `PaymentMethod#list.type`
 * Add support for new values `apps.install.created`, `apps.install.deleted`, and `apps.install.updated` on enum `Event.type`
 * Add support for new value `expired` on enum `FinancialConnections.Account.account_numbers[].status`
+* Add support for `country` on `FinancialConnections.Session#create.filters`
 * Add support for `invoicing_rules` on `InvoiceItem#update` and `InvoiceItem`
 * Add support for `company_details` on `Invoice#create.payment_settings.payment_method_options.billie`, `Invoice#update.payment_settings.payment_method_options.billie`, `Invoice.payment_settings.payment_method_options.billie`, `PaymentIntent#confirm.payment_method_options.billie`, `PaymentIntent#create.payment_method_options.billie`, `PaymentIntent#update.payment_method_options.billie`, `PaymentIntent.payment_method_options.billie`, `Subscription#create.payment_settings.payment_method_options.billie`, `Subscription#update.payment_settings.payment_method_options.billie`, and `Subscription.payment_settings.payment_method_options.billie`
 * Add support for `reference` on `Invoice#create.payment_settings.payment_method_options.billie`, `Invoice#update.payment_settings.payment_method_options.billie`, `Invoice.payment_settings.payment_method_options.billie`, `PaymentIntent#confirm.payment_method_options.billie`, `PaymentIntent#create.payment_method_options.billie`, `PaymentIntent#update.payment_method_options.billie`, and `PaymentIntent.payment_method_options.billie`
@@ -44,7 +45,7 @@
 * Add support for new values `2.3.0` and `2.3.1` on enums `PaymentAttemptRecord.payment_method_details.card.three_d_secure.version` and `PaymentRecord.payment_method_details.card.three_d_secure.version`
 * Add support for `link` on `PaymentAttemptRecord.payment_method_details.card.wallet` and `PaymentRecord.payment_method_details.card.wallet`
 * Add support for `funding_source_group` on `PaymentAttemptRecord.payment_method_details.link` and `PaymentRecord.payment_method_details.link`
-* Add support for new values `card_present`, `interac_present`, and `line_pay` on enums `PaymentIntent#confirm.allowed_payment_method_types`, `PaymentIntent#create.allowed_payment_method_types`, `PaymentIntent#update.allowed_payment_method_types`, `PaymentIntent.allowed_payment_method_types`, `SetupIntent#confirm.allowed_payment_method_types`, `SetupIntent#create.allowed_payment_method_types`, `SetupIntent#update.allowed_payment_method_types`, and `SetupIntent.allowed_payment_method_types`
+* Add support for new values `card_present` and `interac_present` on enums `PaymentIntent#confirm.allowed_payment_method_types`, `PaymentIntent#create.allowed_payment_method_types`, `PaymentIntent#update.allowed_payment_method_types`, `PaymentIntent.allowed_payment_method_types`, `SetupIntent#confirm.allowed_payment_method_types`, `SetupIntent#create.allowed_payment_method_types`, `SetupIntent#update.allowed_payment_method_types`, and `SetupIntent.allowed_payment_method_types`
 * Add support for `mandate_options` on `PaymentIntent#confirm.payment_method_options.blik`, `PaymentIntent#create.payment_method_options.blik`, `PaymentIntent#update.payment_method_options.blik`, and `PaymentIntent.payment_method_options.blik`
 * Add support for `payment_record` on `PaymentIntent`
 * Add support for `expires_at` on `PaymentIntent.next_action.swish_handle_redirect_or_display_qr_code.qr_code`
@@ -52,6 +53,7 @@
 * ⚠️ Remove support for `payto` on `PaymentMethod#update`
 * Add support for `canceled` on `PaymentRecord#report_payment_attempt` and `PaymentRecord#report_payment`
 * Add support for new value `canceled` on enums `PaymentRecord#report_payment.outcome` and `PaymentRecord#report_payment_attempt.outcome`
+* Add support for new value `rerouted` on enum `Radar.PaymentEvaluation.outcome.type`
 * Add support for `early_fraud_warning` and `fraudulent_dispute` on `Radar.PaymentEvaluation.signals`
 * ⚠️ Change type of `Radar.PaymentEvaluation.signals.fraudulent_payment.score` from `number` to `nullable(number)`
 * Add support for `pause_schedules` on `SubscriptionSchedule#create`, `SubscriptionSchedule#update`, and `SubscriptionSchedule`

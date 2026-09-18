@@ -29,6 +29,7 @@
 * Add support for new values `paypay` and `sequra` on enums `ConfirmationToken.payment_method_preview.type` and `PaymentMethod.type`
 * Add support for new values `apps.install.created`, `apps.install.deleted`, and `apps.install.updated` on enum `Event.type`
 * Add support for new value `expired` on enum `FinancialConnections.Account.account_numbers[].status`
+* Add support for `country` on `FinancialConnections\Session.create().$params.filter`
 * Add support for `invoicing_rules` on `InvoiceItem.update().$params` and `InvoiceItem`
 * Add support for `company_details` on `Invoice.create().$params.payment_setting.payment_method_option.billie`, `Invoice.payment_settings.payment_method_options.billie`, `Invoice.update().$params.payment_setting.payment_method_option.billie`, `PaymentIntent.confirm().$params.payment_method_option.billie`, `PaymentIntent.create().$params.payment_method_option.billie`, `PaymentIntent.payment_method_options.billie`, `PaymentIntent.update().$params.payment_method_option.billie`, `Subscription.create().$params.payment_setting.payment_method_option.billie`, `Subscription.payment_settings.payment_method_options.billie`, and `Subscription.update().$params.payment_setting.payment_method_option.billie`
 * Add support for `reference` on `Invoice.create().$params.payment_setting.payment_method_option.billie`, `Invoice.payment_settings.payment_method_options.billie`, `Invoice.update().$params.payment_setting.payment_method_option.billie`, `PaymentIntent.confirm().$params.payment_method_option.billie`, `PaymentIntent.create().$params.payment_method_option.billie`, `PaymentIntent.payment_method_options.billie`, and `PaymentIntent.update().$params.payment_method_option.billie`
@@ -43,12 +44,13 @@
 * Add support for `funding_source_group` on `PaymentAttemptRecord.payment_method_details.link` and `PaymentRecord.payment_method_details.link`
 * Add support for `mandate_options` on `PaymentIntent.confirm().$params.payment_method_option.blik`, `PaymentIntent.create().$params.payment_method_option.blik`, `PaymentIntent.payment_method_options.blik`, and `PaymentIntent.update().$params.payment_method_option.blik`
 * Add support for `payment_record` on `PaymentIntent`
-* Add support for new values `card_present`, `interac_present`, and `line_pay` on enums `PaymentIntent.allowed_payment_method_types` and `SetupIntent.allowed_payment_method_types`
+* Add support for new values `card_present` and `interac_present` on enums `PaymentIntent.allowed_payment_method_types` and `SetupIntent.allowed_payment_method_types`
 * Add support for new values `paypay` and `sequra` on enums `PaymentIntent.excluded_payment_method_types` and `SetupIntent.excluded_payment_method_types`
 * Add support for `expires_at` on `PaymentIntent.next_action.swish_handle_redirect_or_display_qr_code.qr_code`
 * Add support for new values `paypay` and `sequra` on enum `PaymentLink.payment_method_types`
 * ⚠️ Remove support for `payto` on `PaymentMethod.update().$params`
 * Add support for `canceled` on `PaymentRecord.report_payment().$params` and `PaymentRecord.report_payment_attempt().$params`
+* Add support for new value `rerouted` on enum `Radar.PaymentEvaluation.outcome.type`
 * Add support for `early_fraud_warning` and `fraudulent_dispute` on `Radar.PaymentEvaluation.signals`
 * ⚠️ Change type of `Radar.PaymentEvaluation.signals.fraudulent_payment.score` from `number` to `nullable(number)`
 * Add support for `pause_schedules` on `SubscriptionSchedule.create().$params`, `SubscriptionSchedule.update().$params`, and `SubscriptionSchedule`
