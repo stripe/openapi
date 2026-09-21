@@ -65,6 +65,7 @@
 * Add support for `admissions_tax`, `attendance_tax`, `entertainment_tax`, `gross_receipts_tax`, `hospitality_tax`, `luxury_tax`, `resort_tax`, and `tourism_tax` on `Tax.Registration.country_options.us` and `Tax\Registration.create().$params.country_option.me`
 * Add support for new values `admissions_tax`, `attendance_tax`, `entertainment_tax`, `gross_receipts_tax`, `hospitality_tax`, `luxury_tax`, `resort_tax`, and `tourism_tax` on enum `Tax.Registration.country_options.us.type`
 * Add support for `requirements` on `TaxCode`
+* Add support for new values `digital_excise_tax` and `utility_users_tax` on enum `TaxRate.tax_type`
 * Add support for new value `rtp` on enum `Treasury.FinancialAccount.financial_addresses[].supported_networks`
 * Add support for new value `rtp` on enum `Treasury.ReceivedCredit.network`
 * Add support for snapshot events `APPS_INSTALL_CREATED`, `APPS_INSTALL_DELETED`, and `APPS_INSTALL_UPDATED` with resource `Apps.Install`
