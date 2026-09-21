@@ -32,7 +32,7 @@
 * Add support for new values `paypay` and `sequra` on enums `ConfirmationToken.PaymentMethodPreview.type` and `PaymentMethod.type`
 * Add support for new values `paypay` and `sequra` on enums `CustomerListPaymentMethodsParams.type`, `PaymentMethodCreateParams.type`, and `PaymentMethodListParams.type`
 * Add support for new values `apps.install.created`, `apps.install.deleted`, and `apps.install.updated` on enum `Event.type`
-* Add support for new value `expired` on enum `FinancialConnections.Account.AccountNumber.status`
+* Add support for new values `expired` and `pending` on enum `FinancialConnections.Account.AccountNumber.status`
 * Add support for `country` on `financial_connections.SessionCreateParamsFilter`
 * Add support for `invoicing_rules` on `InvoiceItemModifyParams` and `InvoiceItem`
 * Add support for `company_details` on `Invoice.PaymentSetting.PaymentMethodOption.Billie`, `InvoiceCreateParamsPaymentSettingPaymentMethodOptionBillie`, `InvoiceModifyParamsPaymentSettingPaymentMethodOptionBillie`, `PaymentIntent.PaymentMethodOption.Billie`, `PaymentIntentConfirmParamsPaymentMethodOptionBillie`, `PaymentIntentCreateParamsPaymentMethodOptionBillie`, `PaymentIntentModifyParamsPaymentMethodOptionBillie`, `Subscription.PaymentSetting.PaymentMethodOption.Billie`, `SubscriptionCreateParamsPaymentSettingPaymentMethodOptionBillie`, and `SubscriptionModifyParamsPaymentSettingPaymentMethodOptionBillie`
