@@ -8,6 +8,7 @@
 * Add support for `blik_recurring_payments` and `sequra_payments` on `Account.capabilities`, `AccountCreateParams.capabilities`, and `AccountUpdateParams.capabilities`
 * Add support for `paypay_payments` on `Account.capabilities`, `Account.settings`, `AccountCreateParams.capabilities`, `AccountCreateParams.settings`, `AccountUpdateParams.capabilities`, and `AccountUpdateParams.settings`
 * Add support for `sepa_debit_payments` on `AccountCreateParams.settings`
+* ⚠️ Change type of `AccountRejectParams.reason` from `string` to `enum`
 * ⚠️ Add support for new values `invalid_address_cmra_address` and `invalid_address_registered_agent_address` on enums `Account.future_requirements.errors[].code`, `Account.requirements.errors[].code`, `BankAccount.future_requirements.errors[].code`, `BankAccount.requirements.errors[].code`, `Capability.future_requirements.errors[].code`, `Capability.requirements.errors[].code`, `Person.future_requirements.errors[].code`, and `Person.requirements.errors[].code`
 * Add support for `performance_location` on `Tax.CalculationCreateParams.line_items[]` and `Tax.CalculationLineItem`
 * Add support for new value `performance` on enums `Tax.Calculation.shipping_cost.tax_breakdown[].sourcing`, `Tax.CalculationLineItem.tax_breakdown[].sourcing`, and `Tax.Transaction.shipping_cost.tax_breakdown[].sourcing`
