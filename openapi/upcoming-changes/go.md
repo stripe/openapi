@@ -7,7 +7,7 @@
 * Add support for new values `invalid_address_cmra_address` and `invalid_address_registered_agent_address` on enums `BankAccountFutureRequirementsErrors.Code` and `BankAccountRequirementsErrors.Code`
 * Add support for `PerformanceLocation` on `TaxCalculationLineItemParams` and `TaxCalculationLineItem`
 * Add support for new value `performance` on enums `TaxCalculationLineItemTaxBreakdown.Sourcing`, `TaxCalculationShippingCostTaxBreakdown.Sourcing`, and `TaxTransactionShippingCostTaxBreakdown.Sourcing`
-* Add support for new values `admissions_tax`, `attendance_tax`, `entertainment_tax`, `gross_receipts_tax`, `hospitality_tax`, `luxury_tax`, `resort_tax`, and `tourism_tax` on enums `TaxCalculationLineItemTaxBreakdownTaxRateDetails.TaxType`, `TaxCalculationShippingCostTaxBreakdownTaxRateDetails.TaxType`, `TaxCalculationTaxBreakdownTaxRateDetails.TaxType`, and `TaxTransactionShippingCostTaxBreakdownTaxRateDetails.TaxType`
+* Add support for new values `admissions_tax`, `attendance_tax`, `digital_excise_tax`, `entertainment_tax`, `gross_receipts_tax`, `hospitality_tax`, `luxury_tax`, `recycling_fee`, `resort_tax`, `tourism_tax`, and `utility_users_tax` on enums `TaxCalculationLineItemTaxBreakdownTaxRateDetails.TaxType`, `TaxCalculationShippingCostTaxBreakdownTaxRateDetails.TaxType`, `TaxCalculationTaxBreakdownTaxRateDetails.TaxType`, and `TaxTransactionShippingCostTaxBreakdownTaxRateDetails.TaxType`
 * Add support for `Destination` on `ReserveHold`, `ReservePlan`, and `ReserveRelease`
 * Add support for `ManualRelease` on `ReservePlan`
 * Add support for new values `manual_release` and `other` on enum `ReservePlan.Type`
