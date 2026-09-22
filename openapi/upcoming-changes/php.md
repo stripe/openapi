@@ -10,6 +10,7 @@
 * Add support for new values `admissions_tax`, `attendance_tax`, `digital_excise_tax`, `entertainment_tax`, `gross_receipts_tax`, `hospitality_tax`, `luxury_tax`, `recycling_fee`, `resort_tax`, `tourism_tax`, and `utility_users_tax` on enums `Tax.Calculation.shipping_cost.tax_breakdown[].tax_rate_details.tax_type`, `Tax.Calculation.tax_breakdown[].tax_rate_details.tax_type`, `Tax.CalculationLineItem.tax_breakdown[].tax_rate_details.tax_type`, and `Tax.Transaction.shipping_cost.tax_breakdown[].tax_rate_details.tax_type`
 * Add support for `destination` on `Reserve.Hold`, `Reserve.Plan`, and `Reserve.Release`
 * Add support for `manual_release` on `Reserve.Plan`
+* Add support for new value `other` on enum `Reserve.Plan.status`
 * Add support for new values `manual_release` and `other` on enum `Reserve.Plan.type`
 * ⚠️ Add support for new value `hold_expired` on enum `Reserve.Release.reason`
 * ⚠️ Remove support for value `bulk_hold_expiry` from enum `Reserve.Release.reason`
@@ -32,6 +33,7 @@
 * Add support for new values `apps.install.created`, `apps.install.deleted`, and `apps.install.updated` on enum `Event.type`
 * Add support for new values `expired` and `pending` on enum `FinancialConnections.Account.account_numbers[].status`
 * Add support for `country` on `FinancialConnections\Session.create().$params.filter`
+* ⚠️ Remove support for `countries` on `FinancialConnections.Session.filters` and `FinancialConnections\Session.create().$params.filter`
 * Add support for `invoicing_rules` on `InvoiceItem.update().$params` and `InvoiceItem`
 * Add support for `company_details` on `Invoice.create().$params.payment_setting.payment_method_option.billie`, `Invoice.payment_settings.payment_method_options.billie`, `Invoice.update().$params.payment_setting.payment_method_option.billie`, `PaymentIntent.confirm().$params.payment_method_option.billie`, `PaymentIntent.create().$params.payment_method_option.billie`, `PaymentIntent.payment_method_options.billie`, `PaymentIntent.update().$params.payment_method_option.billie`, `Subscription.create().$params.payment_setting.payment_method_option.billie`, `Subscription.payment_settings.payment_method_options.billie`, and `Subscription.update().$params.payment_setting.payment_method_option.billie`
 * Add support for `reference` on `Invoice.create().$params.payment_setting.payment_method_option.billie`, `Invoice.payment_settings.payment_method_options.billie`, `Invoice.update().$params.payment_setting.payment_method_option.billie`, `PaymentIntent.confirm().$params.payment_method_option.billie`, `PaymentIntent.create().$params.payment_method_option.billie`, `PaymentIntent.payment_method_options.billie`, and `PaymentIntent.update().$params.payment_method_option.billie`
