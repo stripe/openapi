@@ -22,6 +22,7 @@
 * Change type of `CheckoutSessionPaymentMethodOptionsBancontactOptions.SetupFutureUsage` and `PaymentIntentPaymentMethodOptionsBlikOptions.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * ⚠️ Change type of `Checkout.Session.PaymentMethodOptions.Bancontact.SetupFutureUsage` and `PaymentIntent.PaymentMethodOptions.Blik.SetupFutureUsage` from `literal('none')` to `enum('none'|'off_session')`
 * Add support for `Country` on `FinancialConnectionsSessionFiltersOptions`
+* ⚠️ Remove support for `Countries` on `FinancialConnections.Session.Filters` and `FinancialConnectionsSessionFiltersOptions`
 * Add support for `InvoicingRules` on `InvoiceItemUpdateOptions` and `InvoiceItem`
 * Add support for `CompanyDetails` on `Invoice.PaymentSettings.PaymentMethodOptions.Billie`, `InvoicePaymentSettingsPaymentMethodOptionsBillieOptions`, `PaymentIntent.PaymentMethodOptions.Billie`, `PaymentIntentPaymentMethodOptionsBillieOptions`, `Subscription.PaymentSettings.PaymentMethodOptions.Billie`, and `SubscriptionPaymentSettingsPaymentMethodOptionsBillieOptions`
 * Add support for `Reference` on `Invoice.PaymentSettings.PaymentMethodOptions.Billie`, `InvoicePaymentSettingsPaymentMethodOptionsBillieOptions`, `PaymentIntent.PaymentMethodOptions.Billie`, and `PaymentIntentPaymentMethodOptionsBillieOptions`

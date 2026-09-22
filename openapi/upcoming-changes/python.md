@@ -10,6 +10,7 @@
 * Add support for new values `admissions_tax`, `attendance_tax`, `digital_excise_tax`, `entertainment_tax`, `gross_receipts_tax`, `hospitality_tax`, `luxury_tax`, `recycling_fee`, `resort_tax`, `tourism_tax`, and `utility_users_tax` on enums `Tax.Calculation.ShippingCost.TaxBreakdown.TaxRateDetail.tax_type`, `Tax.Calculation.TaxBreakdown.TaxRateDetail.tax_type`, `Tax.CalculationLineItem.TaxBreakdown.TaxRateDetail.tax_type`, and `Tax.Transaction.ShippingCost.TaxBreakdown.TaxRateDetail.tax_type`
 * Add support for `destination` on `Reserve.Hold`, `Reserve.Plan`, and `Reserve.Release`
 * Add support for `manual_release` on `Reserve.Plan`
+* ⚠️ Add support for new value `other` on enum `Reserve.Plan.status`
 * ⚠️ Add support for new values `manual_release` and `other` on enum `Reserve.Plan.type`
 * ⚠️ Add support for new value `hold_expired` on enum `Reserve.Release.reason`
 * ⚠️ Remove support for value `bulk_hold_expiry` from enum `Reserve.Release.reason`
@@ -36,6 +37,7 @@
 * Add support for new values `apps.install.created`, `apps.install.deleted`, and `apps.install.updated` on enum `Event.type`
 * Add support for new values `expired` and `pending` on enum `FinancialConnections.Account.AccountNumber.status`
 * Add support for `country` on `financial_connections.SessionCreateParamsFilter`
+* ⚠️ Remove support for `countries` on `FinancialConnections.Session.Filter` and `financial_connections.SessionCreateParamsFilter`
 * Add support for `invoicing_rules` on `InvoiceItemModifyParams` and `InvoiceItem`
 * Add support for `company_details` on `Invoice.PaymentSetting.PaymentMethodOption.Billie`, `InvoiceCreateParamsPaymentSettingPaymentMethodOptionBillie`, `InvoiceModifyParamsPaymentSettingPaymentMethodOptionBillie`, `PaymentIntent.PaymentMethodOption.Billie`, `PaymentIntentConfirmParamsPaymentMethodOptionBillie`, `PaymentIntentCreateParamsPaymentMethodOptionBillie`, `PaymentIntentModifyParamsPaymentMethodOptionBillie`, `Subscription.PaymentSetting.PaymentMethodOption.Billie`, `SubscriptionCreateParamsPaymentSettingPaymentMethodOptionBillie`, and `SubscriptionModifyParamsPaymentSettingPaymentMethodOptionBillie`
 * Add support for `reference` on `Invoice.PaymentSetting.PaymentMethodOption.Billie`, `InvoiceCreateParamsPaymentSettingPaymentMethodOptionBillie`, `InvoiceModifyParamsPaymentSettingPaymentMethodOptionBillie`, `PaymentIntent.PaymentMethodOption.Billie`, `PaymentIntentConfirmParamsPaymentMethodOptionBillie`, `PaymentIntentCreateParamsPaymentMethodOptionBillie`, and `PaymentIntentModifyParamsPaymentMethodOptionBillie`

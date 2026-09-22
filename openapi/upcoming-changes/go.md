@@ -10,6 +10,7 @@
 * Add support for new values `admissions_tax`, `attendance_tax`, `digital_excise_tax`, `entertainment_tax`, `gross_receipts_tax`, `hospitality_tax`, `luxury_tax`, `recycling_fee`, `resort_tax`, `tourism_tax`, and `utility_users_tax` on enums `TaxCalculationLineItemTaxBreakdownTaxRateDetails.TaxType`, `TaxCalculationShippingCostTaxBreakdownTaxRateDetails.TaxType`, `TaxCalculationTaxBreakdownTaxRateDetails.TaxType`, and `TaxTransactionShippingCostTaxBreakdownTaxRateDetails.TaxType`
 * Add support for `Destination` on `ReserveHold`, `ReservePlan`, and `ReserveRelease`
 * Add support for `ManualRelease` on `ReservePlan`
+* Add support for new value `other` on enum `ReservePlan.Status`
 * Add support for new values `manual_release` and `other` on enum `ReservePlan.Type`
 * ⚠️ Add support for new value `hold_expired` on enum `ReserveRelease.Reason`
 * ⚠️ Remove support for value `bulk_hold_expiry` from enum `ReserveRelease.Reason`
@@ -32,6 +33,7 @@
 * Add support for new values `apps.install.created`, `apps.install.deleted`, and `apps.install.updated` on enum `Event.Type`
 * Add support for new values `expired` and `pending` on enum `FinancialConnectionsAccountAccountNumbers.Status`
 * Add support for `Country` on `FinancialConnectionsSessionFiltersParams`
+* ⚠️ Remove support for `Countries` on `FinancialConnectionsSessionFiltersParams` and `FinancialConnectionsSessionFilters`
 * Add support for `InvoicingRules` on `InvoiceItemParams` and `InvoiceItem`
 * Add support for `CompanyDetails` on `InvoicePaymentSettingsPaymentMethodOptionsBillieParams`, `InvoicePaymentSettingsPaymentMethodOptionsBillie`, `PaymentIntentConfirmPaymentMethodOptionsBillieParams`, `PaymentIntentPaymentMethodOptionsBillieParams`, `PaymentIntentPaymentMethodOptionsBillie`, `SubscriptionPaymentSettingsPaymentMethodOptionsBillieParams`, and `SubscriptionPaymentSettingsPaymentMethodOptionsBillie`
 * Add support for `Reference` on `InvoicePaymentSettingsPaymentMethodOptionsBillieParams`, `InvoicePaymentSettingsPaymentMethodOptionsBillie`, `PaymentIntentConfirmPaymentMethodOptionsBillieParams`, `PaymentIntentPaymentMethodOptionsBillieParams`, and `PaymentIntentPaymentMethodOptionsBillie`
