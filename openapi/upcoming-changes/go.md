@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for `India` on `MandatePaymentMethodDetailsCard`
