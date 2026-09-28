@@ -1,1 +1,0 @@
-* Add support for `india` on `Mandate::PaymentMethodDetail::Card`
