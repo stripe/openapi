@@ -1,1 +1,1 @@
-* Add support for `India` on `Mandate.PaymentMethodDetails.Card`
+* Release specs are identical.
