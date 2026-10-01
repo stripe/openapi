@@ -42713,10 +42713,19 @@
           "money_movement_type": {
             "description": "Describes the type of money movement.",
             "enum": [
-              "card"
+              "card",
+              "us_bank_account"
             ],
-            "type": "string",
-            "x-stripeBypassValidation": true
+            "type": "string"
+          },
+          "us_bank_account": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/insights_resources_payment_evaluation_money_movement_us_bank_account"
+              }
+            ],
+            "description": "Describes US bank account money movement details.",
+            "nullable": true
           }
         },
         "required": [
@@ -42726,11 +42735,60 @@
         "title": "Money Movement Detail",
         "type": "object",
         "x-expandableFields": [
-          "card"
+          "card",
+          "us_bank_account"
         ],
         "x-stripeMostCommon": [
           "card",
-          "money_movement_type"
+          "money_movement_type",
+          "us_bank_account"
+        ]
+      },
+      "insights_resources_payment_evaluation_money_movement_us_bank_account": {
+        "description": "Money movement details for a US bank account payment.",
+        "properties": {
+          "customer_presence": {
+            "description": "Describes the presence of the customer during the payment.",
+            "enum": [
+              "off_session",
+              "on_session"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "payment_type": {
+            "description": "Describes the type of US bank account payment.",
+            "enum": [
+              "one_off",
+              "recurring"
+            ],
+            "nullable": true,
+            "type": "string",
+            "x-stripeEnum": {
+              "kind": "closed",
+              "values": [
+                {
+                  "description": "A one-off US bank account payment.",
+                  "value": "one_off"
+                },
+                {
+                  "description": "A recurring US bank account payment.",
+                  "value": "recurring"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "customer_presence",
+          "payment_type"
+        ],
+        "title": "Money Movement US Bank Account",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "customer_presence",
+          "payment_type"
         ]
       },
       "insights_resources_payment_evaluation_outcome": {
@@ -43038,6 +43096,68 @@
           "reason"
         ]
       },
+      "insights_resources_payment_evaluation_rules": {
+        "description": "Radar rules matched during the payment evaluation.",
+        "properties": {
+          "matched": {
+            "description": "List of Radar rule tokens that matched during evaluation. Expandable to full rule objects.",
+            "items": {
+              "anyOf": [
+                {
+                  "maxLength": 5000,
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/components/schemas/radar.rule"
+                }
+              ],
+              "x-expansionResources": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/radar.rule"
+                  }
+                ]
+              }
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "selected": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/radar.rule"
+              }
+            ],
+            "description": "The Radar rule token selected as the decisive rule for this evaluation. Expandable to the full rule object.",
+            "nullable": true,
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/radar.rule"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "matched",
+          "selected"
+        ],
+        "title": "Payment Evaluation Rule",
+        "type": "object",
+        "x-expandableFields": [
+          "matched",
+          "selected"
+        ],
+        "x-stripeMostCommon": [
+          "matched",
+          "selected"
+        ]
+      },
       "insights_resources_payment_evaluation_shipping": {
         "description": "Shipping details attached to this payment.",
         "properties": {
@@ -43145,6 +43265,15 @@
       "insights_resources_payment_evaluation_signals": {
         "description": "Collection of signals for this payment evaluation.",
         "properties": {
+          "bank_initiated_return": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/insights_resources_payment_evaluation_signal_v2"
+              }
+            ],
+            "description": "The likelihood that this `PaymentEvaluation` results in a bank-initiated return.",
+            "nullable": true
+          },
           "early_fraud_warning": {
             "anyOf": [
               {
@@ -43175,11 +43304,13 @@
         "title": "Payment Evaluation Signal",
         "type": "object",
         "x-expandableFields": [
+          "bank_initiated_return",
           "early_fraud_warning",
           "fraudulent_dispute",
           "fraudulent_payment"
         ],
         "x-stripeMostCommon": [
+          "bank_initiated_return",
           "early_fraud_warning",
           "fraudulent_dispute",
           "fraudulent_payment"
@@ -105468,10 +105599,20 @@
             "description": "Recommended action based on the score of the `fraudulent_payment` signal. Possible values are `block`, `continue` and `request_three_d_secure`.",
             "enum": [
               "block",
-              "continue"
+              "continue",
+              "request_three_d_secure",
+              "reroute"
             ],
-            "type": "string",
-            "x-stripeBypassValidation": true
+            "type": "string"
+          },
+          "rules": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/insights_resources_payment_evaluation_rules"
+              }
+            ],
+            "description": "Details about Radar Rules associated with the payment evaluation.",
+            "nullable": true
           },
           "signals": {
             "$ref": "#/components/schemas/insights_resources_payment_evaluation_signals"
@@ -105494,6 +105635,7 @@
           "events",
           "outcome",
           "payment_details",
+          "rules",
           "signals"
         ],
         "x-resourceId": "radar.payment_evaluation",
@@ -105535,9 +105677,17 @@
             "maxLength": 5000,
             "type": "string"
           },
+          "object": {
+            "description": "String representing the object's type. Objects of the same type share the same value.",
+            "enum": [
+              "radar.rule"
+            ],
+            "type": "string"
+          },
           "predicate": {
             "description": "The predicate to evaluate the payment against.",
             "maxLength": 5000,
+            "nullable": true,
             "type": "string"
           }
         },
@@ -317575,10 +317725,50 @@
                           "money_movement_type": {
                             "description": "Describes the type of money movement.",
                             "enum": [
-                              "card"
+                              "card",
+                              "us_bank_account"
                             ],
-                            "type": "string",
-                            "x-stripeBypassValidation": true
+                            "type": "string"
+                          },
+                          "us_bank_account": {
+                            "description": "Describes US bank account money movement details.",
+                            "properties": {
+                              "customer_presence": {
+                                "description": "Describes the presence of the customer during the payment.",
+                                "enum": [
+                                  "off_session",
+                                  "on_session"
+                                ],
+                                "type": "string"
+                              },
+                              "payment_type": {
+                                "description": "Describes the type of US bank account payment.",
+                                "enum": [
+                                  "one_off",
+                                  "recurring"
+                                ],
+                                "type": "string",
+                                "x-stripeEnum": {
+                                  "kind": "closed",
+                                  "values": [
+                                    {
+                                      "description": "A one-off US bank account payment.",
+                                      "value": "one_off"
+                                    },
+                                    {
+                                      "description": "A recurring US bank account payment.",
+                                      "value": "recurring"
+                                    }
+                                  ]
+                                }
+                              }
+                            },
+                            "title": "money_movement_us_bank_account_additional_data",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "customer_presence",
+                              "payment_type"
+                            ]
                           }
                         },
                         "required": [
