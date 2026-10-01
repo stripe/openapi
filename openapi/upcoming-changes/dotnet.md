@@ -1,1 +1,1 @@
-* Add support for `PaymentIntentData` on `Checkout.SessionUpdateOptions`
+* Release specs are identical.
