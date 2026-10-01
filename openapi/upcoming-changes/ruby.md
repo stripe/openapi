@@ -1,1 +1,1 @@
-* Release specs are identical.
+* Add support for `payment_intent_data` on `Checkout::SessionUpdateParams`
