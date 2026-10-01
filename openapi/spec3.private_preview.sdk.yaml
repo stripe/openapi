@@ -3538,6 +3538,7 @@ components:
       x-stripeResource:
         class_name: AccountSignals
         in_package: ''
+        singleton: true
     account_signals_delinquency_indicator:
       description: ''
       properties:
@@ -5644,6 +5645,7 @@ components:
       x-stripeResource:
         class_name: Balance
         in_package: ''
+        singleton: true
     balance.available:
       description: >-
         Occurs whenever your Stripe balance has been updated (e.g., when a
@@ -5855,6 +5857,7 @@ components:
       x-stripeResource:
         class_name: BalanceSettings
         in_package: ''
+        singleton: true
     balance_settings.updated:
       description: Occurs whenever a balance settings status or property has changed.
       properties:
@@ -8539,6 +8542,7 @@ components:
       x-stripeResource:
         class_name: MeterUsage
         in_package: Billing.analytics
+        singleton: true
     billing.analytics.meter_usage_row:
       description: ''
       properties:
@@ -8685,6 +8689,7 @@ components:
       x-stripeResource:
         class_name: CreditBalanceSummary
         in_package: Billing
+        singleton: true
     billing.credit_balance_transaction:
       description: >-
         A credit balance transaction is a resource representing a transaction
@@ -12290,6 +12295,7 @@ components:
       x-stripeResource:
         class_name: FinancingSummary
         in_package: Capital
+        singleton: true
     capital.financing_transaction:
       description: >-
         This is an object representing the details of a transaction on a Capital
@@ -13427,6 +13433,7 @@ components:
       x-stripeResource:
         class_name: CashBalance
         in_package: ''
+        singleton: true
     cash_balance.funds_available:
       description: >-
         Occurs whenever there is a positive remaining cash balance after Stripe
@@ -14263,11 +14270,11 @@ components:
           anyOf:
             - maxLength: 5000
               type: string
-            - $ref: '#/components/schemas/rule'
+            - $ref: '#/components/schemas/radar.rule'
           description: 'The ID of the Radar rule that matched the payment, if applicable.'
           x-expansionResources:
             oneOf:
-              - $ref: '#/components/schemas/rule'
+              - $ref: '#/components/schemas/radar.rule'
         seller_message:
           description: >-
             A human-readable description of the outcome type and reason,
@@ -22091,6 +22098,7 @@ components:
       x-stripeResource:
         class_name: OnrampTransactionLimits
         in_package: Crypto
+        singleton: true
     crypto.payment_token:
       description: >-
         A read-only representation of a user's PaymentMethod for use in Crypto
@@ -23897,6 +23905,8 @@ components:
           enum:
             - ach
             - domestic_wire_us
+            - fednow
+            - rtp
             - swift
           type: string
         sender_name:
@@ -53789,6 +53799,16 @@ components:
             - $ref: '#/components/schemas/issuing_transaction_fuel_data'
           description: Information about fuel that was purchased with this transaction.
           nullable: true
+        fuels:
+          description: >-
+            Information about the list of fuel items that were purchased with
+            this transaction. Typically this information is received from the
+            merchant after the authorization has been approved and the fuel
+            dispensed.
+          items:
+            $ref: '#/components/schemas/issuing_transaction_fuel_data'
+          nullable: true
+          type: array
         lodging:
           anyOf:
             - $ref: '#/components/schemas/issuing_transaction_lodging_data'
@@ -53818,12 +53838,14 @@ components:
         - fleet
         - flight
         - fuel
+        - fuels
         - lodging
         - receipt
       x-stripeMostCommon:
         - fleet
         - flight
         - fuel
+        - fuels
         - lodging
         - receipt
         - reference
@@ -72075,6 +72097,7 @@ components:
         token_currency:
           description: The token currency that the transaction was sent with.
           enum:
+            - ousd
             - phantom_cash
             - usdc
             - usdg
@@ -93472,6 +93495,35 @@ components:
       x-stripeResource:
         class_name: PaymentEvaluation
         in_package: Radar
+    radar.rule:
+      description: ''
+      properties:
+        action:
+          description: The action taken on the payment.
+          maxLength: 5000
+          type: string
+        id:
+          description: Unique identifier for the object.
+          maxLength: 5000
+          type: string
+        predicate:
+          description: The predicate to evaluate the payment against.
+          maxLength: 5000
+          type: string
+      required:
+        - action
+        - id
+        - predicate
+      title: RadarRule
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - action
+        - id
+        - predicate
+      x-stripeResource:
+        class_name: Rule
+        in_package: Radar
     radar.value_list:
       description: >-
         Value lists allow you to group values together which can then be
@@ -96578,35 +96630,6 @@ components:
       x-stripeResource:
         class_name: RiskSignals
         in_package: ''
-    rule:
-      description: ''
-      properties:
-        action:
-          description: The action taken on the payment.
-          maxLength: 5000
-          type: string
-        id:
-          description: Unique identifier for the object.
-          maxLength: 5000
-          type: string
-        predicate:
-          description: The predicate to evaluate the payment against.
-          maxLength: 5000
-          type: string
-      required:
-        - action
-        - id
-        - predicate
-      title: RadarRule
-      type: object
-      x-expandableFields: []
-      x-stripeMostCommon:
-        - action
-        - id
-        - predicate
-      x-stripeResource:
-        class_name: Rule
-        in_package: Radar
     scheduled_query_run:
       description: >-
         If you have [scheduled a Sigma
@@ -107718,6 +107741,7 @@ components:
       x-stripeResource:
         class_name: Settings
         in_package: Tax
+        singleton: true
     tax.settings.updated:
       description: Occurs whenever tax settings is updated.
       properties:
@@ -125020,6 +125044,8 @@ paths:
                     - storer_holds_currencies_gbp
                     - storer_holds_currencies_usd
                     - storer_holds_currencies_usdc
+                    - storer_outbound_payments_bank_accounts
+                    - storer_outbound_transfers_bank_accounts
                     - stripe_balance_payments
                     - stripe_funded_fee_credits
                     - submerchant_payments
@@ -129353,6 +129379,8 @@ paths:
                     - storer_holds_currencies_gbp
                     - storer_holds_currencies_usd
                     - storer_holds_currencies_usdc
+                    - storer_outbound_payments_bank_accounts
+                    - storer_outbound_transfers_bank_accounts
                     - stripe_balance_payments
                     - stripe_funded_fee_credits
                     - submerchant_payments
@@ -143778,8 +143806,8 @@ paths:
                     The email address to which this charge's
                     [receipt](https://docs.stripe.com/dashboard/receipts) will
                     be sent. The receipt will not be sent until the charge is
-                    paid, and no receipts will be sent for test mode charges. If
-                    this charge is for a
+                    paid, and receipts are only sent for payments in live mode.
+                    If this charge is for a
                     [Customer](https://docs.stripe.com/api/customers/object),
                     the email address specified here will override the
                     customer's email address. If `receipt_email` is specified
@@ -149990,8 +150018,8 @@ paths:
                   description: >-
                     The email address to send this charge's receipt to. This
                     will override the previously-specified email address for
-                    this charge, if one was set. Receipts will not be sent in
-                    test mode.
+                    this charge, if one was set. Receipts are only sent for
+                    payments in live mode.
                   type: string
                 statement_descriptor:
                   description: >-
@@ -158159,6 +158187,11 @@ paths:
                         network rules, such as SCA.
 
 
+                        You must wrap any Checkout Session update that mutates
+                        `setup_future_usage` in
+                        [`runServerUpdate`](/js/custom_checkout/run_server_update)
+                        and await it before continuing with the payment.
+
                         Pass an empty string to remove a previously supplied
                         configuration.
                       enum:
@@ -158206,7 +158239,6 @@ paths:
                   x-stripeMostCommon:
                     - description
                     - metadata
-                    - receipt_email
                     - setup_future_usage
                     - statement_descriptor
                     - statement_descriptor_suffix
@@ -217631,10 +217663,7 @@ paths:
                     - subscription
                 payment_method:
                   description: >-
-                    ID of the payment method (a PaymentMethod, Card, or
-                    [compatible
-                    Source](https://docs.stripe.com/payments/payment-methods#compatibility)
-                    object) to attach to this PaymentIntent.
+                    The ID of a PaymentMethod to attach to this PaymentIntent.
 
 
                     If you don't provide the `payment_method` parameter or the
@@ -249576,10 +249605,7 @@ paths:
                   description: Provides industry-specific information about the charge.
                 payment_method:
                   description: >-
-                    ID of the payment method (a PaymentMethod, Card, or
-                    [compatible
-                    Source](https://docs.stripe.com/payments/payment-methods/transitioning#compatibility)
-                    object) to attach to this PaymentIntent.
+                    The ID of a PaymentMethod to attach to this PaymentIntent.
 
                     If the payment method is attached to a Customer, it must
                     match the
@@ -296225,9 +296251,7 @@ paths:
                   description: The Stripe account ID created for this SetupIntent.
                   type: string
                 payment_method:
-                  description: >-
-                    ID of the payment method (a PaymentMethod, Card, or saved
-                    Source object) to attach to this SetupIntent.
+                  description: The ID of a PaymentMethod to attach to this SetupIntent.
                   maxLength: 5000
                   type: string
                 payment_method_configuration:
@@ -299197,9 +299221,8 @@ paths:
                     value to `metadata`.
                 payment_method:
                   description: >-
-                    ID of the payment method (a PaymentMethod, Card, or saved
-                    Source object) to attach to this SetupIntent. To unset this
-                    field to null, pass in an empty string.
+                    The ID of a PaymentMethod to attach to this SetupIntent. To
+                    unset this field to null, pass in an empty string.
                   maxLength: 5000
                   type: string
                 payment_method_configuration:
@@ -302101,9 +302124,7 @@ paths:
                       x-stripeParam:
                         class_name: MandateDataPublishableKey
                 payment_method:
-                  description: >-
-                    ID of the payment method (a PaymentMethod, Card, or saved
-                    Source object) to attach to this SetupIntent.
+                  description: The ID of a PaymentMethod to attach to this SetupIntent.
                   maxLength: 5000
                   type: string
                 payment_method_data:
@@ -325694,8 +325715,6 @@ paths:
                                       A [FIPS
                                       code](https://www.census.gov/library/reference/code-lists/ansi.html)
                                       representing the local jurisdiction.
-                                      Supported FIPS codes are: `003` (Allegheny
-                                      County) and `60000` (Philadelphia City).
                                     maxLength: 5000
                                     type: string
                                   type:
