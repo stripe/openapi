@@ -1,2 +1,3 @@
+* Add support for `after_expiration` on `BillingPortal::SessionCreateParams` and `BillingPortal::Session`
 * Add support for `payment_intent_data` on `Checkout::SessionUpdateParams`
 * Add support for `utility_users_tax` on `Tax::Registration::CountryOption::Me` and `Tax::RegistrationCreateParams::CountryOption::Me`
