@@ -26,33 +26,6 @@ if [ -n "$(git diff --name-only --staged)" ]; then
   NEW_TAG="v$(( ${LAST_TAG#v} + 1 ))"
   echo "Previous tag ${LAST_TAG}; new tag ${NEW_TAG}"
 
-  # Diff the GA spec (old tag vs. working tree), exactly as publish.sh does.
-  SPEC_PATH="openapi/spec3.sdk.yaml"
-  OLD_SPEC="/tmp/oldspec.sdk.yaml"
-  git show "${LAST_TAG}:${SPEC_PATH}" > "$OLD_SPEC"
-
-  DIFF_DIR="${GITHUB_WORKSPACE}/openapi/upcoming-changes"
-  NEW_SPEC="${GITHUB_WORKSPACE}/${SPEC_PATH}"
-  mkdir -p "$DIFF_DIR"
-
-  # Build the sdk-codegen CLI once. `diff` delegates entirely to `main`,
-  # so call `main` without its build dependency for each generated diff.
-  cd "${GITHUB_WORKSPACE}/sdk-codegen"
-  just build-tools
-
-  # `rest.md` is the language-agnostic diff (no --lang), matching publish.sh.
-  just --no-deps main diff --old-path "$OLD_SPEC" --new-path "$NEW_SPEC" --output-path "$DIFF_DIR/rest.md"
-  for lang in go php node ruby java python dotnet; do
-    just --no-deps main diff --lang "$lang" --old-path "$OLD_SPEC" --new-path "$NEW_SPEC" --output-path "$DIFF_DIR/$lang.md"
-  done
-  cd "${GITHUB_WORKSPACE}"
-
-  # --- Commit upcoming-changes (if changed) ---
-  git add ./openapi/upcoming-changes
-  if [ -n "$(git diff --name-only --staged)" ]; then
-    git commit -m "Update upcoming changes"
-  fi
-
   if [ "$PUBLISH_RELEASE" != "true" ]; then
     # Never create/push a real tag in a dry run — a stray vN tag would corrupt
     # the next real run's `git describe` increment.
