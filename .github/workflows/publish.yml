@@ -7,11 +7,6 @@ on:
         description: 'OpenAPI tag or ref to synchronize; defaults to the latest release'
         required: false
         type: string
-      unified:
-        description: 'Generate sdk-codegen snapshots from unified specs'
-        required: false
-        type: boolean
-        default: false
   release:
     types: 
       - created
@@ -53,26 +48,18 @@ jobs:
         EVENT_NAME: ${{ github.event_name }}
         GH_API_TOKEN: ${{ steps.gh-api-token.outputs.token }}
         MANUAL_OPENAPI_REF: ${{ inputs.openapi_ref }}
-        MANUAL_UNIFIED: ${{ inputs.unified }}
-        RELEASE_BODY: ${{ github.event.release.body }}
         RELEASE_TAG: ${{ github.event.release.tag_name }}
       run: |
         set -euo pipefail
 
         openapi_ref="$MANUAL_OPENAPI_REF"
-        unified="${MANUAL_UNIFIED:-false}"
         if [[ "$EVENT_NAME" == "release" ]]; then
           openapi_ref="$RELEASE_TAG"
-          unified=false
-          if [[ "$RELEASE_BODY" == *"[sdk-codegen:unified]"* ]]; then
-            unified=true
-          fi
         fi
 
         payload=$(jq -cn \
           --arg openapi_ref "$openapi_ref" \
-          --argjson unified "$unified" \
-          '{ref: "master", inputs: {openapi_ref: $openapi_ref, unified: $unified}}')
+          '{ref: "master", inputs: {openapi_ref: $openapi_ref}}')
 
         curl --fail-with-body \
           -X POST \

@@ -70,11 +70,7 @@ case "$RUN_MODE" in
     ;;
   release)
     if [[ "$SPEC_CHANGED" == "true" ]]; then
-      if [[ "$UNIFIED" == "true" ]]; then
-        git tag "$NEW_TAG" -m "$TAG_MSG" -m "[sdk-codegen:unified]"
-      else
-        git tag "$NEW_TAG" -m "$TAG_MSG"
-      fi
+      git tag "$NEW_TAG" -m "$TAG_MSG"
       git push --atomic origin master "$NEW_TAG"
     else
       echo "No spec changes; skipping release tag."
