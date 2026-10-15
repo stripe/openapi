@@ -1,12 +1,7 @@
 name: Publish  
   
 on:
-  workflow_dispatch:
-    inputs:
-      openapi_ref:
-        description: 'OpenAPI tag or ref to synchronize; defaults to the latest release'
-        required: false
-        type: string
+  workflow_dispatch: {}
   release:
     types: 
       - created
@@ -18,8 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  # Trigger generated code updates only after a release was created. Pass the
-  # exact release tag so sdk-codegen reads the same immutable spec snapshot.
+  # Trigger generated code updates only after a release was created
+  # Generated code pipeline relies on latest release to pick up the spec
   publish-latest-release:
     if: >-
       (github.event_name == 'workflow_dispatch') || (github.event_name == 'release')
@@ -45,29 +40,15 @@ jobs:
 
     - name: Trigger sdk-codegen OpenAPI update
       env:
-        EVENT_NAME: ${{ github.event_name }}
         GH_API_TOKEN: ${{ steps.gh-api-token.outputs.token }}
-        MANUAL_OPENAPI_REF: ${{ inputs.openapi_ref }}
-        RELEASE_TAG: ${{ github.event.release.tag_name }}
       run: |
-        set -euo pipefail
-
-        openapi_ref="$MANUAL_OPENAPI_REF"
-        if [[ "$EVENT_NAME" == "release" ]]; then
-          openapi_ref="$RELEASE_TAG"
-        fi
-
-        payload=$(jq -cn \
-          --arg openapi_ref "$openapi_ref" \
-          '{ref: "master", inputs: {openapi_ref: $openapi_ref}}')
-
         curl --fail-with-body \
           -X POST \
           -H "Authorization: token ${GH_API_TOKEN}" \
           -H "Accept: application/vnd.github.everest-preview+json" \
           -H "Content-Type: application/json" \
           https://api.github.com/repos/stripe/sdk-codegen/actions/workflows/update-openapi.yml/dispatches \
-          --data "$payload"
+          --data '{"ref":"master"}'
     - uses: ./actions/notify-slack
       if: always()
       with:
