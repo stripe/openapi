@@ -32,20 +32,11 @@ download_optional() {
   fi
 }
 
-download_required_fixture() {
-  local source=$1
-  local destination=$2
-
-  mkdir -p "$(dirname "$destination")"
-  curl -fsSL "$BASE/$source" -o "$destination"
-  FIXTURE_FILES+=("$destination")
-}
-
 download_ga() {
   download_required "ga/spec3.sdk.yaml" "openapi/spec3.sdk.yaml"
   download_required "ga/spec3.sdk.json" "openapi/spec3.sdk.json"
-  download_required_fixture "ga/fixtures3.yaml" "openapi/fixtures3.yaml"
-  download_required_fixture "ga/fixtures3.json" "openapi/fixtures3.json"
+  download_optional "ga/fixtures3.yaml" "openapi/fixtures3.yaml"
+  download_optional "ga/fixtures3.json" "openapi/fixtures3.json"
 
   if [[ "$UNIFIED" == "true" ]]; then
     download_required "ga/public.yaml" "latest/openapi.spec3.yaml"
@@ -62,10 +53,10 @@ download_public_preview() {
   download_required \
     "public_preview/spec3.beta.sdk.json" \
     "openapi/spec3.beta.sdk.json"
-  download_required_fixture \
+  download_optional \
     "public_preview/fixtures3.beta.yaml" \
     "openapi/fixtures3.beta.yaml"
-  download_required_fixture \
+  download_optional \
     "public_preview/fixtures3.beta.json" \
     "openapi/fixtures3.beta.json"
 

@@ -32,7 +32,7 @@ case "$MODE" in
     ;;
 esac
 
-# Commit fixtures separately to preserve the established OpenAPI history shape.
+# --- Commit fixtures (if changed) ---
 for file in $FIXTURE_FILES; do
   [[ -f "$file" ]] && git add "$file"
 done
