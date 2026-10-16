@@ -41,14 +41,26 @@ jobs:
     - name: Trigger sdk-codegen OpenAPI update
       env:
         GH_API_TOKEN: ${{ steps.gh-api-token.outputs.token }}
+        RELEASE_BODY: ${{ github.event.release.body }}
       run: |
+        set -euo pipefail
+
+        unified=false
+        if [[ "$RELEASE_BODY" == *"[unified]"* ]]; then
+          unified=true
+        fi
+
+        payload=$(jq -cn \
+          --argjson unified "$unified" \
+          '{ref: "master", inputs: {unified: $unified}}')
+
         curl --fail-with-body \
           -X POST \
           -H "Authorization: token ${GH_API_TOKEN}" \
           -H "Accept: application/vnd.github.everest-preview+json" \
           -H "Content-Type: application/json" \
           https://api.github.com/repos/stripe/sdk-codegen/actions/workflows/update-openapi.yml/dispatches \
-          --data '{"ref":"master"}'
+          --data "$payload"
     - uses: ./actions/notify-slack
       if: always()
       with:
