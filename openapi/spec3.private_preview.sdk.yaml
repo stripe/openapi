@@ -43323,6 +43323,15 @@ components:
                   The authorization was recurring or initiated by mail or
                   telephone order.
                 value: recurring_or_moto
+        product_eligibility_inquiry:
+          anyOf:
+            - $ref: >-
+                #/components/schemas/issuing_authorization_product_eligibility_inquiry
+          description: >-
+            Details about the authorization specific to product eligibility
+            inquiries. This field is only populated for
+            `product_eligibility_inquiry` type authorizations.
+          nullable: true
         redaction:
           anyOf:
             - $ref: '#/components/schemas/issuing_authorization_redaction'
@@ -43386,6 +43395,16 @@ components:
             this authorization if it was created on a
             [FinancialAccount](https://docs.stripe.com/api/treasury/financial_accounts).
           nullable: true
+        type:
+          description: >-
+            The type of the authorization, whether it is for a payment or
+            another type.
+          enum:
+            - balance_inquiry
+            - payment
+            - product_eligibility_inquiry
+          type: string
+          x-stripeBypassValidation: true
         verification_data:
           $ref: '#/components/schemas/issuing_authorization_verification_data'
         verified_by_fraud_challenge:
@@ -43450,6 +43469,7 @@ components:
         - merchant_data
         - network_data
         - pending_request
+        - product_eligibility_inquiry
         - redaction
         - request_history
         - terminal_data
@@ -46627,6 +46647,31 @@ components:
         - merchant_amount
         - merchant_currency
         - network_risk_score
+    issuing_authorization_product_eligibility_inquiry:
+      description: ''
+      properties:
+        anticipated_amount:
+          description: >-
+            The anticipated amount that merchants can send before a payment
+            authorization, in the smallest currency unit.
+          nullable: true
+          type: integer
+        anticipated_currency:
+          description: >-
+            The currency of the anticipated amount that merchants can send
+            before a payment authorization.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+        - anticipated_amount
+        - anticipated_currency
+      title: IssuingAuthorizationProductEligibilityInquiry
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - anticipated_amount
+        - anticipated_currency
     issuing_authorization_redaction:
       description: ''
       properties:
@@ -87775,6 +87820,8 @@ components:
           $ref: '#/components/schemas/portal_payment_method_update'
         subscription_cancel:
           $ref: '#/components/schemas/portal_subscription_cancel'
+        subscription_pause:
+          $ref: '#/components/schemas/portal_subscription_pause'
         subscription_update:
           $ref: '#/components/schemas/portal_subscription_update'
       required:
@@ -87782,6 +87829,7 @@ components:
         - invoice_history
         - payment_method_update
         - subscription_cancel
+        - subscription_pause
         - subscription_update
       title: PortalFeatures
       type: object
@@ -87790,12 +87838,14 @@ components:
         - invoice_history
         - payment_method_update
         - subscription_cancel
+        - subscription_pause
         - subscription_update
       x-stripeMostCommon:
         - customer_update
         - invoice_history
         - payment_method_update
         - subscription_cancel
+        - subscription_pause
         - subscription_update
     portal_flows_after_completion_hosted_confirmation:
       description: ''
@@ -87889,6 +87939,7 @@ components:
         - after_completion
         - customer_update
         - subscription_cancel
+        - subscription_pause
         - subscription_update
         - subscription_update_confirm
         - type
@@ -88303,6 +88354,89 @@ components:
         - enabled
         - feedback_options
         - options
+    portal_subscription_pause:
+      description: ''
+      properties:
+        duration:
+          $ref: '#/components/schemas/portal_subscription_pause_duration'
+        enabled:
+          description: >-
+            Whether the feature is enabled. Customers can only pause
+            subscriptions in the [redesigned customer
+            portal](/customer-management).
+          type: boolean
+      required:
+        - duration
+        - enabled
+      title: PortalSubscriptionPause
+      type: object
+      x-expandableFields:
+        - duration
+      x-stripeMostCommon:
+        - duration
+        - enabled
+    portal_subscription_pause_duration:
+      description: ''
+      properties:
+        interval_options:
+          description: The preset pause durations customers can choose from.
+          items:
+            $ref: '#/components/schemas/portal_subscription_pause_interval_option'
+          type: array
+        type:
+          description: >-
+            Whether subscriptions can be paused indefinitely or for a preset
+            duration.
+          enum:
+            - indefinite
+            - interval_options
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: Allow subscriptions to be paused indefinitely.
+                value: indefinite
+              - description: >-
+                  Require customers to choose from configured pause duration
+                  options.
+                value: interval_options
+      required:
+        - interval_options
+        - type
+      title: PortalSubscriptionPauseDuration
+      type: object
+      x-expandableFields:
+        - interval_options
+      x-stripeMostCommon:
+        - interval_options
+        - type
+    portal_subscription_pause_interval_option:
+      description: ''
+      properties:
+        interval:
+          description: >-
+            Specifies the pause duration unit. Either `day`, `week`, `month`, or
+            `year`.
+          enum:
+            - day
+            - month
+            - week
+            - year
+          type: string
+        interval_count:
+          description: >-
+            The number of intervals in the pause duration. The maximum duration
+            is three years.
+          type: integer
+      required:
+        - interval
+        - interval_count
+      title: PortalSubscriptionPauseIntervalOption
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - interval
+        - interval_count
     portal_subscription_update:
       description: ''
       properties:
@@ -144125,6 +144259,7 @@ paths:
                     - invoice_history
                     - payment_method_update
                     - subscription_cancel
+                    - subscription_pause
                     - subscription_update
                     - usage_based_billing
                 login_page:
@@ -144687,6 +144822,7 @@ paths:
                     - invoice_history
                     - payment_method_update
                     - subscription_cancel
+                    - subscription_pause
                     - subscription_update
                     - usage_based_billing
                 login_page:
@@ -297762,6 +297898,7 @@ paths:
                     - abuse_score
                     - accessed_livemode_secret_api_keys
                     - account
+                    - account_aggregated_risk_level
                     - account_status
                     - account_type
                     - account_types
@@ -297821,6 +297958,7 @@ paths:
                     - campaign_id_missing
                     - campaigns
                     - capability
+                    - capability_status
                     - capability_status_card_payments
                     - capability_status_issuing
                     - capability_status_payouts
@@ -297917,6 +298055,8 @@ paths:
                     - debit_negative_balances
                     - decimal_separator
                     - decline_reason
+                    - delinquency_exposure
+                    - delinquency_risk_score
                     - delinquent
                     - description
                     - digital_only_countries
@@ -340331,6 +340471,15 @@ paths:
                     - card_testing_risk
                     - fraud_risk
                     - merchant_dispute_risk
+                type:
+                  description: >-
+                    The type of the authorization object, for example a payment
+                    authorization, an original credit authorization, or a refund
+                    authorization.
+                  enum:
+                    - payment
+                  type: string
+                  x-stripeBypassValidation: true
                 verification_data:
                   description: >-
                     Verifications that Stripe performed on information that the
