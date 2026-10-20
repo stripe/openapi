@@ -39,8 +39,6 @@ download_ga() {
   download_optional "ga/fixtures3.json" "openapi/fixtures3.json"
 
   if [[ "$UNIFIED" == "true" ]]; then
-    download_required "ga/public.yaml" "latest/openapi.spec3.yaml"
-    download_required "ga/public.json" "latest/openapi.spec3.json"
     download_required "ga/sdk.yaml" "latest/openapi.spec3.sdk.yaml"
     download_required "ga/sdk.json" "latest/openapi.spec3.sdk.json"
   fi
