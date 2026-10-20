@@ -71,6 +71,21 @@ test -f "$canary_dir/openapi/canary/beta/fixtures3.beta.json"
 test -f "$canary_dir/openapi/canary/beta/sdk.json"
 grep -q '/2026-10-01\.clover/public_preview/canary/sdk\.json$' "$canary_dir/curl.log"
 
+private_preview_dir="$TEST_ROOT/private-preview"
+mkdir -p "$private_preview_dir"
+(
+  cd "$private_preview_dir"
+  GITHUB_ENV="$private_preview_dir/github-env" \
+    MOCK_CURL_LOG="$private_preview_dir/curl.log" \
+    "$DOWNLOAD_SCRIPT" 2026-10-01.clover private_preview true
+)
+
+test -f "$private_preview_dir/preview/openapi.private_preview.spec3.sdk.json"
+grep -q '/2026-10-01\.clover/private_preview/unified_spec3\.private_preview\.sdk\.yaml$' \
+  "$private_preview_dir/curl.log"
+grep -q '/2026-10-01\.clover/private_preview/unified_spec3\.private_preview\.sdk\.json$' \
+  "$private_preview_dir/curl.log"
+
 optional_dir="$TEST_ROOT/optional-fixture"
 mkdir -p "$optional_dir"
 (
