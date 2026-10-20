@@ -48,6 +48,10 @@ mkdir -p "$release_dir"
 test -f "$release_dir/openapi/spec3.sdk.json"
 test -f "$release_dir/openapi/fixtures3.json"
 test -f "$release_dir/latest/openapi.spec3.sdk.json"
+if grep -q '/ga/public\.' "$release_dir/curl.log"; then
+  echo "GA SDK sync unexpectedly downloaded the public unified variant" >&2
+  exit 1
+fi
 if grep -q '/canary/' "$release_dir/curl.log"; then
   echo "Release downloads unexpectedly used the canary CDN path" >&2
   exit 1
