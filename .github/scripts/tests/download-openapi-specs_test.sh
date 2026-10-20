@@ -48,7 +48,7 @@ mkdir -p "$release_dir"
 test -f "$release_dir/openapi/spec3.sdk.json"
 test -f "$release_dir/openapi/fixtures3.json"
 test -f "$release_dir/latest/openapi.spec3.sdk.json"
-if rg -q '/canary/' "$release_dir/curl.log"; then
+if grep -q '/canary/' "$release_dir/curl.log"; then
   echo "Release downloads unexpectedly used the canary CDN path" >&2
   exit 1
 fi
@@ -65,7 +65,7 @@ mkdir -p "$canary_dir"
 test -f "$canary_dir/openapi/canary/beta/spec3.beta.sdk.json"
 test -f "$canary_dir/openapi/canary/beta/fixtures3.beta.json"
 test -f "$canary_dir/openapi/canary/beta/sdk.json"
-rg -q '/2026-10-01\.clover/public_preview/canary/sdk\.json$' "$canary_dir/curl.log"
+grep -q '/2026-10-01\.clover/public_preview/canary/sdk\.json$' "$canary_dir/curl.log"
 
 optional_dir="$TEST_ROOT/optional-fixture"
 mkdir -p "$optional_dir"
