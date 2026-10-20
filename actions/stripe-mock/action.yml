@@ -9,6 +9,13 @@ inputs:
   beta:
     description: "Explicitly use beta"
     required: false
+  canary:
+    description: "Use specs and fixtures from openapi/canary on master"
+    required: false
+    default: "false"
+  canary_channel:
+    description: "Canary channel: GA, beta, or private-preview. Required when canary is true"
+    required: false
   fixtures:
     description: "Path to custom fixtures file"
     required: false
@@ -41,14 +48,56 @@ runs:
         SPEC_NAME="spec3.sdk.json"
         FIXTURES_NAME="fixtures3.json"
 
-        if [ "${INPUTS_BETA}" == "true" ] || [ "${{ contains(inputs.base, 'b') }}" == "true" ]; then
+        if [[ ! "${INPUTS_CANARY}" =~ ^(true|false)$ ]]; then
+          echo "Error: canary must be true or false"
+          exit 1
+        fi
+
+        if [ "${INPUTS_CANARY}" == "true" ]; then
+          if [ -n "${INPUTS_OPENAPI_VERSION}" ] || [ -n "${INPUTS_SPEC_PATH}" ] || [ -n "${INPUTS_FIXTURES}" ]; then
+            echo "Error: canary cannot be combined with openapi_version, spec_path, or fixtures"
+            exit 1
+          fi
+
+          case "${INPUTS_CANARY_CHANNEL}" in
+            GA)
+              CANARY_DIR="ga"
+              ;;
+            beta)
+              CANARY_DIR="beta"
+              BETA_ARG="-beta"
+              SPEC_NAME="spec3.beta.sdk.json"
+              FIXTURES_NAME="fixtures3.beta.json"
+              ;;
+            private-preview)
+              CANARY_DIR="private-preview"
+              BETA_ARG="-beta"
+              SPEC_NAME="spec3.private_preview.sdk.json"
+              FIXTURES_NAME="fixtures3.private_preview.json"
+              ;;
+            *)
+              echo "Error: canary_channel must be GA, beta, or private-preview when canary is true"
+              exit 1
+              ;;
+          esac
+
+          CURRENT_OPENAPI_SPEC=$(pwd)/latest-canary.json
+          CURRENT_FIXTURES_JSON=$(pwd)/fixtures-canary.json
+          CANARY_BASE="https://raw.githubusercontent.com/stripe/openapi/master/openapi/canary/${CANARY_DIR}"
+          echo "Pulling ${INPUTS_CANARY_CHANNEL} canary specs from ${CANARY_BASE}"
+          curl "${CURL_OPTS[@]}" "${CANARY_BASE}/${SPEC_NAME}" -o "$CURRENT_OPENAPI_SPEC"
+          curl "${CURL_OPTS[@]}" "${CANARY_BASE}/${FIXTURES_NAME}" -o "$CURRENT_FIXTURES_JSON"
+        elif [ -n "${INPUTS_CANARY_CHANNEL}" ]; then
+          echo "Error: canary_channel requires canary to be true"
+          exit 1
+        elif [ "${INPUTS_BETA}" == "true" ] || [ "${{ contains(inputs.base, 'b') }}" == "true" ]; then
           echo "Running stripe-mock with beta flag"
           BETA_ARG="-beta"
           SPEC_NAME="spec3.beta.sdk.json"
           FIXTURES_NAME="fixtures3.beta.json"
         fi
 
-        if [ -n "${INPUTS_OPENAPI_VERSION}" ]; then
+        if [ "${INPUTS_CANARY}" != "true" ] && [ -n "${INPUTS_OPENAPI_VERSION}" ]; then
           if [ -n "${INPUTS_SPEC_PATH}" ]; then
             echo "Error: Pass either an OpenAPI version or a spec path, not both"
             exit 1
@@ -64,7 +113,7 @@ runs:
           echo "Pulling specs for ${INPUTS_OPENAPI_VERSION}"
           curl "${CURL_OPTS[@]}" "https://raw.githubusercontent.com/stripe/openapi/${INPUTS_OPENAPI_VERSION}/openapi/$SPEC_NAME" -o "$CURRENT_OPENAPI_SPEC"
           curl "${CURL_OPTS[@]}" "https://raw.githubusercontent.com/stripe/openapi/${INPUTS_OPENAPI_VERSION}/openapi/$FIXTURES_NAME" -o "$CURRENT_FIXTURES_JSON"
-        elif [ -n "${INPUTS_SPEC_PATH}" ]; then
+        elif [ "${INPUTS_CANARY}" != "true" ] && [ -n "${INPUTS_SPEC_PATH}" ]; then
           echo "Spec path provided, using spec at ${INPUTS_SPEC_PATH}"
           CURRENT_OPENAPI_SPEC="${INPUTS_SPEC_PATH}"
         fi
@@ -114,6 +163,8 @@ runs:
         fi
       env:
         INPUTS_BETA: ${{ inputs.beta }}
+        INPUTS_CANARY: ${{ inputs.canary }}
+        INPUTS_CANARY_CHANNEL: ${{ inputs.canary_channel }}
         INPUTS_OPENAPI_VERSION: ${{ inputs.openapi_version }}
         INPUTS_SPEC_PATH: ${{ inputs.spec_path }}
         INPUTS_FIXTURES: ${{ inputs.fixtures }}

@@ -1,0 +1,122 @@
+name: Sync OpenAPI Canary
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      channel:
+        required: true
+        type: string
+      run_mode:
+        required: false
+        type: string
+        default: dry_run
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version name (e.g., 2026-07-08.preview)'
+        required: true
+        type: string
+      channel:
+        description: 'Canary spec channel'
+        required: true
+        type: choice
+        default: private-preview
+        options:
+          - GA
+          - beta
+          - private-preview
+      run_mode:
+        description: 'Validate only, push a test branch, or publish to master'
+        required: true
+        type: choice
+        default: dry_run
+        options:
+          - dry_run
+          - test
+          - publish
+
+permissions: {}
+
+concurrency:
+  # Share a lock with release syncs because both workflows push to master.
+  group: sync-openapi-writes
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Validate inputs and resolve channel
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          RUN_MODE: ${{ inputs.run_mode }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          [[ "$VERSION" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || {
+            echo "::error::Invalid version name: $VERSION"
+            exit 1
+          }
+          [[ "$RUN_MODE" =~ ^(dry_run|test|publish)$ ]] || {
+            echo "::error::Unknown run mode: $RUN_MODE"
+            exit 1
+          }
+
+          case "$CHANNEL" in
+            GA)
+              mode=ga
+              channel_slug=ga
+              ;;
+            beta)
+              mode=public_preview
+              channel_slug=beta
+              ;;
+            private-preview)
+              mode=private_preview
+              channel_slug=private-preview
+              ;;
+            *)
+              echo "::error::Unknown canary channel: $CHANNEL"
+              exit 1
+              ;;
+          esac
+
+          {
+            echo "MODE=$mode"
+            echo "CHANNEL_SLUG=$channel_slug"
+          } >> "$GITHUB_ENV"
+
+      - name: Fetch app installation token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: gh-api-token
+        with:
+          app-id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
+          private-key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Checkout openapi
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ steps.gh-api-token.outputs.token }}
+          ref: master
+          fetch-depth: 0
+
+      - name: Download canary specs and fixtures from CDN
+        env:
+          MODE: ${{ env.MODE }}
+          VERSION: ${{ inputs.version }}
+        run: .github/scripts/download-openapi-specs.sh "$VERSION" "$MODE" true canary
+
+      - name: Commit and publish canary artifacts
+        id: publish
+        env:
+          CHANNEL: ${{ env.CHANNEL_SLUG }}
+          RUN_MODE: ${{ inputs.run_mode }}
+          VERSION: ${{ inputs.version }}
+        run: .github/scripts/sync-openapi-canary.sh
