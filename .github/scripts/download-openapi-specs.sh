@@ -84,10 +84,10 @@ download_private_preview() {
 
   if [[ "$UNIFIED" == "true" ]]; then
     download_required \
-      "private_preview/sdk.yaml" \
+      "private_preview/unified_spec3.private_preview.sdk.yaml" \
       "preview/openapi.private_preview.spec3.sdk.yaml"
     download_required \
-      "private_preview/sdk.json" \
+      "private_preview/unified_spec3.private_preview.sdk.json" \
       "preview/openapi.private_preview.spec3.sdk.json"
   fi
 }
