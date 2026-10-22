@@ -161,6 +161,10 @@ case "$MODE" in
   ga)
     download_ga
     ;;
+  ga_and_public_preview)
+    download_ga
+    download_public_preview
+    ;;
   all)
     download_ga
     download_public_preview

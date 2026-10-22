@@ -80,6 +80,19 @@ grep -q '/2026-10-01\.clover/public_preview/canary/sdk\.json$' "$canary_dir/curl
 grep -q '/2026-10-01\.clover/private_preview/canary/unified_spec3\.private_preview\.sdk\.json$' \
   "$canary_dir/curl.log"
 
+ga_and_public_preview_dir="$TEST_ROOT/ga-and-public-preview"
+mkdir -p "$ga_and_public_preview_dir"
+(
+  cd "$ga_and_public_preview_dir"
+  GITHUB_ENV="$ga_and_public_preview_dir/github-env" \
+    MOCK_CURL_LOG="$ga_and_public_preview_dir/curl.log" \
+    "$DOWNLOAD_SCRIPT" 2026-10-01.clover ga_and_public_preview true canary
+)
+
+test -f "$ga_and_public_preview_dir/openapi/canary/ga/sdk.json"
+test -f "$ga_and_public_preview_dir/openapi/canary/beta/sdk.json"
+test ! -e "$ga_and_public_preview_dir/openapi/canary/private-preview"
+
 private_preview_dir="$TEST_ROOT/private-preview"
 mkdir -p "$private_preview_dir"
 (
