@@ -8341,8 +8341,9 @@ components:
           type: string
         livemode:
           description: >-
-            If the object exists in live mode, the value is `true`. If the
-            object exists in test mode, the value is `false`.
+            The value is `true` for objects in live mode and `false` for objects
+            in a sandbox. For accounts that still have access to legacy test
+            mode, the value is also `false` for objects in that mode.
           type: boolean
         meter:
           description: >-
@@ -10621,7 +10622,7 @@ components:
             #/components/schemas/billing_collections_payment_plan_api_endpoints_payment_plan_resource_collects_on_invoice_details
         type:
           description: >-
-            The type of object this plan collects against. Currently always
+            The type of object this plan collects against. This is always
             `invoice_details`.
           maxLength: 5000
           type: string
@@ -14557,6 +14558,9 @@ components:
             - manual
           nullable: true
           type: string
+        automatic_pass_through_fee:
+          $ref: >-
+            #/components/schemas/payment_pages_checkout_session_automatic_pass_through_fee
         automatic_surcharge:
           $ref: >-
             #/components/schemas/payment_pages_checkout_session_automatic_surcharge
@@ -15319,6 +15323,7 @@ components:
       x-expandableFields:
         - adaptive_pricing
         - after_expiration
+        - automatic_pass_through_fee
         - automatic_surcharge
         - automatic_tax
         - branding_settings
@@ -17275,6 +17280,21 @@ components:
         - reference
         - setup_future_usage
         - subsellers
+    checkout_paypay_payment_method_options:
+      description: ''
+      properties:
+        subscription_reference:
+          description: >-
+            A reference to the merchant subscription this payment corresponds
+            to.
+          maxLength: 5000
+          nullable: true
+          type: string
+      title: CheckoutPaypayPaymentMethodOptions
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - subscription_reference
     checkout_payto_payment_method_options:
       description: ''
       properties:
@@ -18110,6 +18130,8 @@ components:
           $ref: '#/components/schemas/checkout_paynow_payment_method_options'
         paypal:
           $ref: '#/components/schemas/checkout_paypal_payment_method_options'
+        paypay:
+          $ref: '#/components/schemas/checkout_paypay_payment_method_options'
         payto:
           $ref: '#/components/schemas/checkout_payto_payment_method_options'
         pix:
@@ -18176,6 +18198,7 @@ components:
         - payco
         - paynow
         - paypal
+        - paypay
         - payto
         - pix
         - revolut_pay
@@ -18225,6 +18248,7 @@ components:
         - payco
         - paynow
         - paypal
+        - paypay
         - payto
         - pix
         - revolut_pay
@@ -43175,7 +43199,8 @@ components:
             `bd_bin`, `au_acn`, `nz_bn`, `pt_nif`, `cz_dic`, `fr_siret`,
             `fr_siren`, `fr_spi`, `sm_coe`, `tt_vat`, `tt_bir`, `mu_vat`,
             `mz_nuit`, `au_wpn`, `md_cf`, `is_kt`, `bj_ifu`, `et_tin`, `kg_tin`,
-            `la_tin`, `cm_niu`, `cv_nif`, `bf_ifu`, `ic_nif`, or `unknown`
+            `la_tin`, `cm_niu`, `cv_nif`, `bf_ifu`, `ic_nif`, `gh_tin`,
+            `bw_vat`, `ci_vat`, or `unknown`
           enum:
             - ad_nrt
             - ae_trn
@@ -43200,6 +43225,7 @@ components:
             - br_cnpj
             - br_cpf
             - bs_tin
+            - bw_vat
             - by_tin
             - ca_bn
             - ca_gst_hst
@@ -43210,6 +43236,7 @@ components:
             - cd_nif
             - ch_uid
             - ch_vat
+            - ci_vat
             - cl_tin
             - cm_niu
             - cn_tin
@@ -43231,6 +43258,7 @@ components:
             - fr_spi
             - gb_vat
             - ge_vat
+            - gh_tin
             - gi_tin
             - gn_nif
             - hk_br
@@ -49424,6 +49452,13 @@ components:
             - $ref: '#/components/schemas/issuing_card_shipping_customs'
           description: Additional information that may be required for clearing customs.
           nullable: true
+        delivered_at:
+          description: >-
+            The time the card was reported as delivered. Null for undelivered or
+            untracked shipments, or if Stripe has not recorded a delivery time.
+          format: unix-time
+          nullable: true
+          type: integer
         eta:
           description: >-
             A unix timestamp representing a best estimate of when the card will
@@ -49462,6 +49497,13 @@ components:
             - standard
           type: string
           x-stripeBypassValidation: true
+        shipped_at:
+          description: >-
+            The time the card was reported as shipped. Null if Stripe has not
+            recorded a shipment time.
+          format: unix-time
+          nullable: true
+          type: integer
         status:
           description: The delivery status of the card.
           enum:
@@ -49519,11 +49561,13 @@ components:
         - business_name
         - carrier
         - customs
+        - delivered_at
         - eta
         - name
         - phone_number
         - require_signature
         - service
+        - shipped_at
         - status
         - tracking_number
         - tracking_url
@@ -55598,6 +55642,8 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        physical_address:
+          $ref: '#/components/schemas/address'
         principal_place_of_business:
           $ref: '#/components/schemas/address'
         registration_date:
@@ -55669,6 +55715,7 @@ components:
         - administrative_address
         - directorship_declaration
         - ownership_declaration
+        - physical_address
         - principal_place_of_business
         - registration_date
         - representative_declaration
@@ -55690,6 +55737,7 @@ components:
         - ownership_declaration
         - ownership_exemption_reason
         - phone
+        - physical_address
         - principal_place_of_business
         - registration_date
         - representative_declaration
@@ -58906,7 +58954,8 @@ components:
             `bd_bin`, `au_acn`, `nz_bn`, `pt_nif`, `cz_dic`, `fr_siret`,
             `fr_siren`, `fr_spi`, `sm_coe`, `tt_vat`, `tt_bir`, `mu_vat`,
             `mz_nuit`, `au_wpn`, `md_cf`, `is_kt`, `bj_ifu`, `et_tin`, `kg_tin`,
-            `la_tin`, `cm_niu`, `cv_nif`, `bf_ifu`, `ic_nif`, or `unknown`
+            `la_tin`, `cm_niu`, `cv_nif`, `bf_ifu`, `ic_nif`, `gh_tin`,
+            `bw_vat`, `ci_vat`, or `unknown`
           enum:
             - ad_nrt
             - ae_trn
@@ -58931,6 +58980,7 @@ components:
             - br_cnpj
             - br_cpf
             - bs_tin
+            - bw_vat
             - by_tin
             - ca_bn
             - ca_gst_hst
@@ -58941,6 +58991,7 @@ components:
             - cd_nif
             - ch_uid
             - ch_vat
+            - ci_vat
             - cl_tin
             - cm_niu
             - cn_tin
@@ -58962,6 +59013,7 @@ components:
             - fr_spi
             - gb_vat
             - ge_vat
+            - gh_tin
             - gi_tin
             - gn_nif
             - hk_br
@@ -62028,6 +62080,18 @@ components:
     payment_flows_payment_details_resource_money_services_account_funding:
       description: ''
       properties:
+        merchant_of_record:
+          description: The merchant of record for this account funding transaction.
+          enum:
+            - stripe
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: >-
+                  Stripe is the merchant of record for this account funding
+                  transaction.
+                value: stripe
         sender_account:
           maxLength: 5000
           type: string
@@ -62039,6 +62103,7 @@ components:
       x-expandableFields:
         - sender_details
       x-stripeMostCommon:
+        - merchant_of_record
         - sender_account
         - sender_details
     payment_flows_payment_details_resource_money_services_address:
@@ -72665,8 +72730,7 @@ components:
         stored_credential_usage:
           description: >-
             The payment_method_options.card.stored_credential_usage value that
-            was passed for an off session, merchant-initiated transaction, one
-            of `recurring`, `unscheduled`, `on_session`, or `installment`
+            was passed for an off session, merchant-initiated transaction.
           enum:
             - installment
             - recurring
@@ -76143,10 +76207,18 @@ components:
         - reference
     payment_method_details_payment_record_paypay:
       description: ''
-      properties: {}
+      properties:
+        mandate:
+          description: >-
+            ID of the multi-use Mandate created by, or used to make, this PayPay
+            payment.
+          maxLength: 5000
+          type: string
       title: payment_method_details_payment_record_paypay
       type: object
       x-expandableFields: []
+      x-stripeMostCommon:
+        - mandate
     payment_method_details_payment_record_payto:
       description: ''
       properties:
@@ -76923,10 +76995,18 @@ components:
         - verified_name
     payment_method_details_paypay:
       description: ''
-      properties: {}
+      properties:
+        mandate:
+          description: >-
+            ID of the multi-use Mandate created by, or used to make, this PayPay
+            payment.
+          maxLength: 5000
+          type: string
       title: payment_method_details_paypay
       type: object
       x-expandableFields: []
+      x-stripeMostCommon:
+        - mandate
     payment_method_details_payto:
       description: ''
       properties:
@@ -81651,6 +81731,31 @@ components:
       x-expandableFields: []
       x-stripeMostCommon:
         - enabled
+    payment_pages_checkout_session_adjustable_quantity:
+      description: ''
+      properties:
+        enabled:
+          description: Whether the quantity is adjustable.
+          type: boolean
+        maximum:
+          description: The maximum quantity the customer can purchase.
+          nullable: true
+          type: integer
+        minimum:
+          description: The minimum quantity the customer can purchase.
+          nullable: true
+          type: integer
+      required:
+        - enabled
+        - maximum
+        - minimum
+      title: PaymentPagesCheckoutSessionAdjustableQuantity
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - enabled
+        - maximum
+        - minimum
     payment_pages_checkout_session_after_expiration:
       description: ''
       properties:
@@ -81713,6 +81818,83 @@ components:
         - enabled
         - expires_at
         - url
+    payment_pages_checkout_session_automatic_pass_through_fee:
+      description: ''
+      properties:
+        calculation_basis:
+          description: Whether the fee is calculated on the amount due before or after tax.
+          enum:
+            - total_after_tax
+            - total_before_tax
+          nullable: true
+          type: string
+        enabled:
+          description: >-
+            Indicates whether a pass-through fee is calculated and added to this
+            session.
+          type: boolean
+        provider:
+          description: >-
+            The provider that performed this session's latest pass-through fee
+            calculation.
+          maxLength: 5000
+          nullable: true
+          type: string
+        status:
+          description: >-
+            The status of the most recent pass-through fee calculation for this
+            session.
+          enum:
+            - complete
+            - failed
+            - not_applicable
+            - requires_input
+          type: string
+          x-stripeEnum:
+            kind: closed
+            values:
+              - description: The calculation succeeded. `pass_through_fee_cost` is present.
+                value: complete
+              - description: The calculation failed. `pass_through_fee_cost` is omitted.
+                value: failed
+              - description: The selected payment method is not eligible for this fee.
+                value: not_applicable
+              - description: >-
+                  More payment method or location input from the customer is
+                  required.
+                value: requires_input
+        type:
+          description: The type of fee calculated for this session.
+          enum:
+            - convenience_fee
+            - service_fee
+          nullable: true
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: >-
+                  A convenience fee, charged for paying through an alternative
+                  payment channel.
+                value: convenience_fee
+              - description: >-
+                  A service fee, charged by eligible government and education
+                  businesses.
+                value: service_fee
+      required:
+        - calculation_basis
+        - enabled
+        - provider
+        - type
+      title: PaymentPagesCheckoutSessionAutomaticPassThroughFee
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - calculation_basis
+        - enabled
+        - provider
+        - status
+        - type
     payment_pages_checkout_session_automatic_surcharge:
       description: ''
       properties:
@@ -84085,6 +84267,12 @@ components:
     payment_pages_checkout_session_subscription_price:
       description: ''
       properties:
+        adjustable_quantity:
+          anyOf:
+            - $ref: >-
+                #/components/schemas/payment_pages_checkout_session_adjustable_quantity
+          description: The adjustable quantity settings for this subscription item.
+          nullable: true
         current_trial:
           anyOf:
             - $ref: >-
@@ -84111,9 +84299,11 @@ components:
       title: PaymentPagesCheckoutSessionSubscriptionPrice
       type: object
       x-expandableFields:
+        - adjustable_quantity
         - current_trial
         - price
       x-stripeMostCommon:
+        - adjustable_quantity
         - current_trial
         - price
         - quantity
@@ -84168,7 +84358,8 @@ components:
             `bd_bin`, `au_acn`, `nz_bn`, `pt_nif`, `cz_dic`, `fr_siret`,
             `fr_siren`, `fr_spi`, `sm_coe`, `tt_vat`, `tt_bir`, `mu_vat`,
             `mz_nuit`, `au_wpn`, `md_cf`, `is_kt`, `bj_ifu`, `et_tin`, `kg_tin`,
-            `la_tin`, `cm_niu`, `cv_nif`, `bf_ifu`, `ic_nif`, or `unknown`
+            `la_tin`, `cm_niu`, `cv_nif`, `bf_ifu`, `ic_nif`, `gh_tin`,
+            `bw_vat`, `ci_vat`, or `unknown`
           enum:
             - ad_nrt
             - ae_trn
@@ -84193,6 +84384,7 @@ components:
             - br_cnpj
             - br_cpf
             - bs_tin
+            - bw_vat
             - by_tin
             - ca_bn
             - ca_gst_hst
@@ -84203,6 +84395,7 @@ components:
             - cd_nif
             - ch_uid
             - ch_vat
+            - ci_vat
             - cl_tin
             - cm_niu
             - cn_tin
@@ -84224,6 +84417,7 @@ components:
             - fr_spi
             - gb_vat
             - ge_vat
+            - gh_tin
             - gi_tin
             - gn_nif
             - hk_br
@@ -84720,7 +84914,7 @@ components:
           $ref: >-
             #/components/schemas/billing_collections_payment_plan_api_endpoints_schedule_resource_amounts_due
         type:
-          description: The type of schedule. Currently always `amounts_due`.
+          description: The type of schedule. This is always `amounts_due`.
           maxLength: 5000
           type: string
       required:
@@ -105811,12 +106005,14 @@ components:
             moves to `active` when the trial period is over. 
 
 
-            A subscription can only enter a `paused` status [when a trial ends
-            without a payment
-            method](https://docs.stripe.com/billing/subscriptions/trials/free-trials#create-free-trials-without-payment).
-            A `paused` subscription doesn't generate invoices and can be resumed
-            after your customer adds their payment method. The `paused` status
-            is different from [pausing
+            A subscription can enter a `paused` status in several ways,
+            including [when a trial ends without a payment
+            method](https://docs.stripe.com/billing/subscriptions/trials/free-trials#create-free-trials-without-payment)
+            or when you pause it using the [pause
+            endpoint](https://docs.stripe.com/api/subscriptions/pause). A
+            `paused` subscription doesn't advance to a new billing period or
+            generate invoices until it resumes. The `paused` status is different
+            from [pausing
             collection](https://docs.stripe.com/billing/subscriptions/pause-payment),
             which still generates invoices and leaves the subscription's status
             unchanged. 
@@ -106709,10 +106905,17 @@ components:
         - mandate_options
     subscription_payment_method_options_sepa_debit:
       description: ''
-      properties: {}
+      properties:
+        debit_behavior:
+          description: >-
+            Controls when the funds will be captured from the customer's
+            account.
+          type: string
       title: subscription_payment_method_options_sepa_debit
       type: object
       x-expandableFields: []
+      x-stripeMostCommon:
+        - debit_behavior
     subscription_pending_invoice_item_interval:
       description: ''
       properties:
@@ -112830,7 +113033,8 @@ components:
             `bd_bin`, `au_acn`, `nz_bn`, `pt_nif`, `cz_dic`, `fr_siret`,
             `fr_siren`, `fr_spi`, `sm_coe`, `tt_vat`, `tt_bir`, `mu_vat`,
             `mz_nuit`, `au_wpn`, `md_cf`, `is_kt`, `bj_ifu`, `et_tin`, `kg_tin`,
-            `la_tin`, `cm_niu`, `cv_nif`, `bf_ifu`, `ic_nif`, or `unknown`
+            `la_tin`, `cm_niu`, `cv_nif`, `bf_ifu`, `ic_nif`, `gh_tin`,
+            `bw_vat`, `ci_vat`, or `unknown`
           enum:
             - ad_nrt
             - ae_trn
@@ -112855,6 +113059,7 @@ components:
             - br_cnpj
             - br_cpf
             - bs_tin
+            - bw_vat
             - by_tin
             - ca_bn
             - ca_gst_hst
@@ -112865,6 +113070,7 @@ components:
             - cd_nif
             - ch_uid
             - ch_vat
+            - ci_vat
             - cl_tin
             - cm_niu
             - cn_tin
@@ -112886,6 +113092,7 @@ components:
             - fr_spi
             - gb_vat
             - ge_vat
+            - gh_tin
             - gi_tin
             - gn_nif
             - hk_br
@@ -113139,6 +113346,7 @@ components:
             - communications_tax
             - digital_excise_tax
             - entertainment_tax
+            - get_fund
             - gross_receipts_tax
             - gst
             - hospitality_tax
@@ -113148,6 +113356,7 @@ components:
             - lease_tax
             - luxury_tax
             - mass_transit_parking_tax
+            - nhil
             - parking_tax
             - pst
             - qst
@@ -113177,6 +113386,8 @@ components:
                 value: digital_excise_tax
               - description: Entertainment Tax
                 value: entertainment_tax
+              - description: Ghana Education Trust Fund Levy
+                value: get_fund
               - description: Gross Receipts Tax
                 value: gross_receipts_tax
               - description: Goods and Services Tax
@@ -113195,6 +113406,8 @@ components:
                 value: luxury_tax
               - description: Mass Transit Parking Tax
                 value: mass_transit_parking_tax
+              - description: National Health Insurance Levy
+                value: nhil
               - description: Parking Tax
                 value: parking_tax
               - description: Provincial Sales Tax
@@ -113555,6 +113768,7 @@ components:
             - communications_tax
             - digital_excise_tax
             - entertainment_tax
+            - get_fund
             - gross_receipts_tax
             - gst
             - hospitality_tax
@@ -113564,6 +113778,7 @@ components:
             - lease_tax
             - luxury_tax
             - mass_transit_parking_tax
+            - nhil
             - parking_tax
             - pst
             - qst
@@ -113594,6 +113809,8 @@ components:
                 value: digital_excise_tax
               - description: Entertainment Tax
                 value: entertainment_tax
+              - description: Ghana Education Trust Fund Levy
+                value: get_fund
               - description: Gross Receipts Tax
                 value: gross_receipts_tax
               - description: Goods and Services Tax
@@ -113612,6 +113829,8 @@ components:
                 value: luxury_tax
               - description: Mass Transit Parking Tax
                 value: mass_transit_parking_tax
+              - description: National Health Insurance Levy
+                value: nhil
               - description: Parking Tax
                 value: parking_tax
               - description: Provincial Sales Tax
@@ -127700,6 +127919,7 @@ paths:
                     - card_issuing_prepaid_card_stripe
                     - card_issuing_spend_card_cross_river
                     - card_payments
+                    - carecredit_payments
                     - cartes_bancaires_payments
                     - cash_advances
                     - cashapp_payments
@@ -127725,6 +127945,7 @@ paths:
                     - gb_bank_transfer_payments
                     - gcash_payments
                     - getbalance_payments
+                    - getflex_payments
                     - gift_card_payments
                     - giropay_payments
                     - gopay_payments
@@ -127803,6 +128024,7 @@ paths:
                     - sepa_bank_transfer_payments
                     - sepa_debit_payments
                     - sequra_payments
+                    - sezzle_payments
                     - shop_pay_payments
                     - shopeepay_payments
                     - skip_the_dishes
@@ -132054,6 +132276,7 @@ paths:
                     - card_issuing_prepaid_card_stripe
                     - card_issuing_spend_card_cross_river
                     - card_payments
+                    - carecredit_payments
                     - cartes_bancaires_payments
                     - cash_advances
                     - cashapp_payments
@@ -132079,6 +132302,7 @@ paths:
                     - gb_bank_transfer_payments
                     - gcash_payments
                     - getbalance_payments
+                    - getflex_payments
                     - gift_card_payments
                     - giropay_payments
                     - gopay_payments
@@ -132157,6 +132381,7 @@ paths:
                     - sepa_bank_transfer_payments
                     - sepa_debit_payments
                     - sequra_payments
+                    - sezzle_payments
                     - shop_pay_payments
                     - shopeepay_payments
                     - skip_the_dishes
@@ -153336,6 +153561,9 @@ paths:
               allowed_payment_method_types:
                 explode: true
                 style: deepObject
+              automatic_pass_through_fee:
+                explode: true
+                style: deepObject
               automatic_surcharge:
                 explode: true
                 style: deepObject
@@ -153560,12 +153788,14 @@ paths:
                       - sequra
                       - shopeepay
                       - sofort
+                      - stripe_balance
                       - sunbit
                       - swish
                       - twint
                       - upi
                       - us_bank_account
                       - wechat_pay
+                      - wero
                       - zip
                     type: string
                     x-stripeBypassValidation: true
@@ -153588,6 +153818,51 @@ paths:
                     - auto
                     - manual
                   type: string
+                automatic_pass_through_fee:
+                  description: >-
+                    Settings for calculating and adding a pass-through fee (a
+                    convenience or service fee) to this session.
+                  properties:
+                    calculation_basis:
+                      description: >-
+                        Whether the fee is calculated on the amount due before
+                        or after tax. Required when `enabled` is `true`.
+                      enum:
+                        - total_after_tax
+                        - total_before_tax
+                      type: string
+                    enabled:
+                      description: >-
+                        Set to `true` to calculate a pass-through fee using the
+                        customer's payment method details and location.
+                      type: boolean
+                    type:
+                      description: >-
+                        The type of fee to calculate. Required when `enabled` is
+                        `true`.
+                      enum:
+                        - convenience_fee
+                        - service_fee
+                      type: string
+                      x-stripeEnum:
+                        kind: open
+                        values:
+                          - description: >-
+                              A convenience fee, charged for paying through an
+                              alternative payment channel.
+                            value: convenience_fee
+                          - description: >-
+                              A service fee, charged by eligible government and
+                              education businesses.
+                            value: service_fee
+                  required:
+                    - enabled
+                  title: automatic_pass_through_fee_params
+                  type: object
+                  x-stripeMostCommon:
+                    - calculation_basis
+                    - enabled
+                    - type
                 automatic_surcharge:
                   description: >-
                     Settings for automatic surcharge calculation for this
@@ -154515,12 +154790,14 @@ paths:
                       - sequra
                       - shopeepay
                       - sofort
+                      - stripe_balance
                       - sunbit
                       - swish
                       - twint
                       - upi
                       - us_bank_account
                       - wechat_pay
+                      - wero
                       - zip
                     type: string
                     x-stripeBypassValidation: true
@@ -158778,6 +159055,21 @@ paths:
                         - risk_correlation_id
                         - setup_future_usage
                         - subsellers
+                    paypay:
+                      description: >-
+                        contains details about the PayPay payment method
+                        options.
+                      properties:
+                        subscription_reference:
+                          description: >-
+                            The merchant's subscription identifier for this
+                            off-session charge.
+                          maxLength: 255
+                          type: string
+                      title: payment_method_options_param
+                      type: object
+                      x-stripeMostCommon:
+                        - subscription_reference
                     payto:
                       description: contains details about the PayTo payment method options.
                       properties:
@@ -221026,6 +221318,21 @@ paths:
                             account_funding:
                               anyOf:
                                 - properties:
+                                    merchant_of_record:
+                                      description: >-
+                                        The merchant of record for this account
+                                        funding transaction. Can only be set
+                                        when creating a PaymentIntent.
+                                      enum:
+                                        - stripe
+                                      type: string
+                                      x-stripeEnum:
+                                        kind: open
+                                        values:
+                                          - description: >-
+                                              Stripe is the merchant of record for
+                                              this account funding transaction.
+                                            value: stripe
                                     sender_details:
                                       anyOf:
                                         - properties:
@@ -221134,6 +221441,7 @@ paths:
                                     payment_details_money_services_account_funding
                                   type: object
                                   x-stripeMostCommon:
+                                    - merchant_of_record
                                     - sender_details
                                 - enum:
                                     - ''
@@ -222562,6 +222870,7 @@ paths:
                         - account_holder_type
                         - account_number
                         - account_type
+                        - external_token
                         - financial_connections_account
                         - routing_number
                         - token
@@ -223236,6 +223545,7 @@ paths:
                             - setup_future_usage
                             - target_date
                             - verification_method
+                            - verification_options
                         - enum:
                             - ''
                           type: string
@@ -235502,6 +235812,21 @@ paths:
                                 account_funding:
                                   anyOf:
                                     - properties:
+                                        merchant_of_record:
+                                          description: >-
+                                            The merchant of record for this account
+                                            funding transaction. Can only be set
+                                            when creating a PaymentIntent.
+                                          enum:
+                                            - stripe
+                                          type: string
+                                          x-stripeEnum:
+                                            kind: open
+                                            values:
+                                              - description: >-
+                                                  Stripe is the merchant of record for
+                                                  this account funding transaction.
+                                                value: stripe
                                         sender_details:
                                           anyOf:
                                             - properties:
@@ -235610,6 +235935,7 @@ paths:
                                         payment_details_money_services_account_funding
                                       type: object
                                       x-stripeMostCommon:
+                                        - merchant_of_record
                                         - sender_details
                                     - enum:
                                         - ''
@@ -237027,6 +237353,7 @@ paths:
                         - account_holder_type
                         - account_number
                         - account_type
+                        - external_token
                         - financial_connections_account
                         - routing_number
                         - token
@@ -237701,6 +238028,7 @@ paths:
                             - setup_future_usage
                             - target_date
                             - verification_method
+                            - verification_options
                         - enum:
                             - ''
                           type: string
@@ -253718,6 +254046,21 @@ paths:
                                 account_funding:
                                   anyOf:
                                     - properties:
+                                        merchant_of_record:
+                                          description: >-
+                                            The merchant of record for this account
+                                            funding transaction. Can only be set
+                                            when creating a PaymentIntent.
+                                          enum:
+                                            - stripe
+                                          type: string
+                                          x-stripeEnum:
+                                            kind: open
+                                            values:
+                                              - description: >-
+                                                  Stripe is the merchant of record for
+                                                  this account funding transaction.
+                                                value: stripe
                                         sender_details:
                                           anyOf:
                                             - properties:
@@ -253826,6 +254169,7 @@ paths:
                                         payment_details_money_services_account_funding
                                       type: object
                                       x-stripeMostCommon:
+                                        - merchant_of_record
                                         - sender_details
                                     - enum:
                                         - ''
@@ -255243,6 +255587,7 @@ paths:
                         - account_holder_type
                         - account_number
                         - account_type
+                        - external_token
                         - financial_connections_account
                         - routing_number
                         - token
@@ -255917,6 +256262,7 @@ paths:
                             - setup_future_usage
                             - target_date
                             - verification_method
+                            - verification_options
                         - enum:
                             - ''
                           type: string
@@ -277308,6 +277654,7 @@ paths:
                     - account_holder_type
                     - account_number
                     - account_type
+                    - external_token
                     - financial_connections_account
                     - routing_number
                     - token
@@ -278021,8 +278368,8 @@ paths:
               properties:
                 collects_on:
                   description: >-
-                    The invoice(s) this payment plan collects on. Currently must
-                    contain exactly one invoice entry.
+                    The invoices this payment plan collects on. It must contain
+                    exactly one invoice entry.
                   items:
                     properties:
                       invoice_details:
@@ -278040,7 +278387,7 @@ paths:
                           - invoice
                       type:
                         description: >-
-                          The type of object this plan collects on. Currently
+                          The type of object this plan collects on. This is
                           always `invoice_details`.
                         enum:
                           - invoice_details
@@ -278080,12 +278427,12 @@ paths:
                     amounts_due:
                       description: >-
                         Required when type is 'amounts_due'. Must contain at
-                        least 2 installment entries.
+                        least two installment entries.
                       properties:
                         amounts:
                           description: >-
                             The list of installment entries. Must contain at
-                            least 2 entries.
+                            least two entries.
                           items:
                             properties:
                               description:
@@ -278193,9 +278540,7 @@ paths:
                       x-stripeMostCommon:
                         - amounts
                     type:
-                      description: >-
-                        The schedule type. Currently only 'amounts_due' is
-                        supported.
+                      description: The schedule type. It only supports 'amounts_due'.
                       enum:
                         - amounts_due
                       type: string
@@ -278334,12 +278679,12 @@ paths:
                     amounts_due:
                       description: >-
                         Required when type is 'amounts_due'. Must contain at
-                        least 2 installment entries.
+                        least two installment entries.
                       properties:
                         amounts:
                           description: >-
                             The list of installment entries. Must contain at
-                            least 2 entries.
+                            least two entries.
                           items:
                             properties:
                               description:
@@ -278447,9 +278792,7 @@ paths:
                       x-stripeMostCommon:
                         - amounts
                     type:
-                      description: >-
-                        The schedule type. Currently only 'amounts_due' is
-                        supported.
+                      description: The schedule type. It only supports 'amounts_due'.
                       enum:
                         - amounts_due
                       type: string
@@ -285681,6 +286024,7 @@ paths:
                     title: features
                     type: object
                     x-stripeMostCommon:
+                      - loss_message
                       - name
                   type: array
                 metadata:
@@ -286246,6 +286590,7 @@ paths:
                         title: features
                         type: object
                         x-stripeMostCommon:
+                          - loss_message
                           - name
                       type: array
                     - enum:
@@ -302819,6 +303164,7 @@ paths:
                         - account_holder_type
                         - account_number
                         - account_type
+                        - external_token
                         - financial_connections_account
                         - routing_number
                         - token
@@ -303886,6 +304232,7 @@ paths:
                       x-stripeMostCommon:
                         - mandate_options
                         - verification_method
+                        - verification_options
                     stripe_balance:
                       description: >-
                         If this is a `stripe_balance` PaymentMethod, this
@@ -305834,6 +306181,7 @@ paths:
                         - account_holder_type
                         - account_number
                         - account_type
+                        - external_token
                         - financial_connections_account
                         - routing_number
                         - token
@@ -306901,6 +307249,7 @@ paths:
                       x-stripeMostCommon:
                         - mandate_options
                         - verification_method
+                        - verification_options
                     stripe_balance:
                       description: >-
                         If this is a `stripe_balance` PaymentMethod, this
@@ -308768,6 +309117,7 @@ paths:
                         - account_holder_type
                         - account_number
                         - account_type
+                        - external_token
                         - financial_connections_account
                         - routing_number
                         - token
@@ -309835,6 +310185,7 @@ paths:
                       x-stripeMostCommon:
                         - mandate_options
                         - verification_method
+                        - verification_options
                     stripe_balance:
                       description: >-
                         If this is a `stripe_balance` PaymentMethod, this
@@ -322830,10 +323181,16 @@ paths:
                             PaymentIntent.
                         sepa_debit:
                           anyOf:
-                            - properties: {}
+                            - properties:
+                                debit_behavior:
+                                  description: >-
+                                    Controls when the funds will be captured
+                                    from the customer's account.
+                                  type: string
                               title: subscription_payment_method_options_param
                               type: object
                               x-stripeMostCommon:
+                                - debit_behavior
                                 - verification_method
                             - enum:
                                 - ''
@@ -325921,10 +326278,16 @@ paths:
                             PaymentIntent.
                         sepa_debit:
                           anyOf:
-                            - properties: {}
+                            - properties:
+                                debit_behavior:
+                                  description: >-
+                                    Controls when the funds will be captured
+                                    from the customer's account.
+                                  type: string
                               title: subscription_payment_method_options_param
                               type: object
                               x-stripeMostCommon:
+                                - debit_behavior
                                 - verification_method
                             - enum:
                                 - ''
@@ -340136,6 +340499,7 @@ paths:
                         - account_holder_type
                         - account_number
                         - account_type
+                        - external_token
                         - financial_connections_account
                         - routing_number
                         - token
@@ -354330,6 +354694,7 @@ paths:
                         - account_holder_type
                         - account_number
                         - account_type
+                        - external_token
                         - financial_connections_account
                         - routing_number
                         - token
