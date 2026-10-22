@@ -164,6 +164,7 @@ case "$MODE" in
   all)
     download_ga
     download_public_preview
+    download_private_preview
     ;;
   *)
     echo "Unknown OpenAPI sync mode: $MODE" >&2

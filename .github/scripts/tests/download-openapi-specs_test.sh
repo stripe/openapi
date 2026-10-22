@@ -63,13 +63,22 @@ mkdir -p "$canary_dir"
   cd "$canary_dir"
   GITHUB_ENV="$canary_dir/github-env" \
     MOCK_CURL_LOG="$canary_dir/curl.log" \
-    "$DOWNLOAD_SCRIPT" 2026-10-01.clover public_preview true canary
+    "$DOWNLOAD_SCRIPT" 2026-10-01.clover all true canary
 )
 
+test -f "$canary_dir/openapi/canary/ga/spec3.sdk.json"
+test -f "$canary_dir/openapi/canary/ga/fixtures3.json"
+test -f "$canary_dir/openapi/canary/ga/sdk.json"
 test -f "$canary_dir/openapi/canary/beta/spec3.beta.sdk.json"
 test -f "$canary_dir/openapi/canary/beta/fixtures3.beta.json"
 test -f "$canary_dir/openapi/canary/beta/sdk.json"
+test -f "$canary_dir/openapi/canary/private-preview/spec3.private_preview.sdk.json"
+test -f "$canary_dir/openapi/canary/private-preview/fixtures3.private_preview.json"
+test -f "$canary_dir/openapi/canary/private-preview/sdk.json"
+grep -q '/2026-10-01\.clover/ga/canary/sdk\.json$' "$canary_dir/curl.log"
 grep -q '/2026-10-01\.clover/public_preview/canary/sdk\.json$' "$canary_dir/curl.log"
+grep -q '/2026-10-01\.clover/private_preview/canary/unified_spec3\.private_preview\.sdk\.json$' \
+  "$canary_dir/curl.log"
 
 private_preview_dir="$TEST_ROOT/private-preview"
 mkdir -p "$private_preview_dir"
