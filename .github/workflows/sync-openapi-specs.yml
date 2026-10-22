@@ -1,0 +1,112 @@
+name: Sync OpenAPI Specs
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      mode:
+        required: true
+        type: string
+      unified:
+        required: false
+        type: boolean
+        default: false
+      run_mode:
+        required: false
+        type: string
+        default: dry_run
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version name (e.g., 2026-07-08.preview)'
+        required: true
+        type: string
+      mode:
+        description: 'Which spec channel to synchronize'
+        required: true
+        type: choice
+        default: private_preview
+        options:
+          - private_preview
+          - public_preview
+          - ga
+          - all
+      unified:
+        description: 'Synchronize unified specs and use them for SDK generation'
+        required: false
+        type: boolean
+        default: false
+      run_mode:
+        description: 'Validate only, push a test branch, or publish a release'
+        required: true
+        type: choice
+        default: dry_run
+        options:
+          - dry_run
+          - test
+          - release
+
+permissions: {}
+
+concurrency:
+  group: sync-openapi-specs
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Validate inputs
+        env:
+          MODE: ${{ inputs.mode }}
+          RUN_MODE: ${{ inputs.run_mode }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          [[ "$MODE" =~ ^(private_preview|public_preview|ga|all)$ ]] || {
+            echo "::error::Unknown mode: $MODE"
+            exit 1
+          }
+          [[ "$RUN_MODE" =~ ^(dry_run|test|release)$ ]] || {
+            echo "::error::Unknown run mode: $RUN_MODE"
+            exit 1
+          }
+          [[ "$VERSION" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || {
+            echo "::error::Invalid version name: $VERSION"
+            exit 1
+          }
+
+      - name: Fetch app installation token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: gh-api-token
+        with:
+          app-id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
+          private-key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Checkout openapi
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ steps.gh-api-token.outputs.token }}
+          ref: master
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Download specs from CDN
+        env:
+          MODE: ${{ inputs.mode }}
+          UNIFIED: ${{ inputs.unified }}
+          VERSION: ${{ inputs.version }}
+        run: .github/scripts/download-openapi-specs.sh "$VERSION" "$MODE" "$UNIFIED"
+
+      - name: Commit specs, generate diffs, and publish
+        env:
+          MODE: ${{ inputs.mode }}
+          RUN_MODE: ${{ inputs.run_mode }}
+          UNIFIED: ${{ inputs.unified }}
+          VERSION: ${{ inputs.version }}
+        run: .github/scripts/sync-openapi-specs.sh
