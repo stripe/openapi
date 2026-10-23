@@ -20,11 +20,6 @@ case "$RUN_MODE" in
     echo "Dry run: validated ${CHANNEL} canary artifacts without pushing."
     git status --short -- openapi/canary
     ;;
-  test)
-    test_branch="test/sync-openapi-canary/${CHANNEL}"
-    echo "Test mode: force-pushing ${test_branch}."
-    git push --force origin "HEAD:refs/heads/${test_branch}"
-    ;;
   publish)
     if [[ "$(git rev-parse HEAD)" == "$(git rev-parse origin/master)" ]]; then
       echo "No canary commit to push."
