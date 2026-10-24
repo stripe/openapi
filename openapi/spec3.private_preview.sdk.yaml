@@ -8311,10 +8311,17 @@ components:
             - spend_threshold
             - usage_threshold
           type: string
+        billing_group:
+          description: >-
+            The billing group associated with this notification. Only present
+            for spend threshold alerts grouped by billing group.
+          maxLength: 5000
+          nullable: true
+          type: string
         cadence:
           description: >-
-            The billing cadence associated with this notification. Only present
-            for spend threshold alerts grouped by billing cadence.
+            The cadence associated with this notification. Only present for
+            spend threshold alerts grouped by cadence.
           maxLength: 5000
           nullable: true
           type: string
@@ -8392,6 +8399,7 @@ components:
         - aggregation_period_start
         - alert
         - alert_type
+        - billing_group
         - cadence
         - currency
         - customer
@@ -8414,6 +8422,7 @@ components:
         - aggregation_period_start
         - alert
         - alert_type
+        - billing_group
         - cadence
         - currency
         - custom_pricing_unit
@@ -87030,8 +87039,7 @@ components:
         failure_code:
           description: >-
             Error code that provides a reason for a payout failure, if
-            available. View our [list of failure
-            codes](https://docs.stripe.com/api#payout_failures).
+            available.
           maxLength: 5000
           nullable: true
           type: string
@@ -118410,6 +118418,11 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        billing_group:
+          description: The billing group ID, populated when type is `billing_group`
+          maxLength: 5000
+          nullable: true
+          type: string
         pricing_plan_subscription:
           description: >-
             The pricing plan subscription ID, populated when type is
@@ -118426,14 +118439,13 @@ components:
           x-stripeEnum:
             kind: open
             values:
-              - description: The alert notification was grouped by billing cadence.
+              - description: Aggregate spend by billing cadence.
                 value: billing_cadence
-              - description: >-
-                  The alert notification was grouped by pricing plan
-                  subscription.
+              - description: Aggregate spend by pricing plan subscription.
                 value: pricing_plan_subscription
       required:
         - billing_cadence
+        - billing_group
         - pricing_plan_subscription
         - type
       title: ThresholdsResourceAlertNotificationGroupBy
@@ -118441,6 +118453,7 @@ components:
       x-expandableFields: []
       x-stripeMostCommon:
         - billing_cadence
+        - billing_group
         - pricing_plan_subscription
         - type
     thresholds_resource_amount:
@@ -118601,7 +118614,7 @@ components:
             values:
               - description: >-
                   Use `billing` to aggregate spend over the current billing
-                  period of the billing cadence.
+                  period of the billing group.
                 value: billing
         filters:
           anyOf:
@@ -118618,11 +118631,9 @@ components:
           x-stripeEnum:
             kind: open
             values:
-              - description: Use `billing_cadence` to aggregate spend by billing cadence.
+              - description: Aggregate spend by billing cadence.
                 value: billing_cadence
-              - description: >-
-                  Use `pricing_plan_subscription` to aggregate spend by
-                  individual pricing plan subscription.
+              - description: Aggregate spend by pricing plan subscription.
                 value: pricing_plan_subscription
         gte:
           $ref: '#/components/schemas/thresholds_resource_spend_threshold_gte'
@@ -118650,6 +118661,11 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        billing_group:
+          description: Filter by billing group ID.
+          maxLength: 5000
+          nullable: true
+          type: string
         pricing_plan:
           description: Filter by pricing plan ID.
           maxLength: 5000
@@ -118662,6 +118678,7 @@ components:
           type: string
       required:
         - billing_cadence
+        - billing_group
         - pricing_plan
         - pricing_plan_subscription
       title: Spend threshold filter
@@ -118670,6 +118687,7 @@ components:
       x-stableId: spend_threshold_filter
       x-stripeMostCommon:
         - billing_cadence
+        - billing_group
         - pricing_plan
         - pricing_plan_subscription
     thresholds_resource_spend_threshold_gte:
@@ -124285,7 +124303,7 @@ info:
   termsOfService: https://stripe.com/us/terms/
   title: Stripe API
   version: >-
-    2026-10-14.preview; embedded_connect_beta=v2;
+    2026-10-28.preview; embedded_connect_beta=v2;
     server_side_confirmation_beta=v1; orders_beta=v4; unified_accounts_beta=v1;
     terminal_collect_inputs_beta=v2; terminal_collect_confirm_beta=v1;
     retrieve_tax_forms_beta=v1; checkout_server_update_beta=v1;
@@ -128002,6 +128020,7 @@ paths:
                     - agentic_facilitated_payments
                     - agentic_payments
                     - alipay_payments
+                    - alipay_plus_in_person_payments
                     - alma_payments
                     - amazon_pay_payments
                     - app_distribution
@@ -132362,6 +132381,7 @@ paths:
                     - agentic_facilitated_payments
                     - agentic_payments
                     - alipay_payments
+                    - alipay_plus_in_person_payments
                     - alma_payments
                     - amazon_pay_payments
                     - app_distribution
@@ -140628,7 +140648,7 @@ paths:
                         values:
                           - description: >-
                               Use `billing` to aggregate spend over the current
-                              billing period of the billing cadence.
+                              billing period of the billing group.
                             value: billing
                     filters:
                       description: Filters to scope the spend calculation.
@@ -140645,6 +140665,10 @@ paths:
                           description: Filter by billing cadence ID.
                           maxLength: 256
                           type: string
+                        billing_group:
+                          description: Filter by billing group ID.
+                          maxLength: 256
+                          type: string
                         pricing_plan:
                           description: Filter by pricing plan ID.
                           maxLength: 256
@@ -140658,6 +140682,7 @@ paths:
                       x-stripeMostCommon:
                         - billable_items
                         - billing_cadence
+                        - billing_group
                         - pricing_plan
                         - pricing_plan_subscription
                     group_by:
@@ -140671,13 +140696,9 @@ paths:
                       x-stripeEnum:
                         kind: open
                         values:
-                          - description: >-
-                              Use `billing_cadence` to aggregate spend by
-                              billing cadence.
+                          - description: Aggregate spend by billing cadence.
                             value: billing_cadence
-                          - description: >-
-                              Use `pricing_plan_subscription` to aggregate spend
-                              by individual pricing plan subscription.
+                          - description: Aggregate spend by pricing plan subscription.
                             value: pricing_plan_subscription
                     gte:
                       description: Defines at which value the alert will fire.
@@ -141067,7 +141088,16 @@ paths:
           x-stripeLessCommon: true
         - description: >-
             Filter results to only include notifications for the given billing
-            cadence.
+            group.
+          in: query
+          name: billing_group
+          required: false
+          schema:
+            maxLength: 5000
+            type: string
+          style: form
+          x-stripeLessCommon: true
+        - description: Filter results to only include notifications for the given cadence.
           in: query
           name: cadence
           required: false
