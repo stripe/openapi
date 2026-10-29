@@ -21,7 +21,7 @@ case "$MODE" in
     FIXTURE_MSG="Update fixture data for GA"
     TAG_MSG="This release includes changes to the GA spec."
     ;;
-  all)
+  ga_and_public_preview)
     SPEC_MSG="Update OpenAPI specification for GA and public preview"
     FIXTURE_MSG="Update fixture data for GA and public preview"
     TAG_MSG="This release includes changes to the GA and public preview specs."
