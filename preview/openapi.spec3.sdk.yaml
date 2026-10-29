@@ -1146,7 +1146,7 @@ paths:
                       - enabled
                       - features
                     notification_banner:
-                      title: account_config_param
+                      title: notification_banner_config_param
                       required:
                       - enabled
                       type: object
@@ -1155,7 +1155,7 @@ paths:
                           type: boolean
                           description: Whether the embedded component is enabled.
                         features:
-                          title: account_features_param
+                          title: notification_banner_features_param
                           type: object
                           properties:
                             disable_stripe_user_authentication:
@@ -1179,6 +1179,7 @@ paths:
                           description: The list of features enabled in the embedded
                             component.
                           x-stripeMostCommon:
+                          - compliance_and_risk_task_management
                           - disable_stripe_user_authentication
                           - external_account_collection
                       description: "Configuration for the [notification banner](/connect/supported-embedded-components/notification-banner/)\
@@ -3324,6 +3325,7 @@ paths:
                   - agentic_facilitated_payments
                   - agentic_payments
                   - alipay_payments
+                  - alipay_plus_in_person_payments
                   - alma_payments
                   - amazon_pay_payments
                   - app_distribution
@@ -3466,6 +3468,7 @@ paths:
                   - sepa_debit_payments
                   - sequra_payments
                   - sezzle_payments
+                  - shop_pay_balance_payments
                   - shop_pay_payments
                   - shopeepay_payments
                   - skip_the_dishes
@@ -7116,6 +7119,7 @@ paths:
                   - agentic_facilitated_payments
                   - agentic_payments
                   - alipay_payments
+                  - alipay_plus_in_person_payments
                   - alma_payments
                   - amazon_pay_payments
                   - app_distribution
@@ -7258,6 +7262,7 @@ paths:
                   - sepa_debit_payments
                   - sequra_payments
                   - sezzle_payments
+                  - shop_pay_balance_payments
                   - shop_pay_payments
                   - shopeepay_payments
                   - skip_the_dishes
@@ -67149,6 +67154,7 @@ paths:
         x-stripeLessCommon: true
       - name: payment_method
         in: query
+        description: The ID of the payment method whose mandates you want to retrieve.
         required: true
         style: form
         explode: true
@@ -84942,6 +84948,7 @@ paths:
                   - sepa_debit
                   - sequra
                   - sezzle
+                  - shop_pay_balance
                   - shopeepay
                   - sofort
                   - stripe_balance
@@ -94998,6 +95005,7 @@ paths:
                   - sepa_debit
                   - sequra
                   - sezzle
+                  - shop_pay_balance
                   - shopeepay
                   - sofort
                   - stripe_balance
@@ -108011,6 +108019,7 @@ paths:
                   - sepa_debit
                   - sequra
                   - sezzle
+                  - shop_pay_balance
                   - shopeepay
                   - sofort
                   - stripe_balance
@@ -135164,6 +135173,7 @@ paths:
                   - has_charge_last_60d
                   - has_charge_last_90d
                   - has_click_id
+                  - has_discount
                   - has_disputes
                   - has_negative_earnings_from_transfers
                   - has_payment_activity_last_30d
@@ -135353,6 +135363,7 @@ paths:
                   - refund_status
                   - refund_volume
                   - regions
+                  - registration_type
                   - rejected_by
                   - rejected_on
                   - rejected_reason
@@ -138427,6 +138438,7 @@ paths:
                       x-stripeMostCommon:
                       - mandate_options
                       - verification_method
+                      - verification_options
                     bizum:
                       title: setup_intent_payment_method_options_param
                       type: object
@@ -141012,6 +141024,7 @@ paths:
                       x-stripeMostCommon:
                       - mandate_options
                       - verification_method
+                      - verification_options
                     bizum:
                       title: setup_intent_payment_method_options_param
                       type: object
@@ -143533,6 +143546,7 @@ paths:
                       x-stripeMostCommon:
                       - mandate_options
                       - verification_method
+                      - verification_options
                     bizum:
                       title: setup_intent_payment_method_options_param
                       type: object
@@ -208637,6 +208651,7 @@ paths:
                     the SQL (without any prefix). Omit this field for a non-parameterized query.
                     Values are strings, integers, or booleans. Fractional numbers, timestamps,
                     and dates should be passed as strings.
+                  x-stripeNotPublic: true
                 query:
                   type: object
                   properties:
@@ -212621,9 +212636,12 @@ paths:
               schema:
                 oneOf:
                 - $ref: '#/components/schemas/v2.error.already_exists'
+                - $ref: '#/components/schemas/v2.error.capability_not_active'
                 - $ref: '#/components/schemas/v2.error.financial_account_capability_not_enabled'
                 - $ref: '#/components/schemas/v2.error.financial_account_capability_restricted'
                 - $ref: '#/components/schemas/v2.error.financial_account_crypto_currency_network_unsupported'
+                - $ref: '#/components/schemas/v2.error.financial_account_demand_deposit_account_unsupported_currency'
+                - $ref: '#/components/schemas/v2.error.financial_account_demand_deposit_account_unsupported_funds_usage_type'
                 - $ref: '#/components/schemas/v2.error.financial_account_open_limit'
                 - $ref: '#/components/schemas/v2.error.idempotency_error'
                 - $ref: '#/components/schemas/v2.error.not_found'
@@ -212674,6 +212692,9 @@ paths:
         description: The resource already exists.
         httpStatusCode: 400
         type: already_exists
+      - code: capability_not_active
+        description: The account is missing capabilities required for this request.
+        httpStatusCode: 400
       - code: financial_account_capability_not_enabled
         description: Error thrown when attempting to add currencies that require capabilities
           that are not enabled.
@@ -212685,6 +212706,14 @@ paths:
       - code: financial_account_crypto_currency_network_unsupported
         description: The requested crypto currency and network combination is not
           supported.
+        httpStatusCode: 400
+      - code: financial_account_demand_deposit_account_unsupported_currency
+        description: The requested currencies are not supported for demand deposit
+          account-backed FinancialAccounts.
+        httpStatusCode: 400
+      - code: financial_account_demand_deposit_account_unsupported_funds_usage_type
+        description: The requested funds usage type is not supported for demand deposit
+          account-backed FinancialAccounts.
         httpStatusCode: 400
       - code: financial_account_open_limit
         description: The account has reached its limit on open FinancialAccounts.
@@ -212904,11 +212933,13 @@ paths:
             application/json:
               schema:
                 oneOf:
+                - $ref: '#/components/schemas/v2.error.capability_not_active'
                 - $ref: '#/components/schemas/v2.error.financial_account_capability_not_enabled'
                 - $ref: '#/components/schemas/v2.error.financial_account_capability_restricted'
                 - $ref: '#/components/schemas/v2.error.financial_account_crypto_currency_network_unsupported'
                 - $ref: '#/components/schemas/v2.error.financial_account_crypto_custody_model_immutable'
                 - $ref: '#/components/schemas/v2.error.financial_account_crypto_network_immutable'
+                - $ref: '#/components/schemas/v2.error.financial_account_demand_deposit_account_unsupported_currency'
                 - $ref: '#/components/schemas/v2.error.financial_account_exportable_balances_forwarding_immutable'
                 - $ref: '#/components/schemas/v2.error.financial_account_operation_unsupported_for_type'
                 - $ref: '#/components/schemas/v2.error.financial_account_remove_currency_unsupported'
@@ -212955,6 +212986,9 @@ paths:
             - usd
           type: storage
       x-stripeErrors:
+      - code: capability_not_active
+        description: The account is missing capabilities required for this request.
+        httpStatusCode: 400
       - code: financial_account_capability_not_enabled
         description: Error thrown when attempting to add currencies that require capabilities
           that are not enabled.
@@ -212972,6 +213006,10 @@ paths:
         httpStatusCode: 400
       - code: financial_account_crypto_network_immutable
         description: A currency's configured crypto storage network is immutable.
+        httpStatusCode: 400
+      - code: financial_account_demand_deposit_account_unsupported_currency
+        description: The requested currencies are not supported for demand deposit
+          account-backed FinancialAccounts.
         httpStatusCode: 400
       - code: financial_account_exportable_balances_forwarding_immutable
         description: Exportable-balance forwarding cannot be changed from false to
@@ -251181,12 +251219,17 @@ components:
     insights_resources_payment_evaluation_signals:
       title: Payment Evaluation Signal
       required:
+      - early_fraud_warning
       - fraudulent_dispute
       - fraudulent_payment
       type: object
       properties:
         early_fraud_warning:
-          $ref: '#/components/schemas/insights_resources_payment_evaluation_signal_v2'
+          description: The likelihood that this `PaymentEvaluation` results in an
+            early fraud warning.
+          nullable: true
+          anyOf:
+          - $ref: '#/components/schemas/insights_resources_payment_evaluation_signal_v2'
         fraudulent_dispute:
           description: The likelihood that this `PaymentEvaluation` results in a dispute
             with reason code `fraudulent`.
@@ -287486,7 +287529,7 @@ components:
           maxLength: 5000
           type: string
           description: "Error code that provides a reason for a payout failure, if\
-            \ available. View our [list of failure codes](https://docs.stripe.com/api#payout_failures)."
+            \ available."
           nullable: true
         failure_message:
           maxLength: 5000
@@ -401949,6 +401992,49 @@ components:
       x-stripeError:
         code: capability_cannot_be_unrequested_due_to_other_capability_requirement
         httpStatusCode: 400
+    v2.error.capability_not_active:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - capabilities
+          - code
+          - message
+          type: object
+          properties:
+            capabilities:
+              type: array
+              description: The capabilities that must be active for this request.
+              items:
+                required:
+                - capability
+                - configuration
+                type: object
+                properties:
+                  capability:
+                    type: string
+                    description: "The capability name, for example `business_storage.outbound.usd`."
+                  configuration:
+                    type: string
+                    description: "The Account configuration the capability belongs\
+                      \ to, for example `money_manager`."
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - capability_not_active
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+          description: Information about the error that occurred
+      description: The account is missing capabilities required for this request.
+      x-stripeError:
+        code: capability_not_active
+        httpStatusCode: 400
     v2.error.capability_not_available_for_dashboard_type:
       required:
       - error
@@ -403885,6 +403971,60 @@ components:
       description: A currency's configured crypto storage network is immutable.
       x-stripeError:
         code: financial_account_crypto_network_immutable
+        httpStatusCode: 400
+    v2.error.financial_account_demand_deposit_account_unsupported_currency:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - message
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - financial_account_demand_deposit_account_unsupported_currency
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+          description: Information about the error that occurred
+      description: The requested currencies are not supported for demand deposit account-backed
+        FinancialAccounts.
+      x-stripeError:
+        code: financial_account_demand_deposit_account_unsupported_currency
+        httpStatusCode: 400
+    v2.error.financial_account_demand_deposit_account_unsupported_funds_usage_type:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - message
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - financial_account_demand_deposit_account_unsupported_funds_usage_type
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+          description: Information about the error that occurred
+      description: The requested funds usage type is not supported for demand deposit
+        account-backed FinancialAccounts.
+      x-stripeError:
+        code: financial_account_demand_deposit_account_unsupported_funds_usage_type
         httpStatusCode: 400
     v2.error.financial_account_exportable_balances_forwarding_immutable:
       required:
