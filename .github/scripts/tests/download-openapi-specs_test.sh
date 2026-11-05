@@ -120,6 +120,22 @@ mkdir -p "$optional_dir"
 )
 test ! -e "$optional_dir/openapi/fixtures3.json"
 
+existing_release_fixture_dir="$TEST_ROOT/existing-release-fixture"
+mkdir -p "$existing_release_fixture_dir/openapi"
+printf 'existing fixture\n' > "$existing_release_fixture_dir/openapi/fixtures3.json"
+printf 'old fixture\n' > "$existing_release_fixture_dir/openapi/fixtures3.yaml"
+(
+  cd "$existing_release_fixture_dir"
+  GITHUB_ENV="$existing_release_fixture_dir/github-env" \
+    MOCK_CURL_LOG="$existing_release_fixture_dir/curl.log" \
+    MOCK_CURL_FAILURE=fixtures3.json \
+    "$DOWNLOAD_SCRIPT" 2026-10-01.clover ga false
+)
+test "$(cat "$existing_release_fixture_dir/openapi/fixtures3.json")" = 'existing fixture'
+grep -Fxq 'https://b.stripecdn.com/api-artifacts/assets/openapi/2026-10-01.clover/ga/fixtures3.yaml' \
+  "$existing_release_fixture_dir/openapi/fixtures3.yaml"
+grep -Fxq 'FIXTURE_FILES=openapi/fixtures3.yaml ' "$existing_release_fixture_dir/github-env"
+
 missing_canary_fixtures_dir="$TEST_ROOT/missing-canary-fixtures"
 mkdir -p "$missing_canary_fixtures_dir"
 (
