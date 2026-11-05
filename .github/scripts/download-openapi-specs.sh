@@ -50,7 +50,7 @@ download_required() {
   SPEC_FILES+=("$destination")
 }
 
-download_optional() {
+download_fixture() {
   local source=$1
   local destination=$2
   local temporary_file
@@ -74,10 +74,10 @@ download_ga() {
   download_required \
     "ga/spec3.sdk.json" \
     "$(destination_path "ga/spec3.sdk.json" "openapi/spec3.sdk.json" "$channel")"
-  download_optional \
+  download_fixture \
     "ga/fixtures3.yaml" \
     "$(destination_path "ga/fixtures3.yaml" "openapi/fixtures3.yaml" "$channel")"
-  download_optional \
+  download_fixture \
     "ga/fixtures3.json" \
     "$(destination_path "ga/fixtures3.json" "openapi/fixtures3.json" "$channel")"
 
@@ -99,10 +99,10 @@ download_public_preview() {
   download_required \
     "public_preview/spec3.beta.sdk.json" \
     "$(destination_path "public_preview/spec3.beta.sdk.json" "openapi/spec3.beta.sdk.json" "$channel")"
-  download_optional \
+  download_fixture \
     "public_preview/fixtures3.beta.yaml" \
     "$(destination_path "public_preview/fixtures3.beta.yaml" "openapi/fixtures3.beta.yaml" "$channel")"
-  download_optional \
+  download_fixture \
     "public_preview/fixtures3.beta.json" \
     "$(destination_path "public_preview/fixtures3.beta.json" "openapi/fixtures3.beta.json" "$channel")"
 
@@ -124,10 +124,10 @@ download_private_preview() {
   download_required \
     "private_preview/spec3.private_preview.sdk.json" \
     "$(destination_path "private_preview/spec3.private_preview.sdk.json" "openapi/spec3.private_preview.sdk.json" "$channel")"
-  download_optional \
+  download_fixture \
     "private_preview/fixtures3.private_preview.yaml" \
     "$(destination_path "private_preview/fixtures3.private_preview.yaml" "openapi/fixtures3.private_preview.yaml" "$channel")"
-  download_optional \
+  download_fixture \
     "private_preview/fixtures3.private_preview.json" \
     "$(destination_path "private_preview/fixtures3.private_preview.json" "openapi/fixtures3.private_preview.json" "$channel")"
 
