@@ -6176,6 +6176,21 @@
           "status"
         ]
       },
+      "bacs_debit_financial_connections_options": {
+        "description": "",
+        "properties": {
+          "return_url": {
+            "maxLength": 5000,
+            "type": "string"
+          }
+        },
+        "title": "bacs_debit_financial_connections_options",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "return_url"
+        ]
+      },
       "balance": {
         "description": "This is an object representing your Stripe balance. You can retrieve it to see\nthe balance currently on your Stripe account.\n\nThe top-level `available` and `pending` comprise your \"payments balance.\"\n\nRelated guide: [Balances and settlement time](https://docs.stripe.com/payments/balances), [Understanding Connect account balances](https://docs.stripe.com/connect/account-balances)",
         "properties": {
@@ -17370,10 +17385,28 @@
             "description": "Transaction type of the mandate.",
             "enum": [
               "business",
+              "buyer_choice",
               "personal"
             ],
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "description": "Transactions are made for business reasons",
+                  "value": "business"
+                },
+                {
+                  "description": "Let the buyer choose Personal or Business in Checkout. Personal is initially selected. Sessions return this value until the buyer's selection is saved.",
+                  "value": "buyer_choice"
+                },
+                {
+                  "description": "Transactions are made for personal reasons",
+                  "value": "personal"
+                }
+              ]
+            }
           }
         },
         "required": [
@@ -18652,6 +18685,14 @@
       "checkout_paypay_payment_method_options": {
         "description": "",
         "properties": {
+          "setup_future_usage": {
+            "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf you provide a Customer with the PaymentIntent, you can use this parameter to [attach the payment method](/payments/save-during-payment) to the Customer after the PaymentIntent is confirmed and the customer completes any required actions. If you don't provide a Customer, you can still [attach](/api/payment_methods/attach) the payment method to a Customer after the transaction completes.\n\nIf the payment method is `card_present` and isn't a digital wallet, Stripe creates and attaches a [generated_card](/api/charges/object#charge_object-payment_method_details-card_present-generated_card) payment method representing the card to the Customer instead.\n\nWhen processing card payments, Stripe uses `setup_future_usage` to help you comply with regional legislation and network rules, such as [SCA](/strong-customer-authentication).",
+            "enum": [
+              "none",
+              "off_session"
+            ],
+            "type": "string"
+          },
           "subscription_reference": {
             "description": "A reference to the merchant subscription this payment corresponds to.",
             "maxLength": 5000,
@@ -18663,6 +18704,7 @@
         "type": "object",
         "x-expandableFields": [],
         "x-stripeMostCommon": [
+          "setup_future_usage",
           "subscription_reference"
         ]
       },
@@ -20957,6 +20999,9 @@
           "acss_debit": {
             "$ref": "#/components/schemas/payment_method_acss_debit"
           },
+          "aeon_pay": {
+            "$ref": "#/components/schemas/payment_method_aeon_pay"
+          },
           "affirm": {
             "$ref": "#/components/schemas/payment_method_affirm"
           },
@@ -20983,6 +21028,9 @@
           },
           "au_becs_debit": {
             "$ref": "#/components/schemas/payment_method_au_becs_debit"
+          },
+          "au_pay": {
+            "$ref": "#/components/schemas/payment_method_au_pay"
           },
           "bacs_debit": {
             "$ref": "#/components/schemas/payment_method_bacs_debit"
@@ -21099,6 +21147,9 @@
           "mb_way": {
             "$ref": "#/components/schemas/payment_method_mb_way"
           },
+          "merpay": {
+            "$ref": "#/components/schemas/payment_method_merpay"
+          },
           "mobilepay": {
             "$ref": "#/components/schemas/payment_method_mobilepay"
           },
@@ -21199,12 +21250,14 @@
             "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
             "enum": [
               "acss_debit",
+              "aeon_pay",
               "affirm",
               "afterpay_clearpay",
               "alipay",
               "alma",
               "amazon_pay",
               "au_becs_debit",
+              "au_pay",
               "bacs_debit",
               "bancontact",
               "billie",
@@ -21235,6 +21288,7 @@
               "kr_card",
               "link",
               "mb_way",
+              "merpay",
               "mobilepay",
               "multibanco",
               "naver_pay",
@@ -21306,12 +21360,14 @@
         "type": "object",
         "x-expandableFields": [
           "acss_debit",
+          "aeon_pay",
           "affirm",
           "afterpay_clearpay",
           "alipay",
           "alma",
           "amazon_pay",
           "au_becs_debit",
+          "au_pay",
           "bacs_debit",
           "bancontact",
           "billie",
@@ -21343,6 +21399,7 @@
           "kr_card",
           "link",
           "mb_way",
+          "merpay",
           "mobilepay",
           "multibanco",
           "naver_pay",
@@ -28483,13 +28540,12 @@
             "description": "The reason the customer is exempt.",
             "enum": [
               "direct_pay_permit",
-              "government",
-              "non_profit",
-              "other",
-              "resale"
+              "legacy_contract",
+              "other"
             ],
             "nullable": true,
             "type": "string",
+            "x-stripeBypassValidation": true,
             "x-stripeEnum": {
               "kind": "open",
               "values": [
@@ -28498,20 +28554,12 @@
                   "value": "direct_pay_permit"
                 },
                 {
-                  "description": "The customer is a government entity.",
-                  "value": "government"
-                },
-                {
-                  "description": "The customer is a non-profit organization.",
-                  "value": "non_profit"
+                  "description": "The purchase was contracted before a tax law took effect, so the exemption covers it.",
+                  "value": "legacy_contract"
                 },
                 {
                   "description": "Another reason, described in `reason_details.other.reason_text`.",
                   "value": "other"
-                },
-                {
-                  "description": "The customer is purchasing for resale.",
-                  "value": "resale"
                 }
               ]
             }
@@ -32668,6 +32716,48 @@
         "x-stripeResource": {
           "class_name": "DeletedSubscriptionItem",
           "in_package": ""
+        }
+      },
+      "deleted_tax.certificate": {
+        "description": "",
+        "properties": {
+          "deleted": {
+            "description": "Always true for a deleted object",
+            "enum": [
+              true
+            ],
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Unique identifier for the object.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "object": {
+            "description": "String representing the object's type. Objects of the same type share the same value.",
+            "enum": [
+              "tax.certificate"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "deleted",
+          "id",
+          "object"
+        ],
+        "title": "TaxCertificatesResourceDeleted",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-resourceId": "deleted_tax.certificate",
+        "x-stripeMostCommon": [
+          "deleted",
+          "id",
+          "object"
+        ],
+        "x-stripeResource": {
+          "class_name": "DeletedCertificate",
+          "in_package": "Tax"
         }
       },
       "deleted_tax_id": {
@@ -44225,9 +44315,19 @@
             "description": "Describes the type of money movement.",
             "enum": [
               "card",
+              "sepa_debit",
               "us_bank_account"
             ],
             "type": "string"
+          },
+          "sepa_debit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/insights_resources_payment_evaluation_money_movement_sepa_debit"
+              }
+            ],
+            "description": "Describes SEPA debit money movement details.",
+            "nullable": true
           },
           "us_bank_account": {
             "anyOf": [
@@ -44247,12 +44347,34 @@
         "type": "object",
         "x-expandableFields": [
           "card",
+          "sepa_debit",
           "us_bank_account"
         ],
         "x-stripeMostCommon": [
           "card",
           "money_movement_type",
+          "sepa_debit",
           "us_bank_account"
+        ]
+      },
+      "insights_resources_payment_evaluation_money_movement_sepa_debit": {
+        "description": "Money movement details for a SEPA debit payment.",
+        "properties": {
+          "creditor_id": {
+            "description": "Creditor identifier used for the intended debit.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "creditor_id"
+        ],
+        "title": "Money Movement SEPA Debit",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "creditor_id"
         ]
       },
       "insights_resources_payment_evaluation_money_movement_us_bank_account": {
@@ -44779,6 +44901,15 @@
           "bank_initiated_return": {
             "$ref": "#/components/schemas/insights_resources_payment_evaluation_signal_v2"
           },
+          "card_testing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/insights_resources_payment_evaluation_signal_v2"
+              }
+            ],
+            "description": "The likelihood that this `PaymentEvaluation` is part of a card testing attack.",
+            "nullable": true
+          },
           "early_fraud_warning": {
             "anyOf": [
               {
@@ -44810,12 +44941,14 @@
         "type": "object",
         "x-expandableFields": [
           "bank_initiated_return",
+          "card_testing",
           "early_fraud_warning",
           "fraudulent_dispute",
           "fraudulent_payment"
         ],
         "x-stripeMostCommon": [
           "bank_initiated_return",
+          "card_testing",
           "early_fraud_warning",
           "fraudulent_dispute",
           "fraudulent_payment"
@@ -56570,11 +56703,13 @@
           "business_name",
           "carrier",
           "customs",
+          "delivered_at",
           "eta",
           "name",
           "phone_number",
           "require_signature",
           "service",
+          "shipped_at",
           "status",
           "tracking_number",
           "tracking_url",
@@ -72868,10 +73003,20 @@
       },
       "payment_flows_private_payment_methods_paypay_setup_attempt_details": {
         "description": "",
-        "properties": {},
+        "properties": {
+          "fingerprint": {
+            "description": "Uniquely identifies this particular PayPay account. You can use this attribute to check whether two PayPay accounts are the same.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          }
+        },
         "title": "PaymentFlowsPrivatePaymentMethodsPaypaySetupAttemptDetails",
         "type": "object",
-        "x-expandableFields": []
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "fingerprint"
+        ]
       },
       "payment_flows_private_payment_methods_rechnung_dob": {
         "description": "",
@@ -73041,12 +73186,14 @@
             "items": {
               "enum": [
                 "acss_debit",
+                "aeon_pay",
                 "affirm",
                 "afterpay_clearpay",
                 "alipay",
                 "alma",
                 "amazon_pay",
                 "au_becs_debit",
+                "au_pay",
                 "bacs_debit",
                 "bancontact",
                 "billie",
@@ -73090,6 +73237,7 @@
                 "kriya",
                 "link",
                 "mb_way",
+                "merpay",
                 "mobilepay",
                 "momo",
                 "mondu",
@@ -73301,12 +73449,14 @@
             "items": {
               "enum": [
                 "acss_debit",
+                "aeon_pay",
                 "affirm",
                 "afterpay_clearpay",
                 "alipay",
                 "alma",
                 "amazon_pay",
                 "au_becs_debit",
+                "au_pay",
                 "bacs_debit",
                 "bancontact",
                 "billie",
@@ -73333,6 +73483,7 @@
                 "konbini",
                 "kr_card",
                 "mb_way",
+                "merpay",
                 "mobilepay",
                 "multibanco",
                 "naver_pay",
@@ -75360,7 +75511,7 @@
         "description": "",
         "properties": {
           "arrival_date": {
-            "description": "The timestamp when the microdeposits are expected to land.",
+            "description": "The timestamp when the microdeposits are expected to land. Null for instant microdeposits.",
             "format": "unix-time",
             "type": "integer"
           },
@@ -75970,6 +76121,9 @@
       "payment_intent_payment_method_options_bacs_debit": {
         "description": "",
         "properties": {
+          "financial_connections": {
+            "$ref": "#/components/schemas/bacs_debit_financial_connections_options"
+          },
           "mandate_options": {
             "$ref": "#/components/schemas/payment_intent_payment_method_options_mandate_options_bacs_debit"
           },
@@ -76017,9 +76171,11 @@
         "title": "payment_intent_payment_method_options_bacs_debit",
         "type": "object",
         "x-expandableFields": [
+          "financial_connections",
           "mandate_options"
         ],
         "x-stripeMostCommon": [
+          "financial_connections",
           "mandate_options",
           "setup_future_usage",
           "target_date",
@@ -76129,6 +76285,9 @@
             ],
             "nullable": true,
             "type": "string"
+          },
+          "payment_details": {
+            "$ref": "#/components/schemas/payment_intent_payment_method_options_card_payment_details"
           },
           "request_card_account_update": {
             "description": "Indicates whether Stripe may synchronously request a real-time card account update for this confirmation. `if_available` allows the update; `never` opts out. Defaults to `if_available` and is omitted from the response unless explicitly set on this confirmation. This does not affect batch Card Account Updater.",
@@ -76294,6 +76453,7 @@
           "capture_delay",
           "installments",
           "mandate_options",
+          "payment_details",
           "statement_details"
         ],
         "x-stripeMostCommon": [
@@ -76303,6 +76463,7 @@
           "installments",
           "mandate_options",
           "network",
+          "payment_details",
           "request_card_account_update",
           "request_decremental_authorization",
           "request_extended_authorization",
@@ -76339,6 +76500,80 @@
         "x-stripeMostCommon": [
           "days",
           "hours"
+        ]
+      },
+      "payment_intent_payment_method_options_card_payment_details": {
+        "description": "",
+        "properties": {
+          "money_services": {
+            "$ref": "#/components/schemas/payment_intent_payment_method_options_card_payment_details_money_services"
+          }
+        },
+        "title": "payment_intent_payment_method_options_card_payment_details",
+        "type": "object",
+        "x-expandableFields": [
+          "money_services"
+        ],
+        "x-stripeMostCommon": [
+          "money_services"
+        ]
+      },
+      "payment_intent_payment_method_options_card_payment_details_money_services": {
+        "description": "",
+        "properties": {
+          "account_funding": {
+            "$ref": "#/components/schemas/payment_intent_payment_method_options_card_payment_details_money_services_account_funding"
+          }
+        },
+        "title": "payment_intent_payment_method_options_card_payment_details_money_services",
+        "type": "object",
+        "x-expandableFields": [
+          "account_funding"
+        ],
+        "x-stripeMostCommon": [
+          "account_funding"
+        ]
+      },
+      "payment_intent_payment_method_options_card_payment_details_money_services_account_funding": {
+        "description": "",
+        "properties": {
+          "digital_asset_category": {
+            "description": "The category of digital asset being acquired through this account funding transaction.",
+            "enum": [
+              "blockchain_native",
+              "nft",
+              "other_non_fiat",
+              "stablecoin"
+            ],
+            "type": "string",
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "description": "Blockchain native digital asset.",
+                  "value": "blockchain_native"
+                },
+                {
+                  "description": "Non-fungible token.",
+                  "value": "nft"
+                },
+                {
+                  "description": "Other non-fiat digital asset.",
+                  "value": "other_non_fiat"
+                },
+                {
+                  "description": "Stablecoin.",
+                  "value": "stablecoin"
+                }
+              ]
+            }
+          }
+        },
+        "title": "payment_intent_payment_method_options_card_payment_details_money_services_account_funding",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "digital_asset_category"
         ]
       },
       "payment_intent_payment_method_options_eps": {
@@ -77471,6 +77706,7 @@
                 "sofort",
                 "sunbit",
                 "swish",
+                "tamara",
                 "twint",
                 "upi",
                 "us_bank_account",
@@ -79645,6 +79881,9 @@
           "acss_debit": {
             "$ref": "#/components/schemas/payment_method_acss_debit"
           },
+          "aeon_pay": {
+            "$ref": "#/components/schemas/payment_method_aeon_pay"
+          },
           "affirm": {
             "$ref": "#/components/schemas/payment_method_affirm"
           },
@@ -79671,6 +79910,9 @@
           },
           "au_becs_debit": {
             "$ref": "#/components/schemas/payment_method_au_becs_debit"
+          },
+          "au_pay": {
+            "$ref": "#/components/schemas/payment_method_au_pay"
           },
           "bacs_debit": {
             "$ref": "#/components/schemas/payment_method_bacs_debit"
@@ -79813,6 +80055,9 @@
           "mb_way": {
             "$ref": "#/components/schemas/payment_method_mb_way"
           },
+          "merpay": {
+            "$ref": "#/components/schemas/payment_method_merpay"
+          },
           "metadata": {
             "additionalProperties": {
               "maxLength": 500,
@@ -79947,12 +80192,14 @@
             "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
             "enum": [
               "acss_debit",
+              "aeon_pay",
               "affirm",
               "afterpay_clearpay",
               "alipay",
               "alma",
               "amazon_pay",
               "au_becs_debit",
+              "au_pay",
               "bacs_debit",
               "bancontact",
               "billie",
@@ -79983,6 +80230,7 @@
               "kr_card",
               "link",
               "mb_way",
+              "merpay",
               "mobilepay",
               "multibanco",
               "naver_pay",
@@ -80059,12 +80307,14 @@
         "type": "object",
         "x-expandableFields": [
           "acss_debit",
+          "aeon_pay",
           "affirm",
           "afterpay_clearpay",
           "alipay",
           "alma",
           "amazon_pay",
           "au_becs_debit",
+          "au_pay",
           "bacs_debit",
           "bancontact",
           "billie",
@@ -80098,6 +80348,7 @@
           "latest_active_mandate",
           "link",
           "mb_way",
+          "merpay",
           "mobilepay",
           "multibanco",
           "naver_pay",
@@ -80328,6 +80579,13 @@
           "transit_number"
         ]
       },
+      "payment_method_aeon_pay": {
+        "description": "",
+        "properties": {},
+        "title": "payment_method_aeon_pay",
+        "type": "object",
+        "x-expandableFields": []
+      },
       "payment_method_affirm": {
         "description": "",
         "properties": {},
@@ -80391,6 +80649,13 @@
           "fingerprint",
           "last4"
         ]
+      },
+      "payment_method_au_pay": {
+        "description": "",
+        "properties": {},
+        "title": "payment_method_au_pay",
+        "type": "object",
+        "x-expandableFields": []
       },
       "payment_method_bacs_debit": {
         "description": "",
@@ -81804,6 +82069,9 @@
           "acss_debit": {
             "$ref": "#/components/schemas/payment_method_details_acss_debit"
           },
+          "aeon_pay": {
+            "$ref": "#/components/schemas/payment_method_details_aeon_pay"
+          },
           "affirm": {
             "$ref": "#/components/schemas/payment_method_details_affirm"
           },
@@ -81821,6 +82089,9 @@
           },
           "au_becs_debit": {
             "$ref": "#/components/schemas/payment_method_details_au_becs_debit"
+          },
+          "au_pay": {
+            "$ref": "#/components/schemas/payment_method_details_au_pay"
           },
           "bacs_debit": {
             "$ref": "#/components/schemas/payment_method_details_bacs_debit"
@@ -81908,6 +82179,9 @@
           },
           "mb_way": {
             "$ref": "#/components/schemas/payment_method_details_mb_way"
+          },
+          "merpay": {
+            "$ref": "#/components/schemas/payment_method_details_merpay"
           },
           "mobilepay": {
             "$ref": "#/components/schemas/payment_method_details_mobilepay"
@@ -82049,12 +82323,14 @@
           "ach_credit_transfer",
           "ach_debit",
           "acss_debit",
+          "aeon_pay",
           "affirm",
           "afterpay_clearpay",
           "alipay",
           "alma",
           "amazon_pay",
           "au_becs_debit",
+          "au_pay",
           "bacs_debit",
           "bancontact",
           "billie",
@@ -82084,6 +82360,7 @@
           "kr_card",
           "link",
           "mb_way",
+          "merpay",
           "mobilepay",
           "multibanco",
           "naver_pay",
@@ -82129,12 +82406,14 @@
           "ach_credit_transfer",
           "ach_debit",
           "acss_debit",
+          "aeon_pay",
           "affirm",
           "afterpay_clearpay",
           "alipay",
           "alma",
           "amazon_pay",
           "au_becs_debit",
+          "au_pay",
           "bacs_debit",
           "bancontact",
           "billie",
@@ -82164,6 +82443,7 @@
           "kr_card",
           "link",
           "mb_way",
+          "merpay",
           "mobilepay",
           "multibanco",
           "naver_pay",
@@ -82378,6 +82658,13 @@
           "transit_number"
         ]
       },
+      "payment_method_details_aeon_pay": {
+        "description": "",
+        "properties": {},
+        "title": "payment_method_details_aeon_pay",
+        "type": "object",
+        "x-expandableFields": []
+      },
       "payment_method_details_affirm": {
         "description": "",
         "properties": {
@@ -82571,6 +82858,13 @@
           "last4",
           "mandate"
         ]
+      },
+      "payment_method_details_au_pay": {
+        "description": "",
+        "properties": {},
+        "title": "payment_method_details_au_pay",
+        "type": "object",
+        "x-expandableFields": []
       },
       "payment_method_details_bacs_debit": {
         "description": "",
@@ -83783,6 +84077,13 @@
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
+          },
+          "funding_sources": {
+            "description": "Details about the funding sources used for this Link payment.",
+            "items": {
+              "$ref": "#/components/schemas/payment_method_details_link_funding_source"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -83790,9 +84091,12 @@
         ],
         "title": "payment_method_details_card_wallet_link",
         "type": "object",
-        "x-expandableFields": [],
+        "x-expandableFields": [
+          "funding_sources"
+        ],
         "x-stripeMostCommon": [
-          "funding_source_group"
+          "funding_source_group",
+          "funding_sources"
         ]
       },
       "payment_method_details_card_wallet_masterpass": {
@@ -85022,6 +85326,13 @@
             "description": "The [funding source group code](https://docs.stripe.com/payments/link/link-payment-methods) applied to this Link payment at confirmation time.",
             "maxLength": 5000,
             "type": "string"
+          },
+          "funding_sources": {
+            "description": "Details about the funding sources used for this Link payment.",
+            "items": {
+              "$ref": "#/components/schemas/payment_method_details_link_funding_source"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -85029,10 +85340,227 @@
         ],
         "title": "payment_method_details_link",
         "type": "object",
-        "x-expandableFields": [],
+        "x-expandableFields": [
+          "funding_sources"
+        ],
         "x-stripeMostCommon": [
           "country",
-          "funding_source_group"
+          "funding_source_group",
+          "funding_sources"
+        ]
+      },
+      "payment_method_details_link_funding_source": {
+        "description": "",
+        "properties": {
+          "card": {
+            "$ref": "#/components/schemas/payment_method_details_link_funding_source_card"
+          },
+          "type": {
+            "description": "The type of funding source used for this Link payment.",
+            "enum": [
+              "card"
+            ],
+            "type": "string",
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "value": "card"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "card",
+          "type"
+        ],
+        "title": "payment_method_details_link_funding_source",
+        "type": "object",
+        "x-expandableFields": [
+          "card"
+        ],
+        "x-stripeMostCommon": [
+          "card",
+          "type"
+        ]
+      },
+      "payment_method_details_link_funding_source_card": {
+        "description": "",
+        "properties": {
+          "amount_authorized": {
+            "description": "The authorized amount.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "authorization_code": {
+            "description": "Authorization code on the charge.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "brand": {
+            "description": "Card brand. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `jcb`, `link`, `mastercard`, `unionpay`, `visa` or `unknown`.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "checks": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/payment_method_details_card_checks"
+              }
+            ],
+            "description": "Check results by Card networks on Card address and CVC at time of payment.",
+            "nullable": true
+          },
+          "country": {
+            "description": "Two-letter ISO code representing the country of the card. You could use this attribute to get a sense of the international breakdown of cards you've collected.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "description": {
+            "description": "A high-level description of the type of cards issued in this range. (For internal use only and not typically available in standard API requests.)",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "electronic_commerce_indicator": {
+            "description": "The Electronic Commerce Indicator (ECI) returned by the card network in the authorization response. Indicates the level of authentication used. Only populated for Visa and Mastercard transactions. This is the network's final ECI and can differ from the request value. An authenticated ECI alone doesn't determine liability shift.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "exp_month": {
+            "description": "Two-digit number representing the card's expiration month.",
+            "type": "integer"
+          },
+          "exp_year": {
+            "description": "Four-digit number representing the card's expiration year.",
+            "type": "integer"
+          },
+          "fingerprint": {
+            "description": "Uniquely identifies this particular card number. You can use this attribute to check whether two customers who’ve signed up with you are using the same card number, for example. For payment methods that tokenize card information (Apple Pay, Google Pay), the tokenized number might be provided instead of the underlying card number.\n\n*As of May 1, 2021, card fingerprint in India for Connect changed to allow two fingerprints for the same card---one for India and one for the rest of the world.*",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "funding": {
+            "description": "Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "iin": {
+            "description": "Issuer identification number of the card. (For internal use only and not typically available in standard API requests.)",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "issuer": {
+            "description": "The name of the card's issuing bank. (For internal use only and not typically available in standard API requests.)",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "last4": {
+            "description": "The last four digits of the card.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "network": {
+            "description": "Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "network_token": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/payment_method_details_card_network_token"
+              }
+            ],
+            "description": "If this card has network token credentials, this contains the details of the network token credentials.",
+            "nullable": true
+          },
+          "network_transaction_id": {
+            "description": "This is used by the financial networks to identify a transaction. Visa calls this the Transaction ID, Mastercard calls this the Trace ID, and American Express calls this the Acquirer Reference Data. This value will be present if it is returned by the financial network in the authorization response, and null otherwise.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "regulated_status": {
+            "description": "Status of a card based on the card issuer.",
+            "enum": [
+              "regulated",
+              "unregulated"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "three_d_secure": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/three_d_secure_details_charge"
+              }
+            ],
+            "description": "Populated if this transaction used 3D Secure authentication.",
+            "nullable": true
+          },
+          "transaction_link_id": {
+            "description": "Transaction Link ID (TLID) is a unique identifier for a transaction. This is used by some card networks, such as Mastercard, for transaction linking, in addition to Network Transaction IDs. This value will be present if it is returned by the financial network in the authorization response, and null otherwise.",
+            "maxLength": 22,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount_authorized",
+          "authorization_code",
+          "brand",
+          "checks",
+          "country",
+          "electronic_commerce_indicator",
+          "exp_month",
+          "exp_year",
+          "funding",
+          "last4",
+          "network",
+          "network_transaction_id",
+          "regulated_status",
+          "three_d_secure",
+          "transaction_link_id"
+        ],
+        "title": "payment_method_details_link_funding_source_card",
+        "type": "object",
+        "x-expandableFields": [
+          "checks",
+          "network_token",
+          "three_d_secure"
+        ],
+        "x-stripeMostCommon": [
+          "amount_authorized",
+          "authorization_code",
+          "brand",
+          "checks",
+          "country",
+          "description",
+          "electronic_commerce_indicator",
+          "exp_month",
+          "exp_year",
+          "fingerprint",
+          "funding",
+          "iin",
+          "issuer",
+          "last4",
+          "network",
+          "network_token",
+          "network_transaction_id",
+          "regulated_status",
+          "three_d_secure",
+          "transaction_link_id"
         ]
       },
       "payment_method_details_mb_way": {
@@ -85045,6 +85573,13 @@
           "class_name": "MbWay",
           "in_package": ""
         }
+      },
+      "payment_method_details_merpay": {
+        "description": "",
+        "properties": {},
+        "title": "payment_method_details_merpay",
+        "type": "object",
+        "x-expandableFields": []
       },
       "payment_method_details_mobilepay": {
         "description": "",
@@ -85444,6 +85979,13 @@
           "transit_number"
         ]
       },
+      "payment_method_details_payment_record_aeon_pay": {
+        "description": "",
+        "properties": {},
+        "title": "payment_method_details_payment_record_aeon_pay",
+        "type": "object",
+        "x-expandableFields": []
+      },
       "payment_method_details_payment_record_affirm": {
         "description": "",
         "properties": {
@@ -85637,6 +86179,13 @@
           "last4",
           "mandate"
         ]
+      },
+      "payment_method_details_payment_record_au_pay": {
+        "description": "",
+        "properties": {},
+        "title": "payment_method_details_payment_record_au_pay",
+        "type": "object",
+        "x-expandableFields": []
       },
       "payment_method_details_payment_record_bacs_debit": {
         "description": "",
@@ -86536,6 +87085,13 @@
           "in_package": ""
         }
       },
+      "payment_method_details_payment_record_merpay": {
+        "description": "",
+        "properties": {},
+        "title": "payment_method_details_payment_record_merpay",
+        "type": "object",
+        "x-expandableFields": []
+      },
       "payment_method_details_payment_record_mobilepay": {
         "description": "",
         "properties": {
@@ -86866,6 +87422,11 @@
       "payment_method_details_payment_record_paypay": {
         "description": "",
         "properties": {
+          "fingerprint": {
+            "description": "Uniquely identifies this particular PayPay account. You can use this attribute to check whether two PayPay accounts are the same.",
+            "maxLength": 5000,
+            "type": "string"
+          },
           "mandate": {
             "description": "ID of the multi-use Mandate created by, or used to make, this PayPay payment.",
             "maxLength": 5000,
@@ -86876,6 +87437,7 @@
         "type": "object",
         "x-expandableFields": [],
         "x-stripeMostCommon": [
+          "fingerprint",
           "mandate"
         ]
       },
@@ -87788,16 +88350,26 @@
       "payment_method_details_paypay": {
         "description": "",
         "properties": {
+          "fingerprint": {
+            "description": "Uniquely identifies this particular PayPay account. You can use this attribute to check whether two PayPay accounts are the same.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
           "mandate": {
             "description": "ID of the multi-use Mandate created by, or used to make, this PayPay payment.",
             "maxLength": 5000,
             "type": "string"
           }
         },
+        "required": [
+          "fingerprint"
+        ],
         "title": "payment_method_details_paypay",
         "type": "object",
         "x-expandableFields": [],
         "x-stripeMostCommon": [
+          "fingerprint",
           "mandate"
         ]
       },
@@ -89388,6 +89960,13 @@
           "in_package": ""
         }
       },
+      "payment_method_merpay": {
+        "description": "",
+        "properties": {},
+        "title": "payment_method_merpay",
+        "type": "object",
+        "x-expandableFields": []
+      },
       "payment_method_mobilepay": {
         "description": "",
         "properties": {},
@@ -89932,6 +90511,9 @@
             "description": "Fleet prompting data for this payment.",
             "nullable": true
           },
+          "payment_details": {
+            "$ref": "#/components/schemas/payment_intent_payment_method_options_card_payment_details"
+          },
           "request_extended_authorization": {
             "description": "Request ability to capture this payment beyond the standard [authorization validity window](https://docs.stripe.com/terminal/features/extended-authorizations#authorization-validity)",
             "nullable": true,
@@ -89973,6 +90555,7 @@
           "aade_data",
           "capture_delay",
           "fleet",
+          "payment_details",
           "routing"
         ],
         "x-stripeMostCommon": [
@@ -89981,6 +90564,7 @@
           "capture_delay",
           "capture_method",
           "fleet",
+          "payment_details",
           "request_extended_authorization",
           "request_incremental_authorization_support",
           "request_multicapture",
@@ -91065,8 +91649,7 @@
             "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf you provide a Customer with the PaymentIntent, you can use this parameter to [attach the payment method](/payments/save-during-payment) to the Customer after the PaymentIntent is confirmed and the customer completes any required actions. If you don't provide a Customer, you can still [attach](/api/payment_methods/attach) the payment method to a Customer after the transaction completes.\n\nIf the payment method is `card_present` and isn't a digital wallet, Stripe creates and attaches a [generated_card](/api/charges/object#charge_object-payment_method_details-card_present-generated_card) payment method representing the card to the Customer instead.\n\nWhen processing card payments, Stripe uses `setup_future_usage` to help you comply with regional legislation and network rules, such as [SCA](/strong-customer-authentication).",
             "enum": [
               "none",
-              "off_session",
-              "on_session"
+              "off_session"
             ],
             "type": "string"
           },
@@ -97174,6 +97757,9 @@
           "acss_debit": {
             "$ref": "#/components/schemas/payment_method_details_payment_record_acss_debit"
           },
+          "aeon_pay": {
+            "$ref": "#/components/schemas/payment_method_details_payment_record_aeon_pay"
+          },
           "affirm": {
             "$ref": "#/components/schemas/payment_method_details_payment_record_affirm"
           },
@@ -97191,6 +97777,9 @@
           },
           "au_becs_debit": {
             "$ref": "#/components/schemas/payment_method_details_payment_record_au_becs_debit"
+          },
+          "au_pay": {
+            "$ref": "#/components/schemas/payment_method_details_payment_record_au_pay"
           },
           "bacs_debit": {
             "$ref": "#/components/schemas/payment_method_details_payment_record_bacs_debit"
@@ -97290,6 +97879,9 @@
           },
           "mb_way": {
             "$ref": "#/components/schemas/payment_method_details_payment_record_mb_way"
+          },
+          "merpay": {
+            "$ref": "#/components/schemas/payment_method_details_payment_record_merpay"
           },
           "mobilepay": {
             "$ref": "#/components/schemas/payment_method_details_payment_record_mobilepay"
@@ -97437,12 +98029,14 @@
           "ach_credit_transfer",
           "ach_debit",
           "acss_debit",
+          "aeon_pay",
           "affirm",
           "afterpay_clearpay",
           "alipay",
           "alma",
           "amazon_pay",
           "au_becs_debit",
+          "au_pay",
           "bacs_debit",
           "bancontact",
           "billie",
@@ -97474,6 +98068,7 @@
           "kr_card",
           "link",
           "mb_way",
+          "merpay",
           "mobilepay",
           "momo",
           "multibanco",
@@ -97520,12 +98115,14 @@
           "ach_credit_transfer",
           "ach_debit",
           "acss_debit",
+          "aeon_pay",
           "affirm",
           "afterpay_clearpay",
           "alipay",
           "alma",
           "amazon_pay",
           "au_becs_debit",
+          "au_pay",
           "bacs_debit",
           "bancontact",
           "billie",
@@ -97557,6 +98154,7 @@
           "kr_card",
           "link",
           "mb_way",
+          "merpay",
           "mobilepay",
           "momo",
           "multibanco",
@@ -108743,14 +109341,40 @@
             "$ref": "#/components/schemas/insights_resources_payment_evaluation_payment_details"
           },
           "recommended_action": {
-            "description": "Recommended action based on the score of the `fraudulent_payment` signal. Possible values are `block`, `continue` and `request_three_d_secure`.",
+            "description": "Recommended action for this payment based on its evaluated signals and rules.",
             "enum": [
               "block",
               "continue",
+              "continue_with_manual_review",
               "request_three_d_secure",
               "reroute"
             ],
-            "type": "string"
+            "type": "string",
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "description": "The recommendation is to block the payment from proceeding.",
+                  "value": "block"
+                },
+                {
+                  "description": "The recommendation is to allow this payment to continue to processing.",
+                  "value": "continue"
+                },
+                {
+                  "description": "The recommendation is to continue processing and review this payment after authorization or guarantee.",
+                  "value": "continue_with_manual_review"
+                },
+                {
+                  "description": "The recommendation is to request 3D Secure authentication before proceeding.",
+                  "value": "request_three_d_secure"
+                },
+                {
+                  "description": "The recommendation is to reroute the payment.",
+                  "value": "reroute"
+                }
+              ]
+            }
           },
           "rules": {
             "anyOf": [
@@ -109512,6 +110136,28 @@
           "reason"
         ]
       },
+      "radar_intent_radar_options": {
+        "description": "",
+        "properties": {
+          "is_free_trial_transaction": {
+            "description": "The value you provided for whether this transaction starts a free trial. This is null if you haven't explicitly set it.",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "session": {
+            "description": "A [Radar Session](https://docs.stripe.com/radar/radar-session) is a snapshot of the browser metadata and device details that help Radar make more accurate predictions on your payments.",
+            "maxLength": 5000,
+            "type": "string"
+          }
+        },
+        "title": "IntentRadarOption",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "is_free_trial_transaction",
+          "session"
+        ]
+      },
       "radar_list_redaction": {
         "description": "",
         "properties": {
@@ -110078,6 +110724,11 @@
               ]
             }
           },
+          "payment_record": {
+            "description": "ID of the PaymentRecord associated with the payment that has been refunded.",
+            "maxLength": 5000,
+            "type": "string"
+          },
           "pending_reason": {
             "description": "Provides the reason for why the refund is pending. Possible values are: `processing`, `insufficient_funds`, or `charge_pending`.",
             "enum": [
@@ -110338,6 +110989,9 @@
           "au_bank_transfer": {
             "$ref": "#/components/schemas/destination_details_unimplemented"
           },
+          "bizum": {
+            "$ref": "#/components/schemas/refund_destination_details_bizum"
+          },
           "blik": {
             "$ref": "#/components/schemas/refund_destination_details_blik"
           },
@@ -110427,6 +111081,9 @@
             "maxLength": 5000,
             "type": "string"
           },
+          "upi": {
+            "$ref": "#/components/schemas/refund_destination_details_upi"
+          },
           "us_bank_transfer": {
             "$ref": "#/components/schemas/refund_destination_details_us_bank_transfer"
           },
@@ -110449,6 +111106,7 @@
           "alma",
           "amazon_pay",
           "au_bank_transfer",
+          "bizum",
           "blik",
           "br_bank_transfer",
           "card",
@@ -110477,6 +111135,7 @@
           "swish",
           "th_bank_transfer",
           "twint",
+          "upi",
           "us_bank_transfer",
           "wechat_pay",
           "zip"
@@ -110488,6 +111147,7 @@
           "alma",
           "amazon_pay",
           "au_bank_transfer",
+          "bizum",
           "blik",
           "br_bank_transfer",
           "card",
@@ -110517,6 +111177,7 @@
           "th_bank_transfer",
           "twint",
           "type",
+          "upi",
           "us_bank_transfer",
           "wechat_pay",
           "zip"
@@ -110543,6 +111204,34 @@
           "reference_status"
         ],
         "title": "refund_destination_details_afterpay_clearpay",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "reference",
+          "reference_status"
+        ]
+      },
+      "refund_destination_details_bizum": {
+        "description": "",
+        "properties": {
+          "reference": {
+            "description": "The reference assigned to the refund.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "reference_status": {
+            "description": "Status of the reference on the refund. This can be `pending`, `available` or `unavailable`.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "reference",
+          "reference_status"
+        ],
+        "title": "refund_destination_details_bizum",
         "type": "object",
         "x-expandableFields": [],
         "x-stripeMostCommon": [
@@ -111020,6 +111709,34 @@
           "reference_status"
         ],
         "title": "refund_destination_details_th_bank_transfer",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "reference",
+          "reference_status"
+        ]
+      },
+      "refund_destination_details_upi": {
+        "description": "",
+        "properties": {
+          "reference": {
+            "description": "The reference assigned to the refund.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "reference_status": {
+            "description": "Status of the reference on the refund. This can be `pending`, `available` or `unavailable`.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "reference",
+          "reference_status"
+        ],
+        "title": "refund_destination_details_upi",
         "type": "object",
         "x-expandableFields": [],
         "x-stripeMostCommon": [
@@ -114667,12 +115384,14 @@
             "items": {
               "enum": [
                 "acss_debit",
+                "aeon_pay",
                 "affirm",
                 "afterpay_clearpay",
                 "alipay",
                 "alma",
                 "amazon_pay",
                 "au_becs_debit",
+                "au_pay",
                 "bacs_debit",
                 "bancontact",
                 "billie",
@@ -114716,6 +115435,7 @@
                 "kriya",
                 "link",
                 "mb_way",
+                "merpay",
                 "mobilepay",
                 "momo",
                 "mondu",
@@ -114875,12 +115595,14 @@
             "items": {
               "enum": [
                 "acss_debit",
+                "aeon_pay",
                 "affirm",
                 "afterpay_clearpay",
                 "alipay",
                 "alma",
                 "amazon_pay",
                 "au_becs_debit",
+                "au_pay",
                 "bacs_debit",
                 "bancontact",
                 "billie",
@@ -114907,6 +115629,7 @@
                 "konbini",
                 "kr_card",
                 "mb_way",
+                "merpay",
                 "mobilepay",
                 "multibanco",
                 "naver_pay",
@@ -115121,6 +115844,15 @@
             },
             "type": "array"
           },
+          "radar_options": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/radar_intent_radar_options"
+              }
+            ],
+            "description": "Options to configure Radar.",
+            "nullable": true
+          },
           "redaction": {
             "anyOf": [
               {
@@ -115213,6 +115945,7 @@
           "payment_method",
           "payment_method_configuration_details",
           "payment_method_options",
+          "radar_options",
           "redaction",
           "setup_details",
           "single_use_mandate"
@@ -115518,7 +116251,7 @@
         "description": "",
         "properties": {
           "arrival_date": {
-            "description": "The timestamp when the microdeposits are expected to land.",
+            "description": "The timestamp when the microdeposits are expected to land. Null for instant microdeposits.",
             "format": "unix-time",
             "type": "integer"
           },
@@ -120371,6 +121104,11 @@
           },
           "automatic_tax": {
             "$ref": "#/components/schemas/subscription_automatic_tax"
+          },
+          "billing_cadence": {
+            "description": "The Billing Cadence which controls the timing of recurring invoice generation for this subscription. If unset, the subscription will bill according to its own configured schedule and create its own invoices. If set, this subscription will be billed by the cadence instead, potentially sharing invoices with the other subscriptions linked to that Cadence.",
+            "maxLength": 5000,
+            "type": "string"
           },
           "billing_cycle_anchor": {
             "description": "The reference point that aligns future [billing cycle](https://docs.stripe.com/subscriptions/billing-cycle) dates. It sets the day of week for `week` intervals, the day of month for `month` and `year` intervals, and the month of year for `year` intervals. The timestamp is in UTC format.",
@@ -125576,6 +126314,142 @@
         ],
         "x-stripeResource": {
           "class_name": "CalculationLineItem",
+          "has_collection_class": true,
+          "in_package": "Tax"
+        }
+      },
+      "tax.certificate": {
+        "description": "Tax exemption and resale certificates associated with tax exemptions.",
+        "properties": {
+          "created": {
+            "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+            "format": "unix-time",
+            "type": "integer"
+          },
+          "deleted": {
+            "description": "Whether the certificate has been deleted.",
+            "type": "boolean"
+          },
+          "file": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/file"
+              }
+            ],
+            "description": "The uploaded certificate file.",
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/file"
+                }
+              ]
+            }
+          },
+          "id": {
+            "description": "Unique identifier for the object.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "livemode": {
+            "description": "If the object exists in live mode, the value is `true`. If the object exists in test mode, the value is `false`.",
+            "type": "boolean"
+          },
+          "object": {
+            "description": "String representing the object's type. Objects of the same type share the same value.",
+            "enum": [
+              "tax.certificate"
+            ],
+            "type": "string"
+          },
+          "tax_exemption": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/customer_tax_exemption"
+              },
+              {
+                "$ref": "#/components/schemas/deleted_customer_tax_exemption"
+              }
+            ],
+            "description": "The tax exemption associated with this certificate.",
+            "nullable": true,
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/customer_tax_exemption"
+                },
+                {
+                  "$ref": "#/components/schemas/deleted_customer_tax_exemption"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "created",
+          "deleted",
+          "file",
+          "id",
+          "livemode",
+          "object",
+          "tax_exemption"
+        ],
+        "title": "Tax Certificate",
+        "type": "object",
+        "x-expandableFields": [
+          "file",
+          "tax_exemption"
+        ],
+        "x-resourceId": "tax.certificate",
+        "x-stableId": "tax_certificate",
+        "x-stripeMostCommon": [
+          "created",
+          "deleted",
+          "file",
+          "id",
+          "livemode",
+          "object",
+          "tax_exemption"
+        ],
+        "x-stripeOperations": [
+          {
+            "method_name": "delete",
+            "method_on": "service",
+            "method_type": "delete",
+            "operation": "delete",
+            "path": "/v1/tax/certificates/{id}"
+          },
+          {
+            "method_name": "list",
+            "method_on": "service",
+            "method_type": "list",
+            "operation": "get",
+            "path": "/v1/tax/certificates"
+          },
+          {
+            "method_name": "retrieve",
+            "method_on": "service",
+            "method_type": "retrieve",
+            "operation": "get",
+            "path": "/v1/tax/certificates/{id}"
+          },
+          {
+            "method_name": "create",
+            "method_on": "service",
+            "method_type": "create",
+            "operation": "post",
+            "path": "/v1/tax/certificates"
+          }
+        ],
+        "x-stripeResource": {
+          "class_name": "Certificate",
           "has_collection_class": true,
           "in_package": "Tax"
         }
@@ -146368,12 +147242,14 @@
                       "money_manager_business_storage_inbound_eur",
                       "money_manager_business_storage_inbound_eurc",
                       "money_manager_business_storage_inbound_gbp",
+                      "money_manager_business_storage_inbound_sgd",
                       "money_manager_business_storage_inbound_usd",
                       "money_manager_business_storage_inbound_usdc",
                       "money_manager_business_storage_outbound_aud",
                       "money_manager_business_storage_outbound_eur",
                       "money_manager_business_storage_outbound_eurc",
                       "money_manager_business_storage_outbound_gbp",
+                      "money_manager_business_storage_outbound_sgd",
                       "money_manager_business_storage_outbound_usd",
                       "money_manager_business_storage_outbound_usdc",
                       "multibanco_payments",
@@ -150662,12 +151538,14 @@
                       "money_manager_business_storage_inbound_eur",
                       "money_manager_business_storage_inbound_eurc",
                       "money_manager_business_storage_inbound_gbp",
+                      "money_manager_business_storage_inbound_sgd",
                       "money_manager_business_storage_inbound_usd",
                       "money_manager_business_storage_inbound_usdc",
                       "money_manager_business_storage_outbound_aud",
                       "money_manager_business_storage_outbound_eur",
                       "money_manager_business_storage_outbound_eurc",
                       "money_manager_business_storage_outbound_gbp",
+                      "money_manager_business_storage_outbound_sgd",
                       "money_manager_business_storage_outbound_usd",
                       "money_manager_business_storage_outbound_usdc",
                       "multibanco_payments",
@@ -157728,7 +158606,7 @@
         "x-stableId": "list_app_installs"
       },
       "post": {
-        "description": "<p>Creates an app install. An account installs its own private app with its own key; public and testing installs are made from the Dashboard. An app developer acting on a connected account through <code>Stripe-Account</code> installs or reinstalls its app there, and an embedding platform can do the same once the app’s developer approves its request to embed the app. For a private app, creating an install installs the newest completed upload; when that version is already installed with nothing pending, the existing install is returned.</p>",
+        "description": "<p>Creates an app install. An account installs its own private app with its own key; public and testing installs are made from the Dashboard. An app developer acting on a connected account through <code>Stripe-Account</code> installs or reinstalls its app there, and an embedding platform can do the same once the app’s developer approves its request to embed the app and the platform has accepted the Embedding Platform Terms and Conditions in the Dashboard. For a private app, creating an install installs the newest completed upload; when that version is already installed with nothing pending, the existing install is returned.</p>",
         "operationId": "PostAppsInstalls",
         "requestBody": {
           "content": {
@@ -175679,6 +176557,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "custom_payment_method_options": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "custom_payment_method_types": {
                   "explode": true,
                   "style": "deepObject"
@@ -175901,6 +176783,7 @@
                         "stripe_balance",
                         "sunbit",
                         "swish",
+                        "tamara",
                         "twint",
                         "upi",
                         "us_bank_account",
@@ -176466,6 +177349,28 @@
                     },
                     "type": "array"
                   },
+                  "custom_payment_method_options": {
+                    "additionalProperties": {
+                      "properties": {
+                        "setup_future_usage": {
+                          "description": "Use `off_session` to set up this custom payment method for future payments when the customer is absent. Use `none` to disable setup for future usage.",
+                          "enum": [
+                            "none",
+                            "off_session"
+                          ],
+                          "maxLength": 5000,
+                          "type": "string"
+                        }
+                      },
+                      "title": "custom_payment_method_options_params",
+                      "type": "object",
+                      "x-stripeMostCommon": [
+                        "setup_future_usage"
+                      ]
+                    },
+                    "description": "Options keyed by custom payment method type IDs (e.g., `cpmt_123`). Each ID must belong to your account and be included in `custom_payment_method_types`. Only available in `payment` mode.",
+                    "type": "object"
+                  },
                   "custom_payment_method_types": {
                     "description": "A list of custom payment methods (e.g., `cpmt_123`) this Checkout Session can accept.\n\nYou can add custom payment methods to your account through the dashboard under Settings > Custom Payment Methods.\n\nRead more about custom payment methods in checkout in our [custom payment method types guide](https://docs.stripe.com/payments/payment-methods/custom-payment-methods).",
                     "items": {
@@ -176806,6 +177711,7 @@
                         "stripe_balance",
                         "sunbit",
                         "swish",
+                        "tamara",
                         "twint",
                         "upi",
                         "us_bank_account",
@@ -177885,6 +178791,7 @@
                       "title": "items_param",
                       "type": "object",
                       "x-stripeMostCommon": [
+                        "future_payment_context",
                         "metronome_commit",
                         "metronome_contract",
                         "one_time_price",
@@ -178694,9 +179601,27 @@
                                 "description": "Transaction type of the mandate.",
                                 "enum": [
                                   "business",
+                                  "buyer_choice",
                                   "personal"
                                 ],
-                                "type": "string"
+                                "type": "string",
+                                "x-stripeEnum": {
+                                  "kind": "open",
+                                  "values": [
+                                    {
+                                      "description": "Transactions are made for business reasons",
+                                      "value": "business"
+                                    },
+                                    {
+                                      "description": "Let the buyer choose Personal or Business in Checkout. Personal is initially selected. Sessions return this value until the buyer's selection is saved.",
+                                      "value": "buyer_choice"
+                                    },
+                                    {
+                                      "description": "Transactions are made for personal reasons",
+                                      "value": "personal"
+                                    }
+                                  ]
+                                }
                               }
                             },
                             "title": "mandate_options_param",
@@ -180013,6 +180938,14 @@
                       "paypay": {
                         "description": "contains details about the PayPay payment method options.",
                         "properties": {
+                          "setup_future_usage": {
+                            "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf you provide a Customer with the PaymentIntent, you can use this parameter to [attach the payment method](/payments/save-during-payment) to the Customer after the PaymentIntent is confirmed and the customer completes any required actions. If you don't provide a Customer, you can still [attach](/api/payment_methods/attach) the payment method to a Customer after the transaction completes.\n\nIf the payment method is `card_present` and isn't a digital wallet, Stripe creates and attaches a [generated_card](/api/charges/object#charge_object-payment_method_details-card_present-generated_card) payment method representing the card to the Customer instead.\n\nWhen processing card payments, Stripe uses `setup_future_usage` to help you comply with regional legislation and network rules, such as [SCA](/strong-customer-authentication).",
+                            "enum": [
+                              "none",
+                              "off_session"
+                            ],
+                            "type": "string"
+                          },
                           "subscription_reference": {
                             "description": "The merchant's subscription identifier for this off-session charge.",
                             "maxLength": 255,
@@ -180022,6 +180955,7 @@
                         "title": "payment_method_options_param",
                         "type": "object",
                         "x-stripeMostCommon": [
+                          "setup_future_usage",
                           "subscription_reference"
                         ]
                       },
@@ -192425,12 +193359,14 @@
             "schema": {
               "enum": [
                 "acss_debit",
+                "aeon_pay",
                 "affirm",
                 "afterpay_clearpay",
                 "alipay",
                 "alma",
                 "amazon_pay",
                 "au_becs_debit",
+                "au_pay",
                 "bacs_debit",
                 "bancontact",
                 "billie",
@@ -192459,6 +193395,7 @@
                 "kr_card",
                 "link",
                 "mb_way",
+                "merpay",
                 "mobilepay",
                 "multibanco",
                 "naver_pay",
@@ -193710,12 +194647,11 @@
                     "description": "The reason the customer is exempt. Required when `us.tax_code_group` is `saas`.",
                     "enum": [
                       "direct_pay_permit",
-                      "government",
-                      "non_profit",
-                      "other",
-                      "resale"
+                      "legacy_contract",
+                      "other"
                     ],
                     "type": "string",
+                    "x-stripeBypassValidation": true,
                     "x-stripeEnum": {
                       "kind": "open",
                       "values": [
@@ -193724,20 +194660,12 @@
                           "value": "direct_pay_permit"
                         },
                         {
-                          "description": "The customer is a government entity.",
-                          "value": "government"
-                        },
-                        {
-                          "description": "The customer is a non-profit organization.",
-                          "value": "non_profit"
+                          "description": "The purchase was contracted before a tax law took effect, so the exemption covers it.",
+                          "value": "legacy_contract"
                         },
                         {
                           "description": "Another reason, described in `reason_details.other.reason_text`.",
                           "value": "other"
-                        },
-                        {
-                          "description": "The customer is purchasing for resale.",
-                          "value": "resale"
                         }
                       ]
                     }
@@ -245019,12 +245947,14 @@
                     "items": {
                       "enum": [
                         "acss_debit",
+                        "aeon_pay",
                         "affirm",
                         "afterpay_clearpay",
                         "alipay",
                         "alma",
                         "amazon_pay",
                         "au_becs_debit",
+                        "au_pay",
                         "bacs_debit",
                         "bancontact",
                         "billie",
@@ -245068,6 +245998,7 @@
                         "kriya",
                         "link",
                         "mb_way",
+                        "merpay",
                         "mobilepay",
                         "momo",
                         "mondu",
@@ -246162,12 +247093,14 @@
                     "items": {
                       "enum": [
                         "acss_debit",
+                        "aeon_pay",
                         "affirm",
                         "afterpay_clearpay",
                         "alipay",
                         "alma",
                         "amazon_pay",
                         "au_becs_debit",
+                        "au_pay",
                         "bacs_debit",
                         "bancontact",
                         "billie",
@@ -246194,6 +247127,7 @@
                         "konbini",
                         "kr_card",
                         "mb_way",
+                        "merpay",
                         "mobilepay",
                         "multibanco",
                         "naver_pay",
@@ -250151,6 +251085,12 @@
                           "transit_number"
                         ]
                       },
+                      "aeon_pay": {
+                        "description": "If this is a `aeon_pay` PaymentMethod, this hash contains details about the AEON Pay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "affirm": {
                         "description": "If this is an `affirm` PaymentMethod, this hash contains details about the Affirm payment method.",
                         "properties": {},
@@ -250214,6 +251154,12 @@
                           "account_number",
                           "bsb_number"
                         ]
+                      },
+                      "au_pay": {
+                        "description": "If this is a `au_pay` PaymentMethod, this hash contains details about the au PAY payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
                       },
                       "bacs_debit": {
                         "description": "If this is a `bacs_debit` PaymentMethod, this hash contains details about the Bacs Direct Debit bank account.",
@@ -250710,6 +251656,12 @@
                         "title": "param",
                         "type": "object"
                       },
+                      "merpay": {
+                        "description": "If this is a `merpay` PaymentMethod, this hash contains details about the Merpay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "metadata": {
                         "additionalProperties": {
                           "type": "string"
@@ -251128,12 +252080,14 @@
                         "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
                         "enum": [
                           "acss_debit",
+                          "aeon_pay",
                           "affirm",
                           "afterpay_clearpay",
                           "alipay",
                           "alma",
                           "amazon_pay",
                           "au_becs_debit",
+                          "au_pay",
                           "bacs_debit",
                           "bancontact",
                           "billie",
@@ -251160,6 +252114,7 @@
                           "kr_card",
                           "link",
                           "mb_way",
+                          "merpay",
                           "mobilepay",
                           "multibanco",
                           "naver_pay",
@@ -251696,6 +252651,21 @@
                         "anyOf": [
                           {
                             "properties": {
+                              "financial_connections": {
+                                "description": "Additional fields for Financial Connections session creation.",
+                                "properties": {
+                                  "return_url": {
+                                    "description": "For webview integrations only. Upon completing OAuth login in the native browser, the user will be redirected to this URL to return to your app.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  }
+                                },
+                                "title": "financial_connections_options_param_api_params",
+                                "type": "object",
+                                "x-stripeMostCommon": [
+                                  "return_url"
+                                ]
+                              },
                               "mandate_options": {
                                 "description": "Additional fields for Mandate creation",
                                 "properties": {
@@ -251766,6 +252736,7 @@
                             "title": "payment_intent_payment_method_options_param",
                             "type": "object",
                             "x-stripeMostCommon": [
+                              "financial_connections",
                               "mandate_options",
                               "setup_future_usage",
                               "target_date",
@@ -256837,8 +257808,7 @@
                                 "enum": [
                                   "",
                                   "none",
-                                  "off_session",
-                                  "on_session"
+                                  "off_session"
                                 ],
                                 "type": "string"
                               },
@@ -258978,12 +259948,14 @@
                     "items": {
                       "enum": [
                         "acss_debit",
+                        "aeon_pay",
                         "affirm",
                         "afterpay_clearpay",
                         "alipay",
                         "alma",
                         "amazon_pay",
                         "au_becs_debit",
+                        "au_pay",
                         "bacs_debit",
                         "bancontact",
                         "billie",
@@ -259027,6 +259999,7 @@
                         "kriya",
                         "link",
                         "mb_way",
+                        "merpay",
                         "mobilepay",
                         "momo",
                         "mondu",
@@ -260095,12 +261068,14 @@
                         "items": {
                           "enum": [
                             "acss_debit",
+                            "aeon_pay",
                             "affirm",
                             "afterpay_clearpay",
                             "alipay",
                             "alma",
                             "amazon_pay",
                             "au_becs_debit",
+                            "au_pay",
                             "bacs_debit",
                             "bancontact",
                             "billie",
@@ -260127,6 +261102,7 @@
                             "konbini",
                             "kr_card",
                             "mb_way",
+                            "merpay",
                             "mobilepay",
                             "multibanco",
                             "naver_pay",
@@ -264063,6 +265039,12 @@
                           "transit_number"
                         ]
                       },
+                      "aeon_pay": {
+                        "description": "If this is a `aeon_pay` PaymentMethod, this hash contains details about the AEON Pay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "affirm": {
                         "description": "If this is an `affirm` PaymentMethod, this hash contains details about the Affirm payment method.",
                         "properties": {},
@@ -264126,6 +265108,12 @@
                           "account_number",
                           "bsb_number"
                         ]
+                      },
+                      "au_pay": {
+                        "description": "If this is a `au_pay` PaymentMethod, this hash contains details about the au PAY payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
                       },
                       "bacs_debit": {
                         "description": "If this is a `bacs_debit` PaymentMethod, this hash contains details about the Bacs Direct Debit bank account.",
@@ -264622,6 +265610,12 @@
                         "title": "param",
                         "type": "object"
                       },
+                      "merpay": {
+                        "description": "If this is a `merpay` PaymentMethod, this hash contains details about the Merpay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "metadata": {
                         "additionalProperties": {
                           "type": "string"
@@ -265040,12 +266034,14 @@
                         "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
                         "enum": [
                           "acss_debit",
+                          "aeon_pay",
                           "affirm",
                           "afterpay_clearpay",
                           "alipay",
                           "alma",
                           "amazon_pay",
                           "au_becs_debit",
+                          "au_pay",
                           "bacs_debit",
                           "bancontact",
                           "billie",
@@ -265072,6 +266068,7 @@
                           "kr_card",
                           "link",
                           "mb_way",
+                          "merpay",
                           "mobilepay",
                           "multibanco",
                           "naver_pay",
@@ -265608,6 +266605,21 @@
                         "anyOf": [
                           {
                             "properties": {
+                              "financial_connections": {
+                                "description": "Additional fields for Financial Connections session creation.",
+                                "properties": {
+                                  "return_url": {
+                                    "description": "For webview integrations only. Upon completing OAuth login in the native browser, the user will be redirected to this URL to return to your app.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  }
+                                },
+                                "title": "financial_connections_options_param_api_params",
+                                "type": "object",
+                                "x-stripeMostCommon": [
+                                  "return_url"
+                                ]
+                              },
                               "mandate_options": {
                                 "description": "Additional fields for Mandate creation",
                                 "properties": {
@@ -265678,6 +266690,7 @@
                             "title": "payment_intent_payment_method_options_param",
                             "type": "object",
                             "x-stripeMostCommon": [
+                              "financial_connections",
                               "mandate_options",
                               "setup_future_usage",
                               "target_date",
@@ -270749,8 +271762,7 @@
                                 "enum": [
                                   "",
                                   "none",
-                                  "off_session",
-                                  "on_session"
+                                  "off_session"
                                 ],
                                 "type": "string"
                               },
@@ -277367,12 +278379,14 @@
                     "items": {
                       "enum": [
                         "acss_debit",
+                        "aeon_pay",
                         "affirm",
                         "afterpay_clearpay",
                         "alipay",
                         "alma",
                         "amazon_pay",
                         "au_becs_debit",
+                        "au_pay",
                         "bacs_debit",
                         "bancontact",
                         "billie",
@@ -277416,6 +278430,7 @@
                         "kriya",
                         "link",
                         "mb_way",
+                        "merpay",
                         "mobilepay",
                         "momo",
                         "mondu",
@@ -278473,12 +279488,14 @@
                         "items": {
                           "enum": [
                             "acss_debit",
+                            "aeon_pay",
                             "affirm",
                             "afterpay_clearpay",
                             "alipay",
                             "alma",
                             "amazon_pay",
                             "au_becs_debit",
+                            "au_pay",
                             "bacs_debit",
                             "bancontact",
                             "billie",
@@ -278505,6 +279522,7 @@
                             "konbini",
                             "kr_card",
                             "mb_way",
+                            "merpay",
                             "mobilepay",
                             "multibanco",
                             "naver_pay",
@@ -282523,6 +283541,12 @@
                           "transit_number"
                         ]
                       },
+                      "aeon_pay": {
+                        "description": "If this is a `aeon_pay` PaymentMethod, this hash contains details about the AEON Pay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "affirm": {
                         "description": "If this is an `affirm` PaymentMethod, this hash contains details about the Affirm payment method.",
                         "properties": {},
@@ -282586,6 +283610,12 @@
                           "account_number",
                           "bsb_number"
                         ]
+                      },
+                      "au_pay": {
+                        "description": "If this is a `au_pay` PaymentMethod, this hash contains details about the au PAY payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
                       },
                       "bacs_debit": {
                         "description": "If this is a `bacs_debit` PaymentMethod, this hash contains details about the Bacs Direct Debit bank account.",
@@ -283082,6 +284112,12 @@
                         "title": "param",
                         "type": "object"
                       },
+                      "merpay": {
+                        "description": "If this is a `merpay` PaymentMethod, this hash contains details about the Merpay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "metadata": {
                         "additionalProperties": {
                           "type": "string"
@@ -283500,12 +284536,14 @@
                         "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
                         "enum": [
                           "acss_debit",
+                          "aeon_pay",
                           "affirm",
                           "afterpay_clearpay",
                           "alipay",
                           "alma",
                           "amazon_pay",
                           "au_becs_debit",
+                          "au_pay",
                           "bacs_debit",
                           "bancontact",
                           "billie",
@@ -283532,6 +284570,7 @@
                           "kr_card",
                           "link",
                           "mb_way",
+                          "merpay",
                           "mobilepay",
                           "multibanco",
                           "naver_pay",
@@ -284068,6 +285107,21 @@
                         "anyOf": [
                           {
                             "properties": {
+                              "financial_connections": {
+                                "description": "Additional fields for Financial Connections session creation.",
+                                "properties": {
+                                  "return_url": {
+                                    "description": "For webview integrations only. Upon completing OAuth login in the native browser, the user will be redirected to this URL to return to your app.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  }
+                                },
+                                "title": "financial_connections_options_param_api_params",
+                                "type": "object",
+                                "x-stripeMostCommon": [
+                                  "return_url"
+                                ]
+                              },
                               "mandate_options": {
                                 "description": "Additional fields for Mandate creation",
                                 "properties": {
@@ -284138,6 +285192,7 @@
                             "title": "payment_intent_payment_method_options_param",
                             "type": "object",
                             "x-stripeMostCommon": [
+                              "financial_connections",
                               "mandate_options",
                               "setup_future_usage",
                               "target_date",
@@ -289209,8 +290264,7 @@
                                 "enum": [
                                   "",
                                   "none",
-                                  "off_session",
-                                  "on_session"
+                                  "off_session"
                                 ],
                                 "type": "string"
                               },
@@ -295026,6 +296080,7 @@
                         "sofort",
                         "sunbit",
                         "swish",
+                        "tamara",
                         "twint",
                         "upi",
                         "us_bank_account",
@@ -297009,6 +298064,7 @@
                             "sofort",
                             "sunbit",
                             "swish",
+                            "tamara",
                             "twint",
                             "upi",
                             "us_bank_account",
@@ -304287,12 +305343,14 @@
             "schema": {
               "enum": [
                 "acss_debit",
+                "aeon_pay",
                 "affirm",
                 "afterpay_clearpay",
                 "alipay",
                 "alma",
                 "amazon_pay",
                 "au_becs_debit",
+                "au_pay",
                 "bacs_debit",
                 "bancontact",
                 "billie",
@@ -304321,6 +305379,7 @@
                 "kr_card",
                 "link",
                 "mb_way",
+                "merpay",
                 "mobilepay",
                 "multibanco",
                 "naver_pay",
@@ -304457,6 +305516,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "aeon_pay": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "affirm": {
                   "explode": true,
                   "style": "deepObject"
@@ -304478,6 +305541,10 @@
                   "style": "deepObject"
                 },
                 "au_becs_debit": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "au_pay": {
                   "explode": true,
                   "style": "deepObject"
                 },
@@ -304602,6 +305669,10 @@
                   "style": "deepObject"
                 },
                 "mb_way": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "merpay": {
                   "explode": true,
                   "style": "deepObject"
                 },
@@ -304802,6 +305873,12 @@
                       "transit_number"
                     ]
                   },
+                  "aeon_pay": {
+                    "description": "If this is a `aeon_pay` PaymentMethod, this hash contains details about the AEON Pay payment method.",
+                    "properties": {},
+                    "title": "param",
+                    "type": "object"
+                  },
                   "affirm": {
                     "description": "If this is an `affirm` PaymentMethod, this hash contains details about the Affirm payment method.",
                     "properties": {},
@@ -304865,6 +305942,12 @@
                       "account_number",
                       "bsb_number"
                     ]
+                  },
+                  "au_pay": {
+                    "description": "If this is a `au_pay` PaymentMethod, this hash contains details about the au PAY payment method.",
+                    "properties": {},
+                    "title": "param",
+                    "type": "object"
                   },
                   "bacs_debit": {
                     "description": "If this is a `bacs_debit` PaymentMethod, this hash contains details about the Bacs Direct Debit bank account.",
@@ -305480,6 +306563,12 @@
                     "title": "param",
                     "type": "object"
                   },
+                  "merpay": {
+                    "description": "If this is a `merpay` PaymentMethod, this hash contains details about the Merpay payment method.",
+                    "properties": {},
+                    "title": "param",
+                    "type": "object"
+                  },
                   "metadata": {
                     "additionalProperties": {
                       "type": "string"
@@ -305899,12 +306988,14 @@
                     "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
                     "enum": [
                       "acss_debit",
+                      "aeon_pay",
                       "affirm",
                       "afterpay_clearpay",
                       "alipay",
                       "alma",
                       "amazon_pay",
                       "au_becs_debit",
+                      "au_pay",
                       "bacs_debit",
                       "bancontact",
                       "billie",
@@ -305933,6 +307024,7 @@
                       "kr_card",
                       "link",
                       "mb_way",
+                      "merpay",
                       "mobilepay",
                       "multibanco",
                       "naver_pay",
@@ -309554,7 +310646,7 @@
                             "type": "string"
                           }
                         },
-                        "title": "us_bank_account",
+                        "title": "us_bank_account_api_params",
                         "type": "object",
                         "x-stripeMostCommon": [
                           "return_code"
@@ -318433,7 +319525,7 @@
                               "type": "string"
                             }
                           ],
-                          "description": "The discounts applied to this line item."
+                          "description": "The discounts applied to this line item. Repeating coupons are only supported for recurring prices."
                         },
                         "price": {
                           "description": "The ID of the price object. One of `price` or `price_data` is required.",
@@ -321514,7 +322606,7 @@
                               "type": "string"
                             }
                           ],
-                          "description": "The discounts applied to this line item."
+                          "description": "The discounts applied to this line item. Repeating coupons are only supported for recurring prices."
                         },
                         "id": {
                           "description": "The ID of an existing line item on the quote.",
@@ -327727,9 +328819,25 @@
                             "description": "Describes the type of money movement.",
                             "enum": [
                               "card",
+                              "sepa_debit",
                               "us_bank_account"
                             ],
                             "type": "string"
+                          },
+                          "sepa_debit": {
+                            "description": "Describes SEPA debit money movement details.",
+                            "properties": {
+                              "creditor_id": {
+                                "description": "Supply the SEPA Creditor Identifier configured for the intended debit with your selected processor. Obtain it from your processor's SEPA configuration API or onboarding/support information. Do not supply a statement descriptor, IBAN, processor merchant-account ID, or mandate reference. If the creditor identifier is unknown, omit it.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "title": "money_movement_sepa_debit_additional_data",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "creditor_id"
+                            ]
                           },
                           "us_bank_account": {
                             "description": "Describes US bank account money movement details.",
@@ -327780,6 +328888,7 @@
                         "x-stripeMostCommon": [
                           "card",
                           "money_movement_type",
+                          "sepa_debit",
                           "us_bank_account"
                         ]
                       },
@@ -329333,12 +330442,14 @@
                         "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
                         "enum": [
                           "acss_debit",
+                          "aeon_pay",
                           "affirm",
                           "afterpay_clearpay",
                           "alipay",
                           "alma",
                           "amazon_pay",
                           "au_becs_debit",
+                          "au_pay",
                           "bacs_debit",
                           "bancontact",
                           "billie",
@@ -329367,6 +330478,7 @@
                           "kr_card",
                           "link",
                           "mb_way",
+                          "merpay",
                           "mobilepay",
                           "multibanco",
                           "naver_pay",
@@ -330723,6 +331835,7 @@
                       "browser_fingerprinting",
                       "bucket_seconds",
                       "bucket_size",
+                      "business_structure",
                       "business_type",
                       "buyer_country",
                       "calculation_type",
@@ -331140,6 +332253,7 @@
                       "rev_rec_month_summary_line_item",
                       "risk_level",
                       "risk_score",
+                      "role_ids",
                       "roles",
                       "rule_action",
                       "rule_attribute",
@@ -333540,6 +334654,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "radar_options": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "setup_details": {
                   "explode": true,
                   "style": "deepObject"
@@ -333557,12 +334675,14 @@
                     "items": {
                       "enum": [
                         "acss_debit",
+                        "aeon_pay",
                         "affirm",
                         "afterpay_clearpay",
                         "alipay",
                         "alma",
                         "amazon_pay",
                         "au_becs_debit",
+                        "au_pay",
                         "bacs_debit",
                         "bancontact",
                         "billie",
@@ -333606,6 +334726,7 @@
                         "kriya",
                         "link",
                         "mb_way",
+                        "merpay",
                         "mobilepay",
                         "momo",
                         "mondu",
@@ -333726,12 +334847,14 @@
                     "items": {
                       "enum": [
                         "acss_debit",
+                        "aeon_pay",
                         "affirm",
                         "afterpay_clearpay",
                         "alipay",
                         "alma",
                         "amazon_pay",
                         "au_becs_debit",
+                        "au_pay",
                         "bacs_debit",
                         "bancontact",
                         "billie",
@@ -333758,6 +334881,7 @@
                         "konbini",
                         "kr_card",
                         "mb_way",
+                        "merpay",
                         "mobilepay",
                         "multibanco",
                         "naver_pay",
@@ -333961,6 +335085,12 @@
                           "transit_number"
                         ]
                       },
+                      "aeon_pay": {
+                        "description": "If this is a `aeon_pay` PaymentMethod, this hash contains details about the AEON Pay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "affirm": {
                         "description": "If this is an `affirm` PaymentMethod, this hash contains details about the Affirm payment method.",
                         "properties": {},
@@ -334024,6 +335154,12 @@
                           "account_number",
                           "bsb_number"
                         ]
+                      },
+                      "au_pay": {
+                        "description": "If this is a `au_pay` PaymentMethod, this hash contains details about the au PAY payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
                       },
                       "bacs_debit": {
                         "description": "If this is a `bacs_debit` PaymentMethod, this hash contains details about the Bacs Direct Debit bank account.",
@@ -334520,6 +335656,12 @@
                         "title": "param",
                         "type": "object"
                       },
+                      "merpay": {
+                        "description": "If this is a `merpay` PaymentMethod, this hash contains details about the Merpay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "metadata": {
                         "additionalProperties": {
                           "type": "string"
@@ -334938,12 +336080,14 @@
                         "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
                         "enum": [
                           "acss_debit",
+                          "aeon_pay",
                           "affirm",
                           "afterpay_clearpay",
                           "alipay",
                           "alma",
                           "amazon_pay",
                           "au_becs_debit",
+                          "au_pay",
                           "bacs_debit",
                           "bancontact",
                           "billie",
@@ -334970,6 +336114,7 @@
                           "kr_card",
                           "link",
                           "mb_way",
+                          "merpay",
                           "mobilepay",
                           "multibanco",
                           "naver_pay",
@@ -336422,7 +337567,29 @@
                       "stripe_balance",
                       "upi",
                       "us_bank_account",
-                      "wechat_pay"
+                      "wechat_pay",
+                      "wero"
+                    ]
+                  },
+                  "radar_options": {
+                    "description": "Options to configure Radar.",
+                    "properties": {
+                      "is_free_trial_transaction": {
+                        "description": "Whether this transaction starts a free trial. Set to `true` for a free trial or `false` otherwise. If omitted, retains the previously set value. If never set, Stripe uses Billing or metadata to determine trial status.",
+                        "type": "boolean"
+                      },
+                      "session": {
+                        "description": "A [Radar Session](https://docs.stripe.com/radar/radar-session) is a snapshot of the browser metadata and device details that help Radar make more accurate predictions on your payments.",
+                        "maxLength": 5000,
+                        "type": "string"
+                      }
+                    },
+                    "title": "intent_radar_options_api_params",
+                    "type": "object",
+                    "x-stripeMostCommon": [
+                      "is_free_trial_transaction",
+                      "session",
+                      "skip_rules"
                     ]
                   },
                   "return_url": {
@@ -336725,12 +337892,14 @@
                         "items": {
                           "enum": [
                             "acss_debit",
+                            "aeon_pay",
                             "affirm",
                             "afterpay_clearpay",
                             "alipay",
                             "alma",
                             "amazon_pay",
                             "au_becs_debit",
+                            "au_pay",
                             "bacs_debit",
                             "bancontact",
                             "billie",
@@ -336774,6 +337943,7 @@
                             "kriya",
                             "link",
                             "mb_way",
+                            "merpay",
                             "mobilepay",
                             "momo",
                             "mondu",
@@ -336869,12 +338039,14 @@
                         "items": {
                           "enum": [
                             "acss_debit",
+                            "aeon_pay",
                             "affirm",
                             "afterpay_clearpay",
                             "alipay",
                             "alma",
                             "amazon_pay",
                             "au_becs_debit",
+                            "au_pay",
                             "bacs_debit",
                             "bancontact",
                             "billie",
@@ -336901,6 +338073,7 @@
                             "konbini",
                             "kr_card",
                             "mb_way",
+                            "merpay",
                             "mobilepay",
                             "multibanco",
                             "naver_pay",
@@ -337036,6 +338209,12 @@
                           "transit_number"
                         ]
                       },
+                      "aeon_pay": {
+                        "description": "If this is a `aeon_pay` PaymentMethod, this hash contains details about the AEON Pay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "affirm": {
                         "description": "If this is an `affirm` PaymentMethod, this hash contains details about the Affirm payment method.",
                         "properties": {},
@@ -337099,6 +338278,12 @@
                           "account_number",
                           "bsb_number"
                         ]
+                      },
+                      "au_pay": {
+                        "description": "If this is a `au_pay` PaymentMethod, this hash contains details about the au PAY payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
                       },
                       "bacs_debit": {
                         "description": "If this is a `bacs_debit` PaymentMethod, this hash contains details about the Bacs Direct Debit bank account.",
@@ -337595,6 +338780,12 @@
                         "title": "param",
                         "type": "object"
                       },
+                      "merpay": {
+                        "description": "If this is a `merpay` PaymentMethod, this hash contains details about the Merpay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "metadata": {
                         "additionalProperties": {
                           "type": "string"
@@ -338013,12 +339204,14 @@
                         "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
                         "enum": [
                           "acss_debit",
+                          "aeon_pay",
                           "affirm",
                           "afterpay_clearpay",
                           "alipay",
                           "alma",
                           "amazon_pay",
                           "au_becs_debit",
+                          "au_pay",
                           "bacs_debit",
                           "bancontact",
                           "billie",
@@ -338045,6 +339238,7 @@
                           "kr_card",
                           "link",
                           "mb_way",
+                          "merpay",
                           "mobilepay",
                           "multibanco",
                           "naver_pay",
@@ -339497,7 +340691,8 @@
                       "stripe_balance",
                       "upi",
                       "us_bank_account",
-                      "wechat_pay"
+                      "wechat_pay",
+                      "wero"
                     ]
                   },
                   "setup_details": {
@@ -339737,6 +340932,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "radar_options": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "setup_details": {
                   "explode": true,
                   "style": "deepObject"
@@ -339750,12 +340949,14 @@
                     "items": {
                       "enum": [
                         "acss_debit",
+                        "aeon_pay",
                         "affirm",
                         "afterpay_clearpay",
                         "alipay",
                         "alma",
                         "amazon_pay",
                         "au_becs_debit",
+                        "au_pay",
                         "bacs_debit",
                         "bancontact",
                         "billie",
@@ -339799,6 +341000,7 @@
                         "kriya",
                         "link",
                         "mb_way",
+                        "merpay",
                         "mobilepay",
                         "momo",
                         "mondu",
@@ -340055,6 +341257,12 @@
                           "transit_number"
                         ]
                       },
+                      "aeon_pay": {
+                        "description": "If this is a `aeon_pay` PaymentMethod, this hash contains details about the AEON Pay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "affirm": {
                         "description": "If this is an `affirm` PaymentMethod, this hash contains details about the Affirm payment method.",
                         "properties": {},
@@ -340118,6 +341326,12 @@
                           "account_number",
                           "bsb_number"
                         ]
+                      },
+                      "au_pay": {
+                        "description": "If this is a `au_pay` PaymentMethod, this hash contains details about the au PAY payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
                       },
                       "bacs_debit": {
                         "description": "If this is a `bacs_debit` PaymentMethod, this hash contains details about the Bacs Direct Debit bank account.",
@@ -340614,6 +341828,12 @@
                         "title": "param",
                         "type": "object"
                       },
+                      "merpay": {
+                        "description": "If this is a `merpay` PaymentMethod, this hash contains details about the Merpay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "metadata": {
                         "additionalProperties": {
                           "type": "string"
@@ -341032,12 +342252,14 @@
                         "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
                         "enum": [
                           "acss_debit",
+                          "aeon_pay",
                           "affirm",
                           "afterpay_clearpay",
                           "alipay",
                           "alma",
                           "amazon_pay",
                           "au_becs_debit",
+                          "au_pay",
                           "bacs_debit",
                           "bancontact",
                           "billie",
@@ -341064,6 +342286,7 @@
                           "kr_card",
                           "link",
                           "mb_way",
+                          "merpay",
                           "mobilepay",
                           "multibanco",
                           "naver_pay",
@@ -342516,7 +343739,29 @@
                       "stripe_balance",
                       "upi",
                       "us_bank_account",
-                      "wechat_pay"
+                      "wechat_pay",
+                      "wero"
+                    ]
+                  },
+                  "radar_options": {
+                    "description": "Options to configure Radar.",
+                    "properties": {
+                      "is_free_trial_transaction": {
+                        "description": "Whether this transaction starts a free trial. Set to `true` for a free trial or `false` otherwise. If omitted, retains the previously set value. If never set, Stripe uses Billing or metadata to determine trial status.",
+                        "type": "boolean"
+                      },
+                      "session": {
+                        "description": "A [Radar Session](https://docs.stripe.com/radar/radar-session) is a snapshot of the browser metadata and device details that help Radar make more accurate predictions on your payments.",
+                        "maxLength": 5000,
+                        "type": "string"
+                      }
+                    },
+                    "title": "intent_radar_options_api_params",
+                    "type": "object",
+                    "x-stripeMostCommon": [
+                      "is_free_trial_transaction",
+                      "session",
+                      "skip_rules"
                     ]
                   },
                   "return_url": {
@@ -353386,6 +354631,18 @@
             "x-stripeLessCommon": true
           },
           {
+            "description": "The Billing Cadence which controls the timing of recurring invoice generation for this subscription. If unset, the subscription will bill according to its own configured schedule and create its own invoices. If set, this subscription will be billed by the cadence instead, potentially sharing invoices with the other subscriptions linked to that Cadence.",
+            "in": "query",
+            "name": "billing_cadence",
+            "required": false,
+            "schema": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "style": "form",
+            "x-stripeLessCommon": true
+          },
+          {
             "description": "Filter for subscriptions that have the specified billing group.",
             "in": "query",
             "name": "billing_group",
@@ -354170,6 +355427,11 @@
                     "description": "A past timestamp to backdate the subscription's start date to. If set, the first invoice will contain line items for the timespan between the start date and the current time. Can be combined with trials and the billing cycle anchor.",
                     "format": "unix-time",
                     "type": "integer"
+                  },
+                  "billing_cadence": {
+                    "description": "The Billing Cadence which controls the timing of recurring invoice generation for this subscription. If unset, the subscription will bill according to its own configured schedule and create its own invoices. If set, this subscription will be billed by the cadence instead, potentially sharing invoices with the other subscriptions linked to that Cadence.",
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "billing_cycle_anchor": {
                     "description": "A future timestamp in UTC format to anchor the subscription's [billing cycle](https://docs.stripe.com/subscriptions/billing-cycle). The anchor is the reference point that aligns future billing cycle dates. It sets the day of week for `week` intervals, the day of month for `month` and `year` intervals, and the month of year for `year` intervals.",
@@ -357262,6 +358524,11 @@
                       "enabled",
                       "liability"
                     ]
+                  },
+                  "billing_cadence": {
+                    "description": "The Billing Cadence which controls the timing of recurring invoice generation for this subscription. If unset, the subscription will bill according to its own configured schedule and create its own invoices. If set, this subscription will be billed by the cadence instead, potentially sharing invoices with the other subscriptions linked to that Cadence.",
+                    "maxLength": 5000,
+                    "type": "string"
                   },
                   "billing_cycle_anchor": {
                     "description": "Controls how the subscription's billing cycle anchor changes. Set `type` to `now` to reset the billing cycle anchor to the current time (in UTC), or `unchanged` to preserve it. For more information, see the billing cycle [documentation](https://docs.stripe.com/billing/subscriptions/billing-cycle).",
@@ -361293,6 +362560,349 @@
         },
         "summary": "Retrieve a Calculation's line items",
         "x-stableId": "list_tax_calculation_line_items"
+      }
+    },
+    "/v1/tax/certificates": {
+      "get": {
+        "description": "<p>List certificates for an existing tax exemption.</p>",
+        "operationId": "GetTaxCertificates",
+        "parameters": [
+          {
+            "description": "A cursor for use in pagination. `ending_before` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, starting with `obj_bar`, your subsequent call can include `ending_before=obj_bar` in order to fetch the previous page of the list.",
+            "in": "query",
+            "name": "ending_before",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form",
+            "x-stripeLessCommon": true
+          },
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "explode": true,
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "schema": {
+              "items": {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "style": "deepObject",
+            "x-stripeLessCommon": true
+          },
+          {
+            "description": "A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "style": "form",
+            "x-stripeLessCommon": true
+          },
+          {
+            "description": "A cursor for use in pagination. `starting_after` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with `obj_foo`, your subsequent call can include `starting_after=obj_foo` in order to fetch the next page of the list.",
+            "in": "query",
+            "name": "starting_after",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form",
+            "x-stripeLessCommon": true
+          },
+          {
+            "description": "The ID of an existing tax exemption.",
+            "in": "query",
+            "name": "tax_exemption",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form",
+            "x-stripeLessCommon": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {},
+              "schema": {
+                "additionalProperties": false,
+                "properties": {},
+                "type": "object"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "",
+                  "properties": {
+                    "data": {
+                      "description": "Details about each object.",
+                      "items": {
+                        "$ref": "#/components/schemas/tax.certificate"
+                      },
+                      "type": "array"
+                    },
+                    "has_more": {
+                      "description": "True if this list has another page of items after this one that can be fetched.",
+                      "type": "boolean"
+                    },
+                    "object": {
+                      "description": "String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
+                      "enum": [
+                        "list"
+                      ],
+                      "type": "string"
+                    },
+                    "url": {
+                      "description": "The URL where this list can be accessed.",
+                      "maxLength": 5000,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "has_more",
+                    "object",
+                    "url"
+                  ],
+                  "title": "TaxCertificatesResourceList",
+                  "type": "object",
+                  "x-expandableFields": [
+                    "data"
+                  ],
+                  "x-stripeMostCommon": [
+                    "data",
+                    "has_more",
+                    "object",
+                    "url"
+                  ]
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        },
+        "summary": "List tax certificates",
+        "x-stableId": "list_tax_certificates"
+      },
+      "post": {
+        "description": "<p>Create a tax certificate associated with a tax exemption.</p>",
+        "operationId": "PostTaxCertificates",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {
+                "expand": {
+                  "explode": true,
+                  "style": "deepObject"
+                }
+              },
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "expand": {
+                    "description": "Specifies which fields in the response should be expanded.",
+                    "items": {
+                      "maxLength": 5000,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "file": {
+                    "description": "The ID of a file uploaded with purpose `tax_certificate`.",
+                    "maxLength": 5000,
+                    "type": "string"
+                  },
+                  "tax_exemption": {
+                    "description": "The ID of an existing tax exemption.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file",
+                  "tax_exemption"
+                ],
+                "type": "object",
+                "x-stripeMostCommon": [
+                  "file",
+                  "tax_exemption"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tax.certificate"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        },
+        "summary": "Create a tax certificate",
+        "x-stableId": "create_tax_certificate"
+      }
+    },
+    "/v1/tax/certificates/{id}": {
+      "delete": {
+        "description": "<p>Delete a tax certificate associated with a tax exemption.</p>",
+        "operationId": "DeleteTaxCertificatesId",
+        "parameters": [
+          {
+            "description": "Unique identifier for the object.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {},
+              "schema": {
+                "additionalProperties": false,
+                "properties": {},
+                "type": "object"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/deleted_tax.certificate"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        },
+        "summary": "Delete a tax certificate",
+        "x-stableId": "delete_tax_certificate"
+      },
+      "get": {
+        "description": "<p>Retrieve a tax certificate associated with a tax exemption.</p>",
+        "operationId": "GetTaxCertificatesId",
+        "parameters": [
+          {
+            "description": "Specifies which fields in the response should be expanded.",
+            "explode": true,
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "schema": {
+              "items": {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "style": "deepObject",
+            "x-stripeLessCommon": true
+          },
+          {
+            "description": "Unique identifier for the object.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {},
+              "schema": {
+                "additionalProperties": false,
+                "properties": {},
+                "type": "object"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tax.certificate"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            },
+            "description": "Error response."
+          }
+        },
+        "summary": "Retrieve a tax certificate",
+        "x-stableId": "retrieve_tax_certificate"
       }
     },
     "/v1/tax/forms": {
@@ -376523,6 +378133,12 @@
                           "transit_number"
                         ]
                       },
+                      "aeon_pay": {
+                        "description": "If this is a `aeon_pay` PaymentMethod, this hash contains details about the AEON Pay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "affirm": {
                         "description": "If this is an `affirm` PaymentMethod, this hash contains details about the Affirm payment method.",
                         "properties": {},
@@ -376586,6 +378202,12 @@
                           "account_number",
                           "bsb_number"
                         ]
+                      },
+                      "au_pay": {
+                        "description": "If this is a `au_pay` PaymentMethod, this hash contains details about the au PAY payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
                       },
                       "bacs_debit": {
                         "description": "If this is a `bacs_debit` PaymentMethod, this hash contains details about the Bacs Direct Debit bank account.",
@@ -377082,6 +378704,12 @@
                         "title": "param",
                         "type": "object"
                       },
+                      "merpay": {
+                        "description": "If this is a `merpay` PaymentMethod, this hash contains details about the Merpay payment method.",
+                        "properties": {},
+                        "title": "param",
+                        "type": "object"
+                      },
                       "metadata": {
                         "additionalProperties": {
                           "type": "string"
@@ -377500,12 +379128,14 @@
                         "description": "The type of the PaymentMethod. An additional hash is included on the PaymentMethod with a name matching this value. It contains additional information specific to the PaymentMethod type.",
                         "enum": [
                           "acss_debit",
+                          "aeon_pay",
                           "affirm",
                           "afterpay_clearpay",
                           "alipay",
                           "alma",
                           "amazon_pay",
                           "au_becs_debit",
+                          "au_pay",
                           "bacs_debit",
                           "bancontact",
                           "billie",
@@ -377532,6 +379162,7 @@
                           "kr_card",
                           "link",
                           "mb_way",
+                          "merpay",
                           "mobilepay",
                           "multibanco",
                           "naver_pay",
