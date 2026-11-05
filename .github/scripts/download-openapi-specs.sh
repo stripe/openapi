@@ -67,10 +67,17 @@ download_fixture() {
   if [[ "$LAYOUT" == "canary" ]]; then
     local source=$1
     local destination=$2
+    local temporary_file
 
     mkdir -p "$(dirname "$destination")"
-    curl -fsSL "$BASE/$(source_path "$source")" -o "$destination"
-    FIXTURE_FILES+=("$destination")
+    temporary_file=$(mktemp "${destination}.XXXXXX")
+    if curl -fsSL "$BASE/$(source_path "$source")" -o "$temporary_file"; then
+      mv "$temporary_file" "$destination"
+      FIXTURE_FILES+=("$destination")
+    else
+      echo "Could not download optional fixture $source; preserving any existing fixture."
+      rm -f "$temporary_file"
+    fi
   else
     download_optional "$@"
   fi

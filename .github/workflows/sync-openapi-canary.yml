@@ -129,3 +129,29 @@ jobs:
           RUN_MODE: ${{ inputs.run_mode }}
           VERSION: ${{ inputs.version }}
         run: .github/scripts/sync-openapi-canary.sh
+
+      - name: Fetch sdk-codegen dispatch token
+        if: inputs.run_mode == 'publish'
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: sdk-codegen-token
+        with:
+          app-id: ${{ secrets.GH_APP_STRIPE_OPENAPI_APP_ID }}
+          private-key: ${{ secrets.GH_APP_STRIPE_OPENAPI_PRIVATE_KEY }}
+          owner: stripe
+          repositories: sdk-codegen
+          permission-actions: write
+
+      - name: Trigger sdk-codegen OpenAPI canary update
+        if: inputs.run_mode == 'publish'
+        env:
+          GH_API_TOKEN: ${{ steps.sdk-codegen-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          curl --fail-with-body \
+            -X POST \
+            -H "Authorization: token ${GH_API_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Content-Type: application/json" \
+            https://api.github.com/repos/stripe/sdk-codegen/actions/workflows/update-openapi-canary.yml/dispatches \
+            --data '{"ref":"master"}'

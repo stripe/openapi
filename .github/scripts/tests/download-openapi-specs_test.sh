@@ -28,6 +28,7 @@ curl() {
   done
 
   if [[ -n "${MOCK_CURL_FAILURE:-}" && "$url" == *"$MOCK_CURL_FAILURE"* ]]; then
+    printf 'partial download\n' > "$output"
     return 22
   fi
 
@@ -119,16 +120,48 @@ mkdir -p "$optional_dir"
 )
 test ! -e "$optional_dir/openapi/fixtures3.json"
 
-required_dir="$TEST_ROOT/required-fixture"
-mkdir -p "$required_dir"
+missing_canary_fixtures_dir="$TEST_ROOT/missing-canary-fixtures"
+mkdir -p "$missing_canary_fixtures_dir"
+(
+  cd "$missing_canary_fixtures_dir"
+  GITHUB_ENV="$missing_canary_fixtures_dir/github-env" \
+    MOCK_CURL_LOG="$missing_canary_fixtures_dir/curl.log" \
+    MOCK_CURL_FAILURE=fixtures3 \
+    "$DOWNLOAD_SCRIPT" development all true canary
+)
+test -f "$missing_canary_fixtures_dir/openapi/canary/ga/sdk.json"
+test -f "$missing_canary_fixtures_dir/openapi/canary/beta/sdk.json"
+test -f "$missing_canary_fixtures_dir/openapi/canary/private-preview/sdk.json"
+test ! -e "$missing_canary_fixtures_dir/openapi/canary/private-preview/fixtures3.private_preview.json"
+test ! -e "$missing_canary_fixtures_dir/openapi/canary/private-preview/fixtures3.private_preview.yaml"
+grep -Fxq "FIXTURE_FILES='' " "$missing_canary_fixtures_dir/github-env"
+grep -q '^SPEC_FILES=openapi/canary/ga/spec3.sdk.yaml ' "$missing_canary_fixtures_dir/github-env"
+
+existing_canary_fixture_dir="$TEST_ROOT/existing-canary-fixture"
+mkdir -p "$existing_canary_fixture_dir/openapi/canary/private-preview"
+existing_fixture="$existing_canary_fixture_dir/openapi/canary/private-preview/fixtures3.private_preview.json"
+printf 'existing fixture\n' > "$existing_fixture"
+(
+  cd "$existing_canary_fixture_dir"
+  GITHUB_ENV="$existing_canary_fixture_dir/github-env" \
+    MOCK_CURL_LOG="$existing_canary_fixture_dir/curl.log" \
+    MOCK_CURL_FAILURE=fixtures3.private_preview.json \
+    "$DOWNLOAD_SCRIPT" development private_preview true canary
+)
+test "$(cat "$existing_fixture")" = 'existing fixture'
+grep -Fxq 'FIXTURE_FILES=openapi/canary/private-preview/fixtures3.private_preview.yaml ' \
+  "$existing_canary_fixture_dir/github-env"
+
+required_spec_dir="$TEST_ROOT/required-spec"
+mkdir -p "$required_spec_dir"
 if (
-  cd "$required_dir"
-  GITHUB_ENV="$required_dir/github-env" \
-    MOCK_CURL_LOG="$required_dir/curl.log" \
-    MOCK_CURL_FAILURE=fixtures3.json \
-    "$DOWNLOAD_SCRIPT" 2026-10-01.clover ga false canary
+  cd "$required_spec_dir"
+  GITHUB_ENV="$required_spec_dir/github-env" \
+    MOCK_CURL_LOG="$required_spec_dir/curl.log" \
+    MOCK_CURL_FAILURE=spec3.private_preview.sdk.json \
+    "$DOWNLOAD_SCRIPT" development all true canary
 ); then
-  echo "Canary download unexpectedly accepted a missing fixture" >&2
+  echo "Canary download unexpectedly accepted a missing spec" >&2
   exit 1
 fi
 
