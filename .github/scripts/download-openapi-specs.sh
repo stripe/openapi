@@ -50,29 +50,19 @@ download_required() {
   SPEC_FILES+=("$destination")
 }
 
-download_optional() {
+download_fixture() {
   local source=$1
   local destination=$2
+  local temporary_file
 
   mkdir -p "$(dirname "$destination")"
-  if curl -fsSL "$BASE/$(source_path "$source")" -o "$destination"; then
+  temporary_file=$(mktemp "${destination}.XXXXXX")
+  if curl -fsSL "$BASE/$(source_path "$source")" -o "$temporary_file"; then
+    mv "$temporary_file" "$destination"
     FIXTURE_FILES+=("$destination")
   else
-    echo "Optional file $source absent from CDN; skipping."
-    rm -f "$destination"
-  fi
-}
-
-download_fixture() {
-  if [[ "$LAYOUT" == "canary" ]]; then
-    local source=$1
-    local destination=$2
-
-    mkdir -p "$(dirname "$destination")"
-    curl -fsSL "$BASE/$(source_path "$source")" -o "$destination"
-    FIXTURE_FILES+=("$destination")
-  else
-    download_optional "$@"
+    echo "Could not download optional fixture $source; preserving any existing fixture."
+    rm -f "$temporary_file"
   fi
 }
 
