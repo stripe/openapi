@@ -5565,14 +5565,14 @@ components:
           type: string
         exchange_rate:
           description: >-
-            If applicable, this transaction uses an exchange rate. If money
-            converts from currency A to currency B, then the `amount` in
-            currency A, multiplied by the `exchange_rate`, equals the `amount`
-            in currency B. For example, if you charge a customer 10.00 EUR, the
-            PaymentIntent's `amount` is `1000` and `currency` is `eur`. If this
-            converts to 12.34 USD in your Stripe account, the
-            BalanceTransaction's `amount` is `1234`, its `currency` is `usd`,
-            and the `exchange_rate` is `1.234`.
+            The exchange rate used for this transaction, if applicable.
+            Multiplying the source `amount` by the `exchange_rate` gives the
+            destination `amount`, both in their currencies' smallest units. For
+            example, `1000` EUR cents converts to `1234` USD cents at `1.234`.
+            For a zero-decimal currency such as JPY, `1000` JPY converts to
+            `640` USD cents (6.40 USD) at `0.64`, equivalent to `0.0064` USD per
+            JPY. For JPY to USD, the API multiplier is 100 times the whole-unit
+            rate because JPY amounts use yen and USD amounts use cents.
           nullable: true
           type: number
         fee:
@@ -9707,6 +9707,7 @@ components:
             - payment_failed
           nullable: true
           type: string
+          x-stripeBypassValidation: true
           x-stripeEnum:
             kind: open
             values:
@@ -13058,6 +13059,14 @@ components:
             - personal
           nullable: true
           type: string
+          x-stripeBypassValidation: true
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: Transactions are made for business reasons
+                value: business
+              - description: Transactions are made for personal reasons
+                value: personal
       required:
         - interval_description
         - payment_schedule
@@ -17965,17 +17974,30 @@ components:
         - individual
     coupon:
       description: >-
-        A coupon contains information about a percent-off or amount-off discount
-        you
+        A coupon defines a fixed or custom discount. Fixed discounts take a
+        percentage or amount off, while
 
-        might want to apply to a customer. Coupons may be applied to
+        [custom
+        coupons](https://docs.stripe.com/billing/subscriptions/script-coupons)
+        use scripts to calculate discounts dynamically for subscriptions and
+        invoices.
+
+        You can apply coupons to customers'
         [subscriptions](https://docs.stripe.com/api#subscriptions),
         [invoices](https://docs.stripe.com/api#invoices),
 
-        [checkout sessions](https://docs.stripe.com/api/checkout/sessions),
-        [quotes](https://docs.stripe.com/api#quotes), and more. Coupons do not
-        work with conventional one-off [charges](/api/charges/create) or
-        [payment intents](https://docs.stripe.com/api/payment_intents).
+        [Checkout Sessions](https://docs.stripe.com/api/checkout/sessions),
+        [quotes](https://docs.stripe.com/api#quotes), and other supported
+        billing objects.
+
+        The optional
+        [applies_to.products](/api/coupons/object#coupon_object-applies_to-products)
+        property limits which product line items are eligible for the discount,
+        independently of where you apply the coupon.
+
+        Coupons don't work with conventional one-off
+        [charges](/api/charges/create) or [payment
+        intents](https://docs.stripe.com/api/payment_intents).
       properties:
         amount_off:
           description: >-
@@ -18008,6 +18030,8 @@ components:
             code](https://www.iso.org/iso-4217-currency-codes.html) and a
             [supported currency](https://stripe.com/docs/currencies).
           type: object
+        custom:
+          $ref: '#/components/schemas/coupon_custom'
         duration:
           description: >-
             One of `forever`, `once`, or `repeating`. Describes how long a
@@ -18091,11 +18115,11 @@ components:
           description: The type of coupon logic used to calculate the discount.
           enum:
             - amount_off
+            - custom
             - percent_off
             - script
           nullable: true
           type: string
-          x-stripeBypassValidation: true
         valid:
           description: >-
             Taking account of the above properties, whether this coupon can
@@ -18122,6 +18146,7 @@ components:
       x-expandableFields:
         - applies_to
         - currency_options
+        - custom
         - script
       x-resourceId: coupon
       x-stableId: coupon
@@ -18227,6 +18252,45 @@ components:
       x-expandableFields: []
       x-stripeMostCommon:
         - amount_off
+    coupon_custom:
+      description: ''
+      properties:
+        configuration:
+          additionalProperties: true
+          description: The configuration supplied to the extension.
+          type: object
+        extension:
+          $ref: '#/components/schemas/coupon_custom_extension'
+      required:
+        - configuration
+        - extension
+      title: CouponCustom
+      type: object
+      x-expandableFields:
+        - extension
+      x-stripeMostCommon:
+        - configuration
+        - extension
+    coupon_custom_extension:
+      description: ''
+      properties:
+        id:
+          description: The Extension Prototype ID.
+          maxLength: 5000
+          type: string
+        version:
+          description: The semantic version of the extension.
+          maxLength: 5000
+          type: string
+      required:
+        - id
+        - version
+      title: CouponCustomExtension
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - id
+        - version
     credit_balance:
       description: ''
       properties:
@@ -30708,6 +30772,11 @@ components:
             will equal `customer.address`. Once the invoice is finalized, this
             field will no longer be updated.
           nullable: true
+        customer_balance:
+          anyOf:
+            - $ref: '#/components/schemas/invoices_resource_customer_balance'
+          description: The customer balance amounts applied to this invoice.
+          nullable: true
         customer_email:
           description: >-
             The customer's email. Until the invoice is finalized, this field
@@ -31315,6 +31384,7 @@ components:
         - custom_fields
         - customer
         - customer_address
+        - customer_balance
         - customer_shipping
         - customer_tax_ids
         - default_margins
@@ -33653,6 +33723,35 @@ components:
       x-stripeMostCommon:
         - client_secret
         - type
+    invoices_resource_customer_balance:
+      description: ''
+      properties:
+        applied_balance:
+          description: >-
+            The total amount of customer balance applied to this invoice
+            (automatically + manually).
+          type: integer
+        automatically_applied_balance:
+          description: >-
+            The amount of customer balance automatically applied during invoice
+            finalization.
+          type: integer
+        manually_applied_balance:
+          description: >-
+            The total amount of customer balance manually applied after
+            finalization.
+          type: integer
+      required:
+        - applied_balance
+        - automatically_applied_balance
+        - manually_applied_balance
+      title: InvoicesResourceCustomerBalance
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - applied_balance
+        - automatically_applied_balance
+        - manually_applied_balance
     invoices_resource_from_invoice:
       description: ''
       properties:
@@ -38259,11 +38358,13 @@ components:
         - business_name
         - carrier
         - customs
+        - delivered_at
         - eta
         - name
         - phone_number
         - require_signature
         - service
+        - shipped_at
         - status
         - tracking_number
         - tracking_url
@@ -51599,7 +51700,9 @@ components:
       description: ''
       properties:
         arrival_date:
-          description: The timestamp when the microdeposits are expected to land.
+          description: >-
+            The timestamp when the microdeposits are expected to land. Null for
+            instant microdeposits.
           format: unix-time
           type: integer
         hosted_verification_url:
@@ -55787,14 +55890,14 @@ components:
       properties:
         address_line1_check:
           description: >-
-            If a address line1 was provided, results of the check, one of
+            If an address line1 was provided, results of the check, one of
             `pass`, `fail`, `unavailable`, or `unchecked`.
           maxLength: 5000
           nullable: true
           type: string
         address_postal_code_check:
           description: >-
-            If a address postal code was provided, results of the check, one of
+            If an address postal code was provided, results of the check, one of
             `pass`, `fail`, `unavailable`, or `unchecked`.
           maxLength: 5000
           nullable: true
@@ -57929,14 +58032,14 @@ components:
       properties:
         address_line1_check:
           description: >-
-            If a address line1 was provided, results of the check, one of
+            If an address line1 was provided, results of the check, one of
             `pass`, `fail`, `unavailable`, or `unchecked`.
           maxLength: 5000
           nullable: true
           type: string
         address_postal_code_check:
           description: >-
-            If a address postal code was provided, results of the check, one of
+            If an address postal code was provided, results of the check, one of
             `pass`, `fail`, `unavailable`, or `unchecked`.
           maxLength: 5000
           nullable: true
@@ -58493,13 +58596,20 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        funding_sources:
+          description: Details about the funding sources used for this Link payment.
+          items:
+            $ref: '#/components/schemas/payment_method_details_link_funding_source'
+          type: array
       required:
         - funding_source_group
       title: payment_method_details_card_wallet_link
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+        - funding_sources
       x-stripeMostCommon:
         - funding_source_group
+        - funding_sources
     payment_method_details_card_wallet_masterpass:
       description: ''
       properties:
@@ -59554,14 +59664,237 @@ components:
             applied to this Link payment at confirmation time.
           maxLength: 5000
           type: string
+        funding_sources:
+          description: Details about the funding sources used for this Link payment.
+          items:
+            $ref: '#/components/schemas/payment_method_details_link_funding_source'
+          type: array
       required:
         - country
       title: payment_method_details_link
       type: object
-      x-expandableFields: []
+      x-expandableFields:
+        - funding_sources
       x-stripeMostCommon:
         - country
         - funding_source_group
+        - funding_sources
+    payment_method_details_link_funding_source:
+      description: ''
+      properties:
+        card:
+          $ref: '#/components/schemas/payment_method_details_link_funding_source_card'
+        type:
+          description: The type of funding source used for this Link payment.
+          enum:
+            - card
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - value: card
+      required:
+        - card
+        - type
+      title: payment_method_details_link_funding_source
+      type: object
+      x-expandableFields:
+        - card
+      x-stripeMostCommon:
+        - card
+        - type
+    payment_method_details_link_funding_source_card:
+      description: ''
+      properties:
+        amount_authorized:
+          description: The authorized amount.
+          nullable: true
+          type: integer
+        authorization_code:
+          description: Authorization code on the charge.
+          maxLength: 5000
+          nullable: true
+          type: string
+        brand:
+          description: >-
+            Card brand. Can be `amex`, `cartes_bancaires`, `diners`, `discover`,
+            `eftpos_au`, `jcb`, `link`, `mastercard`, `unionpay`, `visa` or
+            `unknown`.
+          maxLength: 5000
+          nullable: true
+          type: string
+        checks:
+          anyOf:
+            - $ref: '#/components/schemas/payment_method_details_card_checks'
+          description: >-
+            Check results by Card networks on Card address and CVC at time of
+            payment.
+          nullable: true
+        country:
+          description: >-
+            Two-letter ISO code representing the country of the card. You could
+            use this attribute to get a sense of the international breakdown of
+            cards you've collected.
+          maxLength: 5000
+          nullable: true
+          type: string
+        description:
+          description: >-
+            A high-level description of the type of cards issued in this range.
+            (For internal use only and not typically available in standard API
+            requests.)
+          maxLength: 5000
+          nullable: true
+          type: string
+        electronic_commerce_indicator:
+          description: >-
+            The Electronic Commerce Indicator (ECI) returned by the card network
+            in the authorization response. Indicates the level of authentication
+            used. Only populated for Visa and Mastercard transactions. This is
+            the network's final ECI and can differ from the request value. An
+            authenticated ECI alone doesn't determine liability shift.
+          maxLength: 5000
+          nullable: true
+          type: string
+        exp_month:
+          description: Two-digit number representing the card's expiration month.
+          type: integer
+        exp_year:
+          description: Four-digit number representing the card's expiration year.
+          type: integer
+        fingerprint:
+          description: >-
+            Uniquely identifies this particular card number. You can use this
+            attribute to check whether two customers who’ve signed up with you
+            are using the same card number, for example. For payment methods
+            that tokenize card information (Apple Pay, Google Pay), the
+            tokenized number might be provided instead of the underlying card
+            number.
+
+
+            *As of May 1, 2021, card fingerprint in India for Connect changed to
+            allow two fingerprints for the same card---one for India and one for
+            the rest of the world.*
+          maxLength: 5000
+          nullable: true
+          type: string
+        funding:
+          description: >-
+            Card funding type. Can be `credit`, `debit`, `prepaid`, or
+            `unknown`.
+          maxLength: 5000
+          nullable: true
+          type: string
+        iin:
+          description: >-
+            Issuer identification number of the card. (For internal use only and
+            not typically available in standard API requests.)
+          maxLength: 5000
+          nullable: true
+          type: string
+        issuer:
+          description: >-
+            The name of the card's issuing bank. (For internal use only and not
+            typically available in standard API requests.)
+          maxLength: 5000
+          nullable: true
+          type: string
+        last4:
+          description: The last four digits of the card.
+          maxLength: 5000
+          nullable: true
+          type: string
+        network:
+          description: >-
+            Identifies which network this charge was processed on. Can be
+            `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`,
+            `interac`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or
+            `unknown`.
+          maxLength: 5000
+          nullable: true
+          type: string
+        network_token:
+          anyOf:
+            - $ref: '#/components/schemas/payment_method_details_card_network_token'
+          description: >-
+            If this card has network token credentials, this contains the
+            details of the network token credentials.
+          nullable: true
+        network_transaction_id:
+          description: >-
+            This is used by the financial networks to identify a transaction.
+            Visa calls this the Transaction ID, Mastercard calls this the Trace
+            ID, and American Express calls this the Acquirer Reference Data.
+            This value will be present if it is returned by the financial
+            network in the authorization response, and null otherwise.
+          maxLength: 5000
+          nullable: true
+          type: string
+        regulated_status:
+          description: Status of a card based on the card issuer.
+          enum:
+            - regulated
+            - unregulated
+          nullable: true
+          type: string
+        three_d_secure:
+          anyOf:
+            - $ref: '#/components/schemas/three_d_secure_details_charge'
+          description: Populated if this transaction used 3D Secure authentication.
+          nullable: true
+        transaction_link_id:
+          description: >-
+            Transaction Link ID (TLID) is a unique identifier for a transaction.
+            This is used by some card networks, such as Mastercard, for
+            transaction linking, in addition to Network Transaction IDs. This
+            value will be present if it is returned by the financial network in
+            the authorization response, and null otherwise.
+          maxLength: 22
+          nullable: true
+          type: string
+      required:
+        - amount_authorized
+        - authorization_code
+        - brand
+        - checks
+        - country
+        - electronic_commerce_indicator
+        - exp_month
+        - exp_year
+        - funding
+        - last4
+        - network
+        - network_transaction_id
+        - regulated_status
+        - three_d_secure
+        - transaction_link_id
+      title: payment_method_details_link_funding_source_card
+      type: object
+      x-expandableFields:
+        - checks
+        - network_token
+        - three_d_secure
+      x-stripeMostCommon:
+        - amount_authorized
+        - authorization_code
+        - brand
+        - checks
+        - country
+        - description
+        - electronic_commerce_indicator
+        - exp_month
+        - exp_year
+        - fingerprint
+        - funding
+        - iin
+        - issuer
+        - last4
+        - network
+        - network_token
+        - network_transaction_id
+        - regulated_status
+        - three_d_secure
+        - transaction_link_id
     payment_method_details_mb_way:
       description: ''
       properties: {}
@@ -61051,10 +61384,18 @@ components:
         - reference
     payment_method_details_payment_record_paypay:
       description: ''
-      properties: {}
+      properties:
+        fingerprint:
+          description: >-
+            Uniquely identifies this particular PayPay account. You can use this
+            attribute to check whether two PayPay accounts are the same.
+          maxLength: 5000
+          type: string
       title: payment_method_details_payment_record_paypay
       type: object
       x-expandableFields: []
+      x-stripeMostCommon:
+        - fingerprint
     payment_method_details_payment_record_payto:
       description: ''
       properties:
@@ -61799,10 +62140,21 @@ components:
         - verified_name
     payment_method_details_paypay:
       description: ''
-      properties: {}
+      properties:
+        fingerprint:
+          description: >-
+            Uniquely identifies this particular PayPay account. You can use this
+            attribute to check whether two PayPay accounts are the same.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+        - fingerprint
       title: payment_method_details_paypay
       type: object
       x-expandableFields: []
+      x-stripeMostCommon:
+        - fingerprint
     payment_method_details_payto:
       description: ''
       properties:
@@ -66017,6 +66369,29 @@ components:
     payment_pages_checkout_session_automatic_tax:
       description: ''
       properties:
+        address_collection_precision:
+          description: >-
+            Controls how much address information Checkout collects when
+            automatic tax is enabled.
+          enum:
+            - full
+            - minimal
+          nullable: true
+          type: string
+          x-stripeEnum:
+            kind: closed
+            values:
+              - description: >-
+                  Checkout collects whatever address fields yield the most
+                  accurate tax calculation, including a full address in
+                  countries where this improves tax accuracy (for example, US,
+                  PR).
+                value: full
+              - description: >-
+                  Checkout collects only the minimum address fields required for
+                  tax calculation in the buyer's country (typically country,
+                  plus postal code for US/CA/IN).
+                value: minimal
         enabled:
           description: Indicates whether automatic tax is enabled for the session
           type: boolean
@@ -66054,6 +66429,7 @@ components:
       x-expandableFields:
         - liability
       x-stripeMostCommon:
+        - address_collection_precision
         - enabled
         - liability
         - provider
@@ -68868,7 +69244,7 @@ components:
           type: string
         address_postal_code_check:
           description: >-
-            If you provide a address postal code, the check result is one of
+            If you provide an address postal code, the check result is one of
             `pass`, `fail`, `unavailable`, or `unchecked`.
           enum:
             - fail
@@ -74781,6 +75157,11 @@ components:
             will equal `customer.address`. Once the invoice is finalized, this
             field will no longer be updated.
           nullable: true
+        customer_balance:
+          anyOf:
+            - $ref: '#/components/schemas/invoices_resource_customer_balance'
+          description: The customer balance amounts applied to this invoice.
+          nullable: true
         customer_email:
           description: >-
             The customer's email. Until the invoice is finalized, this field
@@ -75364,6 +75745,7 @@ components:
         - confirmation_secret
         - custom_fields
         - customer_address
+        - customer_balance
         - customer_shipping
         - customer_tax_ids
         - default_margins
@@ -77730,14 +78112,22 @@ components:
             #/components/schemas/insights_resources_payment_evaluation_payment_details
         recommended_action:
           description: >-
-            Recommended action based on the score of the `fraudulent_payment`
-            signal. Possible values are `block`, `continue` and
-            `request_three_d_secure`.
+            Recommended action for this payment based on its evaluated signals
+            and rules.
           enum:
             - block
             - continue
           type: string
           x-stripeBypassValidation: true
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: The recommendation is to block the payment from proceeding.
+                value: block
+              - description: >-
+                  The recommendation is to allow this payment to continue to
+                  processing.
+                value: continue
         signals:
           $ref: '#/components/schemas/insights_resources_payment_evaluation_signals'
       required:
@@ -78763,6 +79153,8 @@ components:
           $ref: '#/components/schemas/destination_details_unimplemented'
         au_bank_transfer:
           $ref: '#/components/schemas/destination_details_unimplemented'
+        bizum:
+          $ref: '#/components/schemas/refund_destination_details_bizum'
         blik:
           $ref: '#/components/schemas/refund_destination_details_blik'
         br_bank_transfer:
@@ -78827,6 +79219,8 @@ components:
             information specific to the refund transaction.
           maxLength: 5000
           type: string
+        upi:
+          $ref: '#/components/schemas/refund_destination_details_upi'
         us_bank_transfer:
           $ref: '#/components/schemas/refund_destination_details_us_bank_transfer'
         wechat_pay:
@@ -78844,6 +79238,7 @@ components:
         - alma
         - amazon_pay
         - au_bank_transfer
+        - bizum
         - blik
         - br_bank_transfer
         - card
@@ -78872,6 +79267,7 @@ components:
         - swish
         - th_bank_transfer
         - twint
+        - upi
         - us_bank_transfer
         - wechat_pay
         - zip
@@ -78882,6 +79278,7 @@ components:
         - alma
         - amazon_pay
         - au_bank_transfer
+        - bizum
         - blik
         - br_bank_transfer
         - card
@@ -78911,6 +79308,7 @@ components:
         - th_bank_transfer
         - twint
         - type
+        - upi
         - us_bank_transfer
         - wechat_pay
         - zip
@@ -78933,6 +79331,30 @@ components:
         - reference
         - reference_status
       title: refund_destination_details_afterpay_clearpay
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - reference
+        - reference_status
+    refund_destination_details_bizum:
+      description: ''
+      properties:
+        reference:
+          description: The reference assigned to the refund.
+          maxLength: 5000
+          nullable: true
+          type: string
+        reference_status:
+          description: >-
+            Status of the reference on the refund. This can be `pending`,
+            `available` or `unavailable`.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+        - reference
+        - reference_status
+      title: refund_destination_details_bizum
       type: object
       x-expandableFields: []
       x-stripeMostCommon:
@@ -79350,6 +79772,30 @@ components:
       x-stripeMostCommon:
         - reference
         - reference_status
+    refund_destination_details_upi:
+      description: ''
+      properties:
+        reference:
+          description: The reference assigned to the refund.
+          maxLength: 5000
+          nullable: true
+          type: string
+        reference_status:
+          description: >-
+            Status of the reference on the refund. This can be `pending`,
+            `available` or `unavailable`.
+          maxLength: 5000
+          nullable: true
+          type: string
+      required:
+        - reference
+        - reference_status
+      title: refund_destination_details_upi
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - reference
+        - reference_status
     refund_destination_details_us_bank_transfer:
       description: ''
       properties:
@@ -79692,8 +80138,9 @@ components:
         type: reporting.report_type.updated
     reserve.hold:
       description: >-
-        ReserveHolds are used to place a temporary ReserveHold on a merchant's
-        funds.
+        A ReserveHold holds a portion of an account's funds until it's released.
+        Stripe or the account's platform can create a ReserveHold directly, and
+        a ReservePlan creates ReserveHolds automatically from incoming Charges.
       properties:
         amount:
           description: >-
@@ -81576,14 +82023,14 @@ components:
       properties:
         address_line1_check:
           description: >-
-            If a address line1 was provided, results of the check, one of
+            If an address line1 was provided, results of the check, one of
             `pass`, `fail`, `unavailable`, or `unchecked`.
           maxLength: 5000
           nullable: true
           type: string
         address_postal_code_check:
           description: >-
-            If a address postal code was provided, results of the check, one of
+            If an address postal code was provided, results of the check, one of
             `pass`, `fail`, `unavailable`, or `unchecked`.
           maxLength: 5000
           nullable: true
@@ -82840,7 +83287,9 @@ components:
       description: ''
       properties:
         arrival_date:
-          description: The timestamp when the microdeposits are expected to land.
+          description: >-
+            The timestamp when the microdeposits are expected to land. Null for
+            instant microdeposits.
           format: unix-time
           type: integer
         hosted_verification_url:
@@ -95476,6 +95925,37 @@ components:
                 #/components/schemas/terminal_reader_reader_resource_reader_action
           description: The most recent action performed by the reader.
           nullable: true
+        device_health:
+          description: >-
+            The overall device health of the reader. `needs_attention` means the
+            reader failed a security requirement and can't accept payments until
+            the issue is resolved.
+          enum:
+            - needs_attention
+            - no_issues_detected
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: >-
+                  The reader has a device health issue and can't accept payments
+                  until it's resolved. See `device_health_details` for the
+                  specific conditions.
+                value: needs_attention
+              - description: >-
+                  No device health issues were detected for this reader. This
+                  reflects the conditions Stripe currently monitors, not a
+                  comprehensive guarantee that every security requirement is
+                  met.
+                value: no_issues_detected
+        device_health_details:
+          description: >-
+            The set of conditions affecting the reader's device health. Empty
+            when there are no conditions.
+          items:
+            $ref: >-
+              #/components/schemas/terminal_reader_reader_resource_device_health_detail
+          type: array
         device_sw_version:
           description: The current software version of the reader.
           maxLength: 5000
@@ -95576,6 +96056,8 @@ components:
           type: string
       required:
         - action
+        - device_health
+        - device_health_details
         - device_sw_version
         - device_type
         - id
@@ -95592,6 +96074,7 @@ components:
       type: object
       x-expandableFields:
         - action
+        - device_health_details
         - location
       x-resourceId: terminal.reader
       x-stableId: terminal_reader
@@ -96418,6 +96901,29 @@ components:
         - skip_button
         - submit_button
         - title
+    terminal_reader_reader_resource_device_health_detail:
+      description: ''
+      properties:
+        type:
+          description: The type of condition affecting the reader's device health.
+          enum:
+            - unrecoverable_tamper
+          type: string
+          x-stripeBypassValidation: true
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: >-
+                  The reader detected an unrecoverable tamper condition and can
+                  no longer accept payments.
+                value: unrecoverable_tamper
+      required:
+        - type
+      title: DeviceHealthDetail
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - type
     terminal_reader_reader_resource_email:
       description: Information about a email being collected using a reader
       properties:
@@ -103829,7 +104335,7 @@ info:
   termsOfService: 'https://stripe.com/us/terms/'
   title: Stripe API
   version: >-
-    2026-10-28.preview; embedded_connect_beta=v2;
+    2026-11-18.preview; embedded_connect_beta=v2;
     server_side_confirmation_beta=v1; orders_beta=v4; unified_accounts_beta=v1;
     terminal_collect_inputs_beta=v2; terminal_collect_confirm_beta=v1;
     retrieve_tax_forms_beta=v1; checkout_server_update_beta=v1;
@@ -106074,7 +106580,7 @@ paths:
                     url:
                       description: The business's publicly available website.
                       type: string
-                  title: business_profile_specs
+                  title: business_profile_specs_api_params
                   type: object
                   x-stripeMostCommon:
                     - annual_revenue
@@ -107505,6 +108011,7 @@ paths:
                     - crypto_payments
                     - crypto_transfers
                     - crypto_transfers_platform
+                    - dbarai_payments
                     - demo_onboarding
                     - demo_pay_payments
                     - dispute_deflection
@@ -107555,12 +108062,14 @@ paths:
                     - money_manager_business_storage_inbound_eur
                     - money_manager_business_storage_inbound_eurc
                     - money_manager_business_storage_inbound_gbp
+                    - money_manager_business_storage_inbound_sgd
                     - money_manager_business_storage_inbound_usd
                     - money_manager_business_storage_inbound_usdc
                     - money_manager_business_storage_outbound_aud
                     - money_manager_business_storage_outbound_eur
                     - money_manager_business_storage_outbound_eurc
                     - money_manager_business_storage_outbound_gbp
+                    - money_manager_business_storage_outbound_sgd
                     - money_manager_business_storage_outbound_usd
                     - money_manager_business_storage_outbound_usdc
                     - multibanco_payments
@@ -108214,7 +108723,7 @@ paths:
                       type: object
                       x-stripeMostCommon:
                         - document
-                  title: company_specs
+                  title: company_specs_api_params
                   type: object
                   x-stripeMostCommon:
                     - address
@@ -108282,7 +108791,7 @@ paths:
                           type: boolean
                       required:
                         - loss_liable
-                      title: controller_application_specs
+                      title: controller_application_specs_api_params
                       type: object
                       x-stripeMostCommon:
                         - loss_liable
@@ -108302,7 +108811,7 @@ paths:
                             - full
                             - none
                           type: string
-                      title: controller_dashboard_specs
+                      title: controller_dashboard_specs_api_params
                       type: object
                       x-stripeMostCommon:
                         - type
@@ -108328,7 +108837,7 @@ paths:
                             - account
                             - application
                           type: string
-                      title: controller_fees_specs
+                      title: controller_fees_specs_api_params
                       type: object
                       x-stripeMostCommon:
                         - payer
@@ -108351,7 +108860,7 @@ paths:
                             - application
                             - stripe
                           type: string
-                      title: controller_losses_specs
+                      title: controller_losses_specs_api_params
                       type: object
                       x-stripeMostCommon:
                         - payments
@@ -108378,11 +108887,11 @@ paths:
                             - full
                             - none
                           type: string
-                      title: controller_dashboard_specs
+                      title: controller_dashboard_specs_api_params
                       type: object
                       x-stripeMostCommon:
                         - type
-                  title: controller_specs
+                  title: controller_specs_api_params
                   type: object
                   x-stripeMostCommon:
                     - application
@@ -108603,7 +109112,7 @@ paths:
                       x-stripeMostCommon:
                         - files
                         - signer
-                  title: documents_specs
+                  title: documents_specs_api_params
                   type: object
                   x-stripeMostCommon:
                     - articles_of_association
@@ -111763,6 +112272,7 @@ paths:
                     - crypto_payments
                     - crypto_transfers
                     - crypto_transfers_platform
+                    - dbarai_payments
                     - demo_onboarding
                     - demo_pay_payments
                     - dispute_deflection
@@ -111813,12 +112323,14 @@ paths:
                     - money_manager_business_storage_inbound_eur
                     - money_manager_business_storage_inbound_eurc
                     - money_manager_business_storage_inbound_gbp
+                    - money_manager_business_storage_inbound_sgd
                     - money_manager_business_storage_inbound_usd
                     - money_manager_business_storage_inbound_usdc
                     - money_manager_business_storage_outbound_aud
                     - money_manager_business_storage_outbound_eur
                     - money_manager_business_storage_outbound_eurc
                     - money_manager_business_storage_outbound_gbp
+                    - money_manager_business_storage_outbound_sgd
                     - money_manager_business_storage_outbound_usd
                     - money_manager_business_storage_outbound_usdc
                     - multibanco_payments
@@ -115147,7 +115659,7 @@ paths:
                         - date
                         - ip
                         - user_agent
-                  title: person_additional_tos_acceptances_specs
+                  title: person_additional_tos_acceptances_specs_api_params
                   type: object
                   x-stripeMostCommon:
                     - account
@@ -115381,7 +115893,7 @@ paths:
                       type: object
                       x-stripeMostCommon:
                         - files
-                  title: person_documents_specs
+                  title: person_documents_specs_api_params
                   type: object
                   x-stripeMostCommon:
                     - DASHBOARD_proof_of_liveness
@@ -115663,7 +116175,7 @@ paths:
                           description: 'Please specify your origin, when other is selected.'
                           maxLength: 5000
                           type: string
-                      title: us_cfpb_ethnicity_details_specs
+                      title: us_cfpb_ethnicity_details_specs_api_params
                       type: object
                       x-stripeMostCommon:
                         - ethnicity
@@ -115705,7 +116217,7 @@ paths:
                           description: 'Please specify your race, when other is selected.'
                           maxLength: 5000
                           type: string
-                      title: us_cfpb_race_details_specs
+                      title: us_cfpb_race_details_specs_api_params
                       type: object
                       x-stripeMostCommon:
                         - race
@@ -115714,7 +116226,7 @@ paths:
                       description: The persons self-identified gender
                       maxLength: 5000
                       type: string
-                  title: us_cfpb_data_specs
+                  title: us_cfpb_data_specs_api_params
                   type: object
                   x-stripeMostCommon:
                     - ethnicity_details
@@ -116029,7 +116541,7 @@ paths:
                         - date
                         - ip
                         - user_agent
-                  title: person_additional_tos_acceptances_specs
+                  title: person_additional_tos_acceptances_specs_api_params
                   type: object
                   x-stripeMostCommon:
                     - account
@@ -116263,7 +116775,7 @@ paths:
                       type: object
                       x-stripeMostCommon:
                         - files
-                  title: person_documents_specs
+                  title: person_documents_specs_api_params
                   type: object
                   x-stripeMostCommon:
                     - DASHBOARD_proof_of_liveness
@@ -116545,7 +117057,7 @@ paths:
                           description: 'Please specify your origin, when other is selected.'
                           maxLength: 5000
                           type: string
-                      title: us_cfpb_ethnicity_details_specs
+                      title: us_cfpb_ethnicity_details_specs_api_params
                       type: object
                       x-stripeMostCommon:
                         - ethnicity
@@ -116587,7 +117099,7 @@ paths:
                           description: 'Please specify your race, when other is selected.'
                           maxLength: 5000
                           type: string
-                      title: us_cfpb_race_details_specs
+                      title: us_cfpb_race_details_specs_api_params
                       type: object
                       x-stripeMostCommon:
                         - race
@@ -116596,7 +117108,7 @@ paths:
                       description: The persons self-identified gender
                       maxLength: 5000
                       type: string
-                  title: us_cfpb_data_specs
+                  title: us_cfpb_data_specs_api_params
                   type: object
                   x-stripeMostCommon:
                     - ethnicity_details
@@ -117907,9 +118419,11 @@ paths:
         app developer acting on a connected account through
         <code>Stripe-Account</code> installs or reinstalls its app there, and an
         embedding platform can do the same once the app’s developer approves its
-        request to embed the app. For a private app, creating an install
-        installs the newest completed upload; when that version is already
-        installed with nothing pending, the existing install is returned.</p>
+        request to embed the app and the platform has accepted the Embedding
+        Platform Terms and Conditions in the Dashboard. For a private app,
+        creating an install installs the newest completed upload; when that
+        version is already installed with nothing pending, the existing install
+        is returned.</p>
       operationId: PostAppsInstalls
       requestBody:
         content:
@@ -131744,6 +132258,44 @@ paths:
                     Settings for automatic tax lookup for this session and
                     resulting payments, invoices, and subscriptions.
                   properties:
+                    address_collection_precision:
+                      description: >-
+                        Controls how much address information Checkout collects
+                        when
+                        [automatic_tax](https://stripe.com/docs/api/checkout/sessions/object#checkout_session_object-automatic_tax-enabled)
+                        is enabled.
+
+
+                        Defaults to `full`, which collects the address fields
+                        needed for the most accurate tax calculation. Set to
+                        `minimal` to collect only the fields required for tax in
+                        the buyer's country, accepting potentially less precise
+                        tax calculation in exchange for a streamlined form.
+
+
+                        Only honored when `automatic_tax.enabled` is `true`,
+                        `billing_address_collection` is `auto`, the resolved tax
+                        address source is the session billing address, and
+                        `ui_mode` is `form`.
+                      enum:
+                        - full
+                        - minimal
+                      type: string
+                      x-stripeEnum:
+                        kind: closed
+                        values:
+                          - description: >-
+                              Checkout collects whatever address fields yield
+                              the most accurate tax calculation, including a
+                              full address in countries where this improves tax
+                              accuracy (for example, US, PR).
+                            value: full
+                          - description: >-
+                              Checkout collects only the minimum address fields
+                              required for tax calculation in the buyer's
+                              country (typically country, plus postal code for
+                              US/CA/IN).
+                            value: minimal
                     enabled:
                       description: >-
                         Set to `true` to [calculate tax
@@ -133696,6 +134248,14 @@ paths:
                                 - business
                                 - personal
                               type: string
+                              x-stripeBypassValidation: true
+                              x-stripeEnum:
+                                kind: open
+                                values:
+                                  - description: Transactions are made for business reasons
+                                    value: business
+                                  - description: Transactions are made for personal reasons
+                                    value: personal
                           title: mandate_options_param
                           type: object
                           x-stripeMostCommon:
@@ -140255,6 +140815,9 @@ paths:
               currency_options:
                 explode: true
                 style: deepObject
+              custom:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -140317,6 +140880,41 @@ paths:
                     code](https://www.iso.org/iso-4217-currency-codes.html) and
                     a [supported currency](https://stripe.com/docs/currencies).
                   type: object
+                custom:
+                  description: The custom coupon calculation configuration.
+                  properties:
+                    configuration:
+                      description: >-
+                        The configuration values of the extension. The keys and
+                        values are specific to the extension implementation. May
+                        be omitted for extensions that have no configuration
+                        schema, in which case an empty configuration is used.
+                      type: object
+                    extension:
+                      description: The extension used to calculate the coupon.
+                      properties:
+                        id:
+                          description: The Extension Prototype ID.
+                          maxLength: 5000
+                          type: string
+                        version:
+                          description: The semantic version of the extension.
+                          maxLength: 5000
+                          type: string
+                      required:
+                        - id
+                      title: extension_reference_param
+                      type: object
+                      x-stripeMostCommon:
+                        - id
+                        - version
+                  required:
+                    - extension
+                  title: custom_param
+                  type: object
+                  x-stripeMostCommon:
+                    - configuration
+                    - extension
                 duration:
                   description: >-
                     Specifies how long the discount will be in effect if used on
@@ -140414,6 +141012,14 @@ paths:
                   x-stripeMostCommon:
                     - configuration
                     - id
+                type:
+                  description: >-
+                    The coupon calculation type. Must be `custom` when `custom`
+                    is provided.
+                  enum:
+                    - custom
+                  maxLength: 5000
+                  type: string
               type: object
               x-stripeMostCommon:
                 - amount_off
@@ -144518,6 +145124,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             encoding:
+              applied_to_invoice:
+                explode: true
+                style: deepObject
               expand:
                 explode: true
                 style: deepObject
@@ -144532,6 +145141,23 @@ paths:
                     The integer amount in **cents (or local equivalent)** to
                     apply to the customer's credit balance.
                   type: integer
+                applied_to_invoice:
+                  description: >-
+                    Required when `type` is `applied_to_invoice`. Identifies the
+                    open invoice to apply the customer's balance credit to.
+                  properties:
+                    invoice:
+                      description: >-
+                        The ID of the open invoice to apply the customer's
+                        balance credit to.
+                      maxLength: 5000
+                      type: string
+                  required:
+                    - invoice
+                  title: applied_to_invoice_params
+                  type: object
+                  x-stripeMostCommon:
+                    - invoice
                 currency:
                   description: >-
                     Three-letter [ISO currency
@@ -144571,6 +145197,22 @@ paths:
                     format. Individual keys can be unset by posting an empty
                     value to them. All keys can be unset by posting an empty
                     value to `metadata`.
+                type:
+                  description: >-
+                    The type of customer balance transaction. Defaults to
+                    `adjustment`, which updates the customer's credit balance
+                    directly. Set to `applied_to_invoice` to apply the
+                    customer's existing credit balance to a specific open
+                    invoice.
+                  enum:
+                    - adjustment
+                    - applied_to_invoice
+                  type: string
+                  x-stripeEnum:
+                    kind: open
+                    values:
+                      - value: adjustment
+                      - value: applied_to_invoice
               required:
                 - amount
                 - currency
@@ -151833,7 +152475,9 @@ paths:
                     A list of three letter [ISO currency
                     code](https://www.iso.org/iso-4217-currency-codes.html), in
                     lowercase. Must be [supported
-                    currencies](https://stripe.com/docs/currencies).
+                    currencies](https://stripe.com/docs/currencies). Payout-only
+                    currencies are also supported, but only for informational
+                    quotes (`lock_duration=none`).
                   items:
                     format: currency
                     type: string
@@ -151854,7 +152498,9 @@ paths:
                     Three-letter [ISO currency
                     code](https://www.iso.org/iso-4217-currency-codes.html), in
                     lowercase. Must be a [supported
-                    currency](https://stripe.com/docs/currencies).
+                    currency](https://stripe.com/docs/currencies). Payout-only
+                    currencies are also supported, but only for informational
+                    quotes (`lock_duration=none`).
                   format: currency
                   type: string
                 usage:
@@ -187123,7 +187769,7 @@ paths:
                       type: boolean
                   required:
                     - enabled
-                  title: automatic_payment_methods_param
+                  title: automatic_payment_methods_param_api_params
                   type: object
                   x-stripeMostCommon:
                     - allow_redirects
@@ -191792,6 +192438,7 @@ paths:
                           title: payment_intent_payment_method_options_param
                           type: object
                           x-stripeMostCommon:
+                            - financial_connections
                             - mandate_options
                             - setup_future_usage
                             - target_date
@@ -204329,6 +204976,7 @@ paths:
                           title: payment_intent_payment_method_options_param
                           type: object
                           x-stripeMostCommon:
+                            - financial_connections
                             - mandate_options
                             - setup_future_usage
                             - target_date
@@ -211348,7 +211996,7 @@ paths:
                       x-stripeMostCommon:
                         - description
                         - metadata
-                  title: transfer_data_update_params
+                  title: transfer_data_update_api_params
                   type: object
                   x-stripeMostCommon:
                     - amount
@@ -214720,7 +215368,7 @@ paths:
                             - ends_at
                             - name
                             - starts_at
-                      title: payment_details_capture_params
+                      title: payment_details_capture_api_params
                       type: object
                       x-stripeMostCommon:
                         - car_rental
@@ -214775,7 +215423,7 @@ paths:
                         The amount that will be transferred automatically when a
                         charge succeeds.
                       type: integer
-                  title: transfer_data_capture_params
+                  title: transfer_data_capture_api_params
                   type: object
                   x-stripeMostCommon:
                     - amount
@@ -220079,6 +220727,7 @@ paths:
                           title: payment_intent_payment_method_options_param
                           type: object
                           x-stripeMostCommon:
+                            - financial_connections
                             - mandate_options
                             - setup_future_usage
                             - target_date
@@ -248077,7 +248726,9 @@ paths:
                           - enum:
                               - ''
                             type: string
-                        description: The discounts applied to this line item.
+                        description: >-
+                          The discounts applied to this line item. Repeating
+                          coupons are only supported for recurring prices.
                       price:
                         description: >-
                           The ID of the price object. One of `price` or
@@ -250308,7 +250959,9 @@ paths:
                           - enum:
                               - ''
                             type: string
-                        description: The discounts applied to this line item.
+                        description: >-
+                          The discounts applied to this line item. Repeating
+                          coupons are only supported for recurring prices.
                       id:
                         description: The ID of an existing line item on the quote.
                         maxLength: 5000
@@ -253853,6 +254506,7 @@ paths:
                       x-stripeMostCommon:
                         - card
                         - money_movement_type
+                        - sepa_debit
                         - us_bank_account
                     payment_method_details:
                       description: Details about the payment method to use for the payment.
@@ -256194,6 +256848,7 @@ paths:
                     - browser_fingerprinting
                     - bucket_seconds
                     - bucket_size
+                    - business_structure
                     - business_type
                     - buyer_country
                     - calculation_type
@@ -256611,6 +257266,7 @@ paths:
                     - rev_rec_month_summary_line_item
                     - risk_level
                     - risk_score
+                    - role_ids
                     - roles
                     - rule_action
                     - rule_attribute
@@ -256920,9 +257576,9 @@ paths:
   /v1/reserve/holds:
     get:
       description: >-
-        <p>Returns a list of ReserveHolds previously created. The ReserveHolds
-        are returned in sorted order, with the most recent ReserveHolds
-        appearing first.</p>
+        <p>Returns a list of ReserveHolds on your account or on one of your
+        connected accounts. The ReserveHolds are returned in sorted order, with
+        the most recent ReserveHolds appearing first.</p>
       operationId: GetReserveHolds
       parameters:
         - description: >-
@@ -257095,7 +257751,9 @@ paths:
       x-stableId: list_reserve_holds
   '/v1/reserve/holds/{id}':
     get:
-      description: <p>Retrieve a ReserveHold.</p>
+      description: >-
+        <p>Retrieve a ReserveHold on your account or on one of your connected
+        accounts.</p>
       operationId: GetReserveHoldsId
       parameters:
         - description: Specifies which fields in the response should be expanded.
@@ -257145,9 +257803,9 @@ paths:
   /v1/reserve/plans:
     get:
       description: >-
-        <p>Returns a list of ReservePlans previously created. The ReservePlans
-        are returned in sorted order, with the most recent ReservePlans
-        appearing first.</p>
+        <p>Returns a list of ReservePlans on your account or on one of your
+        connected accounts. The ReservePlans are returned in sorted order, with
+        the most recent ReservePlans appearing first.</p>
       operationId: GetReservePlans
       parameters:
         - description: >-
@@ -257308,7 +257966,9 @@ paths:
       x-stableId: list_reserve_plans
   '/v1/reserve/plans/{id}':
     get:
-      description: <p>Retrieve a ReservePlan.</p>
+      description: >-
+        <p>Retrieve a ReservePlan on your account or on one of your connected
+        accounts.</p>
       operationId: GetReservePlansId
       parameters:
         - description: Specifies which fields in the response should be expanded.
@@ -257358,9 +258018,9 @@ paths:
   /v1/reserve/releases:
     get:
       description: >-
-        <p>Returns a list of ReserveReleases previously created. The
-        ReserveReleases are returned in sorted order, with the most recent
-        ReserveReleases appearing first.</p>
+        <p>Returns a list of ReserveReleases on your account or on one of your
+        connected accounts. The ReserveReleases are returned in sorted order,
+        with the most recent ReserveReleases appearing first.</p>
       operationId: GetReserveReleases
       parameters:
         - description: >-
@@ -257507,7 +258167,9 @@ paths:
       x-stableId: list_reserve_releases
   '/v1/reserve/releases/{id}':
     get:
-      description: <p>Retrieve a ReserveRelease.</p>
+      description: >-
+        <p>Retrieve a ReserveRelease on your account or on one of your connected
+        accounts.</p>
       operationId: GetReserveReleasesId
       parameters:
         - description: Specifies which fields in the response should be expanded.
@@ -259889,6 +260551,7 @@ paths:
                       title: setup_intent_payment_method_options_param
                       type: object
                       x-stripeMostCommon:
+                        - financial_connections
                         - mandate_options
                         - verification_method
                         - verification_options
@@ -261003,6 +261666,7 @@ paths:
                     - upi
                     - us_bank_account
                     - wechat_pay
+                    - wero
                 return_url:
                   description: >-
                     The URL to redirect your customer back to after they
@@ -262773,6 +263437,7 @@ paths:
                       title: setup_intent_payment_method_options_param
                       type: object
                       x-stripeMostCommon:
+                        - financial_connections
                         - mandate_options
                         - verification_method
                         - verification_options
@@ -263887,6 +264552,7 @@ paths:
                     - upi
                     - us_bank_account
                     - wechat_pay
+                    - wero
               type: object
               x-stripeMostCommon:
                 - customer
@@ -265583,6 +266249,7 @@ paths:
                       title: setup_intent_payment_method_options_param
                       type: object
                       x-stripeMostCommon:
+                        - financial_connections
                         - mandate_options
                         - verification_method
                         - verification_options
@@ -266697,6 +267364,7 @@ paths:
                     - upi
                     - us_bank_account
                     - wechat_pay
+                    - wero
                 return_url:
                   description: >-
                     The URL to redirect your customer back to after they
@@ -299294,6 +299962,36 @@ paths:
                         - no_account
                         - other
                       type: string
+                    network_details:
+                      description: Network specific details for the failure.
+                      properties:
+                        ach:
+                          description: ACH network failure details.
+                          properties:
+                            return_code:
+                              description: NACHA ACH return code.
+                              maxLength: 5000
+                              type: string
+                          required:
+                            - return_code
+                          title: ach_network_details_param
+                          type: object
+                          x-stripeMostCommon:
+                            - return_code
+                        type:
+                          description: The network used to transfer funds.
+                          enum:
+                            - ach
+                          type: string
+                          x-stripeBypassValidation: true
+                      required:
+                        - type
+                      title: network_details_param
+                      type: object
+                      x-stripeMostCommon:
+                        - ach
+                        - type
+                        - us_check
                   title: failure_details_param
                   type: object
                   x-stripeMostCommon:
@@ -299341,6 +300039,9 @@ paths:
               expand:
                 explode: true
                 style: deepObject
+              failure_details:
+                explode: true
+                style: deepObject
             schema:
               additionalProperties: false
               properties:
@@ -299350,7 +300051,64 @@ paths:
                     maxLength: 5000
                     type: string
                   type: array
+                failure_details:
+                  description: Details about a returned InboundTransfer.
+                  properties:
+                    code:
+                      description: Reason for the failure.
+                      enum:
+                        - account_closed
+                        - account_frozen
+                        - bank_account_restricted
+                        - bank_ownership_changed
+                        - debit_not_authorized
+                        - incorrect_account_holder_address
+                        - incorrect_account_holder_name
+                        - incorrect_account_holder_tax_id
+                        - insufficient_funds
+                        - invalid_account_number
+                        - invalid_currency
+                        - no_account
+                        - other
+                      type: string
+                    network_details:
+                      description: Network specific details for the failure.
+                      properties:
+                        ach:
+                          description: ACH network failure details.
+                          properties:
+                            return_code:
+                              description: NACHA ACH return code.
+                              maxLength: 5000
+                              type: string
+                          required:
+                            - return_code
+                          title: ach_network_details_param
+                          type: object
+                          x-stripeMostCommon:
+                            - return_code
+                        type:
+                          description: The network used to transfer funds.
+                          enum:
+                            - ach
+                          type: string
+                          x-stripeBypassValidation: true
+                      required:
+                        - type
+                      title: network_details_param
+                      type: object
+                      x-stripeMostCommon:
+                        - ach
+                        - type
+                        - us_check
+                  title: failure_details_param
+                  type: object
+                  x-stripeMostCommon:
+                    - code
+                    - network_details
               type: object
+              x-stripeMostCommon:
+                - failure_details
         required: false
       responses:
         '200':
@@ -302946,7 +303704,7 @@ paths:
                             - date
                             - ip
                             - user_agent
-                      title: person_additional_tos_acceptances_specs
+                      title: person_additional_tos_acceptances_specs_api_params
                       type: object
                       x-stripeMostCommon:
                         - account
@@ -303183,7 +303941,7 @@ paths:
                           type: object
                           x-stripeMostCommon:
                             - files
-                      title: person_documents_specs
+                      title: person_documents_specs_api_params
                       type: object
                       x-stripeMostCommon:
                         - DASHBOARD_proof_of_liveness
@@ -303464,7 +304222,7 @@ paths:
                                 selected.
                               maxLength: 5000
                               type: string
-                          title: us_cfpb_ethnicity_details_specs
+                          title: us_cfpb_ethnicity_details_specs_api_params
                           type: object
                           x-stripeMostCommon:
                             - ethnicity
@@ -303508,7 +304266,7 @@ paths:
                                 selected.
                               maxLength: 5000
                               type: string
-                          title: us_cfpb_race_details_specs
+                          title: us_cfpb_race_details_specs_api_params
                           type: object
                           x-stripeMostCommon:
                             - race
@@ -303517,7 +304275,7 @@ paths:
                           description: The persons self-identified gender
                           maxLength: 5000
                           type: string
-                      title: us_cfpb_data_specs
+                      title: us_cfpb_data_specs_api_params
                       type: object
                       x-stripeMostCommon:
                         - ethnicity_details
@@ -303595,7 +304353,7 @@ paths:
                         - additional_document
                         - document
                         - proof_of_liveness
-                  title: person_token_specs
+                  title: person_token_specs_api_params
                   type: object
                   x-stripeMostCommon:
                     - address
@@ -309417,6 +310175,7 @@ paths:
                     - 2026-08-26.dahlia
                     - 2026-09-30.endive
                     - 2026-10-28.endive
+                    - 2026-11-18.endive
                   maxLength: 5000
                   type: string
                   x-stripeBypassValidation: true
