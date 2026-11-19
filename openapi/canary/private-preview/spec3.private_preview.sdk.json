@@ -4773,16 +4773,32 @@
           "consent_collected": {
             "description": "Whether the customer consented to sending conversion data to an advertising platform.",
             "type": "boolean"
+          },
+          "source_url": {
+            "description": "The URL of the web page where the customer converted.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "The user agent of the browser where the customer converted.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
-          "consent_collected"
+          "consent_collected",
+          "source_url",
+          "user_agent"
         ],
         "title": "AdsAttributionContractMarketingAttributionAdConversion",
         "type": "object",
         "x-expandableFields": [],
         "x-stripeMostCommon": [
-          "consent_collected"
+          "consent_collected",
+          "source_url",
+          "user_agent"
         ]
       },
       "agent_details": {
@@ -4977,6 +4993,7 @@
               "forwarding_api_upstream_connection_timeout",
               "forwarding_api_upstream_error",
               "idempotency_key_in_use",
+              "inactive_api_operation_confirmation_required",
               "incorrect_address",
               "incorrect_cvc",
               "incorrect_number",
@@ -6197,7 +6214,7 @@
           "available": {
             "description": "Available funds that you can transfer or pay out automatically by Stripe or explicitly through the [Transfers API](https://docs.stripe.com/api#transfers) or [Payouts API](https://docs.stripe.com/api#payouts). You can find the available balance for each currency and payment type in the `source_types` property.",
             "items": {
-              "$ref": "#/components/schemas/balance_amount"
+              "$ref": "#/components/schemas/balance_amount_available"
             },
             "type": "array"
           },
@@ -6326,6 +6343,37 @@
           "currency"
         ],
         "title": "BalanceAmount",
+        "type": "object",
+        "x-expandableFields": [
+          "source_types"
+        ],
+        "x-stripeMostCommon": [
+          "amount",
+          "currency",
+          "source_types"
+        ]
+      },
+      "balance_amount_available": {
+        "description": "",
+        "properties": {
+          "amount": {
+            "description": "Balance amount.",
+            "type": "integer"
+          },
+          "currency": {
+            "description": "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+            "format": "currency",
+            "type": "string"
+          },
+          "source_types": {
+            "$ref": "#/components/schemas/balance_amount_by_source_type"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "title": "BalanceAmountAvailable",
         "type": "object",
         "x-expandableFields": [
           "source_types"
@@ -9204,12 +9252,6 @@
             "nullable": true,
             "type": "string"
           },
-          "cadence": {
-            "description": "The cadence associated with this notification. Only present for spend threshold alerts grouped by cadence.",
-            "maxLength": 5000,
-            "nullable": true,
-            "type": "string"
-          },
           "currency": {
             "description": "Three-letter ISO currency code for the value, in lowercase. Only present for spend and credit balance threshold alerts.",
             "maxLength": 5000,
@@ -9278,7 +9320,6 @@
           "alert",
           "alert_type",
           "billing_group",
-          "cadence",
           "currency",
           "customer",
           "id",
@@ -9302,7 +9343,6 @@
           "alert",
           "alert_type",
           "billing_group",
-          "cadence",
           "currency",
           "custom_pricing_unit",
           "customer",
@@ -11352,42 +11392,25 @@
       "billing_bill_resource_invoicing_parents_invoice_billing_cadence_parent": {
         "description": "",
         "properties": {
-          "billing_cadence": {
-            "description": "The billing cadence that generated this invoice",
-            "maxLength": 5000,
-            "type": "string"
-          },
           "billing_group": {
             "description": "The billing group that generated this invoice",
             "maxLength": 5000,
-            "nullable": true,
             "type": "string"
           }
         },
         "required": [
-          "billing_cadence",
           "billing_group"
         ],
         "title": "BillingBillResourceInvoicingParentsInvoiceBillingCadenceParent",
         "type": "object",
         "x-expandableFields": [],
         "x-stripeMostCommon": [
-          "billing_cadence",
           "billing_group"
         ]
       },
       "billing_bill_resource_invoicing_parents_invoice_parent": {
         "description": "",
         "properties": {
-          "billing_cadence_details": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/billing_bill_resource_invoicing_parents_invoice_billing_cadence_parent"
-              }
-            ],
-            "description": "Details about the billing cadence that generated this invoice",
-            "nullable": true
-          },
           "billing_group_details": {
             "anyOf": [
               {
@@ -11427,7 +11450,7 @@
           "type": {
             "description": "The type of parent that generated this invoice",
             "enum": [
-              "billing_cadence_details",
+              "billing_group_details",
               "quote_details",
               "schedule_details",
               "subscription_details"
@@ -11444,14 +11467,12 @@
         "title": "BillingBillResourceInvoicingParentsInvoiceParent",
         "type": "object",
         "x-expandableFields": [
-          "billing_cadence_details",
           "billing_group_details",
           "quote_details",
           "schedule_details",
           "subscription_details"
         ],
         "x-stripeMostCommon": [
-          "billing_cadence_details",
           "billing_group_details",
           "quote_details",
           "schedule_details",
@@ -23749,6 +23770,9 @@
             "description": "Coupons defined in each available currency option. Each key must be a three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html) and a [supported currency](https://stripe.com/docs/currencies).",
             "type": "object"
           },
+          "custom": {
+            "$ref": "#/components/schemas/coupon_custom"
+          },
           "duration": {
             "description": "One of `forever`, `once`, or `repeating`. Describes how long a customer who applies this coupon will get the discount.",
             "enum": [
@@ -23832,6 +23856,7 @@
             "description": "The type of coupon logic used to calculate the discount.",
             "enum": [
               "amount_off",
+              "custom",
               "percent_off",
               "script"
             ],
@@ -34062,14 +34087,24 @@
           "token_currency": {
             "description": "The supported token currency.",
             "enum": [
+              "ousd",
+              "phantom_cash",
               "usdc",
               "usdg",
               "usdp"
             ],
             "type": "string",
             "x-stripeEnum": {
-              "kind": "closed",
+              "kind": "open",
               "values": [
+                {
+                  "description": "OUSD",
+                  "value": "ousd"
+                },
+                {
+                  "description": "PHANTOM_CASH",
+                  "value": "phantom_cash"
+                },
                 {
                   "description": "USDC",
                   "value": "usdc"
@@ -34114,7 +34149,7 @@
             "type": "integer"
           },
           "balance_transactions": {
-            "description": "List of zero, one, or two balance transactions that show funds withdrawn and reinstated to your Stripe account as a result of this dispute.",
+            "description": "List of balance transactions that show funds withdrawn and reinstated to your Stripe account as a result of this dispute.",
             "items": {
               "$ref": "#/components/schemas/balance_transaction"
             },
@@ -36029,7 +36064,7 @@
             "type": "string"
           },
           "pending_webhooks": {
-            "description": "Number of webhooks that haven't been successfully delivered (for example, to return a 20x response) to the URLs you specify.",
+            "description": "Number of webhooks that haven't been successfully delivered (for example, to return a 20x response). This count can include deliveries to endpoints that belong to Connect platforms or apps with access to your account. These endpoints don't appear when you list your account's webhook endpoints or event destinations. To see the delivery status for each endpoint, view the event in [Workbench](https://docs.stripe.com/workbench/overview#events).",
             "type": "integer"
           },
           "reason": {
@@ -39870,7 +39905,7 @@
             "nullable": true
           },
           "type": {
-            "description": "The transaction type for which the FX Quote will be used.\n\nCan be 'payment' or 'transfer'.",
+            "description": "The transaction type for which the FX Quote will be used.",
             "enum": [
               "payment",
               "transfer"
@@ -42684,9 +42719,6 @@
             "$ref": "#/components/schemas/gift_cards_balance_resource_balance_amount"
           }
         },
-        "required": [
-          "balance"
-        ],
         "title": "ActivationDetail",
         "type": "object",
         "x-expandableFields": [
@@ -42808,7 +42840,6 @@
           }
         },
         "required": [
-          "balance",
           "previous_balance"
         ],
         "title": "ReloadDetail",
@@ -48366,6 +48397,9 @@
             ],
             "type": "string"
           },
+          "rendering_settings": {
+            "$ref": "#/components/schemas/invoice_rendering_template_rendering_settings"
+          },
           "status": {
             "description": "The status of the template, one of `active` or `archived`.",
             "enum": [
@@ -48401,6 +48435,7 @@
         "type": "object",
         "x-expandableFields": [
           "line_item_policy",
+          "rendering_settings",
           "summary_item_policies"
         ],
         "x-resourceId": "invoice_rendering_template",
@@ -48413,6 +48448,7 @@
           "metadata",
           "nickname",
           "object",
+          "rendering_settings",
           "status",
           "summary_item_policies",
           "version"
@@ -48466,6 +48502,141 @@
           "has_collection_class": true,
           "in_package": ""
         }
+      },
+      "invoice_rendering_template_block": {
+        "description": "",
+        "properties": {
+          "custom_plain_text_cel": {
+            "$ref": "#/components/schemas/invoice_rendering_template_custom_plain_text_cel"
+          },
+          "key": {
+            "description": "The key of this block in the template.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of content block",
+            "enum": [
+              "custom_plain_text_cel",
+              "footer_content",
+              "invoice_details",
+              "line_items",
+              "parties",
+              "payment_remittance_instructions",
+              "status_and_memo",
+              "tax_footnotes",
+              "title_and_logo"
+            ],
+            "type": "string",
+            "x-stripeEnum": {
+              "kind": "open",
+              "values": [
+                {
+                  "value": "custom_plain_text_cel"
+                },
+                {
+                  "value": "footer_content"
+                },
+                {
+                  "value": "invoice_details"
+                },
+                {
+                  "value": "line_items"
+                },
+                {
+                  "value": "parties"
+                },
+                {
+                  "value": "payment_remittance_instructions"
+                },
+                {
+                  "value": "status_and_memo"
+                },
+                {
+                  "value": "tax_footnotes"
+                },
+                {
+                  "value": "title_and_logo"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "key",
+          "type"
+        ],
+        "title": "InvoiceRenderingTemplateBlock",
+        "type": "object",
+        "x-expandableFields": [
+          "custom_plain_text_cel"
+        ],
+        "x-stripeMostCommon": [
+          "custom_plain_text_cel",
+          "key",
+          "type"
+        ]
+      },
+      "invoice_rendering_template_custom_plain_text_cel": {
+        "description": "",
+        "properties": {
+          "cel_expression": {
+            "description": "A CEL expression that returns text using the invoice context.",
+            "maxLength": 5000,
+            "type": "string"
+          }
+        },
+        "required": [
+          "cel_expression"
+        ],
+        "title": "InvoiceRenderingTemplateCustomPlainTextCel",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "cel_expression"
+        ]
+      },
+      "invoice_rendering_template_invoice_pdf": {
+        "description": "",
+        "properties": {
+          "blocks": {
+            "description": "The ordered invoice PDF blocks.",
+            "items": {
+              "$ref": "#/components/schemas/invoice_rendering_template_block"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "blocks"
+        ],
+        "title": "InvoiceRenderingTemplateInvoicePdf",
+        "type": "object",
+        "x-expandableFields": [
+          "blocks"
+        ],
+        "x-stripeMostCommon": [
+          "blocks"
+        ]
+      },
+      "invoice_rendering_template_rendering_settings": {
+        "description": "",
+        "properties": {
+          "invoice_pdf": {
+            "$ref": "#/components/schemas/invoice_rendering_template_invoice_pdf"
+          }
+        },
+        "required": [
+          "invoice_pdf"
+        ],
+        "title": "InvoiceRenderingTemplateRenderingSettings",
+        "type": "object",
+        "x-expandableFields": [
+          "invoice_pdf"
+        ],
+        "x-stripeMostCommon": [
+          "invoice_pdf"
+        ]
       },
       "invoice_setting_checkout_rendering_options": {
         "description": "",
@@ -55963,6 +56134,7 @@
           "token_service_provider_id": {
             "description": "The ID of the token service provider, specific to Visa.",
             "maxLength": 5000,
+            "nullable": true,
             "type": "string"
           }
         },
@@ -62357,6 +62529,7 @@
           "token_service_provider_id": {
             "description": "The ID of the token service provider, specific to Visa.",
             "maxLength": 5000,
+            "nullable": true,
             "type": "string"
           }
         },
@@ -66473,6 +66646,9 @@
           "pix": {
             "$ref": "#/components/schemas/mandate_pix"
           },
+          "rakuten_pay": {
+            "$ref": "#/components/schemas/mandate_rakuten_pay"
+          },
           "revolut_pay": {
             "$ref": "#/components/schemas/mandate_revolut_pay"
           },
@@ -66519,6 +66695,7 @@
           "paypal",
           "payto",
           "pix",
+          "rakuten_pay",
           "revolut_pay",
           "sepa_debit",
           "toss_pay",
@@ -66543,6 +66720,7 @@
           "paypal",
           "payto",
           "pix",
+          "rakuten_pay",
           "revolut_pay",
           "sepa_debit",
           "toss_pay",
@@ -66743,6 +66921,13 @@
           "reference",
           "start_date"
         ]
+      },
+      "mandate_rakuten_pay": {
+        "description": "",
+        "properties": {},
+        "title": "mandate_rakuten_pay",
+        "type": "object",
+        "x-expandableFields": []
       },
       "mandate_revolut_pay": {
         "description": "",
@@ -73710,6 +73895,13 @@
           "fingerprint"
         ]
       },
+      "payment_flows_private_payment_methods_rakuten_pay_setup_attempt_details": {
+        "description": "",
+        "properties": {},
+        "title": "PaymentFlowsPrivatePaymentMethodsRakutenPaySetupAttemptDetails",
+        "type": "object",
+        "x-expandableFields": []
+      },
       "payment_flows_private_payment_methods_rechnung_dob": {
         "description": "",
         "properties": {
@@ -74417,6 +74609,9 @@
             "description": "If present, this property tells you about the processing state of the payment.",
             "nullable": true
           },
+          "radar_options": {
+            "$ref": "#/components/schemas/radar_radar_options_radar_options_with_peval_options"
+          },
           "receipt_email": {
             "description": "Email address that the receipt for the resulting payment will be sent to. If `receipt_email` is specified for a payment in live mode, a receipt will be sent regardless of your [email settings](https://dashboard.stripe.com/account/emails).",
             "maxLength": 5000,
@@ -74657,6 +74852,7 @@
           "payments_orchestration",
           "presentment_details",
           "processing",
+          "radar_options",
           "redaction",
           "review",
           "shipping",
@@ -76210,6 +76406,7 @@
           "arrival_date": {
             "description": "The timestamp when the microdeposits are expected to land. Null for instant microdeposits.",
             "format": "unix-time",
+            "nullable": true,
             "type": "integer"
           },
           "hosted_verification_url": {
@@ -77911,12 +78108,21 @@
           "payment_details": {
             "$ref": "#/components/schemas/payment_intent_payment_method_options_vipps_payment_details"
           },
+          "request_multicapture": {
+            "description": "Request ability to make [multiple captures](https://docs.stripe.com/payments/multicapture) for this PaymentIntent.",
+            "enum": [
+              "if_available",
+              "never"
+            ],
+            "type": "string"
+          },
           "setup_future_usage": {
             "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf you provide a Customer with the PaymentIntent, you can use this parameter to [attach the payment method](/payments/save-during-payment) to the Customer after the PaymentIntent is confirmed and the customer completes any required actions. If you don't provide a Customer, you can still [attach](/api/payment_methods/attach) the payment method to a Customer after the transaction completes.\n\nIf the payment method is `card_present` and isn't a digital wallet, Stripe creates and attaches a [generated_card](/api/charges/object#charge_object-payment_method_details-card_present-generated_card) payment method representing the card to the Customer instead.\n\nWhen processing card payments, Stripe uses `setup_future_usage` to help you comply with regional legislation and network rules, such as [SCA](/strong-customer-authentication).",
             "enum": [
               "none"
             ],
-            "type": "string"
+            "type": "string",
+            "x-stripeBypassValidation": true
           }
         },
         "title": "payment_intent_payment_method_options_vipps",
@@ -77927,6 +78133,7 @@
         "x-stripeMostCommon": [
           "capture_method",
           "payment_details",
+          "request_multicapture",
           "setup_future_usage"
         ]
       },
@@ -82355,6 +82562,9 @@
             "description": "Whether the configuration can be used for new payments.",
             "type": "boolean"
           },
+          "aeon_pay": {
+            "$ref": "#/components/schemas/payment_method_config_resource_payment_method_properties"
+          },
           "affirm": {
             "$ref": "#/components/schemas/payment_method_config_resource_payment_method_properties"
           },
@@ -82380,6 +82590,9 @@
             "type": "string"
           },
           "au_becs_debit": {
+            "$ref": "#/components/schemas/payment_method_config_resource_payment_method_properties"
+          },
+          "au_pay": {
             "$ref": "#/components/schemas/payment_method_config_resource_payment_method_properties"
           },
           "bacs_debit": {
@@ -82474,6 +82687,9 @@
             "type": "boolean"
           },
           "mb_way": {
+            "$ref": "#/components/schemas/payment_method_config_resource_payment_method_properties"
+          },
+          "merpay": {
             "$ref": "#/components/schemas/payment_method_config_resource_payment_method_properties"
           },
           "mobilepay": {
@@ -82611,6 +82827,7 @@
         "type": "object",
         "x-expandableFields": [
           "acss_debit",
+          "aeon_pay",
           "affirm",
           "afterpay_clearpay",
           "alipay",
@@ -82618,6 +82835,7 @@
           "amazon_pay",
           "apple_pay",
           "au_becs_debit",
+          "au_pay",
           "bacs_debit",
           "bancontact",
           "billie",
@@ -82645,6 +82863,7 @@
           "kr_card",
           "link",
           "mb_way",
+          "merpay",
           "mobilepay",
           "multibanco",
           "naver_pay",
@@ -91389,13 +91608,8 @@
       "payment_method_options_card_present_aade_data": {
         "description": "",
         "properties": {
-          "mark_data": {
-            "description": "The canonical string that was signed by the e-invoicing provider to produce `signed_mark`, formatted per Appendix A of A.1155/2023. Required when `mode` is `standard`.",
-            "maxLength": 5000,
-            "type": "string"
-          },
           "mode": {
-            "description": "The e-invoicing mode under which the mark was generated.",
+            "description": "The e-invoicing mode under which the provider signature was generated.",
             "enum": [
               "autonomous",
               "standard"
@@ -91409,18 +91623,23 @@
                   "value": "autonomous"
                 },
                 {
-                  "description": "Use `standard` when AADE mark data was signed by an e-invoicing provider.",
+                  "description": "Use `standard` when provider signature data was signed by an e-invoicing provider.",
                   "value": "standard"
                 }
               ]
             }
           },
           "provider_id": {
-            "description": "The AADE-assigned approval number of the e-invoicing provider that generated the mark. Required when `mode` is `standard`.",
+            "description": "The AADE-assigned approval number of the e-invoicing provider that generated the provider signature. Required when `mode` is `standard`.",
             "type": "integer"
           },
-          "signed_mark": {
+          "provider_signature": {
             "description": "The cryptographic signature returned by the e-invoicing provider for this transaction, hex-encoded. Required when `mode` is `standard`.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "provider_signature_data": {
+            "description": "The canonical string that was signed by the e-invoicing provider to produce `provider_signature`, formatted per Appendix A of A.1155/2023. Required when `mode` is `standard`.",
             "maxLength": 5000,
             "type": "string"
           },
@@ -91458,10 +91677,10 @@
         "type": "object",
         "x-expandableFields": [],
         "x-stripeMostCommon": [
-          "mark_data",
           "mode",
           "provider_id",
-          "signed_mark",
+          "provider_signature",
+          "provider_signature_data",
           "unbound_pos"
         ],
         "x-stripeResource": {
@@ -98180,6 +98399,7 @@
           "network_advice_code",
           "network_decline_code",
           "network_transaction_id",
+          "stored_credential_usage",
           "three_d_secure",
           "wallet"
         ],
@@ -99337,6 +99557,9 @@
           "givex": {
             "$ref": "#/components/schemas/payments_primitives_payment_records_resource_processor_details_resource_givex_details"
           },
+          "stripe": {
+            "$ref": "#/components/schemas/payments_primitives_payment_records_resource_processor_details_resource_stripe_details"
+          },
           "svs": {
             "$ref": "#/components/schemas/payments_primitives_payment_records_resource_processor_details_resource_svs_details"
           },
@@ -99346,6 +99569,7 @@
               "custom",
               "fiserv_valuelink",
               "givex",
+              "stripe",
               "svs"
             ],
             "type": "string",
@@ -99361,12 +99585,14 @@
           "custom",
           "fiserv_valuelink",
           "givex",
+          "stripe",
           "svs"
         ],
         "x-stripeMostCommon": [
           "custom",
           "fiserv_valuelink",
           "givex",
+          "stripe",
           "svs",
           "type"
         ]
@@ -99427,6 +99653,26 @@
         "x-expandableFields": [],
         "x-stripeMostCommon": [
           "payment_reference"
+        ]
+      },
+      "payments_primitives_payment_records_resource_processor_details_resource_stripe_details": {
+        "description": "Represents the Stripe processor. This resource consists of details specific to Stripe.",
+        "properties": {
+          "derived_balance_transactions": {
+            "description": "Stripe balance transactions associated with this attempt, in no guaranteed order. References can appear at submission or after success. On a PaymentRecord, these references follow the latest attempt.",
+            "items": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "title": "Stripe processor detail",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "derived_balance_transactions"
         ]
       },
       "payments_primitives_payment_records_resource_processor_details_resource_svs_details": {
@@ -111099,6 +111345,22 @@
           "session"
         ]
       },
+      "radar_radar_options_radar_options_with_peval_options": {
+        "description": "Options to configure Radar.",
+        "properties": {
+          "is_free_trial_transaction": {
+            "description": "The value you provided for whether this transaction starts a free trial. This is null if you haven't explicitly set it.",
+            "nullable": true,
+            "type": "boolean"
+          }
+        },
+        "title": "RadarOptionsWithPevalOption",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "is_free_trial_transaction"
+        ]
+      },
       "radar_review_resource_location": {
         "description": "",
         "properties": {
@@ -111442,6 +111704,26 @@
           "amount": {
             "description": "Amount, in cents (or local equivalent).",
             "type": "integer"
+          },
+          "application": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/application"
+              }
+            ],
+            "description": "ID of the Connect application that created the refund. This can differ from the application on the associated Charge or PaymentIntent. A null value does not necessarily mean the refund was created without a Connect application.",
+            "nullable": true,
+            "x-expansionResources": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/application"
+                }
+              ]
+            }
           },
           "balance_transaction": {
             "anyOf": [
@@ -111884,9 +112166,6 @@
           "alipay": {
             "$ref": "#/components/schemas/destination_details_unimplemented"
           },
-          "alipay_plus": {
-            "$ref": "#/components/schemas/destination_details_unimplemented"
-          },
           "alma": {
             "$ref": "#/components/schemas/destination_details_unimplemented"
           },
@@ -111925,6 +112204,9 @@
           },
           "gb_bank_transfer": {
             "$ref": "#/components/schemas/refund_destination_details_gb_bank_transfer"
+          },
+          "gift_card": {
+            "$ref": "#/components/schemas/refund_destination_details_gift_card"
           },
           "giropay": {
             "$ref": "#/components/schemas/destination_details_unimplemented"
@@ -112010,7 +112292,6 @@
           "affirm",
           "afterpay_clearpay",
           "alipay",
-          "alipay_plus",
           "alma",
           "amazon_pay",
           "au_bank_transfer",
@@ -112024,6 +112305,7 @@
           "eps",
           "eu_bank_transfer",
           "gb_bank_transfer",
+          "gift_card",
           "giropay",
           "grabpay",
           "id_bank_transfer",
@@ -112052,7 +112334,6 @@
           "affirm",
           "afterpay_clearpay",
           "alipay",
-          "alipay_plus",
           "alma",
           "amazon_pay",
           "au_bank_transfer",
@@ -112066,6 +112347,7 @@
           "eps",
           "eu_bank_transfer",
           "gb_bank_transfer",
+          "gift_card",
           "giropay",
           "grabpay",
           "id_bank_transfer",
@@ -112327,6 +112609,26 @@
         "x-stripeMostCommon": [
           "reference",
           "reference_status"
+        ]
+      },
+      "refund_destination_details_gift_card": {
+        "description": "",
+        "properties": {
+          "gift_card_operation": {
+            "description": "ID of the reload or activation GiftCardOperation created for this refund.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "gift_card_operation"
+        ],
+        "title": "refund_destination_details_gift_card",
+        "type": "object",
+        "x-expandableFields": [],
+        "x-stripeMostCommon": [
+          "gift_card_operation"
         ]
       },
       "refund_destination_details_id_bank_transfer": {
@@ -113885,6 +114187,11 @@
             "description": "The number of days to reserve funds before releasing.",
             "type": "integer"
           },
+          "days_after_fulfillment": {
+            "description": "The number of days after the PaymentIntent's `fulfillment_date` to reserve funds before releasing. Charges without a `fulfillment_date` use `days_after_charge`.",
+            "nullable": true,
+            "type": "integer"
+          },
           "expires_on": {
             "description": "The time at which the ReservePlan expires.",
             "nullable": true,
@@ -113900,6 +114207,7 @@
         "x-expandableFields": [],
         "x-stripeMostCommon": [
           "days_after_charge",
+          "days_after_fulfillment",
           "expires_on"
         ]
       },
@@ -115310,6 +115618,9 @@
           "pix": {
             "$ref": "#/components/schemas/setup_attempt_payment_method_details_pix"
           },
+          "rakuten_pay": {
+            "$ref": "#/components/schemas/payment_flows_private_payment_methods_rakuten_pay_setup_attempt_details"
+          },
           "revolut_pay": {
             "$ref": "#/components/schemas/setup_attempt_payment_method_details_revolut_pay"
           },
@@ -115371,6 +115682,7 @@
           "paypay",
           "payto",
           "pix",
+          "rakuten_pay",
           "revolut_pay",
           "satispay",
           "sepa_debit",
@@ -115404,6 +115716,7 @@
           "paypay",
           "payto",
           "pix",
+          "rakuten_pay",
           "revolut_pay",
           "satispay",
           "sepa_debit",
@@ -117187,6 +117500,7 @@
           "arrival_date": {
             "description": "The timestamp when the microdeposits are expected to land. Null for instant microdeposits.",
             "format": "unix-time",
+            "nullable": true,
             "type": "integer"
           },
           "hosted_verification_url": {
@@ -122146,11 +122460,6 @@
           "automatic_tax": {
             "$ref": "#/components/schemas/subscription_automatic_tax"
           },
-          "billing_cadence": {
-            "description": "The Billing Cadence which controls the timing of recurring invoice generation for this subscription. If unset, the subscription will bill according to its own configured schedule and create its own invoices. If set, this subscription will be billed by the cadence instead, potentially sharing invoices with the other subscriptions linked to that Cadence.",
-            "maxLength": 5000,
-            "type": "string"
-          },
           "billing_cycle_anchor": {
             "description": "The reference point that aligns future [billing cycle](https://docs.stripe.com/subscriptions/billing-cycle) dates. It sets the day of week for `week` intervals, the day of month for `month` and `year` intervals, and the month of year for `year` intervals. The timestamp is in UTC format.",
             "format": "unix-time",
@@ -123474,6 +123783,10 @@
       "subscription_payment_method_options_card": {
         "description": "",
         "properties": {
+          "debit_behavior": {
+            "description": "Controls early collection for eligible recurring payments on India-issued cards. Target-date billing aims to debit on the billing-cycle date but does not guarantee that date.",
+            "type": "string"
+          },
           "mandate_options": {
             "$ref": "#/components/schemas/invoice_mandate_options_card"
           },
@@ -123518,6 +123831,7 @@
           "mandate_options"
         ],
         "x-stripeMostCommon": [
+          "debit_behavior",
           "mandate_options",
           "network",
           "request_three_d_secure"
@@ -123630,6 +123944,10 @@
       "subscription_payment_method_options_pix": {
         "description": "",
         "properties": {
+          "debit_behavior": {
+            "description": "Timing configuration for collecting funds from the customer's account.",
+            "type": "string"
+          },
           "expires_after_seconds": {
             "description": "The number of seconds after PaymentIntent confirmation when the Pix expires (between 60 and 1209600, inclusive). If unspecified, defaults to 14400 seconds (4 hours).",
             "type": "integer"
@@ -123644,6 +123962,7 @@
           "mandate_options"
         ],
         "x-stripeMostCommon": [
+          "debit_behavior",
           "expires_after_seconds",
           "mandate_options"
         ]
@@ -123666,6 +123985,10 @@
       "subscription_payment_method_options_upi": {
         "description": "",
         "properties": {
+          "debit_behavior": {
+            "description": "Controls when the funds will be captured from the customer's account. Defaults to `not_specified`. Omitting this parameter on an update preserves the saved value; passing `not_specified` clears it. Early collection is best effort and doesn't guarantee an exact debit date.",
+            "type": "string"
+          },
           "mandate_options": {
             "$ref": "#/components/schemas/invoice_payment_method_options_mandate_options_upi"
           }
@@ -123676,6 +123999,7 @@
           "mandate_options"
         ],
         "x-stripeMostCommon": [
+          "debit_behavior",
           "mandate_options"
         ]
       },
@@ -126548,6 +126872,9 @@
             "nullable": true,
             "type": "integer"
           },
+          "presentment_details": {
+            "$ref": "#/components/schemas/subscriptions_resource_subscription_presentment_details"
+          },
           "subscription_items": {
             "description": "List of subscription items, each with an attached plan, that will be set if the update is applied.",
             "items": {
@@ -126584,6 +126911,7 @@
         "x-expandableFields": [
           "discount",
           "discounts",
+          "presentment_details",
           "subscription_items"
         ],
         "x-stripeMostCommon": [
@@ -126594,6 +126922,7 @@
           "expires_at",
           "metadata",
           "prebilling_iterations",
+          "presentment_details",
           "subscription_items",
           "trial_end",
           "trial_from_plan"
@@ -127412,7 +127741,7 @@
         }
       },
       "tax.certificate": {
-        "description": "Tax exemption and resale certificates associated with tax exemptions.",
+        "description": "A Tax Certificate associates an uploaded exemption or resale certificate file with a customer's tax exemption. A tax exemption can have multiple certificates. Deleting a tax exemption also deletes its certificates, but retains their uploaded files.",
         "properties": {
           "created": {
             "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
@@ -127420,7 +127749,7 @@
             "type": "integer"
           },
           "deleted": {
-            "description": "Whether the certificate has been deleted.",
+            "description": "If `true`, the certificate has been deleted. If `false`, it hasn't been deleted.",
             "type": "boolean"
           },
           "file": {
@@ -127433,7 +127762,7 @@
                 "$ref": "#/components/schemas/file"
               }
             ],
-            "description": "The uploaded certificate file.",
+            "description": "The ID of the uploaded certificate [file](/api/files/object).",
             "x-expansionResources": {
               "oneOf": [
                 {
@@ -127471,7 +127800,7 @@
                 "$ref": "#/components/schemas/deleted_customer_tax_exemption"
               }
             ],
-            "description": "The tax exemption associated with this certificate.",
+            "description": "The ID of the [customer tax exemption](/api/tax/exemptions/object) associated with this certificate.",
             "nullable": true,
             "x-expansionResources": {
               "oneOf": [
@@ -133020,6 +133349,11 @@
           },
           "state_income_tax_withheld": {
             "$ref": "#/components/schemas/tax_form_amount"
+          },
+          "treasury_tipped_occupation_code": {
+            "description": "The Treasury Tipped Occupation Code stored on the form's payee identity, returned when present regardless of reporting year. Contains one three-digit code or two codes separated by `|`, preserving leading zeros. Uses the selected identity for draft forms and the identity snapshot for finalized forms. Omitted when no code is recorded.",
+            "maxLength": 5000,
+            "type": "string"
           }
         },
         "required": [
@@ -133044,7 +133378,8 @@
           "monthly_volumes",
           "payment_transactions_count",
           "reporting_year",
-          "state_income_tax_withheld"
+          "state_income_tax_withheld",
+          "treasury_tipped_occupation_code"
         ]
       },
       "tax_reporting_resource_tax_form_us1099_misc": {
@@ -133117,6 +133452,11 @@
           },
           "substitute_payments": {
             "$ref": "#/components/schemas/tax_form_amount"
+          },
+          "treasury_tipped_occupation_code": {
+            "description": "The Treasury Tipped Occupation Code stored on the form's payee identity, returned when present regardless of reporting year. Contains one three-digit code or two codes separated by `|`, preserving leading zeros. Uses the selected identity for draft forms and the identity snapshot for finalized forms. Omitted when no code is recorded.",
+            "maxLength": 5000,
+            "type": "string"
           }
         },
         "required": [
@@ -133164,7 +133504,8 @@
           "section_409a_deferrals",
           "state_income",
           "state_tax_withheld",
-          "substitute_payments"
+          "substitute_payments",
+          "treasury_tipped_occupation_code"
         ]
       },
       "tax_reporting_resource_tax_form_us1099_nec": {
@@ -133204,6 +133545,11 @@
           },
           "state_tax_withheld": {
             "$ref": "#/components/schemas/tax_form_amount"
+          },
+          "treasury_tipped_occupation_code": {
+            "description": "The Treasury Tipped Occupation Code stored on the form's payee identity, returned when present regardless of reporting year. Contains one three-digit code or two codes separated by `|`, preserving leading zeros. Uses the selected identity for draft forms and the identity snapshot for finalized forms. Omitted when no code is recorded.",
+            "maxLength": 5000,
+            "type": "string"
           }
         },
         "required": [
@@ -133229,7 +133575,8 @@
           "overtime_compensation",
           "reporting_year",
           "state_income",
-          "state_tax_withheld"
+          "state_tax_withheld",
+          "treasury_tipped_occupation_code"
         ]
       },
       "terminal.configuration": {
@@ -133670,13 +134017,18 @@
               "simulated_wisepos_e",
               "stripe_m2",
               "stripe_s700",
+              "stripe_s700_devkit",
               "stripe_s710",
+              "stripe_s710_devkit",
               "stripe_t600",
+              "stripe_t600_devkit",
               "verifone_P400",
               "verifone_m425",
               "verifone_p630",
               "verifone_ux700",
-              "verifone_v660p"
+              "verifone_ux700_devkit",
+              "verifone_v660p",
+              "verifone_v660p_devkit"
             ],
             "type": "string",
             "x-stripeBypassValidation": true
@@ -137409,12 +137761,6 @@
       "thresholds_resource_alert_notification_group_by": {
         "description": "",
         "properties": {
-          "billing_cadence": {
-            "description": "The billing cadence ID, populated when type is `billing_cadence`",
-            "maxLength": 5000,
-            "nullable": true,
-            "type": "string"
-          },
           "billing_group": {
             "description": "The billing group ID, populated when type is `billing_group`",
             "maxLength": 5000,
@@ -137430,7 +137776,7 @@
           "type": {
             "description": "The type of grouping used for this alert notification",
             "enum": [
-              "billing_cadence",
+              "billing_group",
               "pricing_plan_subscription"
             ],
             "type": "string",
@@ -137438,11 +137784,11 @@
               "kind": "open",
               "values": [
                 {
-                  "description": "Aggregate spend by billing cadence.",
-                  "value": "billing_cadence"
+                  "description": "The alert notification was grouped by billing group.",
+                  "value": "billing_group"
                 },
                 {
-                  "description": "Aggregate spend by pricing plan subscription.",
+                  "description": "The alert notification was grouped by pricing plan subscription.",
                   "value": "pricing_plan_subscription"
                 }
               ]
@@ -137450,7 +137796,6 @@
           }
         },
         "required": [
-          "billing_cadence",
           "billing_group",
           "pricing_plan_subscription",
           "type"
@@ -137459,7 +137804,6 @@
         "type": "object",
         "x-expandableFields": [],
         "x-stripeMostCommon": [
-          "billing_cadence",
           "billing_group",
           "pricing_plan_subscription",
           "type"
@@ -137682,7 +138026,7 @@
           "group_by": {
             "description": "Defines the granularity of spend aggregation.",
             "enum": [
-              "billing_cadence",
+              "billing_group",
               "pricing_plan_subscription"
             ],
             "nullable": true,
@@ -137691,11 +138035,11 @@
               "kind": "open",
               "values": [
                 {
-                  "description": "Aggregate spend by billing cadence.",
-                  "value": "billing_cadence"
+                  "description": "Use `billing_group` to aggregate spend by billing group.",
+                  "value": "billing_group"
                 },
                 {
-                  "description": "Aggregate spend by pricing plan subscription.",
+                  "description": "Use `pricing_plan_subscription` to aggregate spend by individual pricing plan subscription.",
                   "value": "pricing_plan_subscription"
                 }
               ]
@@ -137728,12 +138072,6 @@
       "thresholds_resource_spend_threshold_filter": {
         "description": "Filters to scope the spend calculation for a spend threshold alert.",
         "properties": {
-          "billing_cadence": {
-            "description": "Filter by billing cadence ID.",
-            "maxLength": 5000,
-            "nullable": true,
-            "type": "string"
-          },
           "billing_group": {
             "description": "Filter by billing group ID.",
             "maxLength": 5000,
@@ -137754,7 +138092,6 @@
           }
         },
         "required": [
-          "billing_cadence",
           "billing_group",
           "pricing_plan",
           "pricing_plan_subscription"
@@ -137764,7 +138101,6 @@
         "x-expandableFields": [],
         "x-stableId": "spend_threshold_filter",
         "x-stripeMostCommon": [
-          "billing_cadence",
           "billing_group",
           "pricing_plan",
           "pricing_plan_subscription"
@@ -144285,7 +144621,7 @@
     "description": "The Stripe REST API. Please see https://stripe.com/docs/api for more details.",
     "termsOfService": "https://stripe.com/us/terms/",
     "title": "Stripe API",
-    "version": "2026-10-28.preview; embedded_connect_beta=v2; server_side_confirmation_beta=v1; orders_beta=v4; unified_accounts_beta=v1; terminal_collect_inputs_beta=v2; terminal_collect_confirm_beta=v1; retrieve_tax_forms_beta=v1; checkout_server_update_beta=v1; payment_records_beta=v2; financial_connections_transactions_beta=v1; invoice_partial_payments_beta=v3; invoice_payment_plans_beta=v1; payment_intent_with_tax_api_beta=v1; custom_checkout_beta=v2; id_bank_transfer_beta=v2; fx_quote_preview=v1",
+    "version": "2026-11-18.preview; embedded_connect_beta=v2; server_side_confirmation_beta=v1; orders_beta=v4; unified_accounts_beta=v1; terminal_collect_inputs_beta=v2; terminal_collect_confirm_beta=v1; retrieve_tax_forms_beta=v1; checkout_server_update_beta=v1; payment_records_beta=v2; financial_connections_transactions_beta=v1; invoice_partial_payments_beta=v3; invoice_payment_plans_beta=v1; payment_intent_with_tax_api_beta=v1; custom_checkout_beta=v2; id_bank_transfer_beta=v2; fx_quote_preview=v1",
     "x-stripeSpecFilename": "spec3.private_preview.sdk"
   },
   "openapi": "3.0.0",
@@ -148402,6 +148738,7 @@
                       "storer_holds_currencies_usdc",
                       "storer_outbound_payments_bank_accounts",
                       "storer_outbound_transfers_bank_accounts",
+                      "storer_outbound_transfers_financial_accounts",
                       "stripe_balance_payments",
                       "stripe_funded_fee_credits",
                       "submerchant_payments",
@@ -152701,6 +153038,7 @@
                       "storer_holds_currencies_usdc",
                       "storer_outbound_payments_bank_accounts",
                       "storer_outbound_transfers_bank_accounts",
+                      "storer_outbound_transfers_financial_accounts",
                       "stripe_balance_payments",
                       "stripe_funded_fee_credits",
                       "submerchant_payments",
@@ -159431,7 +159769,7 @@
     },
     "/v1/apps/installs": {
       "get": {
-        "description": "<p>Returns a list of app installs. An app developer filtering by its own app with its own key sees that app’s installs across the accounts that installed it. An app developer acting on a connected account through <code>Stripe-Account</code> and filtering by its app sees that account’s installs of the app, and an embedding platform acting on a connected account sees only the installs it created there. Other callers see the installs on their own account. A live key lists live installs and a test key lists test installs; the key of an app’s managed sandbox filtering by <code>app</code> lists that app’s installs across every sandbox.</p>",
+        "description": "<p>Returns a list of app installs. An app developer filtering by its own app with its own key sees that app’s installs across the accounts that installed it. An app developer acting on a connected account through <code>Stripe-Account</code> and filtering by its app sees that account’s installs of the app, and an embedding platform acting on a connected account sees only the installs it created there. Other callers see the installs on their own account. A live key lists live installs and a test key lists test installs; the key of an app’s managed sandbox filtering by <code>app</code> lists that app’s installs across every sandbox, and also that app’s legacy test mode installs when the developer has no legacy test mode.</p>",
         "operationId": "GetAppsInstalls",
         "parameters": [
           {
@@ -161045,7 +161383,7 @@
             "x-stripeLessCommon": true
           },
           {
-            "description": "For automatic Stripe payouts only, only returns transactions that were paid out on the specified payout ID.",
+            "description": "For automatic Stripe payouts only, only returns transactions that were paid out on the specified payout ID. You can't combine this parameter with `source`.",
             "in": "query",
             "name": "payout",
             "required": false,
@@ -161056,7 +161394,7 @@
             "style": "form"
           },
           {
-            "description": "Only returns transactions associated with the given object.",
+            "description": "Only returns transactions associated with the given object. You can't combine this parameter with `payout`.",
             "in": "query",
             "name": "source",
             "required": false,
@@ -161870,11 +162208,6 @@
                             },
                             "type": "array"
                           },
-                          "billing_cadence": {
-                            "description": "Filter by billing cadence ID.",
-                            "maxLength": 256,
-                            "type": "string"
-                          },
                           "billing_group": {
                             "description": "Filter by billing group ID.",
                             "maxLength": 256,
@@ -161895,7 +162228,6 @@
                         "type": "object",
                         "x-stripeMostCommon": [
                           "billable_items",
-                          "billing_cadence",
                           "billing_group",
                           "pricing_plan",
                           "pricing_plan_subscription"
@@ -161904,7 +162236,7 @@
                       "group_by": {
                         "description": "Defines the granularity of spend aggregation. Defaults to `pricing_plan_subscription`.",
                         "enum": [
-                          "billing_cadence",
+                          "billing_group",
                           "pricing_plan_subscription"
                         ],
                         "type": "string",
@@ -161912,11 +162244,11 @@
                           "kind": "open",
                           "values": [
                             {
-                              "description": "Aggregate spend by billing cadence.",
-                              "value": "billing_cadence"
+                              "description": "Use `billing_group` to aggregate spend by billing group.",
+                              "value": "billing_group"
                             },
                             {
-                              "description": "Aggregate spend by pricing plan subscription.",
+                              "description": "Use `pricing_plan_subscription` to aggregate spend by individual pricing plan subscription.",
                               "value": "pricing_plan_subscription"
                             }
                           ]
@@ -162441,18 +162773,6 @@
             "description": "Filter results to only include notifications for the given billing group.",
             "in": "query",
             "name": "billing_group",
-            "required": false,
-            "schema": {
-              "maxLength": 5000,
-              "type": "string"
-            },
-            "style": "form",
-            "x-stripeLessCommon": true
-          },
-          {
-            "description": "Filter results to only include notifications for the given cadence.",
-            "in": "query",
-            "name": "cadence",
             "required": false,
             "schema": {
               "maxLength": 5000,
@@ -167301,7 +167621,7 @@
                             "description": "The list of up to 10 products that support subscription updates."
                           },
                           "proration_behavior": {
-                            "description": "Determines how to handle prorations resulting from subscription updates. Valid values are `none`, `create_prorations`, and `always_invoice`.",
+                            "description": "Determines how to handle prorations resulting from subscription updates. Valid values are `none`, `create_prorations`, and `always_invoice`. Defaults to `none`.",
                             "enum": [
                               "always_invoice",
                               "create_prorations",
@@ -167374,6 +167694,7 @@
                     "title": "features_creation_param",
                     "type": "object",
                     "x-stripeMostCommon": [
+                      "browser_binding",
                       "customer_update",
                       "invoice_history",
                       "payment_method_update",
@@ -168075,7 +168396,7 @@
                             "description": "The list of up to 10 products that support subscription updates."
                           },
                           "proration_behavior": {
-                            "description": "Determines how to handle prorations resulting from subscription updates. Valid values are `none`, `create_prorations`, and `always_invoice`.",
+                            "description": "Determines how to handle prorations resulting from subscription updates. Valid values are `none`, `create_prorations`, and `always_invoice`. If omitted, the proration behavior is unchanged.",
                             "enum": [
                               "always_invoice",
                               "create_prorations",
@@ -168155,6 +168476,7 @@
                     "title": "features_updating_param",
                     "type": "object",
                     "x-stripeMostCommon": [
+                      "browser_binding",
                       "customer_update",
                       "invoice_history",
                       "payment_method_update",
@@ -178969,6 +179291,10 @@
                                     "description": "ID of the invoice rendering template to use for this invoice.",
                                     "maxLength": 5000,
                                     "type": "string"
+                                  },
+                                  "template_version": {
+                                    "description": "The specific version of the invoice rendering template to use for this invoice. If not specified, the latest version of the template will be used. Only available in unified mode.",
+                                    "type": "integer"
                                   }
                                 },
                                 "title": "checkout_rendering_options_param",
@@ -178977,7 +179303,8 @@
                                   "amount_tax_display",
                                   "currency_display",
                                   "invoice_title",
-                                  "template"
+                                  "template",
+                                  "template_version"
                                 ]
                               },
                               {
@@ -180197,6 +180524,16 @@
                             "consent_collected": {
                               "description": "Whether the customer consented to sending conversion data to an advertising platform.",
                               "type": "boolean"
+                            },
+                            "source_url": {
+                              "description": "The URL of the web page where the customer converted.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            },
+                            "user_agent": {
+                              "description": "The user agent of the browser where the customer converted.",
+                              "maxLength": 5000,
+                              "type": "string"
                             }
                           },
                           "required": [
@@ -180205,7 +180542,9 @@
                           "title": "marketing_attribution_ad_conversion_params",
                           "type": "object",
                           "x-stripeMostCommon": [
-                            "consent_collected"
+                            "consent_collected",
+                            "source_url",
+                            "user_agent"
                           ]
                         },
                         "click_id": {
@@ -187080,6 +187419,48 @@
                     "description": "Coupons defined in each available currency option (only supported if `amount_off` is passed). Each key must be a three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html) and a [supported currency](https://stripe.com/docs/currencies).",
                     "type": "object"
                   },
+                  "custom": {
+                    "description": "The custom coupon calculation configuration.",
+                    "properties": {
+                      "configuration": {
+                        "description": "The configuration values of the extension. The keys and values are specific to the extension implementation. May be omitted for extensions that have no configuration schema, in which case an empty configuration is used.",
+                        "type": "object"
+                      },
+                      "extension": {
+                        "description": "The extension used to calculate the coupon.",
+                        "properties": {
+                          "id": {
+                            "description": "The Extension Prototype ID.",
+                            "maxLength": 5000,
+                            "type": "string"
+                          },
+                          "version": {
+                            "description": "The semantic version of the extension.",
+                            "maxLength": 5000,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ],
+                        "title": "extension_reference_param",
+                        "type": "object",
+                        "x-stripeMostCommon": [
+                          "id",
+                          "version"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "extension"
+                    ],
+                    "title": "custom_param",
+                    "type": "object",
+                    "x-stripeMostCommon": [
+                      "configuration",
+                      "extension"
+                    ]
+                  },
                   "duration": {
                     "description": "Specifies how long the discount will be in effect if used on a subscription. Defaults to `once`.",
                     "enum": [
@@ -187235,6 +187616,14 @@
                       "interval_count",
                       "iterations"
                     ]
+                  },
+                  "type": {
+                    "description": "The coupon calculation type. Must be `custom` when `custom` is provided.",
+                    "enum": [
+                      "custom"
+                    ],
+                    "maxLength": 5000,
+                    "type": "string"
                   }
                 },
                 "type": "object",
@@ -191953,6 +192342,16 @@
                             "consent_collected": {
                               "description": "Whether the customer consented to sending conversion data to an advertising platform.",
                               "type": "boolean"
+                            },
+                            "source_url": {
+                              "description": "The URL of the web page where the customer converted.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            },
+                            "user_agent": {
+                              "description": "The user agent of the browser where the customer converted.",
+                              "maxLength": 5000,
+                              "type": "string"
                             }
                           },
                           "required": [
@@ -191961,7 +192360,9 @@
                           "title": "marketing_attribution_ad_conversion_params",
                           "type": "object",
                           "x-stripeMostCommon": [
-                            "consent_collected"
+                            "consent_collected",
+                            "source_url",
+                            "user_agent"
                           ]
                         },
                         "click_id": {
@@ -193014,6 +193415,16 @@
                             "consent_collected": {
                               "description": "Whether the customer consented to sending conversion data to an advertising platform.",
                               "type": "boolean"
+                            },
+                            "source_url": {
+                              "description": "The URL of the web page where the customer converted.",
+                              "maxLength": 5000,
+                              "type": "string"
+                            },
+                            "user_agent": {
+                              "description": "The user agent of the browser where the customer converted.",
+                              "maxLength": 5000,
+                              "type": "string"
                             }
                           },
                           "required": [
@@ -193022,7 +193433,9 @@
                           "title": "marketing_attribution_ad_conversion_params",
                           "type": "object",
                           "x-stripeMostCommon": [
-                            "consent_collected"
+                            "consent_collected",
+                            "source_url",
+                            "user_agent"
                           ]
                         },
                         "click_id": {
@@ -200444,7 +200857,7 @@
     },
     "/v1/events": {
       "get": {
-        "description": "<p>List events, going back up to 30 days. Each event data is rendered according to Stripe API version at its creation time, specified in <a href=\"https://docs.stripe.com/api/events/object\">event object</a> <code>api_version</code> attribute (not according to your current Stripe API version or <code>Stripe-Version</code> header).</p>",
+        "description": "<p>List events, going back up to 30 days. Each event data is rendered according to Stripe API version at its creation time, specified in <a href=\"https://docs.stripe.com/api/events/object\">event object</a> <code>api_version</code> attribute (not according to your current Stripe API version or <code>Stripe-Version</code> header). The list includes only events for the account that makes the request. A platform’s list doesn’t include events from its connected accounts. To list a connected account’s events, make the request <a href=\"https://docs.stripe.com/connect/authentication\">as the connected account</a> using the <code>Stripe-Account</code> header.</p>",
         "operationId": "GetEvents",
         "parameters": [
           {
@@ -205144,7 +205557,7 @@
                         ]
                       },
                       "type": {
-                        "description": "Which transaction the FX Quote will be used for\n\nCan be “payment” | “transfer”",
+                        "description": "Which transaction the FX Quote will be used for",
                         "enum": [
                           "payment",
                           "transfer"
@@ -208216,6 +208629,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "rendering_settings": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "summary_item_policies": {
                   "explode": true,
                   "style": "deepObject"
@@ -208259,6 +208676,93 @@
                     "maxLength": 5000,
                     "type": "string"
                   },
+                  "rendering_settings": {
+                    "description": "Rendering settings for invoices using this template.",
+                    "properties": {
+                      "invoice_pdf": {
+                        "description": "Rendering settings for the invoice PDF.",
+                        "properties": {
+                          "blocks": {
+                            "anyOf": [
+                              {
+                                "items": {
+                                  "properties": {
+                                    "custom_plain_text_cel": {
+                                      "description": "Configuration for a custom CEL text block.",
+                                      "properties": {
+                                        "cel_expression": {
+                                          "description": "A CEL expression that returns text using the invoice context.",
+                                          "maxLength": 1024,
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "cel_expression"
+                                      ],
+                                      "title": "custom_plain_text_cel_configuration",
+                                      "type": "object",
+                                      "x-stripeMostCommon": [
+                                        "cel_expression"
+                                      ]
+                                    },
+                                    "key": {
+                                      "description": "A unique key within this template's blocks. Generated when omitted.",
+                                      "maxLength": 100,
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "description": "The type of content block.",
+                                      "enum": [
+                                        "custom_plain_text_cel",
+                                        "footer_content",
+                                        "invoice_details",
+                                        "line_items",
+                                        "parties",
+                                        "payment_remittance_instructions",
+                                        "status_and_memo",
+                                        "tax_footnotes",
+                                        "title_and_logo"
+                                      ],
+                                      "maxLength": 5000,
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "type"
+                                  ],
+                                  "title": "block_entry",
+                                  "type": "object",
+                                  "x-stripeMostCommon": [
+                                    "custom_plain_text_cel",
+                                    "key",
+                                    "type"
+                                  ]
+                                },
+                                "type": "array"
+                              },
+                              {
+                                "enum": [
+                                  ""
+                                ],
+                                "type": "string"
+                              }
+                            ],
+                            "description": "Ordered invoice PDF blocks. A maximum of 20 blocks is allowed."
+                          }
+                        },
+                        "title": "invoice_pdf_settings",
+                        "type": "object",
+                        "x-stripeMostCommon": [
+                          "blocks"
+                        ]
+                      }
+                    },
+                    "title": "rendering_settings",
+                    "type": "object",
+                    "x-stripeMostCommon": [
+                      "invoice_pdf"
+                    ]
+                  },
                   "summary_item_policies": {
                     "description": "Controls the grouping of line items into summary items which are displayed on the invoice, visible to customers. The policies are applied in order - only ungrouped line items from the previous policy are considered by the following policies.",
                     "items": {
@@ -208298,6 +208802,7 @@
                   "line_item_policy",
                   "metadata",
                   "nickname",
+                  "rendering_settings",
                   "summary_item_policies"
                 ]
               }
@@ -208442,6 +208947,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "rendering_settings": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "summary_item_policies": {
                   "explode": true,
                   "style": "deepObject"
@@ -208505,6 +209014,90 @@
                     "maxLength": 5000,
                     "type": "string"
                   },
+                  "rendering_settings": {
+                    "description": "Rendering settings for invoices using this template.",
+                    "properties": {
+                      "invoice_pdf": {
+                        "description": "Rendering settings for the invoice PDF.",
+                        "properties": {
+                          "blocks": {
+                            "anyOf": [
+                              {
+                                "items": {
+                                  "properties": {
+                                    "custom_plain_text_cel": {
+                                      "description": "Configuration for a custom CEL text block.",
+                                      "properties": {
+                                        "cel_expression": {
+                                          "description": "A CEL expression that returns text using the invoice context.",
+                                          "maxLength": 1024,
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "cel_expression"
+                                      ],
+                                      "title": "custom_plain_text_cel_configuration",
+                                      "type": "object",
+                                      "x-stripeMostCommon": [
+                                        "cel_expression"
+                                      ]
+                                    },
+                                    "key": {
+                                      "description": "A unique key within this template's blocks. Generated when omitted.",
+                                      "maxLength": 100,
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "description": "The type of content block. Required when updating a block without a key matching an existing block in the current template version. For a matching key, omit type to retain the existing type; if supplied, it must match.",
+                                      "enum": [
+                                        "custom_plain_text_cel",
+                                        "footer_content",
+                                        "invoice_details",
+                                        "line_items",
+                                        "parties",
+                                        "payment_remittance_instructions",
+                                        "status_and_memo",
+                                        "tax_footnotes",
+                                        "title_and_logo"
+                                      ],
+                                      "maxLength": 5000,
+                                      "type": "string"
+                                    }
+                                  },
+                                  "title": "update_block_entry",
+                                  "type": "object",
+                                  "x-stripeMostCommon": [
+                                    "custom_plain_text_cel",
+                                    "key",
+                                    "type"
+                                  ]
+                                },
+                                "type": "array"
+                              },
+                              {
+                                "enum": [
+                                  ""
+                                ],
+                                "type": "string"
+                              }
+                            ],
+                            "description": "Ordered invoice PDF blocks. A maximum of 20 blocks is allowed."
+                          }
+                        },
+                        "title": "update_invoice_pdf_settings",
+                        "type": "object",
+                        "x-stripeMostCommon": [
+                          "blocks"
+                        ]
+                      }
+                    },
+                    "title": "update_rendering_settings",
+                    "type": "object",
+                    "x-stripeMostCommon": [
+                      "invoice_pdf"
+                    ]
+                  },
                   "summary_item_policies": {
                     "anyOf": [
                       {
@@ -208554,6 +209147,7 @@
                   "line_item_policy",
                   "metadata",
                   "nickname",
+                  "rendering_settings",
                   "summary_item_policies"
                 ]
               }
@@ -209273,7 +209867,7 @@
                     "type": "string"
                   },
                   "subscription": {
-                    "description": "The ID of a subscription to add this invoice item to. When left blank, the invoice item is added to the next upcoming scheduled invoice. When set, scheduled invoices for subscriptions other than the specified subscription will ignore the invoice item. Use this when you want to express that an invoice item has been accrued within the context of a particular subscription.",
+                    "description": "The ID of a subscription to add this invoice item to. When left blank, the invoice item is added to the next upcoming scheduled invoice. When set, scheduled invoices for subscriptions other than the specified subscription will ignore the invoice item. Use this when you want to express that an invoice item has been accrued within the context of a particular subscription. You can use this parameter with either `customer` or `customer_account`. The subscription must belong to the customer you specify.",
                     "maxLength": 5000,
                     "type": "string"
                   },
@@ -209883,18 +210477,6 @@
         "description": "<p>You can list all invoices, or list the invoices for a specific customer. The invoices are returned sorted by creation date, with the most recently created invoices appearing first.</p>",
         "operationId": "GetInvoices",
         "parameters": [
-          {
-            "description": "Only return invoices for the billing cadence specified by this billing cadence ID.",
-            "in": "query",
-            "name": "billing_cadence",
-            "required": false,
-            "schema": {
-              "maxLength": 5000,
-              "type": "string"
-            },
-            "style": "form",
-            "x-stripeLessCommon": true
-          },
           {
             "description": "Only return invoices for the billing group specified by this billing group ID.",
             "in": "query",
@@ -211729,6 +212311,7 @@
                     "type": "object",
                     "x-stripeMostCommon": [
                       "amount_tax_display",
+                      "clear_template_groupings",
                       "currency_display",
                       "custom_text",
                       "invoice_title",
@@ -212180,11 +212763,6 @@
                       "liability",
                       "withhold_tax"
                     ]
-                  },
-                  "billing_cadence": {
-                    "description": "The identifier of the billing cadence for which you’d like to retrieve the upcoming invoice. Cannot be provided when `subscription`, `schedule`, `subscription_details` or `schedule_details` are provided.",
-                    "maxLength": 5000,
-                    "type": "string"
                   },
                   "billing_group": {
                     "description": "The identifier of the billing group for which you’d like to retrieve the upcoming invoice. Cannot be provided when `subscription`, `schedule`, `subscription_details` or `schedule_details` are provided.",
@@ -217139,7 +217717,6 @@
                 "type": "object",
                 "x-stripeMostCommon": [
                   "automatic_tax",
-                  "billing_cadence",
                   "billing_group",
                   "customer",
                   "customer_account",
@@ -219000,6 +219577,7 @@
                     "type": "object",
                     "x-stripeMostCommon": [
                       "amount_tax_display",
+                      "clear_template_groupings",
                       "currency_display",
                       "custom_text",
                       "invoice_title",
@@ -247606,7 +248184,7 @@
                       "currency",
                       "value"
                     ],
-                    "title": "amount",
+                    "title": "params",
                     "type": "object",
                     "x-stripeMostCommon": [
                       "currency",
@@ -255977,13 +256555,8 @@
                               "aade_data": {
                                 "description": "Greek e-invoicing data required for card-present transactions processed by merchants subject to AADE's myDATA POS compliance mandate (Governor's Decision A.1155/2023).",
                                 "properties": {
-                                  "mark_data": {
-                                    "description": "The canonical string that was signed by the e-invoicing provider to produce `signed_mark`, formatted per Appendix A of A.1155/2023. Required when `mode` is `standard`.",
-                                    "maxLength": 5000,
-                                    "type": "string"
-                                  },
                                   "mode": {
-                                    "description": "The e-invoicing mode under which the mark was generated.",
+                                    "description": "The e-invoicing mode under which the provider signature was generated.",
                                     "enum": [
                                       "autonomous",
                                       "standard"
@@ -255997,18 +256570,23 @@
                                           "value": "autonomous"
                                         },
                                         {
-                                          "description": "Use `standard` when AADE mark data was signed by an e-invoicing provider.",
+                                          "description": "Use `standard` when provider signature data was signed by an e-invoicing provider.",
                                           "value": "standard"
                                         }
                                       ]
                                     }
                                   },
                                   "provider_id": {
-                                    "description": "The AADE-assigned approval number of the e-invoicing provider that generated the mark. Required when `mode` is `standard`.",
+                                    "description": "The AADE-assigned approval number of the e-invoicing provider that generated the provider signature. Required when `mode` is `standard`.",
                                     "type": "integer"
                                   },
-                                  "signed_mark": {
+                                  "provider_signature": {
                                     "description": "The cryptographic signature returned by the e-invoicing provider for this transaction, hex-encoded. Required when `mode` is `standard`.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "provider_signature_data": {
+                                    "description": "The canonical string that was signed by the e-invoicing provider to produce `provider_signature`, formatted per Appendix A of A.1155/2023. Required when `mode` is `standard`.",
                                     "maxLength": 5000,
                                     "type": "string"
                                   },
@@ -256045,10 +256623,10 @@
                                 "title": "aade_data_payment_method_options_param",
                                 "type": "object",
                                 "x-stripeMostCommon": [
-                                  "mark_data",
                                   "mode",
                                   "provider_id",
-                                  "signed_mark",
+                                  "provider_signature",
+                                  "provider_signature_data",
                                   "unbound_pos"
                                 ]
                               },
@@ -261258,18 +261836,28 @@
                                   "money_services"
                                 ]
                               },
+                              "request_multicapture": {
+                                "description": "Request ability to make [multiple captures](https://docs.stripe.com/payments/multicapture) for this PaymentIntent.",
+                                "enum": [
+                                  "if_available",
+                                  "never"
+                                ],
+                                "type": "string"
+                              },
                               "setup_future_usage": {
                                 "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf you provide a Customer with the PaymentIntent, you can use this parameter to [attach the payment method](/payments/save-during-payment) to the Customer after the PaymentIntent is confirmed and the customer completes any required actions. If you don't provide a Customer, you can still [attach](/api/payment_methods/attach) the payment method to a Customer after the transaction completes.\n\nIf the payment method is `card_present` and isn't a digital wallet, Stripe creates and attaches a [generated_card](/api/charges/object#charge_object-payment_method_details-card_present-generated_card) payment method representing the card to the Customer instead.\n\nWhen processing card payments, Stripe uses `setup_future_usage` to help you comply with regional legislation and network rules, such as [SCA](/strong-customer-authentication).\n\nIf you've already set `setup_future_usage` and you're performing a request using a publishable key, you can only update the value from `on_session` to `off_session`.",
                                 "enum": [
                                   "none"
                                 ],
-                                "type": "string"
+                                "type": "string",
+                                "x-stripeBypassValidation": true
                               }
                             },
                             "title": "payment_method_options_param",
                             "type": "object",
                             "x-stripeMostCommon": [
                               "capture_method",
+                              "mandate_options",
                               "payment_details",
                               "request_multicapture",
                               "setup_future_usage"
@@ -261370,6 +261958,7 @@
                             "title": "payment_method_options_param",
                             "type": "object",
                             "x-stripeMostCommon": [
+                              "mandate_options",
                               "setup_future_usage"
                             ]
                           },
@@ -261531,6 +262120,10 @@
                   "radar_options": {
                     "description": "Options to configure Radar. Learn more about [Radar Sessions](https://docs.stripe.com/radar/radar-session).",
                     "properties": {
+                      "is_free_trial_transaction": {
+                        "description": "Whether this transaction starts a free trial. Set to `true` for a free trial or `false` otherwise. If omitted, retains the previously set value. If never set, Stripe uses Billing or metadata to determine trial status.",
+                        "type": "boolean"
+                      },
                       "referrer": {
                         "anyOf": [
                           {
@@ -261555,6 +262148,7 @@
                     "title": "radar_options_with_peval_options",
                     "type": "object",
                     "x-stripeMostCommon": [
+                      "is_free_trial_transaction",
                       "payment_evaluation_options",
                       "referrer",
                       "session",
@@ -269931,13 +270525,8 @@
                               "aade_data": {
                                 "description": "Greek e-invoicing data required for card-present transactions processed by merchants subject to AADE's myDATA POS compliance mandate (Governor's Decision A.1155/2023).",
                                 "properties": {
-                                  "mark_data": {
-                                    "description": "The canonical string that was signed by the e-invoicing provider to produce `signed_mark`, formatted per Appendix A of A.1155/2023. Required when `mode` is `standard`.",
-                                    "maxLength": 5000,
-                                    "type": "string"
-                                  },
                                   "mode": {
-                                    "description": "The e-invoicing mode under which the mark was generated.",
+                                    "description": "The e-invoicing mode under which the provider signature was generated.",
                                     "enum": [
                                       "autonomous",
                                       "standard"
@@ -269951,18 +270540,23 @@
                                           "value": "autonomous"
                                         },
                                         {
-                                          "description": "Use `standard` when AADE mark data was signed by an e-invoicing provider.",
+                                          "description": "Use `standard` when provider signature data was signed by an e-invoicing provider.",
                                           "value": "standard"
                                         }
                                       ]
                                     }
                                   },
                                   "provider_id": {
-                                    "description": "The AADE-assigned approval number of the e-invoicing provider that generated the mark. Required when `mode` is `standard`.",
+                                    "description": "The AADE-assigned approval number of the e-invoicing provider that generated the provider signature. Required when `mode` is `standard`.",
                                     "type": "integer"
                                   },
-                                  "signed_mark": {
+                                  "provider_signature": {
                                     "description": "The cryptographic signature returned by the e-invoicing provider for this transaction, hex-encoded. Required when `mode` is `standard`.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "provider_signature_data": {
+                                    "description": "The canonical string that was signed by the e-invoicing provider to produce `provider_signature`, formatted per Appendix A of A.1155/2023. Required when `mode` is `standard`.",
                                     "maxLength": 5000,
                                     "type": "string"
                                   },
@@ -269999,10 +270593,10 @@
                                 "title": "aade_data_payment_method_options_param",
                                 "type": "object",
                                 "x-stripeMostCommon": [
-                                  "mark_data",
                                   "mode",
                                   "provider_id",
-                                  "signed_mark",
+                                  "provider_signature",
+                                  "provider_signature_data",
                                   "unbound_pos"
                                 ]
                               },
@@ -275212,18 +275806,28 @@
                                   "money_services"
                                 ]
                               },
+                              "request_multicapture": {
+                                "description": "Request ability to make [multiple captures](https://docs.stripe.com/payments/multicapture) for this PaymentIntent.",
+                                "enum": [
+                                  "if_available",
+                                  "never"
+                                ],
+                                "type": "string"
+                              },
                               "setup_future_usage": {
                                 "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf you provide a Customer with the PaymentIntent, you can use this parameter to [attach the payment method](/payments/save-during-payment) to the Customer after the PaymentIntent is confirmed and the customer completes any required actions. If you don't provide a Customer, you can still [attach](/api/payment_methods/attach) the payment method to a Customer after the transaction completes.\n\nIf the payment method is `card_present` and isn't a digital wallet, Stripe creates and attaches a [generated_card](/api/charges/object#charge_object-payment_method_details-card_present-generated_card) payment method representing the card to the Customer instead.\n\nWhen processing card payments, Stripe uses `setup_future_usage` to help you comply with regional legislation and network rules, such as [SCA](/strong-customer-authentication).\n\nIf you've already set `setup_future_usage` and you're performing a request using a publishable key, you can only update the value from `on_session` to `off_session`.",
                                 "enum": [
                                   "none"
                                 ],
-                                "type": "string"
+                                "type": "string",
+                                "x-stripeBypassValidation": true
                               }
                             },
                             "title": "payment_method_options_param",
                             "type": "object",
                             "x-stripeMostCommon": [
                               "capture_method",
+                              "mandate_options",
                               "payment_details",
                               "request_multicapture",
                               "setup_future_usage"
@@ -275324,6 +275928,7 @@
                             "title": "payment_method_options_param",
                             "type": "object",
                             "x-stripeMostCommon": [
+                              "mandate_options",
                               "setup_future_usage"
                             ]
                           },
@@ -288433,13 +289038,8 @@
                               "aade_data": {
                                 "description": "Greek e-invoicing data required for card-present transactions processed by merchants subject to AADE's myDATA POS compliance mandate (Governor's Decision A.1155/2023).",
                                 "properties": {
-                                  "mark_data": {
-                                    "description": "The canonical string that was signed by the e-invoicing provider to produce `signed_mark`, formatted per Appendix A of A.1155/2023. Required when `mode` is `standard`.",
-                                    "maxLength": 5000,
-                                    "type": "string"
-                                  },
                                   "mode": {
-                                    "description": "The e-invoicing mode under which the mark was generated.",
+                                    "description": "The e-invoicing mode under which the provider signature was generated.",
                                     "enum": [
                                       "autonomous",
                                       "standard"
@@ -288453,18 +289053,23 @@
                                           "value": "autonomous"
                                         },
                                         {
-                                          "description": "Use `standard` when AADE mark data was signed by an e-invoicing provider.",
+                                          "description": "Use `standard` when provider signature data was signed by an e-invoicing provider.",
                                           "value": "standard"
                                         }
                                       ]
                                     }
                                   },
                                   "provider_id": {
-                                    "description": "The AADE-assigned approval number of the e-invoicing provider that generated the mark. Required when `mode` is `standard`.",
+                                    "description": "The AADE-assigned approval number of the e-invoicing provider that generated the provider signature. Required when `mode` is `standard`.",
                                     "type": "integer"
                                   },
-                                  "signed_mark": {
+                                  "provider_signature": {
                                     "description": "The cryptographic signature returned by the e-invoicing provider for this transaction, hex-encoded. Required when `mode` is `standard`.",
+                                    "maxLength": 5000,
+                                    "type": "string"
+                                  },
+                                  "provider_signature_data": {
+                                    "description": "The canonical string that was signed by the e-invoicing provider to produce `provider_signature`, formatted per Appendix A of A.1155/2023. Required when `mode` is `standard`.",
                                     "maxLength": 5000,
                                     "type": "string"
                                   },
@@ -288501,10 +289106,10 @@
                                 "title": "aade_data_payment_method_options_param",
                                 "type": "object",
                                 "x-stripeMostCommon": [
-                                  "mark_data",
                                   "mode",
                                   "provider_id",
-                                  "signed_mark",
+                                  "provider_signature",
+                                  "provider_signature_data",
                                   "unbound_pos"
                                 ]
                               },
@@ -293714,18 +294319,28 @@
                                   "money_services"
                                 ]
                               },
+                              "request_multicapture": {
+                                "description": "Request ability to make [multiple captures](https://docs.stripe.com/payments/multicapture) for this PaymentIntent.",
+                                "enum": [
+                                  "if_available",
+                                  "never"
+                                ],
+                                "type": "string"
+                              },
                               "setup_future_usage": {
                                 "description": "Indicates that you intend to make future payments with this PaymentIntent's payment method.\n\nIf you provide a Customer with the PaymentIntent, you can use this parameter to [attach the payment method](/payments/save-during-payment) to the Customer after the PaymentIntent is confirmed and the customer completes any required actions. If you don't provide a Customer, you can still [attach](/api/payment_methods/attach) the payment method to a Customer after the transaction completes.\n\nIf the payment method is `card_present` and isn't a digital wallet, Stripe creates and attaches a [generated_card](/api/charges/object#charge_object-payment_method_details-card_present-generated_card) payment method representing the card to the Customer instead.\n\nWhen processing card payments, Stripe uses `setup_future_usage` to help you comply with regional legislation and network rules, such as [SCA](/strong-customer-authentication).\n\nIf you've already set `setup_future_usage` and you're performing a request using a publishable key, you can only update the value from `on_session` to `off_session`.",
                                 "enum": [
                                   "none"
                                 ],
-                                "type": "string"
+                                "type": "string",
+                                "x-stripeBypassValidation": true
                               }
                             },
                             "title": "payment_method_options_param",
                             "type": "object",
                             "x-stripeMostCommon": [
                               "capture_method",
+                              "mandate_options",
                               "payment_details",
                               "request_multicapture",
                               "setup_future_usage"
@@ -293826,6 +294441,7 @@
                             "title": "payment_method_options_param",
                             "type": "object",
                             "x-stripeMostCommon": [
+                              "mandate_options",
                               "setup_future_usage"
                             ]
                           },
@@ -293964,6 +294580,10 @@
                   "radar_options": {
                     "description": "Options to configure Radar. Learn more about [Radar Sessions](https://docs.stripe.com/radar/radar-session).",
                     "properties": {
+                      "is_free_trial_transaction": {
+                        "description": "Whether this transaction starts a free trial. Set to `true` for a free trial or `false` otherwise. If omitted, retains the previously set value. If never set, Stripe uses Billing or metadata to determine trial status.",
+                        "type": "boolean"
+                      },
                       "referrer": {
                         "anyOf": [
                           {
@@ -293988,6 +294608,7 @@
                     "title": "radar_options_with_peval_options",
                     "type": "object",
                     "x-stripeMostCommon": [
+                      "is_free_trial_transaction",
                       "payment_evaluation_options",
                       "referrer",
                       "session",
@@ -297741,7 +298362,7 @@
                                     "type": "string"
                                   }
                                 },
-                                "title": "checkout_rendering_options_param",
+                                "title": "payment_link_rendering_options_param",
                                 "type": "object",
                                 "x-stripeMostCommon": [
                                   "amount_tax_display",
@@ -298133,6 +298754,7 @@
                       "capture_method": {
                         "description": "Controls when the funds will be captured from the customer's account.",
                         "enum": [
+                          "",
                           "automatic",
                           "automatic_async",
                           "manual"
@@ -299780,7 +300402,7 @@
                                     "type": "string"
                                   }
                                 },
-                                "title": "checkout_rendering_options_param",
+                                "title": "payment_link_rendering_options_param",
                                 "type": "object",
                                 "x-stripeMostCommon": [
                                   "amount_tax_display",
@@ -300031,6 +300653,16 @@
                   "payment_intent_data": {
                     "description": "A subset of parameters to be passed to PaymentIntent creation for Checkout Sessions in `payment` mode.",
                     "properties": {
+                      "capture_method": {
+                        "description": "Controls when the funds will be captured from the customer's account.",
+                        "enum": [
+                          "",
+                          "automatic",
+                          "automatic_async",
+                          "manual"
+                        ],
+                        "type": "string"
+                      },
                       "description": {
                         "anyOf": [
                           {
@@ -302228,6 +302860,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "aeon_pay": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "affirm": {
                   "explode": true,
                   "style": "deepObject"
@@ -302257,6 +302893,10 @@
                   "style": "deepObject"
                 },
                 "au_becs_debit": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "au_pay": {
                   "explode": true,
                   "style": "deepObject"
                 },
@@ -302373,6 +303013,10 @@
                   "style": "deepObject"
                 },
                 "mb_way": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "merpay": {
                   "explode": true,
                   "style": "deepObject"
                 },
@@ -302518,6 +303162,35 @@
                 "properties": {
                   "acss_debit": {
                     "description": "Canadian pre-authorized debit payments, check this [page](https://docs.stripe.com/payments/acss-debit) for more details like country availability.",
+                    "properties": {
+                      "display_preference": {
+                        "description": "Whether or not the payment method should be displayed.",
+                        "properties": {
+                          "preference": {
+                            "description": "The account's preference for whether or not to display this payment method.",
+                            "enum": [
+                              "none",
+                              "off",
+                              "on"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "title": "display_preference_param",
+                        "type": "object",
+                        "x-stripeMostCommon": [
+                          "preference"
+                        ]
+                      }
+                    },
+                    "title": "payment_method_param",
+                    "type": "object",
+                    "x-stripeMostCommon": [
+                      "display_preference"
+                    ]
+                  },
+                  "aeon_pay": {
+                    "description": "AEON Pay is a single-use payment method that requires customers to authenticate their payment. Customers pay by being redirected from your website or app, authorizing the payment with AEON Pay, then returning to your website or app. You get immediate notification of whether the payment succeeded or failed.",
                     "properties": {
                       "display_preference": {
                         "description": "Whether or not the payment method should be displayed.",
@@ -302750,6 +303423,35 @@
                   },
                   "au_becs_debit": {
                     "description": "Stripe users in Australia can accept Bulk Electronic Clearing System (BECS) direct debit payments from customers with an Australian bank account. Check this [page](https://docs.stripe.com/payments/au-becs-debit) for more details.",
+                    "properties": {
+                      "display_preference": {
+                        "description": "Whether or not the payment method should be displayed.",
+                        "properties": {
+                          "preference": {
+                            "description": "The account's preference for whether or not to display this payment method.",
+                            "enum": [
+                              "none",
+                              "off",
+                              "on"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "title": "display_preference_param",
+                        "type": "object",
+                        "x-stripeMostCommon": [
+                          "preference"
+                        ]
+                      }
+                    },
+                    "title": "payment_method_param",
+                    "type": "object",
+                    "x-stripeMostCommon": [
+                      "display_preference"
+                    ]
+                  },
+                  "au_pay": {
+                    "description": "au PAY is a single-use payment method that requires customers to authenticate their payment. Customers pay by being redirected from your website or app, authorizing the payment with au PAY, then returning to your website or app. You get immediate notification of whether the payment succeeded or failed.",
                     "properties": {
                       "display_preference": {
                         "description": "Whether or not the payment method should be displayed.",
@@ -303570,6 +304272,35 @@
                   },
                   "mb_way": {
                     "description": "MB WAY is the most popular wallet in Portugal. After entering their phone number in your checkout, customers approve the payment directly in their MB WAY app. Check this [page](https://docs.stripe.com/payments/mb-way) for more details.",
+                    "properties": {
+                      "display_preference": {
+                        "description": "Whether or not the payment method should be displayed.",
+                        "properties": {
+                          "preference": {
+                            "description": "The account's preference for whether or not to display this payment method.",
+                            "enum": [
+                              "none",
+                              "off",
+                              "on"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "title": "display_preference_param",
+                        "type": "object",
+                        "x-stripeMostCommon": [
+                          "preference"
+                        ]
+                      }
+                    },
+                    "title": "payment_method_param",
+                    "type": "object",
+                    "x-stripeMostCommon": [
+                      "display_preference"
+                    ]
+                  },
+                  "merpay": {
+                    "description": "Merpay is a single-use payment method that requires customers to authenticate their payment. Customers pay by being redirected from your website or app, authorizing the payment with Merpay, then returning to your website or app. You get immediate notification of whether the payment succeeded or failed.",
                     "properties": {
                       "display_preference": {
                         "description": "Whether or not the payment method should be displayed.",
@@ -304727,6 +305458,10 @@
                   "explode": true,
                   "style": "deepObject"
                 },
+                "aeon_pay": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
                 "affirm": {
                   "explode": true,
                   "style": "deepObject"
@@ -304756,6 +305491,10 @@
                   "style": "deepObject"
                 },
                 "au_becs_debit": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "au_pay": {
                   "explode": true,
                   "style": "deepObject"
                 },
@@ -304872,6 +305611,10 @@
                   "style": "deepObject"
                 },
                 "mb_way": {
+                  "explode": true,
+                  "style": "deepObject"
+                },
+                "merpay": {
                   "explode": true,
                   "style": "deepObject"
                 },
@@ -305047,6 +305790,35 @@
                   "active": {
                     "description": "Whether the configuration can be used for new payments.",
                     "type": "boolean"
+                  },
+                  "aeon_pay": {
+                    "description": "AEON Pay is a single-use payment method that requires customers to authenticate their payment. Customers pay by being redirected from your website or app, authorizing the payment with AEON Pay, then returning to your website or app. You get immediate notification of whether the payment succeeded or failed.",
+                    "properties": {
+                      "display_preference": {
+                        "description": "Whether or not the payment method should be displayed.",
+                        "properties": {
+                          "preference": {
+                            "description": "The account's preference for whether or not to display this payment method.",
+                            "enum": [
+                              "none",
+                              "off",
+                              "on"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "title": "display_preference_param",
+                        "type": "object",
+                        "x-stripeMostCommon": [
+                          "preference"
+                        ]
+                      }
+                    },
+                    "title": "payment_method_param",
+                    "type": "object",
+                    "x-stripeMostCommon": [
+                      "display_preference"
+                    ]
                   },
                   "affirm": {
                     "description": "[Affirm](https://www.affirm.com/) gives your customers a way to split purchases over a series of payments. Depending on the purchase, they can pay with four interest-free payments (Split Pay) or pay over a longer term (Installments), which might include interest. Check this [page](https://docs.stripe.com/payments/affirm) for more details like country availability.",
@@ -305253,6 +306025,35 @@
                   },
                   "au_becs_debit": {
                     "description": "Stripe users in Australia can accept Bulk Electronic Clearing System (BECS) direct debit payments from customers with an Australian bank account. Check this [page](https://docs.stripe.com/payments/au-becs-debit) for more details.",
+                    "properties": {
+                      "display_preference": {
+                        "description": "Whether or not the payment method should be displayed.",
+                        "properties": {
+                          "preference": {
+                            "description": "The account's preference for whether or not to display this payment method.",
+                            "enum": [
+                              "none",
+                              "off",
+                              "on"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "title": "display_preference_param",
+                        "type": "object",
+                        "x-stripeMostCommon": [
+                          "preference"
+                        ]
+                      }
+                    },
+                    "title": "payment_method_param",
+                    "type": "object",
+                    "x-stripeMostCommon": [
+                      "display_preference"
+                    ]
+                  },
+                  "au_pay": {
+                    "description": "au PAY is a single-use payment method that requires customers to authenticate their payment. Customers pay by being redirected from your website or app, authorizing the payment with au PAY, then returning to your website or app. You get immediate notification of whether the payment succeeded or failed.",
                     "properties": {
                       "display_preference": {
                         "description": "Whether or not the payment method should be displayed.",
@@ -306073,6 +306874,35 @@
                   },
                   "mb_way": {
                     "description": "MB WAY is the most popular wallet in Portugal. After entering their phone number in your checkout, customers approve the payment directly in their MB WAY app. Check this [page](https://docs.stripe.com/payments/mb-way) for more details.",
+                    "properties": {
+                      "display_preference": {
+                        "description": "Whether or not the payment method should be displayed.",
+                        "properties": {
+                          "preference": {
+                            "description": "The account's preference for whether or not to display this payment method.",
+                            "enum": [
+                              "none",
+                              "off",
+                              "on"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "title": "display_preference_param",
+                        "type": "object",
+                        "x-stripeMostCommon": [
+                          "preference"
+                        ]
+                      }
+                    },
+                    "title": "payment_method_param",
+                    "type": "object",
+                    "x-stripeMostCommon": [
+                      "display_preference"
+                    ]
+                  },
+                  "merpay": {
+                    "description": "Merpay is a single-use payment method that requires customers to authenticate their payment. Customers pay by being redirected from your website or app, authorizing the payment with Merpay, then returning to your website or app. You get immediate notification of whether the payment succeeded or failed.",
                     "properties": {
                       "display_preference": {
                         "description": "Whether or not the payment method should be displayed.",
@@ -311213,7 +312043,7 @@
                       "currency",
                       "value"
                     ],
-                    "title": "amount",
+                    "title": "params",
                     "type": "object",
                     "x-stripeMostCommon": [
                       "currency",
@@ -312402,7 +313232,7 @@
                       "currency",
                       "value"
                     ],
-                    "title": "amount",
+                    "title": "params",
                     "type": "object",
                     "x-stripeMostCommon": [
                       "currency",
@@ -312455,7 +313285,7 @@
                           "currency",
                           "value"
                         ],
-                        "title": "amount",
+                        "title": "params",
                         "type": "object",
                         "x-stripeMostCommon": [
                           "currency",
@@ -314975,7 +315805,7 @@
                       "currency",
                       "value"
                     ],
-                    "title": "amount",
+                    "title": "params",
                     "type": "object",
                     "x-stripeMostCommon": [
                       "currency",
@@ -320032,6 +320862,21 @@
                     "description": "A list of up to 15 marketing features for this product. These are displayed in [pricing tables](https://docs.stripe.com/payments/checkout/pricing-table).",
                     "items": {
                       "properties": {
+                        "loss_message": {
+                          "anyOf": [
+                            {
+                              "maxLength": 5000,
+                              "type": "string"
+                            },
+                            {
+                              "enum": [
+                                ""
+                              ],
+                              "type": "string"
+                            }
+                          ],
+                          "description": "Optional text that describes what a customer loses by canceling, shown for this marketing feature in the Customer Portal cancellation flow. Up to 80 characters long. If you omit it when you update `marketing_features`, Stripe keeps the message stored for the feature with the same name. Duplicate names are matched in order. Set it to an empty string to remove the override. When no override is stored, eligible cancellation flows use the marketing feature name. A renamed feature is treated as a new feature, so send the message again to keep it."
+                        },
                         "name": {
                           "description": "The marketing feature name. Up to 80 characters long.",
                           "maxLength": 5000,
@@ -320717,6 +321562,21 @@
                       {
                         "items": {
                           "properties": {
+                            "loss_message": {
+                              "anyOf": [
+                                {
+                                  "maxLength": 5000,
+                                  "type": "string"
+                                },
+                                {
+                                  "enum": [
+                                    ""
+                                  ],
+                                  "type": "string"
+                                }
+                              ],
+                              "description": "Optional text that describes what a customer loses by canceling, shown for this marketing feature in the Customer Portal cancellation flow. Up to 80 characters long. If you omit it when you update `marketing_features`, Stripe keeps the message stored for the feature with the same name. Duplicate names are matched in order. Set it to an empty string to remove the override. When no override is stored, eligible cancellation flows use the marketing feature name. A renamed feature is treated as a new feature, so send the message again to keep it."
+                            },
                             "name": {
                               "description": "The marketing feature name. Up to 80 characters long.",
                               "maxLength": 5000,
@@ -334448,6 +335308,11 @@
                         "type": "string",
                         "x-stripeBypassValidation": true
                       },
+                      "tax_invoice_month": {
+                        "description": "The tax invoice month in YYYY-MM format.",
+                        "maxLength": 5000,
+                        "type": "string"
+                      },
                       "timezone": {
                         "description": "Defaults to `Etc/UTC`. The output timezone for all timestamps in the report. A list of possible time zone values is maintained at the [IANA Time Zone Database](http://www.iana.org/time-zones). Has no effect on `interval_start` or `interval_end`.",
                         "enum": [
@@ -335075,6 +335940,8 @@
                       "active",
                       "active_levy",
                       "active_lien",
+                      "activity_on",
+                      "activity_types",
                       "adoption_type",
                       "age_bucket",
                       "agent",
@@ -335100,6 +335967,7 @@
                       "auto_advance",
                       "automatic_tax_enabled",
                       "automatically_finalizes_at",
+                      "available_on",
                       "balance_source_types",
                       "balance_type",
                       "balance_types",
@@ -335107,6 +335975,7 @@
                       "bank_failure_raw_code",
                       "beneficiary_reference",
                       "billable_item_ids",
+                      "billed_upfront",
                       "billing_analytics_metric",
                       "billing_cadence",
                       "billing_reason",
@@ -335224,7 +336093,11 @@
                       "delinquency_exposure",
                       "delinquency_risk_score",
                       "delinquent",
+                      "deployment_statuses",
                       "description",
+                      "device_deploy_group",
+                      "device_sw_version",
+                      "device_types",
                       "digital_only_countries",
                       "digital_wallet",
                       "direction",
@@ -335258,7 +336131,10 @@
                       "exchange_rates",
                       "exclude_meter_ids",
                       "excluded_countries",
+                      "experiment_end_date",
                       "experiment_id",
+                      "experiment_start_date",
+                      "experiment_status",
                       "experiment_statuses",
                       "external_sanctions_status",
                       "fee_category",
@@ -335308,6 +336184,7 @@
                       "grouped_metadata_column",
                       "groups",
                       "guest_customer_id",
+                      "hardware_order_id",
                       "has_app_fee_refunds",
                       "has_app_fees",
                       "has_charge_last_30d",
@@ -335333,10 +336210,12 @@
                       "include_blocked_payments",
                       "include_connect_charges",
                       "include_efw",
+                      "include_projections",
                       "include_protected_disputes",
                       "inclusive",
                       "incurred_by",
                       "incurred_by_ids",
+                      "installed_asset_version_ids",
                       "institution_name",
                       "interaction_type",
                       "interval_end",
@@ -335365,12 +336244,15 @@
                       "is_unbilled",
                       "jurisdiction_key",
                       "keyword",
+                      "label",
                       "last4",
                       "last_active_on",
                       "last_activity_timeframe",
                       "last_issuing_transaction_on",
+                      "last_login_at",
                       "last_payment",
                       "last_payout_on",
+                      "last_seen",
                       "last_transaction_on",
                       "last_used",
                       "legal_entity_type",
@@ -335465,6 +336347,7 @@
                       "prebilled",
                       "price_filters",
                       "price_ids",
+                      "pricing_experiment_id",
                       "processor",
                       "processor_type",
                       "processors",
@@ -335489,6 +336372,7 @@
                       "radar_good_outcomes",
                       "rate",
                       "rate_card_ids",
+                      "reader_ids",
                       "recipient_action_filter",
                       "recipient_network_business_profile_id",
                       "recipient_payout_method_types",
@@ -335522,6 +336406,7 @@
                       "requirement_trigger",
                       "requirement_update",
                       "requirement_update_status",
+                      "requires_attention_reason",
                       "reserve_release_end",
                       "reserve_release_start",
                       "reserve_types",
@@ -335634,9 +336519,11 @@
                       "view_type",
                       "volume_filter",
                       "volume_metric_type",
+                      "warranty_claim_id",
                       "win_chance",
                       "window_key",
-                      "write_access_extension_connection"
+                      "write_access_extension_connection",
+                      "zone_id"
                     ]
                   },
                   "report_type": {
@@ -337109,7 +337996,7 @@
         "x-stableId": "retrieve_inquiry"
       },
       "post": {
-        "description": "<p>Updates a risk Form with the connected account’s response.</p>\n\n<h3>Error Codes</h3>\n\n<p>| Code | HTTP status | Description |\n| — | — | — |\n| <code>form_not_found</code> | 400 | No Form matches the supplied ID. |\n| <code>form_closed</code> | 400 | The Form is closed and cannot accept updates. |\n| <code>invalid_field_for_form_type</code> | 400 | A submitted field is not supported by this Form type. |\n| <code>form_field_already_submitted</code> | 400 | A submitted field has already been submitted. |\n| <code>form_insufficient_fields</code> | 400 | Required fields are missing for this Form type. |\n| <code>resource_missing</code> | 404 | A submitted file does not exist or is not accessible to the requesting account. |</p>",
+        "description": "<p>Updates a risk Form with the connected account’s response.</p>\n\n<h3>Error Codes</h3>\n\n<p>| Code | HTTP status | Description |\n| — | — | — |\n| <code>form_not_found</code> | 400 | No Form matches the supplied ID. |\n| <code>form_closed</code> | 400 | The Form is closed and cannot accept updates. |\n| <code>invalid_field_for_form_type</code> | 400 | Submitted fields contain invalid values. |\n| <code>form_field_already_submitted</code> | 400 | A submitted field has already been submitted. |\n| <code>form_insufficient_fields</code> | 400 | Required fields are missing for this Form type. |\n| <code>resource_missing</code> | 404 | A submitted file does not exist or is not accessible to the requesting account. |</p>\n\n<p>Validation errors include a summary in <code>message</code>. Missing required properties use\n<code>form_insufficient_fields</code> and include <code>missing_fields</code>, an array of public dotted paths.\nMissing required properties take precedence over value violations.</p>\n\n<p>Invalid values use <code>invalid_field_for_form_type</code> and include <code>violations</code>. Each violation\nhas a public dotted <code>field</code> path and a <code>reason</code> of <code>missing_value</code> or <code>invalid_value</code>.\nReviewed-field violations include a corrective <code>message</code>; corrective messages for other\nForm types are omitted. For an array member, <code>target</code> identifies the member’s field path.\nFor a scalar value, <code>target</code> is explicitly null.</p>\n\n<p>For example, a reviewed-fields submission with an out-of-date timestamp and an omitted\nrequested member returns both violations:</p>\n\n<p><code>json\n{\n \"error\": {\n \"type\": \"invalid_request_error\",\n \"code\": \"invalid_field_for_form_type\",\n \"message\": \"Submitted fields are invalid for Form type reviewed_fields. See violations for details and corrective actions for these fields: ’reviewed_fields.attestation.attested_at’, ’reviewed_fields.attestation.fields’.\",\n \"violations\": [\n {\n \"field\": \"reviewed_fields.attestation.attested_at\",\n \"reason\": \"invalid_value\",\n \"message\": \"The attestation timestamp is out of date. Review and attest the requested information again, then provide the new attestation timestamp.\",\n \"target\": null\n },\n {\n \"field\": \"reviewed_fields.attestation.fields\",\n \"reason\": \"missing_value\",\n \"message\": \"’defaults.profile.product_description’ is required by subject.fields_to_review but is missing from reviewed_fields.attestation.fields. Review this information, then include its path in the attestation.\",\n \"target\": \"defaults.profile.product_description\"\n }\n ]\n }\n}\n</code></p>\n\n<p>A v1 request with no extracted field submissions is rejected before the Form is loaded,\nincluding for reviewed-fields Forms. This early error uses <code>form_insufficient_fields</code>\nand omits <code>missing_fields</code>,\n<code>violations</code>, and <code>param</code>. Partially populated reviewed-fields requests use structured\nmissing-property validation.</p>",
         "operationId": "PostRiskFormsId",
         "parameters": [
           {
@@ -340769,9 +341656,10 @@
                                 "type": "string"
                               }
                             },
-                            "title": "linked_account_options_param",
+                            "title": "setup_intent_linked_account_options_param",
                             "type": "object",
                             "x-stripeMostCommon": [
+                              "account_holder",
                               "filters",
                               "manual_entry",
                               "permissions",
@@ -340864,6 +341752,7 @@
                       "stripe_balance",
                       "upi",
                       "us_bank_account",
+                      "vipps",
                       "wechat_pay",
                       "wero"
                     ]
@@ -343909,9 +344798,10 @@
                                 "type": "string"
                               }
                             },
-                            "title": "linked_account_options_param",
+                            "title": "setup_intent_linked_account_options_param",
                             "type": "object",
                             "x-stripeMostCommon": [
+                              "account_holder",
                               "filters",
                               "manual_entry",
                               "permissions",
@@ -344004,6 +344894,7 @@
                       "stripe_balance",
                       "upi",
                       "us_bank_account",
+                      "vipps",
                       "wechat_pay",
                       "wero"
                     ]
@@ -346973,9 +347864,10 @@
                                 "type": "string"
                               }
                             },
-                            "title": "linked_account_options_param",
+                            "title": "setup_intent_linked_account_options_param",
                             "type": "object",
                             "x-stripeMostCommon": [
+                              "account_holder",
                               "filters",
                               "manual_entry",
                               "permissions",
@@ -347068,6 +347960,7 @@
                       "stripe_balance",
                       "upi",
                       "us_bank_account",
+                      "vipps",
                       "wechat_pay",
                       "wero"
                     ]
@@ -358074,18 +358967,6 @@
             "x-stripeLessCommon": true
           },
           {
-            "description": "The Billing Cadence which controls the timing of recurring invoice generation for this subscription. If unset, the subscription will bill according to its own configured schedule and create its own invoices. If set, this subscription will be billed by the cadence instead, potentially sharing invoices with the other subscriptions linked to that Cadence.",
-            "in": "query",
-            "name": "billing_cadence",
-            "required": false,
-            "schema": {
-              "maxLength": 5000,
-              "type": "string"
-            },
-            "style": "form",
-            "x-stripeLessCommon": true
-          },
-          {
             "description": "Filter for subscriptions that have the specified billing group.",
             "in": "query",
             "name": "billing_group",
@@ -358870,11 +359751,6 @@
                     "description": "A past timestamp to backdate the subscription's start date to. If set, the first invoice will contain line items for the timespan between the start date and the current time. Can be combined with trials and the billing cycle anchor.",
                     "format": "unix-time",
                     "type": "integer"
-                  },
-                  "billing_cadence": {
-                    "description": "The Billing Cadence which controls the timing of recurring invoice generation for this subscription. If unset, the subscription will bill according to its own configured schedule and create its own invoices. If set, this subscription will be billed by the cadence instead, potentially sharing invoices with the other subscriptions linked to that Cadence.",
-                    "maxLength": 5000,
-                    "type": "string"
                   },
                   "billing_cycle_anchor": {
                     "description": "A future timestamp in UTC format to anchor the subscription's [billing cycle](https://docs.stripe.com/subscriptions/billing-cycle). The anchor is the reference point that aligns future billing cycle dates. It sets the day of week for `week` intervals, the day of month for `month` and `year` intervals, and the month of year for `year` intervals.",
@@ -360309,6 +361185,10 @@
                             "anyOf": [
                               {
                                 "properties": {
+                                  "debit_behavior": {
+                                    "description": "Controls early collection for eligible recurring payments on India-issued cards. Target-date billing aims to debit on the billing-cycle date but does not guarantee that date.",
+                                    "type": "string"
+                                  },
                                   "mandate_options": {
                                     "description": "Configuration options for setting up an eMandate for cards issued in India.",
                                     "properties": {
@@ -360372,6 +361252,7 @@
                                 "title": "subscription_payment_method_options_param",
                                 "type": "object",
                                 "x-stripeMostCommon": [
+                                  "debit_behavior",
                                   "mandate_options",
                                   "mcc",
                                   "mit_exemption",
@@ -360552,6 +361433,10 @@
                             "anyOf": [
                               {
                                 "properties": {
+                                  "debit_behavior": {
+                                    "description": "Timing configuration for collecting funds from the customer's account.",
+                                    "type": "string"
+                                  },
                                   "expires_after_seconds": {
                                     "description": "The number of seconds after PaymentIntent confirmation when the Pix expires (between 60 and 1209600, inclusive). If unspecified, defaults to 14400 seconds (4 hours).",
                                     "type": "integer"
@@ -360601,6 +361486,7 @@
                                 "title": "subscription_payment_method_options_param",
                                 "type": "object",
                                 "x-stripeMostCommon": [
+                                  "debit_behavior",
                                   "expires_after_seconds",
                                   "mandate_options"
                                 ]
@@ -360644,7 +361530,7 @@
                               {
                                 "properties": {
                                   "debit_behavior": {
-                                    "description": "Controls when the funds will be captured from the customer's account.",
+                                    "description": "Controls when the funds will be captured from the customer's account. Defaults to `not_specified`. Omit this parameter on an update to preserve the saved value; pass `not_specified` to clear it. Early collection is best effort and doesn't guarantee an exact debit date.",
                                     "type": "string"
                                   },
                                   "mandate_options": {
@@ -361972,11 +362858,6 @@
                       "enabled",
                       "liability"
                     ]
-                  },
-                  "billing_cadence": {
-                    "description": "The Billing Cadence which controls the timing of recurring invoice generation for this subscription. If unset, the subscription will bill according to its own configured schedule and create its own invoices. If set, this subscription will be billed by the cadence instead, potentially sharing invoices with the other subscriptions linked to that Cadence.",
-                    "maxLength": 5000,
-                    "type": "string"
                   },
                   "billing_cycle_anchor": {
                     "description": "Controls how the subscription's billing cycle anchor changes. Set `type` to `now` to reset the billing cycle anchor to the current time (in UTC), or `unchanged` to preserve it. For more information, see the billing cycle [documentation](https://docs.stripe.com/billing/subscriptions/billing-cycle).",
@@ -363495,6 +364376,10 @@
                             "anyOf": [
                               {
                                 "properties": {
+                                  "debit_behavior": {
+                                    "description": "Controls early collection for eligible recurring payments on India-issued cards. Target-date billing aims to debit on the billing-cycle date but does not guarantee that date.",
+                                    "type": "string"
+                                  },
                                   "mandate_options": {
                                     "description": "Configuration options for setting up an eMandate for cards issued in India.",
                                     "properties": {
@@ -363558,6 +364443,7 @@
                                 "title": "subscription_payment_method_options_param",
                                 "type": "object",
                                 "x-stripeMostCommon": [
+                                  "debit_behavior",
                                   "mandate_options",
                                   "mcc",
                                   "mit_exemption",
@@ -363738,6 +364624,10 @@
                             "anyOf": [
                               {
                                 "properties": {
+                                  "debit_behavior": {
+                                    "description": "Timing configuration for collecting funds from the customer's account.",
+                                    "type": "string"
+                                  },
                                   "expires_after_seconds": {
                                     "description": "The number of seconds after PaymentIntent confirmation when the Pix expires (between 60 and 1209600, inclusive). If unspecified, defaults to 14400 seconds (4 hours).",
                                     "type": "integer"
@@ -363787,6 +364677,7 @@
                                 "title": "subscription_payment_method_options_param",
                                 "type": "object",
                                 "x-stripeMostCommon": [
+                                  "debit_behavior",
                                   "expires_after_seconds",
                                   "mandate_options"
                                 ]
@@ -363830,7 +364721,7 @@
                               {
                                 "properties": {
                                   "debit_behavior": {
-                                    "description": "Controls when the funds will be captured from the customer's account.",
+                                    "description": "Controls when the funds will be captured from the customer's account. Defaults to `not_specified`. Omit this parameter on an update to preserve the saved value; pass `not_specified` to clear it. Early collection is best effort and doesn't guarantee an exact debit date.",
                                     "type": "string"
                                   },
                                   "mandate_options": {
@@ -366017,7 +366908,7 @@
     },
     "/v1/tax/certificates": {
       "get": {
-        "description": "<p>List certificates for an existing tax exemption.</p>",
+        "description": "<p>Lists a tax exemption’s certificates, ordered from newest to oldest. The list excludes deleted certificates.</p>",
         "operationId": "GetTaxCertificates",
         "parameters": [
           {
@@ -366070,7 +366961,7 @@
             "x-stripeLessCommon": true
           },
           {
-            "description": "The ID of an existing tax exemption.",
+            "description": "The ID of the [customer tax exemption](/api/tax/exemptions/object) whose certificates to list. The tax exemption must not be deleted.",
             "in": "query",
             "name": "tax_exemption",
             "required": true,
@@ -366162,7 +367053,7 @@
         "x-stableId": "list_tax_certificates"
       },
       "post": {
-        "description": "<p>Create a tax certificate associated with a tax exemption.</p>",
+        "description": "<p>Creates a Tax Certificate associated with a tax exemption. Before creating the certificate, <a href=\"/api/files/create\">upload a file</a> with purpose <code>tax_certificate</code>.</p>",
         "operationId": "PostTaxCertificates",
         "requestBody": {
           "content": {
@@ -366185,12 +367076,12 @@
                     "type": "array"
                   },
                   "file": {
-                    "description": "The ID of a file uploaded with purpose `tax_certificate`.",
+                    "description": "The ID of a [file](/api/files/object) uploaded with purpose `tax_certificate`. The file must belong to the same account and mode as the tax exemption. You can't use a deleted file or a file attached to another certificate that hasn't been deleted.",
                     "maxLength": 5000,
                     "type": "string"
                   },
                   "tax_exemption": {
-                    "description": "The ID of an existing tax exemption.",
+                    "description": "The ID of an existing [customer tax exemption](/api/tax/exemptions/object) that hasn't been deleted.",
                     "type": "string"
                   }
                 },
@@ -366236,7 +367127,7 @@
     },
     "/v1/tax/certificates/{id}": {
       "delete": {
-        "description": "<p>Delete a tax certificate associated with a tax exemption.</p>",
+        "description": "<p>Deletes a Tax Certificate without deleting its uploaded file. You can reuse the file to create another certificate, and you can still retrieve the deleted certificate.</p>",
         "operationId": "DeleteTaxCertificatesId",
         "parameters": [
           {
@@ -366289,7 +367180,7 @@
         "x-stableId": "delete_tax_certificate"
       },
       "get": {
-        "description": "<p>Retrieve a tax certificate associated with a tax exemption.</p>",
+        "description": "<p>Retrieves a Tax Certificate. Deleted certificates remain retrievable with all their fields and <code>deleted</code> set to <code>true</code>.</p>",
         "operationId": "GetTaxCertificatesId",
         "parameters": [
           {
@@ -371998,6 +372889,7 @@
                       "bg",
                       "bh",
                       "bj",
+                      "br",
                       "bs",
                       "bw",
                       "by",
@@ -388226,14 +389118,24 @@
                   "token_currency": {
                     "description": "The token currency of the simulated crypto deposit.",
                     "enum": [
+                      "ousd",
+                      "phantom_cash",
                       "usdc",
                       "usdg",
                       "usdp"
                     ],
                     "type": "string",
                     "x-stripeEnum": {
-                      "kind": "closed",
+                      "kind": "open",
                       "values": [
+                        {
+                          "description": "OUSD",
+                          "value": "ousd"
+                        },
+                        {
+                          "description": "PHANTOM_CASH",
+                          "value": "phantom_cash"
+                        },
                         {
                           "description": "USDC",
                           "value": "usdc"
@@ -389493,6 +390395,47 @@
                           "other"
                         ],
                         "type": "string"
+                      },
+                      "network_details": {
+                        "description": "Network specific details for the failure.",
+                        "properties": {
+                          "ach": {
+                            "description": "ACH network failure details.",
+                            "properties": {
+                              "return_code": {
+                                "description": "NACHA ACH return code.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "return_code"
+                            ],
+                            "title": "ach_network_details_param",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "return_code"
+                            ]
+                          },
+                          "type": {
+                            "description": "The network used to transfer funds.",
+                            "enum": [
+                              "ach"
+                            ],
+                            "type": "string",
+                            "x-stripeBypassValidation": true
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "title": "network_details_param",
+                        "type": "object",
+                        "x-stripeMostCommon": [
+                          "ach",
+                          "type",
+                          "us_check"
+                        ]
                       }
                     },
                     "title": "failure_details_param",
@@ -389578,6 +390521,77 @@
                       "type": "string"
                     },
                     "type": "array"
+                  },
+                  "failure_details": {
+                    "description": "Details about a returned InboundTransfer.",
+                    "properties": {
+                      "code": {
+                        "description": "Reason for the failure.",
+                        "enum": [
+                          "account_closed",
+                          "account_frozen",
+                          "bank_account_restricted",
+                          "bank_ownership_changed",
+                          "debit_not_authorized",
+                          "incorrect_account_holder_address",
+                          "incorrect_account_holder_name",
+                          "incorrect_account_holder_tax_id",
+                          "insufficient_funds",
+                          "invalid_account_number",
+                          "invalid_currency",
+                          "no_account",
+                          "other"
+                        ],
+                        "type": "string"
+                      },
+                      "network_details": {
+                        "description": "Network specific details for the failure.",
+                        "properties": {
+                          "ach": {
+                            "description": "ACH network failure details.",
+                            "properties": {
+                              "return_code": {
+                                "description": "NACHA ACH return code.",
+                                "maxLength": 5000,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "return_code"
+                            ],
+                            "title": "ach_network_details_param",
+                            "type": "object",
+                            "x-stripeMostCommon": [
+                              "return_code"
+                            ]
+                          },
+                          "type": {
+                            "description": "The network used to transfer funds.",
+                            "enum": [
+                              "ach"
+                            ],
+                            "type": "string",
+                            "x-stripeBypassValidation": true
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "title": "network_details_param",
+                        "type": "object",
+                        "x-stripeMostCommon": [
+                          "ach",
+                          "type",
+                          "us_check"
+                        ]
+                      }
+                    },
+                    "title": "failure_details_param",
+                    "type": "object",
+                    "x-stripeMostCommon": [
+                      "code",
+                      "network_details"
+                    ]
                   }
                 },
                 "type": "object",
@@ -401581,7 +402595,8 @@
                       "2026-07-29.dahlia",
                       "2026-08-26.dahlia",
                       "2026-09-30.endive",
-                      "2026-10-28.endive"
+                      "2026-10-28.endive",
+                      "2026-11-18.endive"
                     ],
                     "maxLength": 5000,
                     "type": "string",
