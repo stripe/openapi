@@ -5,14 +5,21 @@ set -euo pipefail
 git config user.name "Stripe OpenAPI"
 git config user.email "105521251+stripe-openapi[bot]@users.noreply.github.com"
 
+# Empty file lists arrive from GITHUB_ENV as a literal '' entry, so skip anything that is not a file.
 for file in $SPEC_FILES $FIXTURE_FILES; do
-  git add "$file"
+  if [[ -f "$file" ]]; then
+    git add "$file"
+  fi
 done
 
 if git diff --cached --quiet; then
   echo "No canary artifact changes for ${CHANNEL}."
 else
-  git commit -m "Update ${CHANNEL} OpenAPI canary for ${VERSION}"
+  commit_args=(-m "Update ${CHANNEL} OpenAPI canary for ${VERSION}")
+  if [[ -n "${FAILED_CHANNELS:-}" ]]; then
+    commit_args+=(-m "Blocked channels kept their previous canary artifacts: ${FAILED_CHANNELS}")
+  fi
+  git commit "${commit_args[@]}"
 fi
 
 case "$RUN_MODE" in
