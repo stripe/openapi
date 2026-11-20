@@ -161251,82 +161251,7 @@ paths:
                         value. It contains additional information specific to the
                         PaymentMethod type.
                       enum:
-                      - acss_debit
-                      - aeon_pay
-                      - affirm
-                      - afterpay_clearpay
-                      - alipay
-                      - alma
-                      - amazon_pay
-                      - au_becs_debit
-                      - au_pay
-                      - bacs_debit
-                      - bancontact
-                      - billie
-                      - bizum
-                      - blik
-                      - boleto
-                      - card
-                      - carecredit
-                      - cashapp
-                      - crypto
-                      - custom
-                      - customer_balance
-                      - dbarai
-                      - eps
-                      - fpx
-                      - getflex
                       - gift_card
-                      - giropay
-                      - gopay
-                      - grabpay
-                      - id_bank_transfer
-                      - ideal
-                      - kakao_pay
-                      - klarna
-                      - konbini
-                      - kr_card
-                      - link
-                      - mb_way
-                      - merpay
-                      - mobilepay
-                      - multibanco
-                      - naver_pay
-                      - nz_bank_account
-                      - oxxo
-                      - p24
-                      - pay_by_bank
-                      - payco
-                      - paynow
-                      - paypal
-                      - paypay
-                      - payto
-                      - pix
-                      - promptpay
-                      - qris
-                      - rakuten_pay
-                      - rechnung
-                      - revolut_pay
-                      - samsung_pay
-                      - satispay
-                      - scalapay
-                      - sepa_debit
-                      - sequra
-                      - sezzle
-                      - shopeepay
-                      - sofort
-                      - stripe_balance
-                      - sunbit
-                      - swish
-                      - tamara
-                      - toss_pay
-                      - twint
-                      - upi
-                      - us_bank_account
-                      - vipps
-                      - wechat_pay
-                      - wero
-                      - zip
                       x-stripeBypassValidation: true
                   description: Used to create the PaymentMethod that will receive
                     the refund.
@@ -162935,6 +162860,7 @@ paths:
                   - rejected_on
                   - rejected_reason
                   - reported_outcomes
+                  - reporting_categories
                   - reporting_category
                   - reporting_string_filters
                   - require_bank_failure_category
@@ -163044,6 +162970,7 @@ paths:
                   - transfer_instruction
                   - transferred_to
                   - type
+                  - types
                   - unit
                   - updated
                   - ur
@@ -197160,8 +197087,10 @@ paths:
                         properties:
                           ca_certificate_file:
                             type: string
-                            description: A File ID representing a PEM file containing
-                              the server certificate
+                            description: "A File ID representing a PEM file containing\
+                              \ the server certificate. The certificate is not currently\
+                              \ used to validate the identity of the server, but will\
+                              \ be used in a future device update."
                           password:
                             maxLength: 5000
                             type: string
@@ -198242,8 +198171,10 @@ paths:
                         properties:
                           ca_certificate_file:
                             type: string
-                            description: A File ID representing a PEM file containing
-                              the server certificate
+                            description: "A File ID representing a PEM file containing\
+                              \ the server certificate. The certificate is not currently\
+                              \ used to validate the identity of the server, but will\
+                              \ be used in a future device update."
                           password:
                             maxLength: 5000
                             type: string
@@ -227084,6 +227015,7 @@ paths:
                 - $ref: '#/components/schemas/v2.error.billing_settings_customer_tax_location_invalid'
                 - $ref: '#/components/schemas/v2.error.billing_settings_payment_method_mismatch'
                 - $ref: '#/components/schemas/v2.error.billing_settings_payment_method_not_found'
+                - $ref: '#/components/schemas/v2.error.idempotency_error'
                 - $ref: '#/components/schemas/v2.error'
       x-stableId: v2_method_create_billing_group
       x-stripeDocsSamples:
@@ -227161,6 +227093,9 @@ paths:
       - code: billing_settings_payment_method_not_found
         description: Returned when the default payment method cannot be found.
         httpStatusCode: 400
+      - code: idempotency_error
+        description: An idempotent retry occurred with different request parameters.
+        httpStatusCode: 409
       x-stripeNotPublic: true
   /v2/billing/groups/{group_id}/spend_modifier_rules:
     get:
@@ -228031,6 +227966,7 @@ paths:
                 - $ref: '#/components/schemas/v2.error.billing_group_not_found'
                 - $ref: '#/components/schemas/v2.error.billing_settings_payment_method_mismatch'
                 - $ref: '#/components/schemas/v2.error.billing_settings_payment_method_not_found'
+                - $ref: '#/components/schemas/v2.error.idempotency_error'
                 - $ref: '#/components/schemas/v2.error'
       x-stableId: v2_method_update_billing_group
       x-stripeDocsSamples:
@@ -228083,6 +228019,9 @@ paths:
       - code: billing_settings_payment_method_not_found
         description: Returned when the default payment method cannot be found.
         httpStatusCode: 400
+      - code: idempotency_error
+        description: An idempotent retry occurred with different request parameters.
+        httpStatusCode: 409
       x-stripeNotPublic: true
   /v2/billing/groups/{id}/cancel:
     post:
@@ -284147,7 +284086,9 @@ paths:
       x-stripeNotPublic: true
     post:
       summary: Create a Debit Dispute
-      description: Creates a new DebitDispute for a ReceivedDebit.
+      description: |-
+        Deprecated: Use CreateDispute to create a Dispute instead.
+        Creates a new DebitDispute for a ReceivedDebit.
       operationId: PostV2MoneyManagementDebitDisputes
       requestBody:
         content:
@@ -284353,6 +284294,620 @@ paths:
             network: ach
             statement_descriptor: Payment for electricity
             reason: unauthorized
+      x-stripeErrors:
+      - code: not_found
+        description: The resource wasn't found.
+        httpStatusCode: 404
+      x-stripeNotPublic: true
+  /v2/money_management/dispute_adjustments:
+    get:
+      summary: List Dispute Adjustments
+      description: Retrieves a list of DisputeAdjustments.
+      operationId: GetV2MoneyManagementDisputeAdjustments
+      parameters:
+      - name: financial_account
+        in: query
+        description: Filter results by the ID of the FinancialAccount associated with
+          the DisputeAdjustment.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          x-stripeParam:
+            referenced_resource:
+              $ref: '#/components/schemas/v2.money_management.financial_account'
+      - name: limit
+        in: query
+        description: "Maximum number of results to return, between 1 and 100. Defaults\
+          \ to 10."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: related_dispute
+        in: query
+        description: Filter results by the ID of the Dispute associated with the DisputeAdjustment.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          x-stripeParam:
+            referenced_resource:
+              $ref: '#/components/schemas/v2.money_management.dispute'
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                required:
+                - data
+                - next_page_url
+                - previous_page_url
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: "DisputeAdjustments in the requested page, ordered\
+                      \ from newest to oldest."
+                    items:
+                      $ref: '#/components/schemas/v2.money_management.dispute_adjustment'
+                  next_page_url:
+                    type: string
+                    description: "URL to fetch the next page of the list. If there\
+                      \ are no more pages, the value is null."
+                    nullable: true
+                  previous_page_url:
+                    type: string
+                    description: "URL to fetch the previous page of the list. If there\
+                      \ are no previous pages, the value is null."
+                    nullable: true
+              examples:
+                example:
+                  value:
+                    data:
+                    - id: dspadj_test_61QSo9yHCmX2rJFvL6Gz8kU1vN5qR7aD0tW3bP4sE9xY2h
+                      object: v2.money_management.dispute_adjustment
+                      livemode: false
+                      created: 2026-09-25T10:00:00.000Z
+                      financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+                      related_dispute:
+                        type: dispute
+                        dispute: dsp_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+                      amount:
+                        value: 5000
+                        currency: usd
+                    next_page_url: null
+                    previous_page_url: null
+        default:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/v2.error.invalid_page_token'
+                - $ref: '#/components/schemas/v2.error'
+      x-stableId: v2_method_list_dispute_adjustments
+      x-stripeDocsSamples:
+      - request:
+          requestBody:
+            related_dispute: dsp_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+            financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+            limit: 10
+          pathParams: {}
+        response:
+          data:
+          - id: dspadj_test_61QSo9yHCmX2rJFvL6Gz8kU1vN5qR7aD0tW3bP4sE9xY2h
+            object: v2.money_management.dispute_adjustment
+            livemode: false
+            created: 2026-09-25T10:00:00.000Z
+            financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+            related_dispute:
+              type: dispute
+              dispute: dsp_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+            amount:
+              value: 5000
+              currency: usd
+          next_page_url: null
+          previous_page_url: null
+      x-stripeErrors:
+      - code: invalid_page_token
+        description: Error returned when the page token provided in the OutboundPayments/OutboundTransfers
+          list request is invalid.
+        httpStatusCode: 400
+      x-stripeNotPublic: true
+  /v2/money_management/dispute_adjustments/{id}:
+    get:
+      summary: Retrieve a Dispute Adjustment
+      description: Retrieves a DisputeAdjustment by ID.
+      operationId: GetV2MoneyManagementDisputeAdjustmentsId
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the DisputeAdjustment to retrieve.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v2.money_management.dispute_adjustment'
+              examples:
+                example:
+                  value:
+                    id: dspadj_test_61QSo9yHCmX2rJFvL6Gz8kU1vN5qR7aD0tW3bP4sE9xY2h
+                    object: v2.money_management.dispute_adjustment
+                    livemode: false
+                    created: 2026-09-25T10:00:00.000Z
+                    financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+                    related_dispute:
+                      type: dispute
+                      dispute: dsp_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+                    amount:
+                      value: 5000
+                      currency: usd
+        default:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/v2.error.not_found'
+                - $ref: '#/components/schemas/v2.error'
+      x-stableId: v2_method_retrieve_dispute_adjustment
+      x-stripeDocsSamples:
+      - request:
+          pathParams:
+            id: dspadj_test_61QSo9yHCmX2rJFvL6Gz8kU1vN5qR7aD0tW3bP4sE9xY2h
+          requestBody: {}
+        response:
+          id: dspadj_test_61QSo9yHCmX2rJFvL6Gz8kU1vN5qR7aD0tW3bP4sE9xY2h
+          object: v2.money_management.dispute_adjustment
+          livemode: false
+          created: 2026-09-25T10:00:00.000Z
+          financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+          related_dispute:
+            type: dispute
+            dispute: dsp_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+          amount:
+            value: 5000
+            currency: usd
+      x-stripeErrors:
+      - code: not_found
+        description: The resource wasn't found.
+        httpStatusCode: 404
+      x-stripeNotPublic: true
+  /v2/money_management/disputes:
+    get:
+      summary: List Disputes
+      description: Retrieves a list of Disputes.
+      operationId: GetV2MoneyManagementDisputes
+      parameters:
+      - name: financial_account
+        in: query
+        description: Filter results by the ID of the FinancialAccount associated with
+          the dispute.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          x-stripeParam:
+            referenced_resource:
+              $ref: '#/components/schemas/v2.money_management.financial_account'
+      - name: limit
+        in: query
+        description: "Maximum number of results to return, between 1 and 100. Defaults\
+          \ to 10."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: statuses
+        in: query
+        description: Filter results to Disputes with any of the provided statuses.
+        required: false
+        style: deepObject
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - lost
+            - under_review
+            - won
+            x-stripeEnum:
+              kind: open
+              values:
+              - description: The dispute was resolved against the FinancialAccount
+                  holder.
+                value: lost
+              - description: The dispute is being reviewed.
+                value: under_review
+              - description: The dispute was resolved in the FinancialAccount holder's
+                  favor.
+                value: won
+      - name: target
+        in: query
+        description: Filter results by the ID of the disputed money movement.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                required:
+                - data
+                - next_page_url
+                - previous_page_url
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: Disputes in the requested page.
+                    items:
+                      $ref: '#/components/schemas/v2.money_management.dispute'
+                  next_page_url:
+                    type: string
+                    description: "URL to fetch the next page of the list. If there\
+                      \ are no more pages, the value is null."
+                    nullable: true
+                  previous_page_url:
+                    type: string
+                    description: "URL to fetch the previous page of the list. If there\
+                      \ are no previous pages, the value is null."
+                    nullable: true
+              examples:
+                example:
+                  value:
+                    data:
+                    - id: dsp_test_61PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+                      object: v2.money_management.dispute
+                      livemode: false
+                      created: 2026-09-25T10:00:00.000Z
+                      financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+                      target:
+                        type: received_debit
+                        received_debit: rd_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+                      amount:
+                        value: 5000
+                        currency: usd
+                      reason: unauthorized
+                      explanation: We did not authorize this debit and do not recognize
+                        the debiting party.
+                      status: under_review
+                      status_transitions: null
+                      metadata: {}
+                    next_page_url: null
+                    previous_page_url: null
+        default:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/v2.error.invalid_page_token'
+                - $ref: '#/components/schemas/v2.error'
+      x-stableId: v2_method_list_disputes
+      x-stripeDocsSamples:
+      - request:
+          requestBody:
+            financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+            target: rd_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+            statuses:
+            - under_review
+            - won
+            limit: 10
+          pathParams: {}
+        response:
+          data:
+          - id: dsp_test_61PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+            object: v2.money_management.dispute
+            livemode: false
+            created: 2026-09-25T10:00:00.000Z
+            financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+            target:
+              type: received_debit
+              received_debit: rd_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+            amount:
+              value: 5000
+              currency: usd
+            reason: unauthorized
+            explanation: We did not authorize this debit and do not recognize the
+              debiting party.
+            status: under_review
+            status_transitions: null
+            metadata: {}
+          next_page_url: null
+          previous_page_url: null
+      x-stripeErrors:
+      - code: invalid_page_token
+        description: Error returned when the page token provided in the OutboundPayments/OutboundTransfers
+          list request is invalid.
+        httpStatusCode: 400
+      x-stripeNotPublic: true
+    post:
+      summary: Create a Dispute
+      description: Creates a Dispute for the specified money movement.
+      operationId: PostV2MoneyManagementDisputes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - reason
+              - target
+              type: object
+              properties:
+                explanation:
+                  type: string
+                  description: Additional information explaining the dispute. Must
+                    contain non-whitespace text and be no longer than 5000 characters.
+                metadata:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  description: Set of key-value pairs that you can attach to an object.
+                    This can be useful for storing additional information about the
+                    object in a structured format.
+                reason:
+                  type: string
+                  description: The FinancialAccount holder's reason for disputing
+                    the money movement.
+                  enum:
+                  - authorization_revoked
+                  - duplicate
+                  - incorrect_amount
+                  - incorrect_date
+                  - other
+                  - unauthorized
+                  x-stripeEnum:
+                    kind: open
+                    values:
+                    - description: The FinancialAccount holder withdrew authorization
+                        before the money movement was initiated.
+                      value: authorization_revoked
+                    - description: The money movement was authorized only once but
+                        occurred more than once.
+                      value: duplicate
+                    - description: The amount differs from the amount authorized.
+                      value: incorrect_amount
+                    - description: The money movement occurred on a date that differs
+                        from the agreed date.
+                      value: incorrect_date
+                    - description: The claim does not fit a named reason.
+                      value: other
+                    - description: The FinancialAccount holder did not authorize the
+                        money movement.
+                      value: unauthorized
+                target:
+                  required:
+                  - type
+                  type: object
+                  properties:
+                    received_debit:
+                      type: string
+                      description: "If applicable, the ID of the ReceivedDebit being\
+                        \ disputed."
+                    type:
+                      type: string
+                      description: The type of money movement being disputed.
+                      enum:
+                      - received_debit
+                      x-stripeEnum:
+                        kind: open
+                        values:
+                        - description: The dispute concerns a ReceivedDebit.
+                          value: received_debit
+                  description: The money movement being disputed.
+            examples:
+              example:
+                value:
+                  pathParams: {}
+                  requestBody:
+                    target:
+                      type: received_debit
+                      received_debit: rd_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+                    reason: unauthorized
+                    explanation: We did not authorize this debit and do not recognize
+                      the debiting party.
+                    metadata:
+                      support_case: case_8812
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v2.money_management.dispute'
+              examples:
+                example:
+                  value:
+                    id: dsp_test_61PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+                    object: v2.money_management.dispute
+                    livemode: false
+                    created: 2026-09-25T10:00:00.000Z
+                    financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+                    target:
+                      type: received_debit
+                      received_debit: rd_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+                    amount:
+                      value: 5000
+                      currency: usd
+                    reason: unauthorized
+                    explanation: We did not authorize this debit and do not recognize
+                      the debiting party.
+                    status: under_review
+                    status_transitions: null
+                    metadata:
+                      support_case: case_8812
+        default:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/v2.error.dispute_already_exists'
+                - $ref: '#/components/schemas/v2.error.dispute_path_unavailable'
+                - $ref: '#/components/schemas/v2.error.dispute_reason_not_supported'
+                - $ref: '#/components/schemas/v2.error.dispute_target_invalid_status'
+                - $ref: '#/components/schemas/v2.error.dispute_window_closed'
+                - $ref: '#/components/schemas/v2.error.idempotency_error'
+                - $ref: '#/components/schemas/v2.error.invalid_fields'
+                - $ref: '#/components/schemas/v2.error.not_found'
+                - $ref: '#/components/schemas/v2.error'
+      x-stableId: v2_method_create_dispute
+      x-stripeDocsSamples:
+      - request:
+          pathParams: {}
+          requestBody:
+            target:
+              type: received_debit
+              received_debit: rd_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+            reason: unauthorized
+            explanation: We did not authorize this debit and do not recognize the
+              debiting party.
+            metadata:
+              support_case: case_8812
+        response:
+          id: dsp_test_61PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          object: v2.money_management.dispute
+          livemode: false
+          created: 2026-09-25T10:00:00.000Z
+          financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+          target:
+            type: received_debit
+            received_debit: rd_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+          amount:
+            value: 5000
+            currency: usd
+          reason: unauthorized
+          explanation: We did not authorize this debit and do not recognize the debiting
+            party.
+          status: under_review
+          status_transitions: null
+          metadata:
+            support_case: case_8812
+      x-stripeErrors:
+      - code: dispute_already_exists
+        description: The dispute target already has a dispute which covers the amount
+          being disputed.
+        httpStatusCode: 400
+        type: already_exists
+      - code: dispute_path_unavailable
+        description: No dispute process is available for the dispute target.
+        httpStatusCode: 400
+        type: cannot_proceed
+      - code: dispute_reason_not_supported
+        description: The dispute reason isn't supported for the dispute target.
+        httpStatusCode: 400
+        type: cannot_proceed
+      - code: dispute_target_invalid_status
+        description: The dispute target's status doesn't allow it to be disputed.
+        httpStatusCode: 400
+        type: cannot_proceed
+      - code: dispute_window_closed
+        description: "The dispute target's dispute window has closed, and no other\
+          \ dispute process is available for it."
+        httpStatusCode: 400
+        type: cannot_proceed
+      - code: idempotency_error
+        description: An idempotent retry occurred with different request parameters.
+        httpStatusCode: 409
+      - code: invalid_fields
+        httpStatusCode: 400
+      - code: not_found
+        description: The resource wasn't found.
+        httpStatusCode: 404
+      x-stripeNotPublic: true
+  /v2/money_management/disputes/{id}:
+    get:
+      summary: Retrieve a Dispute
+      description: Retrieves a Dispute.
+      operationId: GetV2MoneyManagementDisputesId
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the Dispute to retrieve.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v2.money_management.dispute'
+              examples:
+                example:
+                  value:
+                    id: dsp_test_61PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+                    object: v2.money_management.dispute
+                    livemode: false
+                    created: 2026-09-25T10:00:00.000Z
+                    financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+                    target:
+                      type: received_debit
+                      received_debit: rd_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+                    amount:
+                      value: 5000
+                      currency: usd
+                    reason: unauthorized
+                    explanation: We did not authorize this debit and do not recognize
+                      the debiting party.
+                    status: under_review
+                    status_transitions: null
+                    metadata: {}
+        default:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/v2.error.not_found'
+                - $ref: '#/components/schemas/v2.error'
+      x-stableId: v2_method_retrieve_dispute
+      x-stripeDocsSamples:
+      - request:
+          pathParams:
+            id: dsp_test_61PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          requestBody: {}
+        response:
+          id: dsp_test_61PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          object: v2.money_management.dispute
+          livemode: false
+          created: 2026-09-25T10:00:00.000Z
+          financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+          target:
+            type: received_debit
+            received_debit: rd_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+          amount:
+            value: 5000
+            currency: usd
+          reason: unauthorized
+          explanation: We did not authorize this debit and do not recognize the debiting
+            party.
+          status: under_review
+          status_transitions: null
+          metadata: {}
       x-stripeErrors:
       - code: not_found
         description: The resource wasn't found.
@@ -302220,6 +302775,7 @@ paths:
                 - $ref: '#/components/schemas/v2.error.off_session_payment_application_fee_amount_incorrect_currency'
                 - $ref: '#/components/schemas/v2.error.off_session_payment_application_fee_amount_too_high'
                 - $ref: '#/components/schemas/v2.error.off_session_payment_generic_invalid_request'
+                - $ref: '#/components/schemas/v2.error.off_session_payment_invalid_currency'
                 - $ref: '#/components/schemas/v2.error.off_session_payment_invalid_mcc'
                 - $ref: '#/components/schemas/v2.error.off_session_payment_invalid_payment_method_type'
                 - $ref: '#/components/schemas/v2.error.off_session_payment_mcc_not_allowed_with_on_behalf_of'
@@ -302316,6 +302872,10 @@ paths:
       - code: off_session_payment_generic_invalid_request
         description: A generic error occurred during payment. See error message for
           more details.
+        httpStatusCode: 400
+      - code: off_session_payment_invalid_currency
+        description: The provided currency is not supported by the payment method
+          type.
         httpStatusCode: 400
       - code: off_session_payment_invalid_mcc
         description: The MCC value provided is not valid for this merchant or payment
@@ -337969,10 +338529,16 @@ components:
           description: "The supported token currency. Supported token currencies include:\
             \ `usdc`."
           enum:
+          - ousd
+          - phantom_cash
           - usdc
           x-stripeEnum:
-            kind: closed
+            kind: open
             values:
+            - description: OUSD
+              value: ousd
+            - description: Phantom CASH
+              value: phantom_cash
             - description: USDC
               value: usdc
       description: ""
@@ -403538,8 +404104,9 @@ components:
           description: The number of days to reserve funds before releasing.
         days_after_fulfillment:
           type: integer
-          description: The number of days after the PaymentIntent's `fulfillment_date`
-            to reserve funds before releasing. Charges without a `fulfillment_date`
+          description: The number of days after a payment's `fulfillment_date` to
+            reserve funds before releasing them. The hold releases at midnight UTC
+            that many days after the fulfillment date. Charges without a `fulfillment_date`
             use `days_after_charge`.
           nullable: true
         expires_on:
@@ -419624,7 +420191,9 @@ components:
         ca_certificate_file:
           maxLength: 5000
           type: string
-          description: A File ID representing a PEM file containing the server certificate
+          description: "A File ID representing a PEM file containing the server certificate.\
+            \ The certificate is not currently used to validate the identity of the\
+            \ server, but will be used in a future device update."
         password:
           maxLength: 5000
           type: string
@@ -601719,6 +602288,185 @@ components:
       x-stripeError:
         code: display_name_too_long
         httpStatusCode: 400
+    v2.error.dispute_already_exists:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - message
+          - type
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - dispute_already_exists
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+            type:
+              type: string
+              description: The type of error returned
+              enum:
+              - already_exists
+          description: Information about the error that occurred
+      description: The dispute target already has a dispute which covers the amount
+        being disputed.
+      x-stripeError:
+        code: dispute_already_exists
+        httpStatusCode: 400
+        type: already_exists
+    v2.error.dispute_path_unavailable:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - message
+          - reason
+          - type
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - dispute_path_unavailable
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+            reason:
+              type: string
+            type:
+              type: string
+              description: The type of error returned
+              enum:
+              - cannot_proceed
+          description: Information about the error that occurred
+      description: No dispute process is available for the dispute target.
+      x-stripeError:
+        code: dispute_path_unavailable
+        httpStatusCode: 400
+        type: cannot_proceed
+    v2.error.dispute_reason_not_supported:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - message
+          - reason
+          - type
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - dispute_reason_not_supported
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+            reason:
+              type: string
+            type:
+              type: string
+              description: The type of error returned
+              enum:
+              - cannot_proceed
+          description: Information about the error that occurred
+      description: The dispute reason isn't supported for the dispute target.
+      x-stripeError:
+        code: dispute_reason_not_supported
+        httpStatusCode: 400
+        type: cannot_proceed
+    v2.error.dispute_target_invalid_status:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - message
+          - reason
+          - type
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - dispute_target_invalid_status
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+            reason:
+              type: string
+            type:
+              type: string
+              description: The type of error returned
+              enum:
+              - cannot_proceed
+          description: Information about the error that occurred
+      description: The dispute target's status doesn't allow it to be disputed.
+      x-stripeError:
+        code: dispute_target_invalid_status
+        httpStatusCode: 400
+        type: cannot_proceed
+    v2.error.dispute_window_closed:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - message
+          - reason
+          - type
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - dispute_window_closed
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+            reason:
+              type: string
+            type:
+              type: string
+              description: The type of error returned
+              enum:
+              - cannot_proceed
+          description: Information about the error that occurred
+      description: "The dispute target's dispute window has closed, and no other dispute\
+        \ process is available for it."
+      x-stripeError:
+        code: dispute_window_closed
+        httpStatusCode: 400
+        type: cannot_proceed
     v2.error.document_invalid:
       required:
       - error
@@ -609335,6 +610083,32 @@ components:
       description: The off-session payment is in an incorrect status for resume.
       x-stripeError:
         code: off_session_payment_incorrect_status_for_resume
+        httpStatusCode: 400
+    v2.error.off_session_payment_invalid_currency:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - message
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - off_session_payment_invalid_currency
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+          description: Information about the error that occurred
+      description: The provided currency is not supported by the payment method type.
+      x-stripeError:
+        code: off_session_payment_invalid_currency
         httpStatusCode: 400
     v2.error.off_session_payment_invalid_mcc:
       required:
@@ -627708,6 +628482,1485 @@ components:
       x-stripeEvent:
         kind: thin
         type: v2.money_management.debit_dispute.succeeded
+      x-stripeNotPublic: true
+    v2.money_management.dispute:
+      title: Dispute
+      required:
+      - amount
+      - created
+      - financial_account
+      - id
+      - livemode
+      - object
+      - reason
+      - status
+      - target
+      type: object
+      properties:
+        amount:
+          required:
+          - currency
+          - value
+          type: object
+          properties:
+            currency:
+              type: string
+              description: "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),\
+                \ in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies)."
+              nullable: false
+            value:
+              type: integer
+              description: "A non-negative integer representing how much to charge\
+                \ in the [smallest currency unit](https://docs.stripe.com/currencies#minor-units)."
+              nullable: false
+          description: The amount and currency of the disputed money movement.
+        created:
+          type: string
+          description: The time at which the dispute was created.
+          format: date-time
+        explanation:
+          type: string
+          description: "Additional explanation for the dispute, if supplied."
+        financial_account:
+          type: string
+          description: The FinancialAccount associated with the disputed money movement.
+          x-stripeProperty:
+            referenced_resource:
+              $ref: '#/components/schemas/v2.money_management.financial_account'
+        id:
+          type: string
+          description: Unique identifier for the Dispute.
+        livemode:
+          type: boolean
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          description: Set of key-value pairs that you can attach to an object. This
+            can be useful for storing additional information about the object in a
+            structured format.
+        object:
+          type: string
+          description: String representing the object's type. Objects of the same
+            type share the same value of the object field.
+          enum:
+          - v2.money_management.dispute
+        reason:
+          type: string
+          description: The FinancialAccount holder's reason for disputing the money
+            movement.
+          enum:
+          - authorization_revoked
+          - duplicate
+          - incorrect_amount
+          - incorrect_date
+          - other
+          - unauthorized
+          x-stripeEnum:
+            kind: open
+            values:
+            - description: The FinancialAccount holder withdrew authorization before
+                the money movement was initiated.
+              value: authorization_revoked
+            - description: The money movement was authorized only once but occurred
+                more than once.
+              value: duplicate
+            - description: The amount differs from the amount authorized.
+              value: incorrect_amount
+            - description: The money movement occurred on a date that differs from
+                the agreed date.
+              value: incorrect_date
+            - description: The claim does not fit a named reason.
+              value: other
+            - description: The FinancialAccount holder did not authorize the money
+                movement.
+              value: unauthorized
+        status:
+          type: string
+          description: The current status of the dispute.
+          enum:
+          - lost
+          - under_review
+          - won
+          x-stripeEnum:
+            kind: open
+            values:
+            - description: The dispute was resolved against the FinancialAccount holder.
+              value: lost
+            - description: The dispute is being reviewed.
+              value: under_review
+            - description: The dispute was resolved in the FinancialAccount holder's
+                favor.
+              value: won
+        status_transitions:
+          type: object
+          properties:
+            lost_at:
+              type: string
+              description: The time at which the Dispute became lost. Only present
+                if status == lost.
+              format: date-time
+            won_at:
+              type: string
+              description: The time at which the Dispute became won. Only present
+                if status == won.
+              format: date-time
+          description: Timestamps describing when the dispute changed status.
+        target:
+          required:
+          - type
+          type: object
+          properties:
+            received_debit:
+              type: string
+              description: "If applicable, the ID of the ReceivedDebit being disputed."
+            type:
+              type: string
+              description: The type of money movement being disputed.
+              enum:
+              - received_debit
+              x-stripeEnum:
+                kind: open
+                values:
+                - description: The dispute concerns a ReceivedDebit.
+                  value: received_debit
+          description: The money movement being disputed.
+      description: A Dispute tracks a claim challenging a money movement on behalf
+        of a FinancialAccount holder.
+      example:
+        id: dsp_test_61PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+        object: v2.money_management.dispute
+        livemode: false
+        created: 2026-09-25T10:00:00.000Z
+        financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+        target:
+          type: received_debit
+          received_debit: rd_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+        amount:
+          value: 5000
+          currency: usd
+        reason: unauthorized
+        explanation: We did not authorize this debit and do not recognize the debiting
+          party.
+        status: under_review
+        status_transitions: null
+        metadata: {}
+      x-resourceId: v2.money_management.dispute
+      x-stableId: v2_resource_dispute
+      x-stripeDocsSamples:
+      - response:
+          id: dsp_test_61PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          object: v2.money_management.dispute
+          livemode: false
+          created: 2026-09-25T10:00:00.000Z
+          financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+          target:
+            type: received_debit
+            received_debit: rd_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+          amount:
+            value: 5000
+            currency: usd
+          reason: unauthorized
+          explanation: We did not authorize this debit and do not recognize the debiting
+            party.
+          status: under_review
+          status_transitions: null
+          metadata: {}
+      x-stripeOperations:
+      - method_name: list
+        method_on: service
+        method_type: list
+        operation: get
+        path: /v2/money_management/disputes
+      - method_name: create
+        method_on: service
+        method_type: create
+        operation: post
+        path: /v2/money_management/disputes
+      - method_name: retrieve
+        method_on: service
+        method_type: retrieve
+        operation: get
+        path: "/v2/money_management/disputes/{id}"
+      x-stripeResource:
+        class_name: Dispute
+        in_package: v2.money_management
+    v2.money_management.dispute.created:
+      required:
+      - changes
+      - created
+      - data
+      - id
+      - livemode
+      - object
+      - related_object
+      - type
+      type: object
+      properties:
+        changes:
+          required:
+          - after
+          - before
+          type: object
+          properties:
+            after:
+              type: object
+              description: Updated values of properties that the event changed. This
+                is `null` for deletion events.
+            before:
+              type: object
+              description: Values of properties before the event changes. This is
+                `null` for creation events.
+              nullable: true
+          description: "Changes that the event makes to properties in the related\
+            \ object. See the [Dispute](https://docs.stripe.com/api/v2/money-management/disputes/object)\
+            \ object for the structure of `before` and `after`."
+        context:
+          type: string
+          description: Authentication context needed to fetch the event or related
+            object.
+        created:
+          type: string
+          description: Time at which the object was created.
+          format: date-time
+        data:
+          type: object
+          properties: {}
+          description: Additional data about the event.
+        id:
+          type: string
+          description: Unique identifier for the event.
+        livemode:
+          type: boolean
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+        object:
+          type: string
+          description: String representing the object's type. Objects of the same
+            type share the same value of the object field.
+          enum:
+          - v2.core.event
+        reason:
+          required:
+          - type
+          type: object
+          properties:
+            request:
+              required:
+              - id
+              - idempotency_key
+              type: object
+              properties:
+                client:
+                  required:
+                  - type
+                  type: object
+                  properties:
+                    api_key:
+                      required:
+                      - id
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: The ID of the API key.
+                      description: API key that triggered the event.
+                      x-stripeNotPublic: true
+                    dashboard_user:
+                      required:
+                      - email
+                      - ip_address
+                      - machine_identifier
+                      type: object
+                      properties:
+                        email:
+                          type: string
+                          description: The email of the dashboard user.
+                        ip_address:
+                          type: string
+                          description: The IP address of the user.
+                        machine_identifier:
+                          type: string
+                          description: The machine identifier of the user.
+                      description: Dashboard user that triggered the event.
+                      x-stripeNotPublic: true
+                    stripe_action:
+                      type: object
+                      properties: {}
+                      description: Stripe action that triggered the event.
+                      x-stripeNotPublic: true
+                    type:
+                      type: string
+                      description: The type of the client.
+                      enum:
+                      - api_key
+                      - dashboard_user
+                      - stripe_action
+                      x-stripeEnum:
+                        kind: open
+                        values:
+                        - description: The event was triggered by an API key.
+                          value: api_key
+                        - description: The event was triggered by a dashboard user.
+                          value: dashboard_user
+                        - description: The event was triggered by Stripe.
+                          value: stripe_action
+                  description: The client details that made the request.
+                  x-stripeNotPublic: true
+                id:
+                  type: string
+                  description: ID of the API request that caused the event.
+                idempotency_key:
+                  type: string
+                  description: The idempotency key transmitted during the request.
+              description: Information on the API request that instigated the event.
+            type:
+              type: string
+              description: Event reason type.
+              enum:
+              - request
+              x-stripeEnum:
+                kind: open
+                values:
+                - description: The event was published as the result of an API request.
+                  value: request
+          description: Reason for the event.
+        related_object:
+          required:
+          - id
+          - type
+          - url
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the object relevant to the event.
+            type:
+              type: string
+              description: Object tag of the resource relevant to the event.
+              enum:
+              - v2.money_management.dispute
+            url:
+              type: string
+              description: URL to retrieve the resource.
+          description: Object containing the reference to API resource relevant to
+            the event.
+        snapshot_event:
+          type: string
+          description: "For thin events with a corresponding snapshot event, this\
+            \ is the snapshot event ID."
+        type:
+          type: string
+          description: The type of the event.
+          enum:
+          - v2.money_management.dispute.created
+      description: Occurs when a Dispute is created and is under review.
+      example:
+        created: 2026-09-25T10:00:00.000Z
+        id: evt_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWNq
+        object: v2.core.event
+        related_object:
+          id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          type: v2.money_management.dispute
+          url: /v2/money_management/disputes/dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+        type: v2.money_management.dispute.created
+        livemode: true
+        changes:
+          before: null
+          after:
+            id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+            object: v2.money_management.dispute
+            livemode: true
+            created: 2026-09-25T10:00:00.000Z
+            financial_account: fa_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+            target:
+              type: received_debit
+              received_debit: rd_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+            amount:
+              value: 5000
+              currency: usd
+            reason: unauthorized
+            explanation: We did not authorize this debit and do not recognize the
+              debiting party.
+            status: under_review
+            status_transitions: null
+            metadata: {}
+        data: {}
+      x-stableId: v2.money_management.dispute.created
+      x-stripeDocsSamples:
+      - payload:
+          created: 2026-09-25T10:00:00.000Z
+          id: evt_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWNq
+          object: v2.core.event
+          related_object:
+            id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+            type: v2.money_management.dispute
+            url: /v2/money_management/disputes/dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          type: v2.money_management.dispute.created
+          livemode: true
+        response:
+          created: 2026-09-25T10:00:00.000Z
+          id: evt_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWNq
+          object: v2.core.event
+          related_object:
+            id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+            type: v2.money_management.dispute
+            url: /v2/money_management/disputes/dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          type: v2.money_management.dispute.created
+          livemode: true
+          changes:
+            before: null
+            after:
+              id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+              object: v2.money_management.dispute
+              livemode: true
+              created: 2026-09-25T10:00:00.000Z
+              financial_account: fa_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+              target:
+                type: received_debit
+                received_debit: rd_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+              amount:
+                value: 5000
+                currency: usd
+              reason: unauthorized
+              explanation: We did not authorize this debit and do not recognize the
+                debiting party.
+              status: under_review
+              status_transitions: null
+              metadata: {}
+          data: {}
+      x-stripeEvent:
+        kind: thin
+        type: v2.money_management.dispute.created
+      x-stripeNotPublic: true
+    v2.money_management.dispute.lost:
+      required:
+      - changes
+      - created
+      - data
+      - id
+      - livemode
+      - object
+      - related_object
+      - type
+      type: object
+      properties:
+        changes:
+          required:
+          - after
+          - before
+          type: object
+          properties:
+            after:
+              type: object
+              description: Updated values of properties that the event changed. This
+                is `null` for deletion events.
+            before:
+              type: object
+              description: Values of properties before the event changes. This is
+                `null` for creation events.
+          description: "Changes that the event makes to properties in the related\
+            \ object. See the [Dispute](https://docs.stripe.com/api/v2/money-management/disputes/object)\
+            \ object for the structure of `before` and `after`."
+        context:
+          type: string
+          description: Authentication context needed to fetch the event or related
+            object.
+        created:
+          type: string
+          description: Time at which the object was created.
+          format: date-time
+        data:
+          type: object
+          properties: {}
+          description: Additional data about the event.
+        id:
+          type: string
+          description: Unique identifier for the event.
+        livemode:
+          type: boolean
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+        object:
+          type: string
+          description: String representing the object's type. Objects of the same
+            type share the same value of the object field.
+          enum:
+          - v2.core.event
+        reason:
+          required:
+          - type
+          type: object
+          properties:
+            request:
+              required:
+              - id
+              - idempotency_key
+              type: object
+              properties:
+                client:
+                  required:
+                  - type
+                  type: object
+                  properties:
+                    api_key:
+                      required:
+                      - id
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: The ID of the API key.
+                      description: API key that triggered the event.
+                      x-stripeNotPublic: true
+                    dashboard_user:
+                      required:
+                      - email
+                      - ip_address
+                      - machine_identifier
+                      type: object
+                      properties:
+                        email:
+                          type: string
+                          description: The email of the dashboard user.
+                        ip_address:
+                          type: string
+                          description: The IP address of the user.
+                        machine_identifier:
+                          type: string
+                          description: The machine identifier of the user.
+                      description: Dashboard user that triggered the event.
+                      x-stripeNotPublic: true
+                    stripe_action:
+                      type: object
+                      properties: {}
+                      description: Stripe action that triggered the event.
+                      x-stripeNotPublic: true
+                    type:
+                      type: string
+                      description: The type of the client.
+                      enum:
+                      - api_key
+                      - dashboard_user
+                      - stripe_action
+                      x-stripeEnum:
+                        kind: open
+                        values:
+                        - description: The event was triggered by an API key.
+                          value: api_key
+                        - description: The event was triggered by a dashboard user.
+                          value: dashboard_user
+                        - description: The event was triggered by Stripe.
+                          value: stripe_action
+                  description: The client details that made the request.
+                  x-stripeNotPublic: true
+                id:
+                  type: string
+                  description: ID of the API request that caused the event.
+                idempotency_key:
+                  type: string
+                  description: The idempotency key transmitted during the request.
+              description: Information on the API request that instigated the event.
+            type:
+              type: string
+              description: Event reason type.
+              enum:
+              - request
+              x-stripeEnum:
+                kind: open
+                values:
+                - description: The event was published as the result of an API request.
+                  value: request
+          description: Reason for the event.
+        related_object:
+          required:
+          - id
+          - type
+          - url
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the object relevant to the event.
+            type:
+              type: string
+              description: Object tag of the resource relevant to the event.
+              enum:
+              - v2.money_management.dispute
+            url:
+              type: string
+              description: URL to retrieve the resource.
+          description: Object containing the reference to API resource relevant to
+            the event.
+        snapshot_event:
+          type: string
+          description: "For thin events with a corresponding snapshot event, this\
+            \ is the snapshot event ID."
+        type:
+          type: string
+          description: The type of the event.
+          enum:
+          - v2.money_management.dispute.lost
+      description: Occurs when a Dispute is resolved against the account holder.
+      example:
+        created: 2026-09-25T10:05:00.000Z
+        id: evt_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWNq
+        object: v2.core.event
+        related_object:
+          id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          type: v2.money_management.dispute
+          url: /v2/money_management/disputes/dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+        type: v2.money_management.dispute.lost
+        livemode: true
+        changes:
+          before:
+            status: under_review
+            status_transitions: null
+          after:
+            status: lost
+            status_transitions:
+              won_at: null
+              lost_at: 2026-09-25T10:05:00.000Z
+        data: {}
+      x-stableId: v2.money_management.dispute.lost
+      x-stripeDocsSamples:
+      - payload:
+          created: 2026-09-25T10:05:00.000Z
+          id: evt_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWNq
+          object: v2.core.event
+          related_object:
+            id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+            type: v2.money_management.dispute
+            url: /v2/money_management/disputes/dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          type: v2.money_management.dispute.lost
+          livemode: true
+        response:
+          created: 2026-09-25T10:05:00.000Z
+          id: evt_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWNq
+          object: v2.core.event
+          related_object:
+            id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+            type: v2.money_management.dispute
+            url: /v2/money_management/disputes/dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          type: v2.money_management.dispute.lost
+          livemode: true
+          changes:
+            before:
+              status: under_review
+              status_transitions: null
+            after:
+              status: lost
+              status_transitions:
+                won_at: null
+                lost_at: 2026-09-25T10:05:00.000Z
+          data: {}
+      x-stripeEvent:
+        kind: thin
+        type: v2.money_management.dispute.lost
+      x-stripeNotPublic: true
+    v2.money_management.dispute.updated:
+      required:
+      - changes
+      - created
+      - data
+      - id
+      - livemode
+      - object
+      - related_object
+      - type
+      type: object
+      properties:
+        changes:
+          required:
+          - after
+          - before
+          type: object
+          properties:
+            after:
+              type: object
+              description: Updated values of properties that the event changed. This
+                is `null` for deletion events.
+            before:
+              type: object
+              description: Values of properties before the event changes. This is
+                `null` for creation events.
+          description: "Changes that the event makes to properties in the related\
+            \ object. See the [Dispute](https://docs.stripe.com/api/v2/money-management/disputes/object)\
+            \ object for the structure of `before` and `after`."
+        context:
+          type: string
+          description: Authentication context needed to fetch the event or related
+            object.
+        created:
+          type: string
+          description: Time at which the object was created.
+          format: date-time
+        data:
+          type: object
+          properties: {}
+          description: Additional data about the event.
+        id:
+          type: string
+          description: Unique identifier for the event.
+        livemode:
+          type: boolean
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+        object:
+          type: string
+          description: String representing the object's type. Objects of the same
+            type share the same value of the object field.
+          enum:
+          - v2.core.event
+        reason:
+          required:
+          - type
+          type: object
+          properties:
+            request:
+              required:
+              - id
+              - idempotency_key
+              type: object
+              properties:
+                client:
+                  required:
+                  - type
+                  type: object
+                  properties:
+                    api_key:
+                      required:
+                      - id
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: The ID of the API key.
+                      description: API key that triggered the event.
+                      x-stripeNotPublic: true
+                    dashboard_user:
+                      required:
+                      - email
+                      - ip_address
+                      - machine_identifier
+                      type: object
+                      properties:
+                        email:
+                          type: string
+                          description: The email of the dashboard user.
+                        ip_address:
+                          type: string
+                          description: The IP address of the user.
+                        machine_identifier:
+                          type: string
+                          description: The machine identifier of the user.
+                      description: Dashboard user that triggered the event.
+                      x-stripeNotPublic: true
+                    stripe_action:
+                      type: object
+                      properties: {}
+                      description: Stripe action that triggered the event.
+                      x-stripeNotPublic: true
+                    type:
+                      type: string
+                      description: The type of the client.
+                      enum:
+                      - api_key
+                      - dashboard_user
+                      - stripe_action
+                      x-stripeEnum:
+                        kind: open
+                        values:
+                        - description: The event was triggered by an API key.
+                          value: api_key
+                        - description: The event was triggered by a dashboard user.
+                          value: dashboard_user
+                        - description: The event was triggered by Stripe.
+                          value: stripe_action
+                  description: The client details that made the request.
+                  x-stripeNotPublic: true
+                id:
+                  type: string
+                  description: ID of the API request that caused the event.
+                idempotency_key:
+                  type: string
+                  description: The idempotency key transmitted during the request.
+              description: Information on the API request that instigated the event.
+            type:
+              type: string
+              description: Event reason type.
+              enum:
+              - request
+              x-stripeEnum:
+                kind: open
+                values:
+                - description: The event was published as the result of an API request.
+                  value: request
+          description: Reason for the event.
+        related_object:
+          required:
+          - id
+          - type
+          - url
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the object relevant to the event.
+            type:
+              type: string
+              description: Object tag of the resource relevant to the event.
+              enum:
+              - v2.money_management.dispute
+            url:
+              type: string
+              description: URL to retrieve the resource.
+          description: Object containing the reference to API resource relevant to
+            the event.
+        snapshot_event:
+          type: string
+          description: "For thin events with a corresponding snapshot event, this\
+            \ is the snapshot event ID."
+        type:
+          type: string
+          description: The type of the event.
+          enum:
+          - v2.money_management.dispute.updated
+      description: "Occurs when a Dispute changes, including when it is won or lost."
+      example:
+        created: 2026-09-25T10:05:00.000Z
+        id: evt_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loUpd
+        object: v2.core.event
+        related_object:
+          id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          type: v2.money_management.dispute
+          url: /v2/money_management/disputes/dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+        type: v2.money_management.dispute.updated
+        livemode: true
+        changes:
+          before:
+            status: under_review
+            status_transitions: null
+          after:
+            status: lost
+            status_transitions:
+              won_at: null
+              lost_at: 2026-09-25T10:05:00.000Z
+        data: {}
+      x-stableId: v2.money_management.dispute.updated
+      x-stripeDocsSamples:
+      - payload:
+          created: 2026-09-25T10:05:00.000Z
+          id: evt_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loUpd
+          object: v2.core.event
+          related_object:
+            id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+            type: v2.money_management.dispute
+            url: /v2/money_management/disputes/dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          type: v2.money_management.dispute.updated
+          livemode: true
+        response:
+          created: 2026-09-25T10:05:00.000Z
+          id: evt_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loUpd
+          object: v2.core.event
+          related_object:
+            id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+            type: v2.money_management.dispute
+            url: /v2/money_management/disputes/dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          type: v2.money_management.dispute.updated
+          livemode: true
+          changes:
+            before:
+              status: under_review
+              status_transitions: null
+            after:
+              status: lost
+              status_transitions:
+                won_at: null
+                lost_at: 2026-09-25T10:05:00.000Z
+          data: {}
+      x-stripeEvent:
+        kind: thin
+        type: v2.money_management.dispute.updated
+      x-stripeNotPublic: true
+    v2.money_management.dispute.won:
+      required:
+      - changes
+      - created
+      - data
+      - id
+      - livemode
+      - object
+      - related_object
+      - type
+      type: object
+      properties:
+        changes:
+          required:
+          - after
+          - before
+          type: object
+          properties:
+            after:
+              type: object
+              description: Updated values of properties that the event changed. This
+                is `null` for deletion events.
+            before:
+              type: object
+              description: Values of properties before the event changes. This is
+                `null` for creation events.
+          description: "Changes that the event makes to properties in the related\
+            \ object. See the [Dispute](https://docs.stripe.com/api/v2/money-management/disputes/object)\
+            \ object for the structure of `before` and `after`."
+        context:
+          type: string
+          description: Authentication context needed to fetch the event or related
+            object.
+        created:
+          type: string
+          description: Time at which the object was created.
+          format: date-time
+        data:
+          type: object
+          properties: {}
+          description: Additional data about the event.
+        id:
+          type: string
+          description: Unique identifier for the event.
+        livemode:
+          type: boolean
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+        object:
+          type: string
+          description: String representing the object's type. Objects of the same
+            type share the same value of the object field.
+          enum:
+          - v2.core.event
+        reason:
+          required:
+          - type
+          type: object
+          properties:
+            request:
+              required:
+              - id
+              - idempotency_key
+              type: object
+              properties:
+                client:
+                  required:
+                  - type
+                  type: object
+                  properties:
+                    api_key:
+                      required:
+                      - id
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: The ID of the API key.
+                      description: API key that triggered the event.
+                      x-stripeNotPublic: true
+                    dashboard_user:
+                      required:
+                      - email
+                      - ip_address
+                      - machine_identifier
+                      type: object
+                      properties:
+                        email:
+                          type: string
+                          description: The email of the dashboard user.
+                        ip_address:
+                          type: string
+                          description: The IP address of the user.
+                        machine_identifier:
+                          type: string
+                          description: The machine identifier of the user.
+                      description: Dashboard user that triggered the event.
+                      x-stripeNotPublic: true
+                    stripe_action:
+                      type: object
+                      properties: {}
+                      description: Stripe action that triggered the event.
+                      x-stripeNotPublic: true
+                    type:
+                      type: string
+                      description: The type of the client.
+                      enum:
+                      - api_key
+                      - dashboard_user
+                      - stripe_action
+                      x-stripeEnum:
+                        kind: open
+                        values:
+                        - description: The event was triggered by an API key.
+                          value: api_key
+                        - description: The event was triggered by a dashboard user.
+                          value: dashboard_user
+                        - description: The event was triggered by Stripe.
+                          value: stripe_action
+                  description: The client details that made the request.
+                  x-stripeNotPublic: true
+                id:
+                  type: string
+                  description: ID of the API request that caused the event.
+                idempotency_key:
+                  type: string
+                  description: The idempotency key transmitted during the request.
+              description: Information on the API request that instigated the event.
+            type:
+              type: string
+              description: Event reason type.
+              enum:
+              - request
+              x-stripeEnum:
+                kind: open
+                values:
+                - description: The event was published as the result of an API request.
+                  value: request
+          description: Reason for the event.
+        related_object:
+          required:
+          - id
+          - type
+          - url
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the object relevant to the event.
+            type:
+              type: string
+              description: Object tag of the resource relevant to the event.
+              enum:
+              - v2.money_management.dispute
+            url:
+              type: string
+              description: URL to retrieve the resource.
+          description: Object containing the reference to API resource relevant to
+            the event.
+        snapshot_event:
+          type: string
+          description: "For thin events with a corresponding snapshot event, this\
+            \ is the snapshot event ID."
+        type:
+          type: string
+          description: The type of the event.
+          enum:
+          - v2.money_management.dispute.won
+      description: Occurs when a Dispute is resolved in the account holder's favor.
+      example:
+        created: 2026-09-25T10:05:00.000Z
+        id: evt_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWNq
+        object: v2.core.event
+        related_object:
+          id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          type: v2.money_management.dispute
+          url: /v2/money_management/disputes/dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+        type: v2.money_management.dispute.won
+        livemode: true
+        changes:
+          before:
+            status: under_review
+            status_transitions: null
+          after:
+            status: won
+            status_transitions:
+              won_at: 2026-09-25T10:05:00.000Z
+              lost_at: null
+        data: {}
+      x-stableId: v2.money_management.dispute.won
+      x-stripeDocsSamples:
+      - payload:
+          created: 2026-09-25T10:05:00.000Z
+          id: evt_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWNq
+          object: v2.core.event
+          related_object:
+            id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+            type: v2.money_management.dispute
+            url: /v2/money_management/disputes/dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          type: v2.money_management.dispute.won
+          livemode: true
+        response:
+          created: 2026-09-25T10:05:00.000Z
+          id: evt_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWNq
+          object: v2.core.event
+          related_object:
+            id: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+            type: v2.money_management.dispute
+            url: /v2/money_management/disputes/dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+          type: v2.money_management.dispute.won
+          livemode: true
+          changes:
+            before:
+              status: under_review
+              status_transitions: null
+            after:
+              status: won
+              status_transitions:
+                won_at: 2026-09-25T10:05:00.000Z
+                lost_at: null
+          data: {}
+      x-stripeEvent:
+        kind: thin
+        type: v2.money_management.dispute.won
+      x-stripeNotPublic: true
+    v2.money_management.dispute_adjustment:
+      title: Dispute Adjustment
+      required:
+      - amount
+      - created
+      - financial_account
+      - id
+      - livemode
+      - object
+      - related_dispute
+      type: object
+      properties:
+        amount:
+          required:
+          - currency
+          - value
+          type: object
+          properties:
+            currency:
+              type: string
+              description: "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html),\
+                \ in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies)."
+              nullable: false
+            value:
+              type: integer
+              description: "A non-negative integer representing how much to charge\
+                \ in the [smallest currency unit](https://docs.stripe.com/currencies#minor-units)."
+              nullable: false
+          description: The amount and currency of the DisputeAdjustment.
+        created:
+          type: string
+          description: The time at which the DisputeAdjustment was created.
+          format: date-time
+        financial_account:
+          type: string
+          description: The ID of the FinancialAccount associated with the DisputeAdjustment.
+          x-stripeProperty:
+            referenced_resource:
+              $ref: '#/components/schemas/v2.money_management.financial_account'
+        id:
+          type: string
+          description: Unique identifier for the DisputeAdjustment.
+        livemode:
+          type: boolean
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+        object:
+          type: string
+          description: String representing the object's type. Objects of the same
+            type share the same value of the object field.
+          enum:
+          - v2.money_management.dispute_adjustment
+        related_dispute:
+          required:
+          - type
+          type: object
+          properties:
+            dispute:
+              type: string
+              description: The ID of the Dispute associated with this DisputeAdjustment.
+                Present when `type` is `dispute`.
+            type:
+              type: string
+              description: The type of Dispute associated with this DisputeAdjustment.
+              enum:
+              - dispute
+              x-stripeEnum:
+                kind: open
+                values:
+                - description: The DisputeAdjustment is associated with a Dispute.
+                  value: dispute
+          description: The Dispute associated with this DisputeAdjustment.
+      description: A DisputeAdjustment records a money movement associated with a
+        Dispute.
+      example:
+        id: dspadj_test_61QSo9yHCmX2rJFvL6Gz8kU1vN5qR7aD0tW3bP4sE9xY2h
+        object: v2.money_management.dispute_adjustment
+        livemode: false
+        created: 2026-09-25T10:00:00.000Z
+        financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+        related_dispute:
+          type: dispute
+          dispute: dsp_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+        amount:
+          value: 5000
+          currency: usd
+      x-resourceId: v2.money_management.dispute_adjustment
+      x-stableId: v2_resource_dispute_adjustment
+      x-stripeDocsSamples:
+      - response:
+          id: dspadj_test_61QSo9yHCmX2rJFvL6Gz8kU1vN5qR7aD0tW3bP4sE9xY2h
+          object: v2.money_management.dispute_adjustment
+          livemode: false
+          created: 2026-09-25T10:00:00.000Z
+          financial_account: fa_test_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+          related_dispute:
+            type: dispute
+            dispute: dsp_test_61PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWDo
+          amount:
+            value: 5000
+            currency: usd
+      x-stripeOperations:
+      - method_name: list
+        method_on: service
+        method_type: list
+        operation: get
+        path: /v2/money_management/dispute_adjustments
+      - method_name: retrieve
+        method_on: service
+        method_type: retrieve
+        operation: get
+        path: "/v2/money_management/dispute_adjustments/{id}"
+      x-stripeResource:
+        class_name: DisputeAdjustment
+        in_package: v2.money_management
+    v2.money_management.dispute_adjustment.created:
+      required:
+      - changes
+      - created
+      - data
+      - id
+      - livemode
+      - object
+      - related_object
+      - type
+      type: object
+      properties:
+        changes:
+          required:
+          - after
+          - before
+          type: object
+          properties:
+            after:
+              type: object
+              description: Updated values of properties that the event changed. This
+                is `null` for deletion events.
+            before:
+              type: object
+              description: Values of properties before the event changes. This is
+                `null` for creation events.
+              nullable: true
+          description: "Changes that the event makes to properties in the related\
+            \ object. See the [Dispute Adjustment](https://docs.stripe.com/api/v2/money-management/dispute-adjustments/object)\
+            \ object for the structure of `before` and `after`."
+        context:
+          type: string
+          description: Authentication context needed to fetch the event or related
+            object.
+        created:
+          type: string
+          description: Time at which the object was created.
+          format: date-time
+        data:
+          type: object
+          properties: {}
+          description: Additional data about the event.
+        id:
+          type: string
+          description: Unique identifier for the event.
+        livemode:
+          type: boolean
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+        object:
+          type: string
+          description: String representing the object's type. Objects of the same
+            type share the same value of the object field.
+          enum:
+          - v2.core.event
+        reason:
+          required:
+          - type
+          type: object
+          properties:
+            request:
+              required:
+              - id
+              - idempotency_key
+              type: object
+              properties:
+                client:
+                  required:
+                  - type
+                  type: object
+                  properties:
+                    api_key:
+                      required:
+                      - id
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: The ID of the API key.
+                      description: API key that triggered the event.
+                      x-stripeNotPublic: true
+                    dashboard_user:
+                      required:
+                      - email
+                      - ip_address
+                      - machine_identifier
+                      type: object
+                      properties:
+                        email:
+                          type: string
+                          description: The email of the dashboard user.
+                        ip_address:
+                          type: string
+                          description: The IP address of the user.
+                        machine_identifier:
+                          type: string
+                          description: The machine identifier of the user.
+                      description: Dashboard user that triggered the event.
+                      x-stripeNotPublic: true
+                    stripe_action:
+                      type: object
+                      properties: {}
+                      description: Stripe action that triggered the event.
+                      x-stripeNotPublic: true
+                    type:
+                      type: string
+                      description: The type of the client.
+                      enum:
+                      - api_key
+                      - dashboard_user
+                      - stripe_action
+                      x-stripeEnum:
+                        kind: open
+                        values:
+                        - description: The event was triggered by an API key.
+                          value: api_key
+                        - description: The event was triggered by a dashboard user.
+                          value: dashboard_user
+                        - description: The event was triggered by Stripe.
+                          value: stripe_action
+                  description: The client details that made the request.
+                  x-stripeNotPublic: true
+                id:
+                  type: string
+                  description: ID of the API request that caused the event.
+                idempotency_key:
+                  type: string
+                  description: The idempotency key transmitted during the request.
+              description: Information on the API request that instigated the event.
+            type:
+              type: string
+              description: Event reason type.
+              enum:
+              - request
+              x-stripeEnum:
+                kind: open
+                values:
+                - description: The event was published as the result of an API request.
+                  value: request
+          description: Reason for the event.
+        related_object:
+          required:
+          - id
+          - type
+          - url
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the object relevant to the event.
+            type:
+              type: string
+              description: Object tag of the resource relevant to the event.
+              enum:
+              - v2.money_management.dispute_adjustment
+            url:
+              type: string
+              description: URL to retrieve the resource.
+          description: Object containing the reference to API resource relevant to
+            the event.
+        snapshot_event:
+          type: string
+          description: "For thin events with a corresponding snapshot event, this\
+            \ is the snapshot event ID."
+        type:
+          type: string
+          description: The type of the event.
+          enum:
+          - v2.money_management.dispute_adjustment.created
+      description: Occurs when a DisputeAdjustment records a money movement on the
+        FinancialAccount for a Dispute.
+      example:
+        created: 2026-09-25T10:05:00.000Z
+        id: evt_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWNq
+        object: v2.core.event
+        related_object:
+          id: dspadj_65QSo9yHCmX2rJFvL16PITSVZ3SQ2qpWK2k4kS9loQ2h
+          type: v2.money_management.dispute_adjustment
+          url: /v2/money_management/dispute_adjustments/dspadj_65QSo9yHCmX2rJFvL16PITSVZ3SQ2qpWK2k4kS9loQ2h
+        type: v2.money_management.dispute_adjustment.created
+        livemode: true
+        changes:
+          before: null
+          after:
+            id: dspadj_65QSo9yHCmX2rJFvL16PITSVZ3SQ2qpWK2k4kS9loQ2h
+            object: v2.money_management.dispute_adjustment
+            livemode: true
+            created: 2026-09-25T10:05:00.000Z
+            financial_account: fa_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+            related_dispute:
+              type: dispute
+              dispute: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+            amount:
+              value: 5000
+              currency: usd
+        data: {}
+      x-stableId: v2.money_management.dispute_adjustment.created
+      x-stripeDocsSamples:
+      - payload:
+          created: 2026-09-25T10:05:00.000Z
+          id: evt_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWNq
+          object: v2.core.event
+          related_object:
+            id: dspadj_65QSo9yHCmX2rJFvL16PITSVZ3SQ2qpWK2k4kS9loQ2h
+            type: v2.money_management.dispute_adjustment
+            url: /v2/money_management/dispute_adjustments/dspadj_65QSo9yHCmX2rJFvL16PITSVZ3SQ2qpWK2k4kS9loQ2h
+          type: v2.money_management.dispute_adjustment.created
+          livemode: true
+        response:
+          created: 2026-09-25T10:05:00.000Z
+          id: evt_65PIoVqwBhv9ka9wC16PITSVZ3SQ2qpWK2k4kS9loWNq
+          object: v2.core.event
+          related_object:
+            id: dspadj_65QSo9yHCmX2rJFvL16PITSVZ3SQ2qpWK2k4kS9loQ2h
+            type: v2.money_management.dispute_adjustment
+            url: /v2/money_management/dispute_adjustments/dspadj_65QSo9yHCmX2rJFvL16PITSVZ3SQ2qpWK2k4kS9loQ2h
+          type: v2.money_management.dispute_adjustment.created
+          livemode: true
+          changes:
+            before: null
+            after:
+              id: dspadj_65QSo9yHCmX2rJFvL16PITSVZ3SQ2qpWK2k4kS9loQ2h
+              object: v2.money_management.dispute_adjustment
+              livemode: true
+              created: 2026-09-25T10:05:00.000Z
+              financial_account: fa_65PIoVY8QWjXEgwaibT16PITSVZ3SQ2qpWK2k4kS9loJCK
+              related_dispute:
+                type: dispute
+                dispute: dsp_65PIoWE2jZr8NqQmM16PITSVZ3SQ2qpWK2k4kS9loYxZ
+              amount:
+                value: 5000
+                currency: usd
+          data: {}
+      x-stripeEvent:
+        kind: thin
+        type: v2.money_management.dispute_adjustment.created
       x-stripeNotPublic: true
     v2.money_management.earned_credit:
       title: Earned Credit
@@ -652130,6 +654383,7 @@ components:
       required:
       - amount
       - created
+      - disputed
       - financial_account
       - id
       - livemode
@@ -652537,6 +654791,12 @@ components:
               format: date-time
           description: The dispute details.
           x-stripeNotPublic: true
+        disputed:
+          type: boolean
+          description: |-
+            Has the value `true` if the object has an associated Dispute otherwise or the value `false`.
+            Use the Disputes List API with `target` to see details.
+          x-stripeNotPublic: true
         external_amount:
           required:
           - currency
@@ -652673,10 +654933,14 @@ components:
                   type: string
                   description: Open Enum. The reason the ReceivedDebit was returned.
                   enum:
+                  - dispute_won
                   - originator_initiated
                   x-stripeEnum:
                     kind: open
                     values:
+                    - description: Funds were returned because a Dispute on this ReceivedDebit
+                        was won.
+                      value: dispute_won
                     - description: Funds were returned due to a request for reversal
                         by the originating bank.
                       value: originator_initiated
@@ -659158,6 +661422,7 @@ components:
           - currency_conversion
           - debit_dispute
           - dispute
+          - dispute_adjustment
           - dispute_reversal
           - earned_credit
           - financing_paydown
@@ -659236,6 +661501,8 @@ components:
               value: debit_dispute
             - description: This Transaction is for a dispute of an InboundPayment.
               value: dispute
+            - description: This Transaction is for a dispute adjustment.
+              value: dispute_adjustment
             - description: This Transaction is for a dispute reversal.
               value: dispute_reversal
             - description: This Transaction is the main Transaction for an EarnedCredit.
@@ -659406,6 +661673,11 @@ components:
               description: "If applicable, the ID of the Dispute that created this\
                 \ Transaction."
               x-stripeNotPublic: true
+            dispute_adjustment:
+              type: string
+              description: "If applicable, the ID of the DisputeAdjustment that created\
+                \ this Transaction."
+              x-stripeNotPublic: true
             earned_credit:
               type: string
               description: "If applicable, the ID of the EarnedCredit that created\
@@ -659541,6 +661813,7 @@ components:
               - currency_conversion
               - debit_dispute
               - dispute
+              - dispute_adjustment
               - earned_credit
               - fee_batch
               - inbound_funding
@@ -659586,6 +661859,8 @@ components:
                   value: debit_dispute
                 - description: This Transaction was created by a Dispute.
                   value: dispute
+                - description: This Transaction was created by a DisputeAdjustment.
+                  value: dispute_adjustment
                 - description: This Transaction was created by an EarnedCredit.
                   value: earned_credit
                 - description: This Transaction was created by a FeeBatch.
@@ -660397,6 +662672,7 @@ components:
               - currency_conversion
               - debit_dispute
               - dispute
+              - dispute_adjustment
               - dispute_reversal
               - earned_credit
               - financing_paydown
@@ -660476,6 +662752,8 @@ components:
                   value: debit_dispute
                 - description: This Transaction is for a dispute of an InboundPayment.
                   value: dispute
+                - description: This Transaction is for a dispute adjustment.
+                  value: dispute_adjustment
                 - description: This Transaction is for a dispute reversal.
                   value: dispute_reversal
                 - description: This Transaction is the main Transaction for an EarnedCredit.
@@ -660630,6 +662908,11 @@ components:
                   description: "If applicable, the ID of the Dispute that created\
                     \ this Transaction."
                   x-stripeNotPublic: true
+                dispute_adjustment:
+                  type: string
+                  description: "If applicable, the ID of the DisputeAdjustment that\
+                    \ created this Transaction."
+                  x-stripeNotPublic: true
                 earned_credit:
                   type: string
                   description: "If applicable, the ID of the EarnedCredit that created\
@@ -660767,6 +663050,7 @@ components:
                   - currency_conversion
                   - debit_dispute
                   - dispute
+                  - dispute_adjustment
                   - earned_credit
                   - fee_batch
                   - inbound_funding
@@ -660812,6 +663096,8 @@ components:
                       value: debit_dispute
                     - description: This Transaction was created by a Dispute.
                       value: dispute
+                    - description: This Transaction was created by a DisputeAdjustment.
+                      value: dispute_adjustment
                     - description: This Transaction was created by an EarnedCredit.
                       value: earned_credit
                     - description: This Transaction was created by a FeeBatch.
