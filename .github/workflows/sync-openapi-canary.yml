@@ -6,9 +6,11 @@ on:
       version:
         required: true
         type: string
+      # Deprecated and ignored: every channel is synced best-effort. Kept until callers stop sending it.
       channel:
-        required: true
+        required: false
         type: string
+        default: all
       run_mode:
         required: false
         type: string
@@ -20,16 +22,10 @@ on:
         required: true
         type: string
       channel:
-        description: 'Canary spec channel or all channels'
-        required: true
-        type: choice
-        default: ga_and_public_preview
-        options:
-          - GA
-          - beta
-          - private-preview
-          - ga_and_public_preview
-          - all
+        description: 'Deprecated and ignored; every channel is synced best-effort'
+        required: false
+        type: string
+        default: all
       run_mode:
         description: 'Validate only or publish to master'
         required: true
@@ -52,9 +48,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Validate inputs and resolve channel
+      - name: Validate inputs
         env:
-          CHANNEL: ${{ inputs.channel }}
           RUN_MODE: ${{ inputs.run_mode }}
           VERSION: ${{ inputs.version }}
         run: |
@@ -69,36 +64,9 @@ jobs:
             exit 1
           }
 
-          case "$CHANNEL" in
-            GA)
-              mode=ga
-              channel_slug=ga
-              ;;
-            beta)
-              mode=public_preview
-              channel_slug=beta
-              ;;
-            private-preview)
-              mode=private_preview
-              channel_slug=private-preview
-              ;;
-            ga_and_public_preview)
-              mode=ga_and_public_preview
-              channel_slug=ga-and-public-preview
-              ;;
-            all)
-              mode=all
-              channel_slug=all
-              ;;
-            *)
-              echo "::error::Unknown canary channel: $CHANNEL"
-              exit 1
-              ;;
-          esac
-
           {
-            echo "MODE=$mode"
-            echo "CHANNEL_SLUG=$channel_slug"
+            echo "MODE=all"
+            echo "CHANNEL_SLUG=all"
           } >> "$GITHUB_ENV"
 
       - name: Fetch app installation token
@@ -155,3 +123,22 @@ jobs:
             -H "Content-Type: application/json" \
             https://api.github.com/repos/stripe/sdk-codegen/actions/workflows/update-openapi-canary.yml/dispatches \
             --data '{"ref":"master"}'
+
+      - name: Report blocked canary channels
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${FAILED_CHANNELS:-}" ]]; then
+            echo "All canary channels synced." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          {
+            echo "### Blocked canary channels"
+            echo
+            for channel in $FAILED_CHANNELS; do
+              echo "- \`${channel}\` kept its previous canary artifacts"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::Canary channels blocked: ${FAILED_CHANNELS}. They kept their previous canary artifacts; see the download step for the missing files."
+          exit 1
