@@ -31437,6 +31437,27 @@ components:
     dispute_evidence_details:
       description: ''
       properties:
+        appeal_method:
+          description: >-
+            If the dispute was eligible for appeal, whether the appeal was
+            submitted manually, with Smart Disputes, or not submitted.
+          enum:
+            - manual
+            - not_applicable
+            - not_submitted
+            - smart_disputes
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: The appeal was submitted manually.
+                value: manual
+              - description: Not eligible for appeal
+                value: not_applicable
+              - description: An appeal was available but never submitted.
+                value: not_submitted
+              - description: Stripe submitted the appeal through Smart Disputes.
+                value: smart_disputes
         due_by:
           description: >-
             Date by which evidence must be submitted in order to successfully
@@ -31482,6 +31503,7 @@ components:
       x-expandableFields:
         - enhanced_eligibility
       x-stripeMostCommon:
+        - appeal_method
         - due_by
         - enhanced_eligibility
         - has_evidence
@@ -42964,6 +42986,8 @@ components:
     invoice_rendering_template_block:
       description: ''
       properties:
+        custom_plain_text:
+          $ref: '#/components/schemas/invoice_rendering_template_custom_plain_text'
         custom_plain_text_cel:
           $ref: >-
             #/components/schemas/invoice_rendering_template_custom_plain_text_cel
@@ -42974,6 +42998,7 @@ components:
         type:
           description: The type of content block
           enum:
+            - custom_plain_text
             - custom_plain_text_cel
             - footer_content
             - invoice_details
@@ -42987,6 +43012,7 @@ components:
           x-stripeEnum:
             kind: open
             values:
+              - value: custom_plain_text
               - value: custom_plain_text_cel
               - value: footer_content
               - value: invoice_details
@@ -43002,11 +43028,27 @@ components:
       title: InvoiceRenderingTemplateBlock
       type: object
       x-expandableFields:
+        - custom_plain_text
         - custom_plain_text_cel
       x-stripeMostCommon:
+        - custom_plain_text
         - custom_plain_text_cel
         - key
         - type
+    invoice_rendering_template_custom_plain_text:
+      description: ''
+      properties:
+        plain_text:
+          description: Literal text to render, preserving whitespace and newlines.
+          maxLength: 10000
+          type: string
+      required:
+        - plain_text
+      title: InvoiceRenderingTemplateCustomPlainText
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - plain_text
     invoice_rendering_template_custom_plain_text_cel:
       description: ''
       properties:
@@ -45171,6 +45213,15 @@ components:
           maxLength: 5000
           nullable: true
           type: string
+        flexible_credential:
+          anyOf:
+            - $ref: '#/components/schemas/issuing_card_flexible_credential'
+          description: >-
+            Details about the flexible credential configuration for this card.
+            This is only populated when enrolled to flex credentials, and is
+            omitted unless you explicitly request it with
+            `include[]=flexible_credential`.
+          nullable: true
         id:
           description: Unique identifier for the object.
           maxLength: 5000
@@ -45386,6 +45437,7 @@ components:
       x-expandableFields:
         - cardholder
         - crypto_wallet
+        - flexible_credential
         - latest_fraud_warning
         - lifecycle_controls
         - personalization_design
@@ -50289,6 +50341,39 @@ components:
         - chain
         - currency
         - type
+    issuing_card_flexible_credential:
+      description: ''
+      properties:
+        secondary_credentials:
+          description: Details about the secondary credentials for this card.
+          items:
+            $ref: >-
+              #/components/schemas/issuing_card_flexible_credential_secondary_credential
+          type: array
+      title: IssuingCardFlexibleCredential
+      type: object
+      x-expandableFields:
+        - secondary_credentials
+      x-stripeMostCommon:
+        - secondary_credentials
+    issuing_card_flexible_credential_secondary_credential:
+      description: ''
+      properties:
+        funding:
+          description: The funding source that this credential can support.
+          enum:
+            - credit
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: Credit
+                value: credit
+      title: IssuingCardFlexibleCredentialSecondaryCredential
+      type: object
+      x-expandableFields: []
+      x-stripeMostCommon:
+        - funding
     issuing_card_fraud_warning:
       description: ''
       properties:
@@ -64217,6 +64302,12 @@ components:
       x-expandableFields: []
       x-stripeMostCommon:
         - mode
+    payment_flows_private_payment_methods_getflex_setup_attempt_details:
+      description: ''
+      properties: {}
+      title: PaymentFlowsPrivatePaymentMethodsGetflexSetupAttemptDetails
+      type: object
+      x-expandableFields: []
     payment_flows_private_payment_methods_gift_card_details_resource_balance:
       description: ''
       properties:
@@ -98844,8 +98935,7 @@ components:
         is_free_trial_transaction:
           description: >-
             The value you provided for whether this transaction starts a free
-            trial. This is null if you haven't explicitly set it.
-          nullable: true
+            trial. This field is omitted if you haven't explicitly set it.
           type: boolean
         session:
           description: >-
@@ -98903,8 +98993,7 @@ components:
         is_free_trial_transaction:
           description: >-
             The value you provided for whether this transaction starts a free
-            trial. This is null if you haven't explicitly set it.
-          nullable: true
+            trial. This field is omitted if you haven't explicitly set it.
           type: boolean
       title: RadarOptionsWithPevalOption
       type: object
@@ -102434,6 +102523,9 @@ components:
             #/components/schemas/setup_attempt_payment_method_details_card_present
         cashapp:
           $ref: '#/components/schemas/setup_attempt_payment_method_details_cashapp'
+        getflex:
+          $ref: >-
+            #/components/schemas/payment_flows_private_payment_methods_getflex_setup_attempt_details
         id_bank_transfer:
           $ref: >-
             #/components/schemas/setup_attempt_payment_method_details_id_bank_transfer
@@ -102509,6 +102601,7 @@ components:
         - card
         - card_present
         - cashapp
+        - getflex
         - id_bank_transfer
         - ideal
         - kakao_pay
@@ -102542,6 +102635,7 @@ components:
         - card
         - card_present
         - cashapp
+        - getflex
         - id_bank_transfer
         - ideal
         - kakao_pay
@@ -119926,11 +120020,56 @@ components:
         enable_customer_cancellation:
           description: Enable customer-initiated cancellation when refunding this payment.
           type: boolean
+        gift_card:
+          $ref: >-
+            #/components/schemas/terminal_reader_reader_resource_refund_payment_config_resource_gift_card
       title: RefundPaymentConfig
+      type: object
+      x-expandableFields:
+        - gift_card
+      x-stripeMostCommon:
+        - enable_customer_cancellation
+        - gift_card
+    terminal_reader_reader_resource_refund_payment_config_resource_gift_card:
+      description: Represents the destination gift card configuration for a refund
+      properties:
+        brand:
+          description: The brand of the destination gift card collected on the reader.
+          enum:
+            - svs
+          type: string
+          x-stripeBypassValidation: true
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: SVS gift card.
+                value: svs
+        operation_type:
+          description: The gift card operation to perform with the refund amount.
+          enum:
+            - activation
+            - reload
+          type: string
+          x-stripeEnum:
+            kind: closed
+            values:
+              - description: >-
+                  When set, a successful refund will activate the attached gift
+                  card with a balance equal to the amount refunded.
+                value: activation
+              - description: >-
+                  When set, a successful refund will reload balance to the
+                  attached gift card.
+                value: reload
+      required:
+        - brand
+        - operation_type
+      title: RefundPaymentGiftCardConfig
       type: object
       x-expandableFields: []
       x-stripeMostCommon:
-        - enable_customer_cancellation
+        - brand
+        - operation_type
     terminal_reader_reader_resource_reload_gift_card_action:
       description: Represents a reader action to reload a gift card
       properties:
@@ -133903,6 +134042,7 @@ paths:
                     - konbini_payments
                     - payments
                     - payouts
+                    - self_custodial_wallet
                     - sepa_debit_payments
                     - smart_disputes
                     - tax_forms
@@ -138263,6 +138403,7 @@ paths:
                     - konbini_payments
                     - payments
                     - payouts
+                    - self_custodial_wallet
                     - sepa_debit_payments
                     - smart_disputes
                     - tax_forms
@@ -161700,6 +161841,33 @@ paths:
                           x-stripeMostCommon:
                             - expires_at
                         setup_future_usage:
+                          description: >-
+                            Indicates that you intend to make future payments
+                            with this PaymentIntent's payment method.
+
+
+                            If you provide a Customer with the PaymentIntent,
+                            you can use this parameter to [attach the payment
+                            method](/payments/save-during-payment) to the
+                            Customer after the PaymentIntent is confirmed and
+                            the customer completes any required actions. If you
+                            don't provide a Customer, you can still
+                            [attach](/api/payment_methods/attach) the payment
+                            method to a Customer after the transaction
+                            completes.
+
+
+                            If the payment method is `card_present` and isn't a
+                            digital wallet, Stripe creates and attaches a
+                            [generated_card](/api/charges/object#charge_object-payment_method_details-card_present-generated_card)
+                            payment method representing the card to the Customer
+                            instead.
+
+
+                            When processing card payments, Stripe uses
+                            `setup_future_usage` to help you comply with
+                            regional legislation and network rules, such as
+                            [SCA](/strong-customer-authentication).
                           enum:
                             - ''
                             - none
@@ -186367,6 +186535,27 @@ paths:
                           anyOf:
                             - items:
                                 properties:
+                                  custom_plain_text:
+                                    description: >-
+                                      Configuration for a repeatable literal
+                                      text block. Omit this hash on a keyed
+                                      update to retain saved text; supply it to
+                                      replace the text.
+                                    properties:
+                                      plain_text:
+                                        description: >-
+                                          Literal text to render, preserving
+                                          whitespace and newlines. Required, at
+                                          most 10,000 characters; an empty string
+                                          renders no text.
+                                        maxLength: 10000
+                                        type: string
+                                    required:
+                                      - plain_text
+                                    title: custom_plain_text_configuration
+                                    type: object
+                                    x-stripeMostCommon:
+                                      - plain_text
                                   custom_plain_text_cel:
                                     description: Configuration for a custom CEL text block.
                                     properties:
@@ -186391,6 +186580,7 @@ paths:
                                   type:
                                     description: The type of content block.
                                     enum:
+                                      - custom_plain_text
                                       - custom_plain_text_cel
                                       - footer_content
                                       - invoice_details
@@ -186407,6 +186597,7 @@ paths:
                                 title: block_entry
                                 type: object
                                 x-stripeMostCommon:
+                                  - custom_plain_text
                                   - custom_plain_text_cel
                                   - key
                                   - type
@@ -186415,8 +186606,9 @@ paths:
                                 - ''
                               type: string
                           description: >-
-                            Ordered invoice PDF blocks. A maximum of 20 blocks
-                            is allowed.
+                            Ordered invoice PDF blocks, at most 20. Include
+                            every default type exactly once; custom text blocks
+                            may repeat.
                       title: invoice_pdf_settings
                       type: object
                       x-stripeMostCommon:
@@ -186636,6 +186828,27 @@ paths:
                           anyOf:
                             - items:
                                 properties:
+                                  custom_plain_text:
+                                    description: >-
+                                      Configuration for a repeatable literal
+                                      text block. Omit this hash on a keyed
+                                      update to retain saved text; supply it to
+                                      replace the text.
+                                    properties:
+                                      plain_text:
+                                        description: >-
+                                          Literal text to render, preserving
+                                          whitespace and newlines. Required, at
+                                          most 10,000 characters; an empty string
+                                          renders no text.
+                                        maxLength: 10000
+                                        type: string
+                                    required:
+                                      - plain_text
+                                    title: custom_plain_text_configuration
+                                    type: object
+                                    x-stripeMostCommon:
+                                      - plain_text
                                   custom_plain_text_cel:
                                     description: Configuration for a custom CEL text block.
                                     properties:
@@ -186666,6 +186879,7 @@ paths:
                                       retain the existing type; if supplied, it
                                       must match.
                                     enum:
+                                      - custom_plain_text
                                       - custom_plain_text_cel
                                       - footer_content
                                       - invoice_details
@@ -186680,6 +186894,7 @@ paths:
                                 title: update_block_entry
                                 type: object
                                 x-stripeMostCommon:
+                                  - custom_plain_text
                                   - custom_plain_text_cel
                                   - key
                                   - type
@@ -186688,8 +186903,12 @@ paths:
                                 - ''
                               type: string
                           description: >-
-                            Ordered invoice PDF blocks. A maximum of 20 blocks
-                            is allowed.
+                            The complete replacement order of at most 20 invoice
+                            PDF blocks. Keys retain saved configuration when its
+                            hash is omitted. Omitted custom blocks are removed;
+                            include every default type exactly once. Omit blocks
+                            to preserve settings, or supply an empty string to
+                            reset to defaults.
                       title: update_invoice_pdf_settings
                       type: object
                       x-stripeMostCommon:
@@ -351691,10 +351910,58 @@ paths:
                     enable_customer_cancellation:
                       description: Enables cancel button on transaction screens.
                       type: boolean
+                    gift_card:
+                      description: >-
+                        Collect a destination gift card on the reader to reload
+                        or activate with the refund amount. If omitted, refund
+                        the original gift card without collecting card data.
+                      properties:
+                        brand:
+                          description: >-
+                            The brand of the destination gift card to collect on
+                            the reader.
+                          enum:
+                            - svs
+                          type: string
+                          x-stripeBypassValidation: true
+                          x-stripeEnum:
+                            kind: open
+                            values:
+                              - description: SVS gift card.
+                                value: svs
+                        operation_type:
+                          description: >-
+                            The gift card operation to perform with the refund
+                            amount.
+                          enum:
+                            - activation
+                            - reload
+                          type: string
+                          x-stripeEnum:
+                            kind: closed
+                            values:
+                              - description: >-
+                                  When set, a successful refund will activate
+                                  the attached gift card with a balance equal to
+                                  the amount refunded.
+                                value: activation
+                              - description: >-
+                                  When set, a successful refund will reload
+                                  balance to the attached gift card.
+                                value: reload
+                      required:
+                        - brand
+                        - operation_type
+                      title: refund_payment_gift_card
+                      type: object
+                      x-stripeMostCommon:
+                        - brand
+                        - operation_type
                   title: refund_payment_config
                   type: object
                   x-stripeMostCommon:
                     - enable_customer_cancellation
+                    - gift_card
                 reverse_transfer:
                   description: >-
                     Boolean indicating whether the transfer should be reversed

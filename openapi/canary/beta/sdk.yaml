@@ -165715,8 +165715,10 @@ paths:
                         properties:
                           ca_certificate_file:
                             type: string
-                            description: A File ID representing a PEM file containing
-                              the server certificate
+                            description: "A File ID representing a PEM file containing\
+                              \ the server certificate. The certificate is not currently\
+                              \ used to validate the identity of the server, but will\
+                              \ be used in a future device update."
                           password:
                             maxLength: 5000
                             type: string
@@ -166797,8 +166799,10 @@ paths:
                         properties:
                           ca_certificate_file:
                             type: string
-                            description: A File ID representing a PEM file containing
-                              the server certificate
+                            description: "A File ID representing a PEM file containing\
+                              \ the server certificate. The certificate is not currently\
+                              \ used to validate the identity of the server, but will\
+                              \ be used in a future device update."
                           password:
                             maxLength: 5000
                             type: string
@@ -209620,6 +209624,7 @@ paths:
                 - $ref: '#/components/schemas/v2.error.idempotency_error'
                 - $ref: '#/components/schemas/v2.error.query_run_api_inaccessible'
                 - $ref: '#/components/schemas/v2.error.query_run_concurrency_limit_exceeded'
+                - $ref: '#/components/schemas/v2.error.query_run_egress_limit_exceeded'
                 - $ref: '#/components/schemas/v2.error.query_run_invalid_parameters'
                 - $ref: '#/components/schemas/v2.error.query_run_invalid_sql'
                 - $ref: '#/components/schemas/v2.error.query_run_submit_rate_limit_exceeded'
@@ -209669,6 +209674,13 @@ paths:
           Returned when an API key has reached its limit of concurrently running query runs.
           Wait for existing query runs to complete before retrying; this is unaffected by the
           request rate.
+        httpStatusCode: 429
+      - code: query_run_egress_limit_exceeded
+        description: |-
+          Returned when the account or organization has already received its daily or weekly limit of
+          query run and report run result data, which both APIs share. Days are UTC days; weeks are
+          7-day windows starting Thursday 00:00 UTC. Retry after the reset time in the message; this is
+          unaffected by the request rate or by how many query runs are in flight.
         httpStatusCode: 429
       - code: query_run_invalid_parameters
         description: |-
@@ -209990,6 +210002,7 @@ paths:
                 - $ref: '#/components/schemas/v2.error.not_found'
                 - $ref: '#/components/schemas/v2.error.report_inaccessible'
                 - $ref: '#/components/schemas/v2.error.report_run_concurrency_limit_exceeded'
+                - $ref: '#/components/schemas/v2.error.report_run_egress_limit_exceeded'
                 - $ref: '#/components/schemas/v2.error.report_run_invalid_parameter_value'
                 - $ref: '#/components/schemas/v2.error.report_run_missing_required_parameter'
                 - $ref: '#/components/schemas/v2.error.report_run_submit_rate_limit_exceeded'
@@ -210039,6 +210052,13 @@ paths:
           Returned when an API key has reached its limit of concurrently running report runs.
           Wait for existing report runs to complete before retrying; this is unaffected by the
           request rate.
+        httpStatusCode: 429
+      - code: report_run_egress_limit_exceeded
+        description: |-
+          Returned when the account or organization has already received its daily or weekly limit of
+          query run and report run result data, which both APIs share. Days are UTC days; weeks are
+          7-day windows starting Thursday 00:00 UTC. Retry after the reset time in the message; this is
+          unaffected by the request rate or by how many report runs are in flight.
         httpStatusCode: 429
       - code: report_run_invalid_parameter_value
         description: Returned when a `CreateReportRun` request provides an invalid
@@ -314773,7 +314793,9 @@ components:
         ca_certificate_file:
           maxLength: 5000
           type: string
-          description: A File ID representing a PEM file containing the server certificate
+          description: "A File ID representing a PEM file containing the server certificate.\
+            \ The certificate is not currently used to validate the identity of the\
+            \ server, but will be used in a future device update."
         password:
           maxLength: 5000
           type: string
@@ -416675,6 +416697,36 @@ components:
       x-stripeError:
         code: query_run_concurrency_limit_exceeded
         httpStatusCode: 429
+    v2.error.query_run_egress_limit_exceeded:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - message
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - query_run_egress_limit_exceeded
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+          description: Information about the error that occurred
+      description: |-
+        Returned when the account or organization has already received its daily or weekly limit of
+        query run and report run result data, which both APIs share. Days are UTC days; weeks are
+        7-day windows starting Thursday 00:00 UTC. Retry after the reset time in the message; this is
+        unaffected by the request rate or by how many query runs are in flight.
+      x-stripeError:
+        code: query_run_egress_limit_exceeded
+        httpStatusCode: 429
     v2.error.query_run_invalid_parameters:
       required:
       - error
@@ -417291,6 +417343,36 @@ components:
         request rate.
       x-stripeError:
         code: report_run_concurrency_limit_exceeded
+        httpStatusCode: 429
+    v2.error.report_run_egress_limit_exceeded:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - message
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - report_run_egress_limit_exceeded
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+          description: Information about the error that occurred
+      description: |-
+        Returned when the account or organization has already received its daily or weekly limit of
+        query run and report run result data, which both APIs share. Days are UTC days; weeks are
+        7-day windows starting Thursday 00:00 UTC. Retry after the reset time in the message; this is
+        unaffected by the request rate or by how many report runs are in flight.
+      x-stripeError:
+        code: report_run_egress_limit_exceeded
         httpStatusCode: 429
     v2.error.report_run_invalid_parameter_value:
       required:

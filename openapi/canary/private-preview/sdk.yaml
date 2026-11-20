@@ -5918,6 +5918,7 @@ paths:
                   - konbini_payments
                   - payments
                   - payouts
+                  - self_custodial_wallet
                   - sepa_debit_payments
                   - smart_disputes
                   - tax_forms
@@ -9810,6 +9811,7 @@ paths:
                   - konbini_payments
                   - payments
                   - payouts
+                  - self_custodial_wallet
                   - sepa_debit_payments
                   - smart_disputes
                   - tax_forms
@@ -31478,6 +31480,14 @@ paths:
                           - expires_at
                         setup_future_usage:
                           type: string
+                          description: |-
+                            Indicates that you intend to make future payments with this PaymentIntent's payment method.
+
+                            If you provide a Customer with the PaymentIntent, you can use this parameter to [attach the payment method](/payments/save-during-payment) to the Customer after the PaymentIntent is confirmed and the customer completes any required actions. If you don't provide a Customer, you can still [attach](/api/payment_methods/attach) the payment method to a Customer after the transaction completes.
+
+                            If the payment method is `card_present` and isn't a digital wallet, Stripe creates and attaches a [generated_card](/api/charges/object#charge_object-payment_method_details-card_present-generated_card) payment method representing the card to the Customer instead.
+
+                            When processing card payments, Stripe uses `setup_future_usage` to help you comply with regional legislation and network rules, such as [SCA](/strong-customer-authentication).
                           enum:
                           - ""
                           - none
@@ -53905,8 +53915,9 @@ paths:
                       type: object
                       properties:
                         blocks:
-                          description: Ordered invoice PDF blocks. A maximum of 20
-                            blocks is allowed.
+                          description: "Ordered invoice PDF blocks, at most 20. Include\
+                            \ every default type exactly once; custom text blocks\
+                            \ may repeat."
                           anyOf:
                           - type: array
                             items:
@@ -53915,6 +53926,24 @@ paths:
                               - type
                               type: object
                               properties:
+                                custom_plain_text:
+                                  title: custom_plain_text_configuration
+                                  required:
+                                  - plain_text
+                                  type: object
+                                  properties:
+                                    plain_text:
+                                      maxLength: 10000
+                                      type: string
+                                      description: "Literal text to render, preserving\
+                                        \ whitespace and newlines. Required, at most\
+                                        \ 10,000 characters; an empty string renders\
+                                        \ no text."
+                                  description: Configuration for a repeatable literal
+                                    text block. Omit this hash on a keyed update to
+                                    retain saved text; supply it to replace the text.
+                                  x-stripeMostCommon:
+                                  - plain_text
                                 custom_plain_text_cel:
                                   title: custom_plain_text_cel_configuration
                                   required:
@@ -53940,6 +53969,7 @@ paths:
                                   type: string
                                   description: The type of content block.
                                   enum:
+                                  - custom_plain_text
                                   - custom_plain_text_cel
                                   - footer_content
                                   - invoice_details
@@ -53950,6 +53980,7 @@ paths:
                                   - tax_footnotes
                                   - title_and_logo
                               x-stripeMostCommon:
+                              - custom_plain_text
                               - custom_plain_text_cel
                               - key
                               - type
@@ -54162,14 +54193,36 @@ paths:
                       type: object
                       properties:
                         blocks:
-                          description: Ordered invoice PDF blocks. A maximum of 20
-                            blocks is allowed.
+                          description: "The complete replacement order of at most\
+                            \ 20 invoice PDF blocks. Keys retain saved configuration\
+                            \ when its hash is omitted. Omitted custom blocks are\
+                            \ removed; include every default type exactly once. Omit\
+                            \ blocks to preserve settings, or supply an empty string\
+                            \ to reset to defaults."
                           anyOf:
                           - type: array
                             items:
                               title: update_block_entry
                               type: object
                               properties:
+                                custom_plain_text:
+                                  title: custom_plain_text_configuration
+                                  required:
+                                  - plain_text
+                                  type: object
+                                  properties:
+                                    plain_text:
+                                      maxLength: 10000
+                                      type: string
+                                      description: "Literal text to render, preserving\
+                                        \ whitespace and newlines. Required, at most\
+                                        \ 10,000 characters; an empty string renders\
+                                        \ no text."
+                                  description: Configuration for a repeatable literal
+                                    text block. Omit this hash on a keyed update to
+                                    retain saved text; supply it to replace the text.
+                                  x-stripeMostCommon:
+                                  - plain_text
                                 custom_plain_text_cel:
                                   title: custom_plain_text_cel_configuration
                                   required:
@@ -54199,6 +54252,7 @@ paths:
                                     \ For a matching key, omit type to retain the\
                                     \ existing type; if supplied, it must match."
                                   enum:
+                                  - custom_plain_text
                                   - custom_plain_text_cel
                                   - footer_content
                                   - invoice_details
@@ -54209,6 +54263,7 @@ paths:
                                   - tax_footnotes
                                   - title_and_logo
                               x-stripeMostCommon:
+                              - custom_plain_text
                               - custom_plain_text_cel
                               - key
                               - type
@@ -200625,10 +200680,53 @@ paths:
                     enable_customer_cancellation:
                       type: boolean
                       description: Enables cancel button on transaction screens.
+                    gift_card:
+                      title: refund_payment_gift_card
+                      required:
+                      - brand
+                      - operation_type
+                      type: object
+                      properties:
+                        brand:
+                          type: string
+                          description: The brand of the destination gift card to collect
+                            on the reader.
+                          enum:
+                          - svs
+                          x-stripeBypassValidation: true
+                          x-stripeEnum:
+                            kind: open
+                            values:
+                            - description: SVS gift card.
+                              value: svs
+                        operation_type:
+                          type: string
+                          description: The gift card operation to perform with the
+                            refund amount.
+                          enum:
+                          - activation
+                          - reload
+                          x-stripeEnum:
+                            kind: closed
+                            values:
+                            - description: "When set, a successful refund will activate\
+                                \ the attached gift card with a balance equal to the\
+                                \ amount refunded."
+                              value: activation
+                            - description: "When set, a successful refund will reload\
+                                \ balance to the attached gift card."
+                              value: reload
+                      description: "Collect a destination gift card on the reader\
+                        \ to reload or activate with the refund amount. If omitted,\
+                        \ refund the original gift card without collecting card data."
+                      x-stripeMostCommon:
+                      - brand
+                      - operation_type
                   description: "Configuration overrides for this refund, such as customer\
                     \ cancellation settings."
                   x-stripeMostCommon:
                   - enable_customer_cancellation
+                  - gift_card
                 reverse_transfer:
                   type: boolean
                   description: Boolean indicating whether the transfer should be reversed
@@ -252830,6 +252928,61 @@ paths:
                               description: Details on the Account's acceptance of
                                 Treasury-specific terms of service.
                               x-stripeNotPublic: true
+                            self_custodial_wallet:
+                              type: object
+                              properties:
+                                account:
+                                  required:
+                                  - date
+                                  - ip
+                                  type: object
+                                  properties:
+                                    date:
+                                      type: string
+                                      description: "The time when the Account's representative\
+                                        \ accepted the terms of service. Represented\
+                                        \ as a RFC 3339 date & time UTC value in millisecond\
+                                        \ precision, for example: 2022-09-18T13:22:18.123Z."
+                                      format: date-time
+                                    ip:
+                                      type: string
+                                      description: The IP address from which the Account's
+                                        representative accepted the terms of service.
+                                    user_agent:
+                                      type: string
+                                      description: The user agent of the browser from
+                                        which the Account's representative accepted
+                                        the terms of service.
+                                  description: Details on the Account's acceptance
+                                    of the Privy End User Terms.
+                                platform:
+                                  required:
+                                  - date
+                                  - ip
+                                  type: object
+                                  properties:
+                                    date:
+                                      type: string
+                                      description: "The time when the Account's representative\
+                                        \ accepted the terms of service. Represented\
+                                        \ as a RFC 3339 date & time UTC value in millisecond\
+                                        \ precision, for example: 2022-09-18T13:22:18.123Z."
+                                      format: date-time
+                                    ip:
+                                      type: string
+                                      description: The IP address from which the Account's
+                                        representative accepted the terms of service.
+                                    user_agent:
+                                      type: string
+                                      description: The user agent of the browser from
+                                        which the Account's representative accepted
+                                        the terms of service.
+                                  description: Details on the Account's acceptance
+                                    of the platform's self-custodial wallet terms
+                                    of service.
+                              description: Details on the Account's acceptance of
+                                self-custodial wallet terms of service.
+                              x-stripeNotPublic: true
                           description: Attestations of accepted terms of service agreements.
                       description: "Attestations from the identity's key people, e.g.\
                         \ owners, executives, directors, representatives."
@@ -268217,6 +268370,55 @@ paths:
                                     terms of service.
                               description: Details on the Account's acceptance of
                                 Treasury-specific terms of service.
+                            self_custodial_wallet:
+                              type: object
+                              properties:
+                                account:
+                                  type: object
+                                  properties:
+                                    date:
+                                      type: string
+                                      description: "The time when the Account's representative\
+                                        \ accepted the terms of service. Represented\
+                                        \ as a RFC 3339 date & time UTC value in millisecond\
+                                        \ precision, for example: 2022-09-18T13:22:18.123Z."
+                                      format: date-time
+                                    ip:
+                                      type: string
+                                      description: The IP address from which the Account's
+                                        representative accepted the terms of service.
+                                    user_agent:
+                                      type: string
+                                      description: The user agent of the browser from
+                                        which the Account's representative accepted
+                                        the terms of service.
+                                  description: Details on the Account's acceptance
+                                    of the Privy End User Terms.
+                                platform:
+                                  type: object
+                                  properties:
+                                    date:
+                                      type: string
+                                      description: "The time when the Account's representative\
+                                        \ accepted the terms of service. Represented\
+                                        \ as a RFC 3339 date & time UTC value in millisecond\
+                                        \ precision, for example: 2022-09-18T13:22:18.123Z."
+                                      format: date-time
+                                    ip:
+                                      type: string
+                                      description: The IP address from which the Account's
+                                        representative accepted the terms of service.
+                                    user_agent:
+                                      type: string
+                                      description: The user agent of the browser from
+                                        which the Account's representative accepted
+                                        the terms of service.
+                                  description: Details on the Account's acceptance
+                                    of the platform's self-custodial wallet terms
+                                    of service.
+                              description: Partial updates to the Account's self-custodial
+                                wallet terms of service acceptances.
+                              x-stripeNotPublic: true
                           description: Attestations of accepted terms of service agreements.
                       description: "Attestations from the identity's key people, e.g.\
                         \ owners, executives, directors, representatives."
@@ -278015,6 +278217,7 @@ paths:
                 - $ref: '#/components/schemas/v2.error.idempotency_error'
                 - $ref: '#/components/schemas/v2.error.query_run_api_inaccessible'
                 - $ref: '#/components/schemas/v2.error.query_run_concurrency_limit_exceeded'
+                - $ref: '#/components/schemas/v2.error.query_run_egress_limit_exceeded'
                 - $ref: '#/components/schemas/v2.error.query_run_invalid_parameters'
                 - $ref: '#/components/schemas/v2.error.query_run_invalid_sql'
                 - $ref: '#/components/schemas/v2.error.query_run_submit_rate_limit_exceeded'
@@ -278064,6 +278267,13 @@ paths:
           Returned when an API key has reached its limit of concurrently running query runs.
           Wait for existing query runs to complete before retrying; this is unaffected by the
           request rate.
+        httpStatusCode: 429
+      - code: query_run_egress_limit_exceeded
+        description: |-
+          Returned when the account or organization has already received its daily or weekly limit of
+          query run and report run result data, which both APIs share. Days are UTC days; weeks are
+          7-day windows starting Thursday 00:00 UTC. Retry after the window resets; this is unaffected
+          by the request rate or by how many query runs are in flight.
         httpStatusCode: 429
       - code: query_run_invalid_parameters
         description: |-
@@ -278389,6 +278599,7 @@ paths:
                 - $ref: '#/components/schemas/v2.error.not_found'
                 - $ref: '#/components/schemas/v2.error.report_inaccessible'
                 - $ref: '#/components/schemas/v2.error.report_run_concurrency_limit_exceeded'
+                - $ref: '#/components/schemas/v2.error.report_run_egress_limit_exceeded'
                 - $ref: '#/components/schemas/v2.error.report_run_invalid_parameter_value'
                 - $ref: '#/components/schemas/v2.error.report_run_missing_required_parameter'
                 - $ref: '#/components/schemas/v2.error.report_run_submit_rate_limit_exceeded'
@@ -278438,6 +278649,13 @@ paths:
           Returned when an API key has reached its limit of concurrently running report runs.
           Wait for existing report runs to complete before retrying; this is unaffected by the
           request rate.
+        httpStatusCode: 429
+      - code: report_run_egress_limit_exceeded
+        description: |-
+          Returned when the account or organization has already received its daily or weekly limit of
+          query run and report run result data, which both APIs share. Days are UTC days; weeks are
+          7-day windows starting Thursday 00:00 UTC. Retry after the window resets; this is unaffected
+          by the request rate or by how many report runs are in flight.
         httpStatusCode: 429
       - code: report_run_invalid_parameter_value
         description: Returned when a `CreateReportRun` request provides an invalid
@@ -339741,6 +339959,26 @@ components:
       - submission_method
       type: object
       properties:
+        appeal_method:
+          type: string
+          description: "If the dispute was eligible for appeal, whether the appeal\
+            \ was submitted manually, with Smart Disputes, or not submitted."
+          enum:
+          - manual
+          - not_applicable
+          - not_submitted
+          - smart_disputes
+          x-stripeEnum:
+            kind: open
+            values:
+            - description: The appeal was submitted manually.
+              value: manual
+            - description: Not eligible for appeal
+              value: not_applicable
+            - description: An appeal was available but never submitted.
+              value: not_submitted
+            - description: Stripe submitted the appeal through Smart Disputes.
+              value: smart_disputes
         due_by:
           type: integer
           description: Date by which evidence must be submitted in order to successfully
@@ -339774,6 +340012,7 @@ components:
       x-expandableFields:
       - enhanced_eligibility
       x-stripeMostCommon:
+      - appeal_method
       - due_by
       - enhanced_eligibility
       - has_evidence
@@ -350468,6 +350707,8 @@ components:
       - type
       type: object
       properties:
+        custom_plain_text:
+          $ref: '#/components/schemas/invoice_rendering_template_custom_plain_text'
         custom_plain_text_cel:
           $ref: '#/components/schemas/invoice_rendering_template_custom_plain_text_cel'
         key:
@@ -350478,6 +350719,7 @@ components:
           type: string
           description: The type of content block
           enum:
+          - custom_plain_text
           - custom_plain_text_cel
           - footer_content
           - invoice_details
@@ -350490,6 +350732,7 @@ components:
           x-stripeEnum:
             kind: open
             values:
+            - value: custom_plain_text
             - value: custom_plain_text_cel
             - value: footer_content
             - value: invoice_details
@@ -350501,11 +350744,27 @@ components:
             - value: title_and_logo
       description: ""
       x-expandableFields:
+      - custom_plain_text
       - custom_plain_text_cel
       x-stripeMostCommon:
+      - custom_plain_text
       - custom_plain_text_cel
       - key
       - type
+    invoice_rendering_template_custom_plain_text:
+      title: InvoiceRenderingTemplateCustomPlainText
+      required:
+      - plain_text
+      type: object
+      properties:
+        plain_text:
+          maxLength: 10000
+          type: string
+          description: "Literal text to render, preserving whitespace and newlines."
+      description: ""
+      x-expandableFields: []
+      x-stripeMostCommon:
+      - plain_text
     invoice_rendering_template_custom_plain_text_cel:
       title: InvoiceRenderingTemplateCustomPlainTextCel
       required:
@@ -352525,6 +352784,13 @@ components:
           type: string
           description: The financial account this card is attached to.
           nullable: true
+        flexible_credential:
+          description: "Details about the flexible credential configuration for this\
+            \ card. This is only populated when enrolled to flex credentials, and\
+            \ is omitted unless you explicitly request it with `include[]=flexible_credential`."
+          nullable: true
+          anyOf:
+          - $ref: '#/components/schemas/issuing_card_flexible_credential'
         id:
           maxLength: 5000
           type: string
@@ -352696,6 +352962,7 @@ components:
       x-expandableFields:
       - cardholder
       - crypto_wallet
+      - flexible_credential
       - latest_fraud_warning
       - lifecycle_controls
       - personalization_design
@@ -357321,6 +357588,38 @@ components:
       - chain
       - currency
       - type
+    issuing_card_flexible_credential:
+      title: IssuingCardFlexibleCredential
+      type: object
+      properties:
+        secondary_credentials:
+          type: array
+          description: Details about the secondary credentials for this card.
+          items:
+            $ref: '#/components/schemas/issuing_card_flexible_credential_secondary_credential'
+      description: ""
+      x-expandableFields:
+      - secondary_credentials
+      x-stripeMostCommon:
+      - secondary_credentials
+    issuing_card_flexible_credential_secondary_credential:
+      title: IssuingCardFlexibleCredentialSecondaryCredential
+      type: object
+      properties:
+        funding:
+          type: string
+          description: The funding source that this credential can support.
+          enum:
+          - credit
+          x-stripeEnum:
+            kind: open
+            values:
+            - description: Credit
+              value: credit
+      description: ""
+      x-expandableFields: []
+      x-stripeMostCommon:
+      - funding
     issuing_card_fraud_warning:
       title: IssuingCardFraudWarning
       required:
@@ -370518,6 +370817,12 @@ components:
       x-expandableFields: []
       x-stripeMostCommon:
       - mode
+    payment_flows_private_payment_methods_getflex_setup_attempt_details:
+      title: PaymentFlowsPrivatePaymentMethodsGetflexSetupAttemptDetails
+      type: object
+      properties: {}
+      description: ""
+      x-expandableFields: []
     payment_flows_private_payment_methods_gift_card_details_resource_balance:
       title: PaymentFlowsPrivatePaymentMethodsGiftCardDetailsResourceBalance
       required:
@@ -401794,8 +402099,7 @@ components:
         is_free_trial_transaction:
           type: boolean
           description: The value you provided for whether this transaction starts
-            a free trial. This is null if you haven't explicitly set it.
-          nullable: true
+            a free trial. This field is omitted if you haven't explicitly set it.
         session:
           maxLength: 5000
           type: string
@@ -401847,8 +402151,7 @@ components:
         is_free_trial_transaction:
           type: boolean
           description: The value you provided for whether this transaction starts
-            a free trial. This is null if you haven't explicitly set it.
-          nullable: true
+            a free trial. This field is omitted if you haven't explicitly set it.
       description: Options to configure Radar.
       x-expandableFields: []
       x-stripeMostCommon:
@@ -405147,6 +405450,8 @@ components:
           $ref: '#/components/schemas/setup_attempt_payment_method_details_card_present'
         cashapp:
           $ref: '#/components/schemas/setup_attempt_payment_method_details_cashapp'
+        getflex:
+          $ref: '#/components/schemas/payment_flows_private_payment_methods_getflex_setup_attempt_details'
         id_bank_transfer:
           $ref: '#/components/schemas/setup_attempt_payment_method_details_id_bank_transfer'
         ideal:
@@ -405210,6 +405515,7 @@ components:
       - card
       - card_present
       - cashapp
+      - getflex
       - id_bank_transfer
       - ideal
       - kakao_pay
@@ -405243,6 +405549,7 @@ components:
       - card
       - card_present
       - cashapp
+      - getflex
       - id_bank_transfer
       - ideal
       - kakao_pay
@@ -421317,10 +421624,52 @@ components:
           type: boolean
           description: Enable customer-initiated cancellation when refunding this
             payment.
+        gift_card:
+          $ref: '#/components/schemas/terminal_reader_reader_resource_refund_payment_config_resource_gift_card'
       description: Represents a per-transaction override of a reader configuration
-      x-expandableFields: []
+      x-expandableFields:
+      - gift_card
       x-stripeMostCommon:
       - enable_customer_cancellation
+      - gift_card
+    terminal_reader_reader_resource_refund_payment_config_resource_gift_card:
+      title: RefundPaymentGiftCardConfig
+      required:
+      - brand
+      - operation_type
+      type: object
+      properties:
+        brand:
+          type: string
+          description: The brand of the destination gift card collected on the reader.
+          enum:
+          - svs
+          x-stripeBypassValidation: true
+          x-stripeEnum:
+            kind: open
+            values:
+            - description: SVS gift card.
+              value: svs
+        operation_type:
+          type: string
+          description: The gift card operation to perform with the refund amount.
+          enum:
+          - activation
+          - reload
+          x-stripeEnum:
+            kind: closed
+            values:
+            - description: "When set, a successful refund will activate the attached\
+                \ gift card with a balance equal to the amount refunded."
+              value: activation
+            - description: "When set, a successful refund will reload balance to the\
+                \ attached gift card."
+              value: reload
+      description: Represents the destination gift card configuration for a refund
+      x-expandableFields: []
+      x-stripeMostCommon:
+      - brand
+      - operation_type
     terminal_reader_reader_resource_reload_gift_card_action:
       title: ReloadGiftCardReaderAction
       type: object
@@ -555404,6 +555753,55 @@ components:
                       description: Details on the Account's acceptance of Treasury-specific
                         terms of service.
                       x-stripeNotPublic: true
+                    self_custodial_wallet:
+                      type: object
+                      properties:
+                        account:
+                          type: object
+                          properties:
+                            date:
+                              type: string
+                              description: "The time when the Account's representative\
+                                \ accepted the terms of service. Represented as a\
+                                \ RFC 3339 date & time UTC value in millisecond precision,\
+                                \ for example: 2022-09-18T13:22:18.123Z."
+                              format: date-time
+                            ip:
+                              type: string
+                              description: The IP address from which the Account's
+                                representative accepted the terms of service.
+                            user_agent:
+                              type: string
+                              description: The user agent of the browser from which
+                                the Account's representative accepted the terms of
+                                service.
+                          description: Details on the Account's acceptance of the
+                            Privy End User Terms.
+                        platform:
+                          type: object
+                          properties:
+                            date:
+                              type: string
+                              description: "The time when the Account's representative\
+                                \ accepted the terms of service. Represented as a\
+                                \ RFC 3339 date & time UTC value in millisecond precision,\
+                                \ for example: 2022-09-18T13:22:18.123Z."
+                              format: date-time
+                            ip:
+                              type: string
+                              description: The IP address from which the Account's
+                                representative accepted the terms of service.
+                            user_agent:
+                              type: string
+                              description: The user agent of the browser from which
+                                the Account's representative accepted the terms of
+                                service.
+                          description: Details on the Account's acceptance of the
+                            platform's self-custodial wallet terms of service.
+                      description: Details on the Account's acceptance of self-custodial
+                        wallet terms of service. Absent when neither acceptance is
+                        recorded.
+                      x-stripeNotPublic: true
                   description: Attestations of accepted terms of service agreements.
               description: "Attestations from the identity's key people, e.g. owners,\
                 \ executives, directors, representatives."
@@ -614827,6 +615225,36 @@ components:
       x-stripeError:
         code: query_run_concurrency_limit_exceeded
         httpStatusCode: 429
+    v2.error.query_run_egress_limit_exceeded:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - message
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - query_run_egress_limit_exceeded
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+          description: Information about the error that occurred
+      description: |-
+        Returned when the account or organization has already received its daily or weekly limit of
+        query run and report run result data, which both APIs share. Days are UTC days; weeks are
+        7-day windows starting Thursday 00:00 UTC. Retry after the window resets; this is unaffected
+        by the request rate or by how many query runs are in flight.
+      x-stripeError:
+        code: query_run_egress_limit_exceeded
+        httpStatusCode: 429
     v2.error.query_run_invalid_parameters:
       required:
       - error
@@ -615766,6 +616194,36 @@ components:
         request rate.
       x-stripeError:
         code: report_run_concurrency_limit_exceeded
+        httpStatusCode: 429
+    v2.error.report_run_egress_limit_exceeded:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - message
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - report_run_egress_limit_exceeded
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+          description: Information about the error that occurred
+      description: |-
+        Returned when the account or organization has already received its daily or weekly limit of
+        query run and report run result data, which both APIs share. Days are UTC days; weeks are
+        7-day windows starting Thursday 00:00 UTC. Retry after the window resets; this is unaffected
+        by the request rate or by how many report runs are in flight.
+      x-stripeError:
+        code: report_run_egress_limit_exceeded
         httpStatusCode: 429
     v2.error.report_run_invalid_parameter_value:
       required:
