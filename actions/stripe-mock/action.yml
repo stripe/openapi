@@ -78,15 +78,16 @@ runs:
         FIXTURES_ARG=${CURRENT_FIXTURES_JSON:+-fixtures $CURRENT_FIXTURES_JSON}
 
         if [ "${{ runner.os }}" == "Windows" ]; then
-          MOCK_VERSION=$(curl "${CURL_OPTS[@]}" -s -H "Authorization: Bearer ${{ github.token }}" https://api.github.com/repos/stripe/stripe-mock/releases/latest | jq -r '.tag_name' | sed 's/^v//')
-          curl "${CURL_OPTS[@]}" -L "https://github.com/stripe/stripe-mock/releases/download/v${MOCK_VERSION}/stripe-mock_${MOCK_VERSION}_windows_amd64.zip" -o stripe-mock.zip
+          curl "${CURL_OPTS[@]}" -L "https://github.com/stripe/stripe-mock/releases/download/v${STRIPE_MOCK_VERSION}/stripe-mock_${STRIPE_MOCK_VERSION}_windows_amd64.zip" -o stripe-mock.zip
+          echo "${STRIPE_MOCK_WINDOWS_SHA256}  stripe-mock.zip" | sha256sum -c -
           unzip stripe-mock.zip -d stripe-mock
           nohup ./stripe-mock/stripe-mock.exe -http-addr 127.0.0.1:12111 -https-addr 127.0.0.1:12112 $BETA_ARG $FIXTURES_ARG $SPEC_PATH_ARG > stripe-mock.log 2>&1 &
           sleep 5
           cat stripe-mock.log
         else
+          STRIPE_MOCK_IMAGE="stripe/stripe-mock@${STRIPE_MOCK_IMAGE_DIGEST}"
           for i in 1 2 3 4 5; do
-            if docker pull stripe/stripe-mock; then
+            if docker pull "$STRIPE_MOCK_IMAGE"; then
               break
             fi
             echo "docker pull failed (attempt $i/5), retrying in 5s..."
@@ -98,8 +99,8 @@ runs:
           done
 
           docker run -d -p 12111-12112:12111-12112 \
-            -v "${{ github.workspace }}:${{ github.workspace }}" \
-            stripe/stripe-mock $BETA_ARG $FIXTURES_ARG $SPEC_PATH_ARG
+            -v "${{ github.workspace }}:${{ github.workspace }}:ro" \
+            "$STRIPE_MOCK_IMAGE" $BETA_ARG $FIXTURES_ARG $SPEC_PATH_ARG
           sleep 7
         fi
 
@@ -113,6 +114,13 @@ runs:
           exit 1
         fi
       env:
+        # stripe-mock is pinned so CI only runs bytes we've verified. To upgrade,
+        # update all three values together from the same stripe-mock release:
+        # the version, the multi-arch image digest for that version's Docker tag,
+        # and the SHA-256 of stripe-mock_<version>_windows_amd64.zip.
+        STRIPE_MOCK_VERSION: "0.206.0"
+        STRIPE_MOCK_IMAGE_DIGEST: "sha256:aeb96b83e87a893d2ac005e363ac01ffa6e59a5ad85b49c155dfc9129de02e78"
+        STRIPE_MOCK_WINDOWS_SHA256: "3ead9f1c24f8a60db6bf421d306c3c7e71d24393c0c769196fa6ccedbca93109"
         INPUTS_BETA: ${{ inputs.beta }}
         INPUTS_OPENAPI_VERSION: ${{ inputs.openapi_version }}
         INPUTS_SPEC_PATH: ${{ inputs.spec_path }}
