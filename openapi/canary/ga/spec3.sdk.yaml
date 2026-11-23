@@ -9148,9 +9148,10 @@ components:
           additionalProperties:
             type: integer
           description: >-
-            A hash of all cash balances available to this customer. You cannot
-            delete a customer with any cash balances, even if the balance is 0.
-            Amounts are represented in the [smallest currency
+            A hash of all cash balances available to this customer. You can't
+            delete a customer that has a positive cash balance in any currency.
+            You can delete it after all of its cash balances are 0. Amounts are
+            represented in the [smallest currency
             unit](https://docs.stripe.com/currencies#zero-decimal).
           nullable: true
           type: object
@@ -21292,6 +21293,27 @@ components:
     dispute_evidence_details:
       description: ''
       properties:
+        appeal_method:
+          description: >-
+            If the dispute was eligible for appeal, whether the appeal was
+            submitted manually, with Smart Disputes, or not submitted.
+          enum:
+            - manual
+            - not_applicable
+            - not_submitted
+            - smart_disputes
+          type: string
+          x-stripeEnum:
+            kind: open
+            values:
+              - description: The appeal was submitted manually.
+                value: manual
+              - description: Not eligible for appeal
+                value: not_applicable
+              - description: An appeal was available but never submitted.
+                value: not_submitted
+              - description: Stripe submitted the appeal through Smart Disputes.
+                value: smart_disputes
         due_by:
           description: >-
             Date by which evidence must be submitted in order to successfully
@@ -21337,6 +21359,7 @@ components:
       x-expandableFields:
         - enhanced_eligibility
       x-stripeMostCommon:
+        - appeal_method
         - due_by
         - enhanced_eligibility
         - has_evidence
@@ -21482,6 +21505,10 @@ components:
             loss reason
           maxLength: 5000
           type: string
+        dispute_id:
+          description: The ID of the dispute in Klarna.
+          maxLength: 5000
+          type: string
         reason_code:
           description: The reason for the dispute as defined by Klarna
           maxLength: 5000
@@ -21494,6 +21521,7 @@ components:
       x-expandableFields: []
       x-stripeMostCommon:
         - chargeback_loss_reason_code
+        - dispute_id
         - reason_code
     dispute_payment_method_details_paypal:
       description: ''
@@ -93102,6 +93130,7 @@ paths:
                     - legacy_payments
                     - link_payments
                     - loans
+                    - maya_payments
                     - mb_way_payments
                     - merchant_outbound_transfers_external_account
                     - merpay_payments
@@ -95239,6 +95268,7 @@ paths:
                     - konbini_payments
                     - payments
                     - payouts
+                    - self_custodial_wallet
                     - sepa_debit_payments
                     - smart_disputes
                     - tax_forms
@@ -96978,6 +97008,7 @@ paths:
                     - legacy_payments
                     - link_payments
                     - loans
+                    - maya_payments
                     - mb_way_payments
                     - merchant_outbound_transfers_external_account
                     - merpay_payments
@@ -99060,6 +99091,7 @@ paths:
                     - konbini_payments
                     - payments
                     - payouts
+                    - self_custodial_wallet
                     - sepa_debit_payments
                     - smart_disputes
                     - tax_forms
@@ -112525,6 +112557,33 @@ paths:
                           x-stripeMostCommon:
                             - expires_at
                         setup_future_usage:
+                          description: >-
+                            Indicates that you intend to make future payments
+                            with this PaymentIntent's payment method.
+
+
+                            If you provide a Customer with the PaymentIntent,
+                            you can use this parameter to [attach the payment
+                            method](/payments/save-during-payment) to the
+                            Customer after the PaymentIntent is confirmed and
+                            the customer completes any required actions. If you
+                            don't provide a Customer, you can still
+                            [attach](/api/payment_methods/attach) the payment
+                            method to a Customer after the transaction
+                            completes.
+
+
+                            If the payment method is `card_present` and isn't a
+                            digital wallet, Stripe creates and attaches a
+                            [generated_card](/api/charges/object#charge_object-payment_method_details-card_present-generated_card)
+                            payment method representing the card to the Customer
+                            instead.
+
+
+                            When processing card payments, Stripe uses
+                            `setup_future_usage` to help you comply with
+                            regional legislation and network rules, such as
+                            [SCA](/strong-customer-authentication).
                           enum:
                             - ''
                             - none
@@ -116078,7 +116137,7 @@ paths:
 
 
         <p>Related guide: <a
-        href="/payments/advanced/dynamic-updates">Dynamically update a Checkout
+        href="/payments/checkout/dynamic-updates">Dynamically update a Checkout
         Session</a></p>
       operationId: PostCheckoutSessionsSession
       parameters:
@@ -153075,6 +153134,12 @@ paths:
                           description: Routing number of the bank account.
                           maxLength: 5000
                           type: string
+                        token:
+                          description: >-
+                            The ID of a bank account [Token](/api/tokens/object)
+                            to use as a payment method.
+                          maxLength: 5000
+                          type: string
                       title: payment_method_param
                       type: object
                       x-stripeMostCommon:
@@ -158228,6 +158293,7 @@ paths:
                   type: object
                   x-stripeMostCommon:
                     - acss_debit
+                    - aeon_pay
                     - affirm
                     - afterpay_clearpay
                     - alipay
@@ -158235,6 +158301,7 @@ paths:
                     - alma
                     - amazon_pay
                     - au_becs_debit
+                    - au_pay
                     - bacs_debit
                     - bancontact
                     - billie
@@ -158248,6 +158315,7 @@ paths:
                     - click_to_pay
                     - crypto
                     - customer_balance
+                    - dbarai
                     - demo_pay
                     - dummy_auth_push
                     - dummy_passthrough_card
@@ -158271,6 +158339,7 @@ paths:
                     - kr_market
                     - link
                     - mb_way
+                    - merpay
                     - mobilepay
                     - momo
                     - mondu
@@ -158293,6 +158362,7 @@ paths:
                     - pix
                     - promptpay
                     - qris
+                    - rakuten_pay
                     - rechnung
                     - revolut_pay
                     - samsung_pay
@@ -161749,6 +161819,12 @@ paths:
                           type: string
                         routing_number:
                           description: Routing number of the bank account.
+                          maxLength: 5000
+                          type: string
+                        token:
+                          description: >-
+                            The ID of a bank account [Token](/api/tokens/object)
+                            to use as a payment method.
                           maxLength: 5000
                           type: string
                       title: payment_method_param
@@ -166904,6 +166980,7 @@ paths:
                   type: object
                   x-stripeMostCommon:
                     - acss_debit
+                    - aeon_pay
                     - affirm
                     - afterpay_clearpay
                     - alipay
@@ -166911,6 +166988,7 @@ paths:
                     - alma
                     - amazon_pay
                     - au_becs_debit
+                    - au_pay
                     - bacs_debit
                     - bancontact
                     - billie
@@ -166924,6 +167002,7 @@ paths:
                     - click_to_pay
                     - crypto
                     - customer_balance
+                    - dbarai
                     - demo_pay
                     - dummy_auth_push
                     - dummy_passthrough_card
@@ -166947,6 +167026,7 @@ paths:
                     - kr_market
                     - link
                     - mb_way
+                    - merpay
                     - mobilepay
                     - momo
                     - mondu
@@ -166969,6 +167049,7 @@ paths:
                     - pix
                     - promptpay
                     - qris
+                    - rakuten_pay
                     - rechnung
                     - revolut_pay
                     - samsung_pay
@@ -172240,6 +172321,12 @@ paths:
                           description: Routing number of the bank account.
                           maxLength: 5000
                           type: string
+                        token:
+                          description: >-
+                            The ID of a bank account [Token](/api/tokens/object)
+                            to use as a payment method.
+                          maxLength: 5000
+                          type: string
                       title: payment_method_param
                       type: object
                       x-stripeMostCommon:
@@ -177393,6 +177480,7 @@ paths:
                   type: object
                   x-stripeMostCommon:
                     - acss_debit
+                    - aeon_pay
                     - affirm
                     - afterpay_clearpay
                     - alipay
@@ -177400,6 +177488,7 @@ paths:
                     - alma
                     - amazon_pay
                     - au_becs_debit
+                    - au_pay
                     - bacs_debit
                     - bancontact
                     - billie
@@ -177413,6 +177502,7 @@ paths:
                     - click_to_pay
                     - crypto
                     - customer_balance
+                    - dbarai
                     - demo_pay
                     - dummy_auth_push
                     - dummy_passthrough_card
@@ -177436,6 +177526,7 @@ paths:
                     - kr_market
                     - link
                     - mb_way
+                    - merpay
                     - mobilepay
                     - momo
                     - mondu
@@ -177458,6 +177549,7 @@ paths:
                     - pix
                     - promptpay
                     - qris
+                    - rakuten_pay
                     - rechnung
                     - revolut_pay
                     - samsung_pay
@@ -188477,6 +188569,12 @@ paths:
                       type: string
                     routing_number:
                       description: Routing number of the bank account.
+                      maxLength: 5000
+                      type: string
+                    token:
+                      description: >-
+                        The ID of a bank account [Token](/api/tokens/object) to
+                        use as a payment method.
                       maxLength: 5000
                       type: string
                   title: payment_method_param
@@ -200433,6 +200531,7 @@ paths:
                     - customers
                     - cutoff_date
                     - dashboard_type
+                    - data_sources
                     - dataset_id
                     - date_format
                     - days_to_use
@@ -200744,6 +200843,7 @@ paths:
                     - rejected_on
                     - rejected_reason
                     - reported_outcomes
+                    - reporting_categories
                     - reporting_category
                     - reporting_string_filters
                     - require_bank_failure_category
@@ -200853,6 +200953,7 @@ paths:
                     - transfer_instruction
                     - transferred_to
                     - type
+                    - types
                     - unit
                     - updated
                     - ur
@@ -203098,6 +203199,12 @@ paths:
                           type: string
                         routing_number:
                           description: Routing number of the bank account.
+                          maxLength: 5000
+                          type: string
+                        token:
+                          description: >-
+                            The ID of a bank account [Token](/api/tokens/object)
+                            to use as a payment method.
                           maxLength: 5000
                           type: string
                       title: payment_method_param
@@ -205804,6 +205911,12 @@ paths:
                           description: Routing number of the bank account.
                           maxLength: 5000
                           type: string
+                        token:
+                          description: >-
+                            The ID of a bank account [Token](/api/tokens/object)
+                            to use as a payment method.
+                          maxLength: 5000
+                          type: string
                       title: payment_method_param
                       type: object
                       x-stripeMostCommon:
@@ -208439,6 +208552,12 @@ paths:
                           type: string
                         routing_number:
                           description: Routing number of the bank account.
+                          maxLength: 5000
+                          type: string
+                        token:
+                          description: >-
+                            The ID of a bank account [Token](/api/tokens/object)
+                            to use as a payment method.
                           maxLength: 5000
                           type: string
                       title: payment_method_param
@@ -232827,6 +232946,7 @@ paths:
                   type: object
                   x-stripeMostCommon:
                     - enable_customer_cancellation
+                    - gift_card
                 reverse_transfer:
                   description: >-
                     Boolean indicating whether the transfer should be reversed
@@ -232986,8 +233106,8 @@ paths:
   /v1/test_helpers/confirmation_tokens:
     post:
       description: >-
-        <p>Creates a test mode Confirmation Token server side for your
-        integration tests.</p>
+        <p>Creates a test Confirmation Token server side for your integration
+        tests.</p>
       operationId: PostTestHelpersConfirmationTokens
       requestBody:
         content:
@@ -233991,6 +234111,12 @@ paths:
                           type: string
                         routing_number:
                           description: Routing number of the bank account.
+                          maxLength: 5000
+                          type: string
+                        token:
+                          description: >-
+                            The ID of a bank account [Token](/api/tokens/object)
+                            to use as a payment method.
                           maxLength: 5000
                           type: string
                       title: payment_method_param
@@ -246965,6 +247091,12 @@ paths:
                           type: string
                         routing_number:
                           description: Routing number of the bank account.
+                          maxLength: 5000
+                          type: string
+                        token:
+                          description: >-
+                            The ID of a bank account [Token](/api/tokens/object)
+                            to use as a payment method.
                           maxLength: 5000
                           type: string
                       title: payment_method_param
