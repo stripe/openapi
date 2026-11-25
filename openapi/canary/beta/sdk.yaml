@@ -26,6 +26,9 @@ info:
   - custom_checkout_beta=v2
   - id_bank_transfer_beta=v2
   - fx_quote_preview=v1
+  x-stripeCommit:
+    v1: ee6ac5c88fe73084dca6d26929d993dd850624b8
+    v2: dcaa8d0aa36b32599c7de09e5af6123b6e4029e1
   x-stripeReleasePhase: public_preview
   x-stripeSpecAudience: sdk
   x-stripeSpecFilename: spec3.public_preview.sdk
@@ -19166,6 +19169,7 @@ paths:
                     \ to learn more about using customer portal deep links and flows."
                   x-stripeMostCommon:
                   - after_completion
+                  - payment_method_update
                   - subscription_cancel
                   - subscription_pause
                   - subscription_update
@@ -85124,6 +85128,7 @@ paths:
                   - kr_card
                   - kr_market
                   - link
+                  - maya
                   - mb_way
                   - merpay
                   - mobilepay
@@ -95201,6 +95206,7 @@ paths:
                   - kr_card
                   - kr_market
                   - link
+                  - maya
                   - mb_way
                   - merpay
                   - mobilepay
@@ -108236,6 +108242,7 @@ paths:
                   - kr_card
                   - kr_market
                   - link
+                  - maya
                   - mb_way
                   - merpay
                   - mobilepay
@@ -171401,7 +171408,9 @@ paths:
                       type: string
                       description: URL provided by the merchant on a 3DS request
                   description: "Details about the seller (grocery store, e-commerce\
-                    \ website, etc.) where the card authorization happened."
+                    \ website, etc.) where the card authorization happened. Provide\
+                    \ `merchant_data.state` and `merchant_data.postal_code` only if\
+                    \ `merchant_data.country` is `US` or `CA`, or they will be ignored."
                   x-stripeMostCommon:
                   - category
                   - city
@@ -176703,6 +176712,7 @@ paths:
                           enum:
                           - mandated
                           - preferred
+                          x-stripeBypassValidation: true
                       description: Contains additional details about your challenge
                         flow preference for this 3DS Authentication.
                       x-stripeMostCommon:
@@ -176737,6 +176747,7 @@ paths:
                           enum:
                           - low_risk
                           - none
+                          x-stripeBypassValidation: true
                       description: Contains additional details about your frictionless
                         flow preference for this 3DS Authentication.
                       x-stripeMostCommon:
@@ -205475,6 +205486,342 @@ paths:
       - code: v1_customer_instead_of_v2_account
         description: V1 Customer ID cannot be used in V2 Account APIs.
         httpStatusCode: 400
+  /v2/core/accounts/{id}/reject:
+    post:
+      summary: Reject an account
+      description: Rejects an Account and prevents it from operating across its configurations.
+      operationId: PostV2CoreAccountsIdReject
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the Account to reject.
+        required: true
+        style: simple
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - reason
+              type: object
+              properties:
+                include:
+                  type: array
+                  description: Additional fields to include in the response.
+                  items:
+                    type: string
+                    enum:
+                    - configuration.customer
+                    - configuration.merchant
+                    - configuration.recipient
+                    - configuration.money_manager
+                    - defaults
+                    - future_requirements
+                    - identity
+                    - requirements
+                    x-stripeEnum:
+                      kind: closed
+                      values:
+                      - description: Include parameter to expose `configuration.customer`
+                          on an Account.
+                        value: configuration.customer
+                      - description: Include parameter to expose `configuration.merchant`
+                          on an Account.
+                        value: configuration.merchant
+                      - description: Include parameter to expose `configuration.recipient`
+                          on an Account.
+                        value: configuration.recipient
+                      - description: Include parameter to expose `configuration.money_manager`
+                          on an Account.
+                        value: configuration.money_manager
+                      - description: Include parameter to expose `defaults` on an
+                          Account.
+                        value: defaults
+                      - description: Include parameter to expose `future_requirements`
+                          on an Account.
+                        value: future_requirements
+                      - description: Include parameter to expose `identity` on an
+                          Account.
+                        value: identity
+                      - description: Include parameter to expose `requirements` on
+                          an Account.
+                        value: requirements
+                preserve_operations:
+                  type: array
+                  description: Operations that remain unaffected by the rejection.
+                    Repeated requests replace the previous set; omitting this field
+                    clears any preserved operations.
+                  items:
+                    type: string
+                    enum:
+                    - payouts
+                    x-stripeEnum:
+                      kind: open
+                      values:
+                      - description: Preserve payouts to the Account's external bank
+                          account.
+                        value: payouts
+                reason:
+                  type: string
+                  description: The reason for rejecting the Account. Repeated requests
+                    replace the previously recorded reason.
+                  enum:
+                  - credit
+                  - fraud_no_intent_to_fulfill
+                  - fraud_other
+                  - fraud_payment_method_casher
+                  - fraud_payment_method_tester
+                  - other
+                  - terms_of_service
+                  x-stripeEnum:
+                    kind: open
+                    values:
+                    - description: The Account presents a credit risk.
+                      value: credit
+                    - description: The Account does not intend to fulfill its obligations.
+                      value: fraud_no_intent_to_fulfill
+                    - description: The Account presents another kind of fraud risk.
+                      value: fraud_other
+                    - description: The Account is cashing out fraudulent payments.
+                      value: fraud_payment_method_casher
+                    - description: The Account is testing payment methods for fraudulent
+                        use.
+                      value: fraud_payment_method_tester
+                    - description: The Account is rejected for another reason.
+                      value: other
+                    - description: The Account violated the platform's terms of service.
+                      value: terms_of_service
+            examples:
+              example:
+                value:
+                  pathParams:
+                    id: acct_1Nv0FGQ9RKHgCVdK
+                  requestBody:
+                    reason: terms_of_service
+                    preserve_operations:
+                    - payouts
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v2.core.account'
+              examples:
+                example:
+                  value:
+                    id: acct_1Nv0FGQ9RKHgCVdK
+                    object: v2.core.account
+                    applied_configurations:
+                    - merchant
+                    contact_email: jenny.rosen@example.com
+                    created: 2024-11-26T16:33:03.000Z
+                    dashboard: none
+                    display_name: Jenny Rosen
+                    livemode: true
+                    metadata: {}
+                    rejection:
+                      platform_rejection:
+                        reason: terms_of_service
+        default:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/v2.error.account_rate_limit_exceeded'
+                - $ref: '#/components/schemas/v2.error.account_rejection_not_permitted'
+                - $ref: '#/components/schemas/v2.error.idempotency_error'
+                - $ref: '#/components/schemas/v2.error.invalid_fields'
+                - $ref: '#/components/schemas/v2.error.not_found'
+                - $ref: '#/components/schemas/v2.error.v1_account_instead_of_v2_account'
+                - $ref: '#/components/schemas/v2.error'
+      x-stableId: v2_method_reject_account
+      x-stripeDocsSamples:
+      - request:
+          pathParams:
+            id: acct_1Nv0FGQ9RKHgCVdK
+          requestBody:
+            reason: terms_of_service
+            preserve_operations:
+            - payouts
+        response:
+          id: acct_1Nv0FGQ9RKHgCVdK
+          object: v2.core.account
+          applied_configurations:
+          - merchant
+          contact_email: jenny.rosen@example.com
+          created: 2024-11-26T16:33:03.000Z
+          dashboard: none
+          display_name: Jenny Rosen
+          livemode: true
+          metadata: {}
+          rejection:
+            platform_rejection:
+              reason: terms_of_service
+      x-stripeErrors:
+      - code: account_rate_limit_exceeded
+        description: Account cannot exceed a configured concurrency rate limit on
+          updates.
+        httpStatusCode: 429
+        type: rate_limit
+      - code: account_rejection_not_permitted
+        description: The Account cannot be rejected by the platform.
+        httpStatusCode: 400
+      - code: idempotency_error
+        description: An idempotent retry occurred with different request parameters.
+        httpStatusCode: 409
+      - code: invalid_fields
+        httpStatusCode: 400
+      - code: not_found
+        description: The resource wasn't found.
+        httpStatusCode: 404
+      - code: v1_account_instead_of_v2_account
+        description: V1 Account ID cannot be used in V2 Account APIs.
+        httpStatusCode: 400
+  /v2/core/accounts/{id}/unreject:
+    post:
+      summary: Unreject an account
+      description: Reverses a platform rejection on an Account. Restrictions applied
+        by Stripe or other risk controls remain in place.
+      operationId: PostV2CoreAccountsIdUnreject
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the Account to unreject.
+        required: true
+        style: simple
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                include:
+                  type: array
+                  description: Additional fields to include in the response.
+                  items:
+                    type: string
+                    enum:
+                    - configuration.customer
+                    - configuration.merchant
+                    - configuration.recipient
+                    - configuration.money_manager
+                    - defaults
+                    - future_requirements
+                    - identity
+                    - requirements
+                    x-stripeEnum:
+                      kind: closed
+                      values:
+                      - description: Include parameter to expose `configuration.customer`
+                          on an Account.
+                        value: configuration.customer
+                      - description: Include parameter to expose `configuration.merchant`
+                          on an Account.
+                        value: configuration.merchant
+                      - description: Include parameter to expose `configuration.recipient`
+                          on an Account.
+                        value: configuration.recipient
+                      - description: Include parameter to expose `configuration.money_manager`
+                          on an Account.
+                        value: configuration.money_manager
+                      - description: Include parameter to expose `defaults` on an
+                          Account.
+                        value: defaults
+                      - description: Include parameter to expose `future_requirements`
+                          on an Account.
+                        value: future_requirements
+                      - description: Include parameter to expose `identity` on an
+                          Account.
+                        value: identity
+                      - description: Include parameter to expose `requirements` on
+                          an Account.
+                        value: requirements
+            examples:
+              example:
+                value:
+                  pathParams:
+                    id: acct_1Nv0FGQ9RKHgCVdK
+                  requestBody: {}
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v2.core.account'
+              examples:
+                example:
+                  value:
+                    id: acct_1Nv0FGQ9RKHgCVdK
+                    object: v2.core.account
+                    applied_configurations:
+                    - merchant
+                    contact_email: jenny.rosen@example.com
+                    created: 2024-11-26T16:33:03.000Z
+                    dashboard: none
+                    display_name: Jenny Rosen
+                    livemode: true
+                    metadata: {}
+        default:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/v2.error.account_not_rejected_by_platform'
+                - $ref: '#/components/schemas/v2.error.account_rate_limit_exceeded'
+                - $ref: '#/components/schemas/v2.error.account_rejection_not_permitted'
+                - $ref: '#/components/schemas/v2.error.idempotency_error'
+                - $ref: '#/components/schemas/v2.error.invalid_fields'
+                - $ref: '#/components/schemas/v2.error.not_found'
+                - $ref: '#/components/schemas/v2.error.v1_account_instead_of_v2_account'
+                - $ref: '#/components/schemas/v2.error'
+      x-stableId: v2_method_unreject_account
+      x-stripeDocsSamples:
+      - request:
+          pathParams:
+            id: acct_1Nv0FGQ9RKHgCVdK
+          requestBody: {}
+        response:
+          id: acct_1Nv0FGQ9RKHgCVdK
+          object: v2.core.account
+          applied_configurations:
+          - merchant
+          contact_email: jenny.rosen@example.com
+          created: 2024-11-26T16:33:03.000Z
+          dashboard: none
+          display_name: Jenny Rosen
+          livemode: true
+          metadata: {}
+      x-stripeErrors:
+      - code: account_not_rejected_by_platform
+        description: The Account does not have a platform rejection that can be reversed.
+        httpStatusCode: 400
+      - code: account_rate_limit_exceeded
+        description: Account cannot exceed a configured concurrency rate limit on
+          updates.
+        httpStatusCode: 429
+        type: rate_limit
+      - code: account_rejection_not_permitted
+        description: The Account cannot be rejected by the platform.
+        httpStatusCode: 400
+      - code: idempotency_error
+        description: An idempotent retry occurred with different request parameters.
+        httpStatusCode: 409
+      - code: invalid_fields
+        httpStatusCode: 400
+      - code: not_found
+        description: The resource wasn't found.
+        httpStatusCode: 404
+      - code: v1_account_instead_of_v2_account
+        description: V1 Account ID cannot be used in V2 Account APIs.
+        httpStatusCode: 400
   /v2/core/approval_requests:
     get:
       summary: List Approval Requests
@@ -209879,6 +210226,10 @@ paths:
                       compression: none
                     status: running
                     status_details: null
+                    status_transitions:
+                      succeeded_at: null
+                      failed_at: null
+                      canceled_at: null
         default:
           description: Error response
           content:
@@ -209920,6 +210271,10 @@ paths:
             compression: none
           status: running
           status_details: null
+          status_transitions:
+            succeeded_at: null
+            failed_at: null
+            canceled_at: null
       x-stripeErrors:
       - code: dataset_inaccessible
         description: Returned when the caller lacks permission to access the specified
@@ -210079,6 +210434,10 @@ paths:
                       compression: none
                     status: succeeded
                     status_details: null
+                    status_transitions:
+                      succeeded_at: 2026-10-05T21:02:00.919623613Z
+                      failed_at: null
+                      canceled_at: null
         default:
           description: Error response
           content:
@@ -210148,6 +210507,10 @@ paths:
             compression: none
           status: succeeded
           status_details: null
+          status_transitions:
+            succeeded_at: 2026-10-05T21:02:00.919623613Z
+            failed_at: null
+            canceled_at: null
       x-stripeErrors:
       - code: not_found
         description: The resource wasn't found.
@@ -210467,6 +210830,10 @@ paths:
                     sql: null
                     status: running
                     status_details: null
+                    status_transitions:
+                      succeeded_at: null
+                      failed_at: null
+                      canceled_at: null
         default:
           description: Error response
           content:
@@ -210512,6 +210879,10 @@ paths:
           sql: null
           status: running
           status_details: null
+          status_transitions:
+            succeeded_at: null
+            failed_at: null
+            canceled_at: null
       x-stripeErrors:
       - code: idempotency_error
         description: An idempotent retry occurred with different request parameters.
@@ -210655,6 +211026,10 @@ paths:
                     sql: null
                     status: succeeded
                     status_details: null
+                    status_transitions:
+                      succeeded_at: 2026-10-05T21:01:11.504756927Z
+                      failed_at: null
+                      canceled_at: null
         default:
           description: Error response
           content:
@@ -210703,6 +211078,10 @@ paths:
           sql: null
           status: succeeded
           status_details: null
+          status_transitions:
+            succeeded_at: 2026-10-05T21:01:11.504756927Z
+            failed_at: null
+            canceled_at: null
       x-stripeErrors:
       - code: not_found
         description: The resource wasn't found.
@@ -215585,13 +215964,6 @@ paths:
                         \ a Payments API `pm_` PaymentMethod."
                   description: The verified bank account credential to debit for this
                     InboundTransfer.
-                metadata:
-                  type: object
-                  additionalProperties:
-                    type: string
-                  description: Set of key-value pairs that you can attach to an object.
-                    This can be useful for storing additional information about the
-                    object in a structured format.
                 to:
                   required:
                   - currency
@@ -231890,7 +232262,9 @@ components:
       title: BalanceSettingsResourcePayments
       required:
       - debit_negative_balances
+      - default_settlement_currency
       - payouts
+      - settlement_currencies
       - settlement_timing
       type: object
       properties:
@@ -251751,7 +252125,10 @@ components:
           description: The bank_transfer type
           enum:
           - eu_bank_transfer
+          - gb_bank_transfer
           - jp_bank_transfer
+          - mx_bank_transfer
+          - us_bank_transfer
           x-stripeBypassValidation: true
       description: ""
       x-expandableFields:
@@ -317231,6 +317608,7 @@ components:
           enum:
           - mandated
           - preferred
+          x-stripeBypassValidation: true
       description: ""
       x-expandableFields: []
       x-stripeMostCommon:
@@ -317338,6 +317716,7 @@ components:
           enum:
           - low_risk
           - none
+          x-stripeBypassValidation: true
       description: ""
       x-expandableFields: []
       x-stripeMostCommon:
@@ -317478,7 +317857,8 @@ components:
           description: The indicator provided to the issuer by Stripe in the AReq
             that indicates whether a challenge is requested for this Authentication.
             This indicator should match the flow_preference you specified but may
-            be overridden (for compliance reasons for example).
+            be overridden (for compliance reasons or protocol version supportability
+            for example).
           enum:
           - "01"
           - "02"
@@ -317486,6 +317866,23 @@ components:
           - "04"
           - "05"
           - "06"
+          x-stripeBypassValidation: true
+          x-stripeEnum:
+            kind: open
+            values:
+            - description: No preference.
+              value: "01"
+            - description: No challenge requested.
+              value: "02"
+            - description: Challenge requested (3DS Requestor preference).
+              value: "03"
+            - description: Challenge requested (Mandate).
+              value: "04"
+            - description: No challenge requested (transactional risk analysis is
+                already performed)
+              value: "05"
+            - description: No challenge requested (data share is performed)
+              value: "06"
         rreq:
           maxLength: 5000
           type: string
@@ -388107,6 +388504,51 @@ components:
             type share the same value of the object field.
           enum:
           - v2.core.account
+        rejection:
+          type: object
+          properties:
+            platform_rejection:
+              required:
+              - reason
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: The reason the platform rejected the Account.
+                  enum:
+                  - credit
+                  - fraud
+                  - fraud_no_intent_to_fulfill
+                  - fraud_other
+                  - fraud_payment_method_casher
+                  - fraud_payment_method_tester
+                  - other
+                  - terms_of_service
+                  x-stripeEnum:
+                    kind: open
+                    values:
+                    - description: The Account presents a credit risk.
+                      value: credit
+                    - description: The Account presents a fraud risk. Used for rejections
+                        made with the legacy v1 `fraud` reason.
+                      value: fraud
+                    - description: The Account does not intend to fulfill its obligations.
+                      value: fraud_no_intent_to_fulfill
+                    - description: The Account presents another kind of fraud risk.
+                      value: fraud_other
+                    - description: The Account is cashing out fraudulent payments.
+                      value: fraud_payment_method_casher
+                    - description: The Account is testing payment methods for fraudulent
+                        use.
+                      value: fraud_payment_method_tester
+                    - description: The Account is rejected for another reason.
+                      value: other
+                    - description: The Account violated the platform's terms of service.
+                      value: terms_of_service
+              description: Details about the platform's rejection of the Account.
+                Null if the platform hasn't rejected the Account.
+          description: Information about the rejection of the Account. Null if the
+            platform has not rejected the Account.
         requirements:
           type: object
           properties:
@@ -389903,6 +390345,16 @@ components:
         method_type: custom
         operation: post
         path: "/v2/core/accounts/{id}/close"
+      - method_name: reject
+        method_on: service
+        method_type: custom
+        operation: post
+        path: "/v2/core/accounts/{id}/reject"
+      - method_name: unreject
+        method_on: service
+        method_type: custom
+        operation: post
+        path: "/v2/core/accounts/{id}/unreject"
       x-stripeResource:
         class_name: Account
         in_package: v2.core
@@ -390060,6 +390512,149 @@ components:
       x-stripeEvent:
         kind: thin
         type: v2.core.account.closed
+    v2.core.account.connected:
+      required:
+      - changes
+      - created
+      - data
+      - id
+      - livemode
+      - object
+      - related_object
+      - type
+      type: object
+      properties:
+        changes:
+          type: object
+          description: Always `null` because this event type doesn't track related
+            object changes.
+          nullable: true
+        context:
+          type: string
+          description: Authentication context needed to fetch the event or related
+            object.
+        created:
+          type: string
+          description: Time at which the object was created.
+          format: date-time
+        data:
+          type: object
+          properties: {}
+          description: Additional data about the event.
+        id:
+          type: string
+          description: Unique identifier for the event.
+        livemode:
+          type: boolean
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+        object:
+          type: string
+          description: String representing the object's type. Objects of the same
+            type share the same value of the object field.
+          enum:
+          - v2.core.event
+        reason:
+          required:
+          - type
+          type: object
+          properties:
+            request:
+              required:
+              - id
+              - idempotency_key
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: ID of the API request that caused the event.
+                idempotency_key:
+                  type: string
+                  description: The idempotency key transmitted during the request.
+              description: Information on the API request that instigated the event.
+            type:
+              type: string
+              description: Event reason type.
+              enum:
+              - request
+              x-stripeEnum:
+                kind: open
+                values:
+                - description: The event was published as the result of an API request.
+                  value: request
+          description: Reason for the event.
+        related_object:
+          required:
+          - id
+          - type
+          - url
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the object relevant to the event.
+            type:
+              type: string
+              description: Object tag of the resource relevant to the event.
+              enum:
+              - v2.core.account
+            url:
+              type: string
+              description: URL to retrieve the resource.
+          description: Object containing the reference to API resource relevant to
+            the event.
+        snapshot_event:
+          type: string
+          description: "For thin events with a corresponding snapshot event, this\
+            \ is the snapshot event ID."
+        type:
+          type: string
+          description: The type of the event.
+          enum:
+          - v2.core.account.connected
+      description: Occurs when an existing Account connects to your platform or app.
+      example:
+        context: acct_1RJPAoB3XdD95CES
+        created: 2025-04-28T20:33:01.123Z
+        id: evt_test_65THpbNAKwSIkamdPQY16THhWW0BSQoYblrirrmiR4a4Vc
+        object: v2.core.event
+        type: v2.core.account.connected
+        data: null
+        livemode: false
+        reason: null
+        related_object:
+          id: acct_1RIyMKPt46znscxj
+          type: v2.core.account
+          url: /v2/core/accounts/acct_1RIyMKPt46znscxj
+      x-stableId: v2.core.account.connected
+      x-stripeDocsSamples:
+      - payload:
+          context: acct_1RJPAoB3XdD95CES
+          created: 2025-04-28T20:33:01.123Z
+          id: evt_test_65THpbNAKwSIkamdPQY16THhWW0BSQoYblrirrmiR4a4Vc
+          object: v2.core.event
+          type: v2.core.account.connected
+          livemode: false
+          related_object:
+            id: acct_1RIyMKPt46znscxj
+            type: v2.core.account
+            url: /v2/core/accounts/acct_1RIyMKPt46znscxj
+        response:
+          context: acct_1RJPAoB3XdD95CES
+          created: 2025-04-28T20:33:01.123Z
+          id: evt_test_65THpbNAKwSIkamdPQY16THhWW0BSQoYblrirrmiR4a4Vc
+          object: v2.core.event
+          type: v2.core.account.connected
+          data: null
+          livemode: false
+          reason: null
+          related_object:
+            id: acct_1RIyMKPt46znscxj
+            type: v2.core.account
+            url: /v2/core/accounts/acct_1RIyMKPt46znscxj
+      x-stripeEvent:
+        kind: thin
+        type: v2.core.account.connected
     v2.core.account.created:
       required:
       - changes
@@ -390215,6 +390810,149 @@ components:
       x-stripeEvent:
         kind: thin
         type: v2.core.account.created
+    v2.core.account.disconnected:
+      required:
+      - changes
+      - created
+      - data
+      - id
+      - livemode
+      - object
+      - related_object
+      - type
+      type: object
+      properties:
+        changes:
+          type: object
+          description: Always `null` because this event type doesn't track related
+            object changes.
+          nullable: true
+        context:
+          type: string
+          description: Authentication context needed to fetch the event or related
+            object.
+        created:
+          type: string
+          description: Time at which the object was created.
+          format: date-time
+        data:
+          type: object
+          properties: {}
+          description: Additional data about the event.
+        id:
+          type: string
+          description: Unique identifier for the event.
+        livemode:
+          type: boolean
+          description: Has the value `true` if the object exists in live mode or the
+            value `false` if the object exists in test mode.
+        object:
+          type: string
+          description: String representing the object's type. Objects of the same
+            type share the same value of the object field.
+          enum:
+          - v2.core.event
+        reason:
+          required:
+          - type
+          type: object
+          properties:
+            request:
+              required:
+              - id
+              - idempotency_key
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: ID of the API request that caused the event.
+                idempotency_key:
+                  type: string
+                  description: The idempotency key transmitted during the request.
+              description: Information on the API request that instigated the event.
+            type:
+              type: string
+              description: Event reason type.
+              enum:
+              - request
+              x-stripeEnum:
+                kind: open
+                values:
+                - description: The event was published as the result of an API request.
+                  value: request
+          description: Reason for the event.
+        related_object:
+          required:
+          - id
+          - type
+          - url
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the object relevant to the event.
+            type:
+              type: string
+              description: Object tag of the resource relevant to the event.
+              enum:
+              - v2.core.account
+            url:
+              type: string
+              description: URL to retrieve the resource.
+          description: Object containing the reference to API resource relevant to
+            the event.
+        snapshot_event:
+          type: string
+          description: "For thin events with a corresponding snapshot event, this\
+            \ is the snapshot event ID."
+        type:
+          type: string
+          description: The type of the event.
+          enum:
+          - v2.core.account.disconnected
+      description: Occurs when an Account disconnects from your platform or app.
+      example:
+        context: acct_1RJPAoB3XdD95CES
+        created: 2025-04-28T20:33:01.123Z
+        id: evt_test_65THpbNAKwSIkamdPQY16THhWW0BSQoYblrirrmiR4a4Vc
+        object: v2.core.event
+        type: v2.core.account.disconnected
+        data: null
+        livemode: false
+        reason: null
+        related_object:
+          id: acct_1RIyMKPt46znscxj
+          type: v2.core.account
+          url: /v2/core/accounts/acct_1RIyMKPt46znscxj
+      x-stableId: v2.core.account.disconnected
+      x-stripeDocsSamples:
+      - payload:
+          context: acct_1RJPAoB3XdD95CES
+          created: 2025-04-28T20:33:01.123Z
+          id: evt_test_65THpbNAKwSIkamdPQY16THhWW0BSQoYblrirrmiR4a4Vc
+          object: v2.core.event
+          type: v2.core.account.disconnected
+          livemode: false
+          related_object:
+            id: acct_1RIyMKPt46znscxj
+            type: v2.core.account
+            url: /v2/core/accounts/acct_1RIyMKPt46znscxj
+        response:
+          context: acct_1RJPAoB3XdD95CES
+          created: 2025-04-28T20:33:01.123Z
+          id: evt_test_65THpbNAKwSIkamdPQY16THhWW0BSQoYblrirrmiR4a4Vc
+          object: v2.core.event
+          type: v2.core.account.disconnected
+          data: null
+          livemode: false
+          reason: null
+          related_object:
+            id: acct_1RIyMKPt46znscxj
+            type: v2.core.account
+            url: /v2/core/accounts/acct_1RIyMKPt46znscxj
+      x-stripeEvent:
+        kind: thin
+        type: v2.core.account.disconnected
     v2.core.account.updated:
       required:
       - changes
@@ -401248,6 +401986,7 @@ components:
       - object
       - query
       - status
+      - status_transitions
       type: object
       properties:
         created:
@@ -401571,6 +402310,22 @@ components:
                     type: string
                     description: A short identifier categorizing the type of error.
           description: Additional details about the current state of the `QueryRun`.
+        status_transitions:
+          type: object
+          properties:
+            canceled_at:
+              type: string
+              description: Time at which the run was canceled.
+              format: date-time
+            failed_at:
+              type: string
+              description: Time at which the run failed.
+              format: date-time
+            succeeded_at:
+              type: string
+              description: Time at which the run succeeded.
+              format: date-time
+          description: Timestamps of when the `QueryRun` entered each terminal status.
       description: |-
         The `QueryRun` resource represents an execution of ad-hoc SQL against a dataset. Once
         created, Stripe processes the query. When the query has finished running, the object
@@ -401631,6 +402386,10 @@ components:
           compression: none
         status: succeeded
         status_details: null
+        status_transitions:
+          succeeded_at: 2026-10-05T21:02:00.919623613Z
+          failed_at: null
+          canceled_at: null
       x-resourceId: v2.data.query_run
       x-stableId: v2_resource_data_query_run
       x-stripeDocsSamples:
@@ -401688,6 +402447,10 @@ components:
             compression: none
           status: succeeded
           status_details: null
+          status_transitions:
+            succeeded_at: 2026-10-05T21:02:00.919623613Z
+            failed_at: null
+            canceled_at: null
       x-stripeOperations:
       - method_name: list
         method_on: service
@@ -401854,6 +402617,10 @@ components:
               compression: none
             status: running
             status_details: null
+            status_transitions:
+              succeeded_at: null
+              failed_at: null
+              canceled_at: null
       x-stableId: v2.data.query_run.created
       x-stripeDocsSamples:
       - payload:
@@ -401904,6 +402671,10 @@ components:
                 compression: none
               status: running
               status_details: null
+              status_transitions:
+                succeeded_at: null
+                failed_at: null
+                canceled_at: null
       x-stripeEvent:
         kind: thin
         type: v2.data.query_run.created
@@ -402036,14 +402807,22 @@ components:
           before:
             status: running
             status_details: null
+            status_transitions:
+              succeeded_at: null
+              failed_at: null
+              canceled_at: null
           after:
             status: failed
-            status_details:
+            status_transitions:
+              succeeded_at: null
+              failed_at: 2026-10-05T21:22:03.216401815Z
               canceled_at: null
+            status_details:
               code: internal_error
               message: "We encountered an internal error running your query. Our team\
                 \ has been notified, and we'll work to fix the issue. Contact us at\
                 \ https://support.stripe.com/contact with any questions."
+              canceled_at: null
       x-stableId: v2.data.query_run.failed
       x-stripeDocsSamples:
       - payload:
@@ -402073,14 +402852,22 @@ components:
             before:
               status: running
               status_details: null
+              status_transitions:
+                succeeded_at: null
+                failed_at: null
+                canceled_at: null
             after:
               status: failed
-              status_details:
+              status_transitions:
+                succeeded_at: null
+                failed_at: 2026-10-05T21:22:03.216401815Z
                 canceled_at: null
+              status_details:
                 code: internal_error
                 message: "We encountered an internal error running your query. Our\
                   \ team has been notified, and we'll work to fix the issue. Contact\
                   \ us at https://support.stripe.com/contact with any questions."
+                canceled_at: null
       x-stripeEvent:
         kind: thin
         type: v2.data.query_run.failed
@@ -402212,8 +402999,16 @@ components:
         changes:
           before:
             status: running
+            status_transitions:
+              succeeded_at: null
+              failed_at: null
+              canceled_at: null
           after:
             status: succeeded
+            status_transitions:
+              succeeded_at: 2026-10-05T21:02:00.919623613Z
+              failed_at: null
+              canceled_at: null
       x-stableId: v2.data.query_run.succeeded
       x-stripeDocsSamples:
       - payload:
@@ -402242,8 +403037,16 @@ components:
           changes:
             before:
               status: running
+              status_transitions:
+                succeeded_at: null
+                failed_at: null
+                canceled_at: null
             after:
               status: succeeded
+              status_transitions:
+                succeeded_at: 2026-10-05T21:02:00.919623613Z
+                failed_at: null
+                canceled_at: null
       x-stripeEvent:
         kind: thin
         type: v2.data.query_run.succeeded
@@ -402375,8 +403178,16 @@ components:
         changes:
           before:
             status: running
+            status_transitions:
+              succeeded_at: null
+              failed_at: null
+              canceled_at: null
           after:
             status: succeeded
+            status_transitions:
+              succeeded_at: 2026-10-05T21:02:00.919623613Z
+              failed_at: null
+              canceled_at: null
       x-stableId: v2.data.query_run.updated
       x-stripeDocsSamples:
       - payload:
@@ -402405,8 +403216,16 @@ components:
           changes:
             before:
               status: running
+              status_transitions:
+                succeeded_at: null
+                failed_at: null
+                canceled_at: null
             after:
               status: succeeded
+              status_transitions:
+                succeeded_at: 2026-10-05T21:02:00.919623613Z
+                failed_at: null
+                canceled_at: null
       x-stripeEvent:
         kind: thin
         type: v2.data.query_run.updated
@@ -402957,6 +403776,7 @@ components:
       - parameters
       - report
       - status
+      - status_transitions
       type: object
       properties:
         created:
@@ -403284,6 +404104,22 @@ components:
                     type: string
                     description: A short identifier categorizing the type of error.
           description: Additional details about the current state of the `ReportRun`.
+        status_transitions:
+          type: object
+          properties:
+            canceled_at:
+              type: string
+              description: Time at which the run was canceled.
+              format: date-time
+            failed_at:
+              type: string
+              description: Time at which the run failed.
+              format: date-time
+            succeeded_at:
+              type: string
+              description: Time at which the run succeeded.
+              format: date-time
+          description: Timestamps of when the `ReportRun` entered each terminal status.
       description: |-
         The `ReportRun` resource represents an instance of a `Report` generated with specific
         parameter values. Once the object is created, Stripe begins processing the report. When
@@ -403324,6 +404160,10 @@ components:
         sql: null
         status: succeeded
         status_details: null
+        status_transitions:
+          succeeded_at: 2026-10-05T21:01:11.504756927Z
+          failed_at: null
+          canceled_at: null
       x-resourceId: v2.data.report_run
       x-stableId: v2_resource_data_report_run
       x-stripeDocsSamples:
@@ -403361,6 +404201,10 @@ components:
           sql: null
           status: succeeded
           status_details: null
+          status_transitions:
+            succeeded_at: 2026-10-05T21:01:11.504756927Z
+            failed_at: null
+            canceled_at: null
       x-stripeOperations:
       - method_name: list
         method_on: service
@@ -403529,6 +404373,10 @@ components:
             sql: null
             status: running
             status_details: null
+            status_transitions:
+              succeeded_at: null
+              failed_at: null
+              canceled_at: null
       x-stableId: v2.data.report_run.created
       x-stripeDocsSamples:
       - payload:
@@ -403581,6 +404429,10 @@ components:
               sql: null
               status: running
               status_details: null
+              status_transitions:
+                succeeded_at: null
+                failed_at: null
+                canceled_at: null
       x-stripeEvent:
         kind: thin
         type: v2.data.report_run.created
@@ -403713,8 +404565,16 @@ components:
           before:
             status: running
             status_details: null
+            status_transitions:
+              succeeded_at: null
+              failed_at: null
+              canceled_at: null
           after:
             status: failed
+            status_transitions:
+              succeeded_at: null
+              failed_at: 2026-10-05T21:01:11.504756927Z
+              canceled_at: null
             status_details:
               code: file_size_above_limit
               message: The file generated by this request exceeds the 5 GB limit.
@@ -403748,8 +404608,16 @@ components:
             before:
               status: running
               status_details: null
+              status_transitions:
+                succeeded_at: null
+                failed_at: null
+                canceled_at: null
             after:
               status: failed
+              status_transitions:
+                succeeded_at: null
+                failed_at: 2026-10-05T21:01:11.504756927Z
+                canceled_at: null
               status_details:
                 code: file_size_above_limit
                 message: The file generated by this request exceeds the 5 GB limit.
@@ -403885,8 +404753,16 @@ components:
         changes:
           before:
             status: running
+            status_transitions:
+              succeeded_at: null
+              failed_at: null
+              canceled_at: null
           after:
             status: succeeded
+            status_transitions:
+              succeeded_at: 2026-10-05T21:01:11.504756927Z
+              failed_at: null
+              canceled_at: null
       x-stableId: v2.data.report_run.succeeded
       x-stripeDocsSamples:
       - payload:
@@ -403915,8 +404791,16 @@ components:
           changes:
             before:
               status: running
+              status_transitions:
+                succeeded_at: null
+                failed_at: null
+                canceled_at: null
             after:
               status: succeeded
+              status_transitions:
+                succeeded_at: 2026-10-05T21:01:11.504756927Z
+                failed_at: null
+                canceled_at: null
       x-stripeEvent:
         kind: thin
         type: v2.data.report_run.succeeded
@@ -404048,8 +404932,16 @@ components:
         changes:
           before:
             status: running
+            status_transitions:
+              succeeded_at: null
+              failed_at: null
+              canceled_at: null
           after:
             status: succeeded
+            status_transitions:
+              succeeded_at: 2026-10-05T21:01:11.504756927Z
+              failed_at: null
+              canceled_at: null
       x-stableId: v2.data.report_run.updated
       x-stripeDocsSamples:
       - payload:
@@ -404078,8 +404970,16 @@ components:
           changes:
             before:
               status: running
+              status_transitions:
+                succeeded_at: null
+                failed_at: null
+                canceled_at: null
             after:
               status: succeeded
+              status_transitions:
+                succeeded_at: 2026-10-05T21:01:11.504756927Z
+                failed_at: null
+                canceled_at: null
       x-stripeEvent:
         kind: thin
         type: v2.data.report_run.updated
@@ -406348,6 +407248,32 @@ components:
       x-stripeError:
         code: account_not_configured_as_recipient
         httpStatusCode: 400
+    v2.error.account_not_rejected_by_platform:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - message
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - account_not_rejected_by_platform
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+          description: Information about the error that occurred
+      description: The Account does not have a platform rejection that can be reversed.
+      x-stripeError:
+        code: account_not_rejected_by_platform
+        httpStatusCode: 400
     v2.error.account_not_yet_compatible_with_v2:
       required:
       - error
@@ -406407,6 +407333,36 @@ components:
         code: account_rate_limit_exceeded
         httpStatusCode: 429
         type: rate_limit
+    v2.error.account_rejection_not_permitted:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - doc_url
+          - message
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Short code to identify the error, should not be handled\
+                \ programmatically"
+              enum:
+              - account_rejection_not_permitted
+            doc_url:
+              type: string
+              description: A URL to more information about the error reported
+            message:
+              type: string
+              description: A human-readable message providing more details about the
+                error
+          description: Information about the error that occurred
+      description: The Account cannot be rejected by the platform.
+      x-stripeError:
+        code: account_rejection_not_permitted
+        httpStatusCode: 400
     v2.error.account_terms_of_service_not_accepted:
       required:
       - error

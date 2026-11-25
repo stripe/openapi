@@ -3751,6 +3751,7 @@ paths:
                   - legacy_payments
                   - link_payments
                   - loans
+                  - maya_payments
                   - mb_way_payments
                   - merchant_outbound_transfers_external_account
                   - merpay_payments
@@ -7722,6 +7723,7 @@ paths:
                   - legacy_payments
                   - link_payments
                   - loans
+                  - maya_payments
                   - mb_way_payments
                   - merchant_outbound_transfers_external_account
                   - merpay_payments
@@ -20642,6 +20644,21 @@ paths:
                       - hosted_confirmation
                       - redirect
                       - type
+                    payment_method_update:
+                      title: flow_data_payment_method_update_param
+                      type: object
+                      properties:
+                        subscription:
+                          maxLength: 5000
+                          type: string
+                          description: The ID of the subscription whose payment method
+                            the customer will update. The new payment method is set
+                            as the subscription's `default_payment_method` instead
+                            of the customer's `invoice_settings.default_payment_method`.
+                            Only supported in the redesigned customer portal.
+                      description: Configuration when `flow_data.type=payment_method_update`.
+                      x-stripeMostCommon:
+                      - subscription
                     subscription_cancel:
                       title: flow_data_subscription_cancel_param
                       required:
@@ -20799,6 +20816,7 @@ paths:
                     \ to learn more about using customer portal deep links and flows."
                   x-stripeMostCommon:
                   - after_completion
+                  - payment_method_update
                   - subscription_cancel
                   - subscription_pause
                   - subscription_update
@@ -40186,14 +40204,72 @@ paths:
                   description: This hash contains details about the mandate to create
                   x-stripeMostCommon:
                   - customer_acceptance
+                payment_method_options:
+                  title: payment_method_options
+                  type: object
+                  properties:
+                    card:
+                      title: card
+                      type: object
+                      properties:
+                        network_token:
+                          title: network_token
+                          required:
+                          - cryptogram
+                          type: object
+                          properties:
+                            cryptogram:
+                              maxLength: 5000
+                              type: string
+                              description: |-
+                                The cryptogram, also known as the "token authentication verification value" (TAVV).
+                                This value is base64-encoded and is retrieved from your Token Service
+                                Provider. Provide a fresh cryptogram for each new authorization attempt.
+                            electronic_commerce_indicator:
+                              type: string
+                              description: |-
+                                The Electronic Commerce Indicator (ECI) returned by your Token Service
+                                Provider along with the cryptogram for Visa network tokens. When used
+                                alongside 3-D Secure, provide the ECI returned by your Token Service
+                                Provider. Required for Visa network tokens. Omit for Mastercard network tokens.
+                              enum:
+                              - "05"
+                              - "06"
+                              - "07"
+                              x-stripeEnum:
+                                kind: open
+                                values:
+                                - description: Fully authenticated transaction (Visa
+                                    variant).
+                                  value: "05"
+                                - description: Attempts processing (Visa variant).
+                                  value: "06"
+                                - description: Non-authenticated transaction (Visa
+                                    variant).
+                                  value: "07"
+                          description: Network token specific transaction options.
+                          x-stripeMostCommon:
+                          - cryptogram
+                          - electronic_commerce_indicator
+                      description: Configuration for any card payments attempted during
+                        checkout.
+                      x-stripeMostCommon:
+                      - network_token
+                  description: Payment method-specific configuration for this checkout.
+                  x-stripeMostCommon:
+                  - card
               additionalProperties: false
               x-stripeMostCommon:
               - mandate_data
+              - payment_method_options
             encoding:
               expand:
                 style: deepObject
                 explode: true
               mandate_data:
+                style: deepObject
+                explode: true
+              payment_method_options:
                 style: deepObject
                 explode: true
         required: false
@@ -54000,6 +54076,7 @@ paths:
                   description: Rendering settings for invoices using this template.
                   x-stripeMostCommon:
                   - invoice_pdf
+                  - line_items
                 summary_item_policies:
                   type: array
                   description: "Controls the grouping of line items into summary items\
@@ -54283,6 +54360,7 @@ paths:
                   description: Rendering settings for invoices using this template.
                   x-stripeMostCommon:
                   - invoice_pdf
+                  - line_items
                 summary_item_policies:
                   description: "Controls the grouping of line items into summary items\
                     \ which are displayed on the invoice, visible to customers. The\
@@ -99847,6 +99925,7 @@ paths:
                                 value: none
                         x-stripeMostCommon:
                         - mandate_options
+                        - request_step_up
                         - setup_future_usage
                       - type: string
                         enum:
@@ -99925,6 +100004,7 @@ paths:
                   - kr_card
                   - kr_market
                   - link
+                  - maya
                   - mb_way
                   - merpay
                   - mobilepay
@@ -112158,6 +112238,7 @@ paths:
                                 value: none
                         x-stripeMostCommon:
                         - mandate_options
+                        - request_step_up
                         - setup_future_usage
                       - type: string
                         enum:
@@ -112236,6 +112317,7 @@ paths:
                   - kr_card
                   - kr_market
                   - link
+                  - maya
                   - mb_way
                   - merpay
                   - mobilepay
@@ -128210,6 +128292,7 @@ paths:
                                 value: none
                         x-stripeMostCommon:
                         - mandate_options
+                        - request_step_up
                         - setup_future_usage
                       - type: string
                         enum:
@@ -128288,6 +128371,7 @@ paths:
                   - kr_card
                   - kr_market
                   - link
+                  - maya
                   - mb_way
                   - merpay
                   - mobilepay
@@ -135888,6 +135972,33 @@ paths:
                     networks.
                   x-stripeMostCommon:
                   - display_preference
+                carecredit:
+                  title: payment_method_param
+                  type: object
+                  properties:
+                    display_preference:
+                      title: display_preference_param
+                      type: object
+                      properties:
+                        preference:
+                          type: string
+                          description: The account's preference for whether or not
+                            to display this payment method.
+                          enum:
+                          - none
+                          - "off"
+                          - "on"
+                      description: Whether or not the payment method should be displayed.
+                      x-stripeMostCommon:
+                      - preference
+                  description: "CareCredit is a health and wellness credit card that\
+                    \ customers can use to pay for eligible purchases, including with\
+                    \ promotional financing. Customers are redirected from your website\
+                    \ or app, authorize the payment with CareCredit, then return to\
+                    \ your website or app. You get [immediate notification](https://docs.stripe.com/payments/payment-methods#payment-notification)\
+                    \ of whether the payment succeeded or failed."
+                  x-stripeMostCommon:
+                  - display_preference
                 cartes_bancaires:
                   title: payment_method_param
                   type: object
@@ -136100,6 +136211,33 @@ paths:
                     \ employees to purchase prepared food and beverages on working\
                     \ days. Check this [page](https://docs.stripe.com/payments/meal-vouchers/fr-meal-vouchers)\
                     \ for more details."
+                  x-stripeMostCommon:
+                  - display_preference
+                getflex:
+                  title: payment_method_param
+                  type: object
+                  properties:
+                    display_preference:
+                      title: display_preference_param
+                      type: object
+                      properties:
+                        preference:
+                          type: string
+                          description: The account's preference for whether or not
+                            to display this payment method.
+                          enum:
+                          - none
+                          - "off"
+                          - "on"
+                      description: Whether or not the payment method should be displayed.
+                      x-stripeMostCommon:
+                      - preference
+                  description: "Flex is a buy now, pay later payment method for recurring\
+                    \ bills, such as rent, where customers split a bill into smaller\
+                    \ payments. Customers are redirected from your website or app,\
+                    \ authorize the payment with Flex, then return to your website\
+                    \ or app. You get [immediate notification](https://docs.stripe.com/payments/payment-methods#payment-notification)\
+                    \ of whether the payment succeeded or failed."
                   x-stripeMostCommon:
                   - display_preference
                 giropay:
@@ -137036,6 +137174,33 @@ paths:
                     \ of whether the payment succeeded or failed."
                   x-stripeMostCommon:
                   - display_preference
+                sezzle:
+                  title: payment_method_param
+                  type: object
+                  properties:
+                    display_preference:
+                      title: display_preference_param
+                      type: object
+                      properties:
+                        preference:
+                          type: string
+                          description: The account's preference for whether or not
+                            to display this payment method.
+                          enum:
+                          - none
+                          - "off"
+                          - "on"
+                      description: Whether or not the payment method should be displayed.
+                      x-stripeMostCommon:
+                      - preference
+                  description: "Sezzle is a buy now, pay later payment method where\
+                    \ customers split their purchase into installments. Customers\
+                    \ are redirected from your website or app, authorize the payment\
+                    \ with Sezzle, then return to your website or app. You get [immediate\
+                    \ notification](https://docs.stripe.com/payments/payment-methods#payment-notification)\
+                    \ of whether the payment succeeded or failed."
+                  x-stripeMostCommon:
+                  - display_preference
                 shopeepay:
                   title: payment_method_param
                   type: object
@@ -137405,6 +137570,9 @@ paths:
               card:
                 style: deepObject
                 explode: true
+              carecredit:
+                style: deepObject
+                explode: true
               cartes_bancaires:
                 style: deepObject
                 explode: true
@@ -137430,6 +137598,9 @@ paths:
                 style: deepObject
                 explode: true
               fr_meal_voucher_conecs:
+                style: deepObject
+                explode: true
+              getflex:
                 style: deepObject
                 explode: true
               giropay:
@@ -137538,6 +137709,9 @@ paths:
                 style: deepObject
                 explode: true
               sequra:
+                style: deepObject
+                explode: true
+              sezzle:
                 style: deepObject
                 explode: true
               shopeepay:
@@ -138122,6 +138296,33 @@ paths:
                     networks.
                   x-stripeMostCommon:
                   - display_preference
+                carecredit:
+                  title: payment_method_param
+                  type: object
+                  properties:
+                    display_preference:
+                      title: display_preference_param
+                      type: object
+                      properties:
+                        preference:
+                          type: string
+                          description: The account's preference for whether or not
+                            to display this payment method.
+                          enum:
+                          - none
+                          - "off"
+                          - "on"
+                      description: Whether or not the payment method should be displayed.
+                      x-stripeMostCommon:
+                      - preference
+                  description: "CareCredit is a health and wellness credit card that\
+                    \ customers can use to pay for eligible purchases, including with\
+                    \ promotional financing. Customers are redirected from your website\
+                    \ or app, authorize the payment with CareCredit, then return to\
+                    \ your website or app. You get [immediate notification](https://docs.stripe.com/payments/payment-methods#payment-notification)\
+                    \ of whether the payment succeeded or failed."
+                  x-stripeMostCommon:
+                  - display_preference
                 cartes_bancaires:
                   title: payment_method_param
                   type: object
@@ -138334,6 +138535,33 @@ paths:
                     \ employees to purchase prepared food and beverages on working\
                     \ days. Check this [page](https://docs.stripe.com/payments/meal-vouchers/fr-meal-vouchers)\
                     \ for more details."
+                  x-stripeMostCommon:
+                  - display_preference
+                getflex:
+                  title: payment_method_param
+                  type: object
+                  properties:
+                    display_preference:
+                      title: display_preference_param
+                      type: object
+                      properties:
+                        preference:
+                          type: string
+                          description: The account's preference for whether or not
+                            to display this payment method.
+                          enum:
+                          - none
+                          - "off"
+                          - "on"
+                      description: Whether or not the payment method should be displayed.
+                      x-stripeMostCommon:
+                      - preference
+                  description: "Flex is a buy now, pay later payment method for recurring\
+                    \ bills, such as rent, where customers split a bill into smaller\
+                    \ payments. Customers are redirected from your website or app,\
+                    \ authorize the payment with Flex, then return to your website\
+                    \ or app. You get [immediate notification](https://docs.stripe.com/payments/payment-methods#payment-notification)\
+                    \ of whether the payment succeeded or failed."
                   x-stripeMostCommon:
                   - display_preference
                 giropay:
@@ -139265,6 +139493,33 @@ paths:
                     \ of whether the payment succeeded or failed."
                   x-stripeMostCommon:
                   - display_preference
+                sezzle:
+                  title: payment_method_param
+                  type: object
+                  properties:
+                    display_preference:
+                      title: display_preference_param
+                      type: object
+                      properties:
+                        preference:
+                          type: string
+                          description: The account's preference for whether or not
+                            to display this payment method.
+                          enum:
+                          - none
+                          - "off"
+                          - "on"
+                      description: Whether or not the payment method should be displayed.
+                      x-stripeMostCommon:
+                      - preference
+                  description: "Sezzle is a buy now, pay later payment method where\
+                    \ customers split their purchase into installments. Customers\
+                    \ are redirected from your website or app, authorize the payment\
+                    \ with Sezzle, then return to your website or app. You get [immediate\
+                    \ notification](https://docs.stripe.com/payments/payment-methods#payment-notification)\
+                    \ of whether the payment succeeded or failed."
+                  x-stripeMostCommon:
+                  - display_preference
                 shopeepay:
                   title: payment_method_param
                   type: object
@@ -139634,6 +139889,9 @@ paths:
               card:
                 style: deepObject
                 explode: true
+              carecredit:
+                style: deepObject
+                explode: true
               cartes_bancaires:
                 style: deepObject
                 explode: true
@@ -139659,6 +139917,9 @@ paths:
                 style: deepObject
                 explode: true
               fr_meal_voucher_conecs:
+                style: deepObject
+                explode: true
+              getflex:
                 style: deepObject
                 explode: true
               giropay:
@@ -139767,6 +140028,9 @@ paths:
                 style: deepObject
                 explode: true
               sequra:
+                style: deepObject
+                explode: true
+              sezzle:
                 style: deepObject
                 explode: true
               shopeepay:
@@ -188499,69 +188763,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
       x-stableId: delete_subscription_discount
-  /v1/subscriptions/{subscription}/attach_cadence:
-    post:
-      summary: Attach a Billing Cadence
-      description: "<p>Attach a Billing Cadence to an existing subscription. When\
-        \ attached, the subscription is billed by the Billing Cadence, potentially\
-        \ sharing invoices with the other subscriptions linked to the Billing Cadence.</p>"
-      operationId: PostSubscriptionsSubscriptionAttachCadence
-      parameters:
-      - name: subscription
-        in: path
-        description: Unique identifier for the object.
-        required: true
-        style: simple
-        explode: false
-        schema:
-          maxLength: 5000
-          type: string
-        x-stripeLessCommon: true
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              required:
-              - billing_cadence
-              type: object
-              properties:
-                billing_cadence:
-                  maxLength: 5000
-                  type: string
-                  description: "The Billing Cadence which controls the timing of recurring\
-                    \ invoice generation for this subscription. If unset, the subscription\
-                    \ will bill according to its own configured schedule and create\
-                    \ its own invoices. If set, this subscription will be billed by\
-                    \ the cadence instead, potentially sharing invoices with the other\
-                    \ subscriptions linked to that Cadence."
-                expand:
-                  type: array
-                  description: Specifies which fields in the response should be expanded.
-                  items:
-                    maxLength: 5000
-                    type: string
-              additionalProperties: false
-              x-stripeMostCommon:
-              - billing_cadence
-            encoding:
-              expand:
-                style: deepObject
-                explode: true
-        required: true
-      responses:
-        "200":
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/subscription'
-        default:
-          description: Error response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-      x-stableId: subscriptions_attach_cadence
   /v1/subscriptions/{subscription}/migrate:
     post:
       summary: Migrate a subscription
@@ -189845,7 +190046,6 @@ paths:
         explode: true
         schema:
           type: string
-        x-stripeLessCommon: true
       requestBody:
         content:
           application/x-www-form-urlencoded:
@@ -201633,8 +201833,8 @@ paths:
   /v1/test_helpers/confirmation_tokens:
     post:
       summary: Create a test Confirmation Token
-      description: <p>Creates a test mode Confirmation Token server side for your
-        integration tests.</p>
+      description: <p>Creates a test Confirmation Token server side for your integration
+        tests.</p>
       operationId: PostTestHelpersConfirmationTokens
       requestBody:
         content:
@@ -203735,7 +203935,9 @@ paths:
                       type: string
                       description: URL provided by the merchant on a 3DS request
                   description: "Details about the seller (grocery store, e-commerce\
-                    \ website, etc.) where the card authorization happened."
+                    \ website, etc.) where the card authorization happened. Provide\
+                    \ `merchant_data.state` and `merchant_data.postal_code` only if\
+                    \ `merchant_data.country` is `US` or `CA`, or they will be ignored."
                   x-stripeMostCommon:
                   - category
                   - city
@@ -209775,6 +209977,7 @@ paths:
                           enum:
                           - mandated
                           - preferred
+                          x-stripeBypassValidation: true
                       description: Contains additional details about your challenge
                         flow preference for this 3DS Authentication.
                       x-stripeMostCommon:
@@ -209809,6 +210012,7 @@ paths:
                           enum:
                           - low_risk
                           - none
+                          x-stripeBypassValidation: true
                       description: Contains additional details about your frictionless
                         flow preference for this 3DS Authentication.
                       x-stripeMostCommon:
@@ -226736,7 +226940,7 @@ paths:
                 example:
                   value:
                     data:
-                    - id: bg_123
+                    - id: bc_123
                       object: v2.billing.group
                       livemode: false
                       status: active
@@ -226780,7 +226984,7 @@ paths:
             limit: 10
         response:
           data:
-          - id: bg_123
+          - id: bc_123
             object: v2.billing.group
             livemode: false
             status: active
@@ -227490,7 +227694,7 @@ paths:
               examples:
                 example:
                   value:
-                    id: bg_123
+                    id: bc_123
                     object: v2.billing.group
                     livemode: false
                     status: active
@@ -227553,7 +227757,7 @@ paths:
             lookup_key: acme_monthly_group
             metadata: {}
         response:
-          id: bg_123
+          id: bc_123
           object: v2.billing.group
           livemode: false
           status: active
@@ -227678,7 +227882,7 @@ paths:
                 example:
                   value:
                     data:
-                    - billing_group: bg_123
+                    - billing_group: bc_123
                       created: 2025-01-01T00:00:00.000Z
                       id: spmod_test_61Rc0JpnKZ07nqzIB16RM8VQESSQ4t1K5KYFAmKUSDjf
                       object: v2.billing.group_spend_modifier
@@ -227707,11 +227911,11 @@ paths:
       x-stripeDocsSamples:
       - request:
           pathParams:
-            group_id: bg_123
+            group_id: bc_123
           requestBody: {}
         response:
           data:
-          - billing_group: bg_123
+          - billing_group: bc_123
             created: 2025-01-01T00:00:00.000Z
             id: spmod_test_61Rc0JpnKZ07nqzIB16RM8VQESSQ4t1K5KYFAmKUSDjf
             object: v2.billing.group_spend_modifier
@@ -227768,7 +227972,7 @@ paths:
               examples:
                 example:
                   value:
-                    billing_group: bg_123
+                    billing_group: bc_123
                     created: 2025-01-01T00:00:00.000Z
                     id: spmod_test_61Rc0JpnKZ07nqzIB16RM8VQESSQ4t1K5KYFAmKUSDjf
                     object: v2.billing.group_spend_modifier
@@ -227796,11 +228000,11 @@ paths:
       x-stripeDocsSamples:
       - request:
           pathParams:
-            group_id: bg_123
+            group_id: bc_123
             id: spmod_test_61Rc0JpnKZ07nqzIB16RM8VQESSQ4t1K5KYFAmKUSDjf
           requestBody: {}
         response:
-          billing_group: bg_123
+          billing_group: bc_123
           created: 2025-01-01T00:00:00.000Z
           id: spmod_test_61Rc0JpnKZ07nqzIB16RM8VQESSQ4t1K5KYFAmKUSDjf
           object: v2.billing.group_spend_modifier
@@ -227868,7 +228072,7 @@ paths:
               examples:
                 example:
                   value:
-                    id: bg_123
+                    id: bc_123
                     object: v2.billing.group
                     livemode: false
                     status: active
@@ -227905,10 +228109,10 @@ paths:
       x-stripeDocsSamples:
       - request:
           pathParams:
-            id: bg_123
+            id: bc_123
           requestBody: {}
         response:
-          id: bg_123
+          id: bc_123
           object: v2.billing.group
           livemode: false
           status: active
@@ -228431,7 +228635,7 @@ paths:
               example:
                 value:
                   pathParams:
-                    id: bg_123
+                    id: bc_123
                   requestBody:
                     lookup_key: acme_consolidated_group
       responses:
@@ -228444,7 +228648,7 @@ paths:
               examples:
                 example:
                   value:
-                    id: bg_123
+                    id: bc_123
                     object: v2.billing.group
                     livemode: false
                     status: active
@@ -228486,11 +228690,11 @@ paths:
       x-stripeDocsSamples:
       - request:
           pathParams:
-            id: bg_123
+            id: bc_123
           requestBody:
             lookup_key: acme_consolidated_group
         response:
-          id: bg_123
+          id: bc_123
           object: v2.billing.group
           livemode: false
           status: active
@@ -228561,7 +228765,7 @@ paths:
               examples:
                 example:
                   value:
-                    id: bg_123
+                    id: bc_123
                     object: v2.billing.group
                     livemode: false
                     status: canceled
@@ -228600,10 +228804,10 @@ paths:
       x-stripeDocsSamples:
       - request:
           pathParams:
-            id: bg_123
+            id: bc_123
           requestBody: {}
         response:
-          id: bg_123
+          id: bc_123
           object: v2.billing.group
           livemode: false
           status: canceled
@@ -228680,7 +228884,7 @@ paths:
       x-stripeDocsSamples:
       - request:
           pathParams:
-            id: bg_123
+            id: bc_123
           requestBody: {}
         response:
           id: bginv_123
@@ -311817,6 +312021,238 @@ paths:
           has been exceeded.
         httpStatusCode: 422
       x-stripeNotPublic: true
+  /v2/test_helpers/money_management/inbound_transfers/{id}/fail:
+    post:
+      summary: Fail an InboundTransfer
+      description: Fails an InboundTransfer for testing purposes in a Sandbox environment.
+      operationId: PostV2TestHelpersMoneyManagementInboundTransfersIdFail
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the InboundTransfer to fail.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                failure_reason:
+                  type: string
+                  description: The failure reason to attach to the failed InboundTransfer.
+                  enum:
+                  - bank_account_closed
+                  - bank_account_not_found
+                  - bank_debit_could_not_be_processed
+                  - bank_debit_not_authorized
+                  - insufficient_funds
+                  x-stripeEnum:
+                    kind: open
+                    values:
+                    - description: The Failure Reason when the user's external Bank
+                        Account is closed.
+                      value: bank_account_closed
+                    - description: The Failure Reason when the user's Bank Account
+                        is not found.
+                      value: bank_account_not_found
+                    - description: The Failure Reason when the debit cannot be processed
+                        for any other reason.
+                      value: bank_debit_could_not_be_processed
+                    - description: The Failure Reason when the user hasn't authorized
+                        the debit with their bank.
+                      value: bank_debit_not_authorized
+                    - description: The Failure Reason when there aren't sufficient
+                        funds in the user's bank account.
+                      value: insufficient_funds
+            examples:
+              example:
+                value:
+                  pathParams:
+                    id: ibt_test_61Q58XwKMHh5ha3MI16Nr2cJ8cSQabKn4q38nZ59E6yO
+                  requestBody:
+                    failure_reason: insufficient_funds
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v2.money_management.inbound_transfer'
+              examples:
+                example:
+                  value:
+                    id: ibt_test_61Q58XwKMHh5ha3MI16Nr2cJ8cSQabKn4q38nZ59E6yO
+                    object: v2.money_management.inbound_transfer
+                    livemode: false
+        default:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/v2.error.not_found'
+                - $ref: '#/components/schemas/v2.error'
+      x-stableId: v2_method_test_helper_fail_inbound_transfer
+      x-stripeDocsSamples:
+      - request:
+          pathParams:
+            id: ibt_test_61Q58XwKMHh5ha3MI16Nr2cJ8cSQabKn4q38nZ59E6yO
+          requestBody:
+            failure_reason: insufficient_funds
+        response:
+          id: ibt_test_61Q58XwKMHh5ha3MI16Nr2cJ8cSQabKn4q38nZ59E6yO
+          object: v2.money_management.inbound_transfer
+          livemode: false
+      x-stripeErrors:
+      - code: not_found
+        description: The resource wasn't found.
+        httpStatusCode: 404
+      x-stripeNotPublic: true
+  /v2/test_helpers/money_management/inbound_transfers/{id}/return:
+    post:
+      summary: Return an InboundTransfer
+      description: Returns an InboundTransfer for testing purposes in a Sandbox environment.
+      operationId: PostV2TestHelpersMoneyManagementInboundTransfersIdReturn
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the InboundTransfer to return.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                return_reason:
+                  type: string
+                  description: The return reason to attach to the returned InboundTransfer.
+                  enum:
+                  - bank_account_closed
+                  - bank_account_not_found
+                  - bank_debit_could_not_be_processed
+                  - bank_debit_not_authorized
+                  - insufficient_funds
+                  x-stripeEnum:
+                    kind: open
+                    values:
+                    - description: The Failure Reason when the user's external Bank
+                        Account is closed.
+                      value: bank_account_closed
+                    - description: The Failure Reason when the user's Bank Account
+                        is not found.
+                      value: bank_account_not_found
+                    - description: The Failure Reason when the debit cannot be processed
+                        for any other reason.
+                      value: bank_debit_could_not_be_processed
+                    - description: The Failure Reason when the user hasn't authorized
+                        the debit with their bank.
+                      value: bank_debit_not_authorized
+                    - description: The Failure Reason when there aren't sufficient
+                        funds in the user's bank account.
+                      value: insufficient_funds
+            examples:
+              example:
+                value:
+                  pathParams:
+                    id: ibt_test_61Q58XwKMHh5ha3MI16Nr2cJ8cSQabKn4q38nZ59E6yO
+                  requestBody:
+                    return_reason: insufficient_funds
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v2.money_management.inbound_transfer'
+              examples:
+                example:
+                  value:
+                    id: ibt_test_61Q58XwKMHh5ha3MI16Nr2cJ8cSQabKn4q38nZ59E6yO
+                    object: v2.money_management.inbound_transfer
+                    livemode: false
+        default:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/v2.error.not_found'
+                - $ref: '#/components/schemas/v2.error'
+      x-stableId: v2_method_test_helper_return_inbound_transfer
+      x-stripeDocsSamples:
+      - request:
+          pathParams:
+            id: ibt_test_61Q58XwKMHh5ha3MI16Nr2cJ8cSQabKn4q38nZ59E6yO
+          requestBody:
+            return_reason: insufficient_funds
+        response:
+          id: ibt_test_61Q58XwKMHh5ha3MI16Nr2cJ8cSQabKn4q38nZ59E6yO
+          object: v2.money_management.inbound_transfer
+          livemode: false
+      x-stripeErrors:
+      - code: not_found
+        description: The resource wasn't found.
+        httpStatusCode: 404
+      x-stripeNotPublic: true
+  /v2/test_helpers/money_management/inbound_transfers/{id}/succeed:
+    post:
+      summary: Succeed an InboundTransfer
+      description: Succeeds an InboundTransfer for testing purposes in a Sandbox environment.
+      operationId: PostV2TestHelpersMoneyManagementInboundTransfersIdSucceed
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the InboundTransfer to succeed.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v2.money_management.inbound_transfer'
+              examples:
+                example:
+                  value:
+                    id: ibt_test_61Q58XwKMHh5ha3MI16Nr2cJ8cSQabKn4q38nZ59E6yO
+                    object: v2.money_management.inbound_transfer
+                    livemode: false
+        default:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/v2.error.not_found'
+                - $ref: '#/components/schemas/v2.error'
+      x-stableId: v2_method_test_helper_succeed_inbound_transfer
+      x-stripeDocsSamples:
+      - request:
+          pathParams:
+            id: ibt_test_61Q58XwKMHh5ha3MI16Nr2cJ8cSQabKn4q38nZ59E6yO
+          requestBody: {}
+        response:
+          id: ibt_test_61Q58XwKMHh5ha3MI16Nr2cJ8cSQabKn4q38nZ59E6yO
+          object: v2.money_management.inbound_transfer
+          livemode: false
+      x-stripeErrors:
+      - code: not_found
+        description: The resource wasn't found.
+        httpStatusCode: 404
+      x-stripeNotPublic: true
   /v2/test_helpers/money_management/recipient_verifications:
     post:
       summary: Create a test recipient verification
@@ -317511,7 +317947,9 @@ components:
       title: BalanceSettingsResourcePayments
       required:
       - debit_negative_balances
+      - default_settlement_currency
       - payouts
+      - settlement_currencies
       - settlement_timing
       type: object
       properties:
@@ -345121,12 +345559,12 @@ components:
           - forged_document
           - name_mismatch
           - other
-          - static_document
+          - presentation_attack
           x-stripeEnum:
             kind: open
             ordering: source
             values:
-            - value: static_document
+            - value: presentation_attack
             - value: forged_document
             - value: name_mismatch
             - value: dob_mismatch
@@ -345501,13 +345939,13 @@ components:
           - duplicate_selfie_mismatched_data
           - face_mismatch
           - other
-          - static_selfie
+          - presentation_attack
           x-stripeEnum:
             kind: open
             ordering: source
             values:
             - value: face_mismatch
-            - value: static_selfie
+            - value: presentation_attack
             - value: duplicate_selfie
             - value: duplicate_selfie_mismatched_data
             - value: other
@@ -346056,6 +346494,8 @@ components:
           $ref: '#/components/schemas/gelato_fraudulent_phone_signal'
         fraudulent_selfie:
           $ref: '#/components/schemas/gelato_fraudulent_selfie_signal'
+        suspicious_behavior:
+          $ref: '#/components/schemas/gelato_suspicious_behavior_signal'
       description: ""
       x-expandableFields:
       - fraudulent_document
@@ -346063,12 +346503,100 @@ components:
       - fraudulent_person
       - fraudulent_phone
       - fraudulent_selfie
+      - suspicious_behavior
       x-stripeMostCommon:
       - fraudulent_document
       - fraudulent_email
       - fraudulent_person
       - fraudulent_phone
       - fraudulent_selfie
+      - suspicious_behavior
+    gelato_suspicious_behavior_signal:
+      title: GelatoSuspiciousBehaviorSignal
+      required:
+      - indicators
+      - risk_level
+      type: object
+      properties:
+        indicators:
+          type: array
+          description: Array of objects representing individual factors that contributed
+            to the calculated risk level.
+          items:
+            $ref: '#/components/schemas/gelato_suspicious_behavior_signal_indicator'
+        risk_level:
+          type: string
+          description: Categorical assessment of the behavior risk.
+          enum:
+          - elevated
+          - highest
+          - low
+          - normal
+          - not_assessed
+          - unknown
+          x-stripeEnum:
+            kind: open
+            ordering: source
+            values:
+            - value: low
+            - value: normal
+            - value: elevated
+            - value: highest
+            - value: unknown
+            - value: not_assessed
+      description: ""
+      x-expandableFields:
+      - indicators
+      x-stripeMostCommon:
+      - indicators
+      - risk_level
+    gelato_suspicious_behavior_signal_indicator:
+      title: GelatoSuspiciousBehaviorSignalIndicator
+      required:
+      - explanation
+      - impact
+      - indicator
+      type: object
+      properties:
+        explanation:
+          maxLength: 5000
+          type: string
+          description: A brief explanation of how this indicator contributed to the
+            risk level.
+        impact:
+          type: string
+          description: The effect this indicator had on the overall risk level.
+          enum:
+          - decrease
+          - neutral
+          - slight_increase
+          - strong_increase
+          x-stripeEnum:
+            kind: open
+            ordering: source
+            values:
+            - value: decrease
+            - value: neutral
+            - value: slight_increase
+            - value: strong_increase
+        indicator:
+          type: string
+          description: The name of the specific indicator used in the risk assessment.
+          enum:
+          - geolocation
+          - other
+          x-stripeEnum:
+            kind: open
+            ordering: source
+            values:
+            - value: geolocation
+            - value: other
+      description: ""
+      x-expandableFields: []
+      x-stripeMostCommon:
+      - explanation
+      - impact
+      - indicator
     gelato_verification_report_options:
       title: GelatoVerificationReportOptions
       type: object
@@ -375865,6 +376393,7 @@ components:
           enum:
           - daikin
           - dealerfx
+          - heycentric
           - interpayments
           - proserv
           - yeeld
@@ -378868,6 +379397,8 @@ components:
           $ref: '#/components/schemas/payment_method_config_resource_payment_method_properties'
         card:
           $ref: '#/components/schemas/payment_method_config_resource_payment_method_properties'
+        carecredit:
+          $ref: '#/components/schemas/payment_method_config_resource_payment_method_properties'
         cartes_bancaires:
           $ref: '#/components/schemas/payment_method_config_resource_payment_method_properties'
         cashapp:
@@ -378881,6 +379412,8 @@ components:
         eps:
           $ref: '#/components/schemas/payment_method_config_resource_payment_method_properties'
         fpx:
+          $ref: '#/components/schemas/payment_method_config_resource_payment_method_properties'
+        getflex:
           $ref: '#/components/schemas/payment_method_config_resource_payment_method_properties'
         giropay:
           $ref: '#/components/schemas/payment_method_config_resource_payment_method_properties'
@@ -378981,6 +379514,8 @@ components:
           $ref: '#/components/schemas/payment_method_config_resource_payment_method_properties'
         sequra:
           $ref: '#/components/schemas/payment_method_config_resource_payment_method_properties'
+        sezzle:
+          $ref: '#/components/schemas/payment_method_config_resource_payment_method_properties'
         shopeepay:
           $ref: '#/components/schemas/payment_method_config_resource_payment_method_properties'
         sofort:
@@ -379038,6 +379573,7 @@ components:
       - blik
       - boleto
       - card
+      - carecredit
       - cartes_bancaires
       - cashapp
       - crypto
@@ -379045,6 +379581,7 @@ components:
       - dbarai
       - eps
       - fpx
+      - getflex
       - giropay
       - google_pay
       - gopay
@@ -379081,6 +379618,7 @@ components:
       - scalapay
       - sepa_debit
       - sequra
+      - sezzle
       - shopeepay
       - sofort
       - sunbit
@@ -388842,6 +389380,7 @@ components:
           enum:
           - daikin
           - dealerfx
+          - heycentric
           - interpayments
           - proserv
           - yeeld
@@ -395198,6 +395737,11 @@ components:
           nullable: true
           anyOf:
           - $ref: '#/components/schemas/portal_flows_flow_customer_update'
+        payment_method_update:
+          description: Configuration when `flow.type=payment_method_update`.
+          nullable: true
+          anyOf:
+          - $ref: '#/components/schemas/portal_flows_flow_payment_method_update'
         subscription_cancel:
           description: Configuration when `flow.type=subscription_cancel`.
           nullable: true
@@ -395232,6 +395776,7 @@ components:
       x-expandableFields:
       - after_completion
       - customer_update
+      - payment_method_update
       - subscription_cancel
       - subscription_pause
       - subscription_update
@@ -395239,6 +395784,7 @@ components:
       x-stripeMostCommon:
       - after_completion
       - customer_update
+      - payment_method_update
       - subscription_cancel
       - subscription_pause
       - subscription_update
@@ -395283,6 +395829,22 @@ components:
       properties: {}
       description: ""
       x-expandableFields: []
+    portal_flows_flow_payment_method_update:
+      title: PortalFlowsFlowPaymentMethodUpdate
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          maxLength: 5000
+          type: string
+          description: The ID of the subscription whose payment method the customer
+            will update.
+          nullable: true
+      description: ""
+      x-expandableFields: []
+      x-stripeMostCommon:
+      - subscription
     portal_flows_flow_subscription_cancel:
       title: PortalFlowsFlowSubscriptionCancel
       required:
@@ -412128,11 +412690,6 @@ components:
         method_type: create
         operation: post
         path: /v1/subscriptions
-      - method_name: attach_cadence
-        method_on: service
-        method_type: custom
-        operation: post
-        path: "/v1/subscriptions/{subscription}/attach_cadence"
       - method_name: migrate
         method_on: service
         method_type: custom
@@ -423288,6 +423845,7 @@ components:
           enum:
           - mandated
           - preferred
+          x-stripeBypassValidation: true
       description: ""
       x-expandableFields: []
       x-stripeMostCommon:
@@ -423395,6 +423953,7 @@ components:
           enum:
           - low_risk
           - none
+          x-stripeBypassValidation: true
       description: ""
       x-expandableFields: []
       x-stripeMostCommon:
@@ -423535,7 +424094,8 @@ components:
           description: The indicator provided to the issuer by Stripe in the AReq
             that indicates whether a challenge is requested for this Authentication.
             This indicator should match the flow_preference you specified but may
-            be overridden (for compliance reasons for example).
+            be overridden (for compliance reasons or protocol version supportability
+            for example).
           enum:
           - "01"
           - "02"
@@ -423543,6 +424103,23 @@ components:
           - "04"
           - "05"
           - "06"
+          x-stripeBypassValidation: true
+          x-stripeEnum:
+            kind: open
+            values:
+            - description: No preference.
+              value: "01"
+            - description: No challenge requested.
+              value: "02"
+            - description: Challenge requested (3DS Requestor preference).
+              value: "03"
+            - description: Challenge requested (Mandate).
+              value: "04"
+            - description: No challenge requested (transactional risk analysis is
+                already performed)
+              value: "05"
+            - description: No challenge requested (data share is performed)
+              value: "06"
         rreq:
           maxLength: 5000
           type: string
@@ -501057,7 +501634,7 @@ components:
       description: A Billing Group combines member invoices into a consolidated invoice
         according to shared grouping behavior.
       example:
-        id: bg_123
+        id: bc_123
         object: v2.billing.group
         livemode: false
         status: active
@@ -501086,7 +501663,7 @@ components:
       x-stableId: v2_resource_billing_group
       x-stripeDocsSamples:
       - response:
-          id: bg_123
+          id: bc_123
           object: v2.billing.group
           livemode: false
           status: active
@@ -501298,7 +501875,7 @@ components:
               value: max_billing_period_spend
       description: A spend modifier changes how spend is computed for a billing group.
       example:
-        billing_group: bg_123
+        billing_group: bc_123
         created: 2025-01-01T00:00:00.000Z
         id: spmod_test_61Rc0JpnKZ07nqzIB16RM8VQESSQ4t1K5KYFAmKUSDjf
         object: v2.billing.group_spend_modifier
@@ -501317,7 +501894,7 @@ components:
       x-stableId: v2_resource_group_spend_modifier
       x-stripeDocsSamples:
       - response:
-          billing_group: bg_123
+          billing_group: bc_123
           created: 2025-01-01T00:00:00.000Z
           id: spmod_test_61Rc0JpnKZ07nqzIB16RM8VQESSQ4t1K5KYFAmKUSDjf
           object: v2.billing.group_spend_modifier
@@ -578374,6 +578951,7 @@ components:
               enum:
               - application
               - network
+              - shared_payment_token_issuer
               - stripe
               x-stripeEnum:
                 kind: open
@@ -578382,6 +578960,8 @@ components:
                   value: application
                 - description: Fees collected by the payment network.
                   value: network
+                - description: Fees collected by a Shared Payment Token issuer.
+                  value: shared_payment_token_issuer
                 - description: Fees collected by Stripe.
                   value: stripe
           description: The entity that collected this batch.
@@ -578665,6 +579245,16 @@ components:
                   description: "Human-readable product name, e.g. \"Card payments\
                     \ - Stripe fee\"."
               description: Details for a fee charged by the payment network.
+            shared_payment_token_issuer:
+              type: object
+              properties:
+                feature_name:
+                  type: string
+                  description: "Human-readable product name, e.g. \"Card payments\
+                    \ - Stripe fee\"."
+              description: Details for a referral fee charged by a Shared Payment
+                Token issuer.
+              x-stripeNotPublic: true
             stripe:
               type: object
               properties:
@@ -578679,6 +579269,7 @@ components:
               enum:
               - application
               - network
+              - shared_payment_token_issuer
               - stripe
               x-stripeEnum:
                 kind: open
@@ -578687,6 +579278,8 @@ components:
                   value: application
                 - description: Fee charged by the payment network.
                   value: network
+                - description: Fee charged by a Shared Payment Token issuer.
+                  value: shared_payment_token_issuer
                 - description: Fee charged by Stripe.
                   value: stripe
           description: The entity that assessed this fee.
@@ -578807,6 +579400,7 @@ components:
           enum:
           - application_fee
           - passthrough_fee
+          - referral_fee
           - stripe_fee
           x-stripeEnum:
             kind: open
@@ -578815,6 +579409,8 @@ components:
               value: application_fee
             - description: A network or third-party fee passed through to the merchant.
               value: passthrough_fee
+            - description: A referral fee assessed by a Shared Payment Token issuer.
+              value: referral_fee
             - description: A fee assessed by Stripe.
               value: stripe_fee
       description: |-
@@ -643375,6 +643971,21 @@ components:
         method_type: retrieve
         operation: get
         path: "/v2/money_management/inbound_transfers/{id}"
+      - method_name: fail
+        method_on: service
+        method_type: custom
+        operation: post
+        path: "/v2/test_helpers/money_management/inbound_transfers/{id}/fail"
+      - method_name: return
+        method_on: service
+        method_type: custom
+        operation: post
+        path: "/v2/test_helpers/money_management/inbound_transfers/{id}/return"
+      - method_name: succeed
+        method_on: service
+        method_type: custom
+        operation: post
+        path: "/v2/test_helpers/money_management/inbound_transfers/{id}/succeed"
       x-stripeResource:
         class_name: InboundTransfer
         in_package: v2.money_management
