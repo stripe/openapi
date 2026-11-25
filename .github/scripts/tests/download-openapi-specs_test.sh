@@ -168,17 +168,62 @@ test "$(cat "$existing_fixture")" = 'existing fixture'
 grep -Fxq 'FIXTURE_FILES=openapi/canary/private-preview/fixtures3.private_preview.yaml ' \
   "$existing_canary_fixture_dir/github-env"
 
-required_spec_dir="$TEST_ROOT/required-spec"
-mkdir -p "$required_spec_dir"
-if (
-  cd "$required_spec_dir"
-  GITHUB_ENV="$required_spec_dir/github-env" \
-    MOCK_CURL_LOG="$required_spec_dir/curl.log" \
+blocked_channel_dir="$TEST_ROOT/blocked-canary-channel"
+blocked_channel_canary="$blocked_channel_dir/openapi/canary/private-preview"
+mkdir -p "$blocked_channel_canary"
+printf 'existing spec\n' > "$blocked_channel_canary/spec3.private_preview.sdk.yaml"
+printf 'existing fixture\n' > "$blocked_channel_canary/fixtures3.private_preview.json"
+(
+  cd "$blocked_channel_dir"
+  GITHUB_ENV="$blocked_channel_dir/github-env" \
+    MOCK_CURL_LOG="$blocked_channel_dir/curl.log" \
     MOCK_CURL_FAILURE=spec3.private_preview.sdk.json \
     "$DOWNLOAD_SCRIPT" development all true canary
-); then
-  echo "Canary download unexpectedly accepted a missing spec" >&2
+) > "$blocked_channel_dir/output.log"
+grep -Fq '::error::Canary channel private-preview blocked: could not download private_preview/spec3.private_preview.sdk.json' \
+  "$blocked_channel_dir/output.log"
+grep -Fxq 'FAILED_CHANNELS=private-preview' "$blocked_channel_dir/github-env"
+test -f "$blocked_channel_dir/openapi/canary/ga/sdk.json"
+test -f "$blocked_channel_dir/openapi/canary/beta/sdk.json"
+test "$(cat "$blocked_channel_canary/spec3.private_preview.sdk.yaml")" = 'existing spec'
+test "$(cat "$blocked_channel_canary/fixtures3.private_preview.json")" = 'existing fixture'
+test ! -e "$blocked_channel_canary/sdk.json"
+if grep '^SPEC_FILES=\|^FIXTURE_FILES=' "$blocked_channel_dir/github-env" | grep -q 'private-preview'; then
+  echo "Blocked canary channel files were reported for commit" >&2
   exit 1
 fi
+if find "$blocked_channel_dir/openapi" -name '*.??????' | grep -q .; then
+  echo "Blocked canary channel left temporary files behind" >&2
+  exit 1
+fi
+
+all_blocked_dir="$TEST_ROOT/all-canary-channels-blocked"
+mkdir -p "$all_blocked_dir"
+(
+  cd "$all_blocked_dir"
+  GITHUB_ENV="$all_blocked_dir/github-env" \
+    MOCK_CURL_LOG="$all_blocked_dir/curl.log" \
+    MOCK_CURL_FAILURE=/canary/ \
+    "$DOWNLOAD_SCRIPT" development all true canary
+) > /dev/null
+grep -Fxq 'FAILED_CHANNELS=ga beta private-preview' "$all_blocked_dir/github-env"
+grep -Fxq "SPEC_FILES='' " "$all_blocked_dir/github-env"
+
+healthy_canary_env="$canary_dir/github-env"
+grep -Fxq 'FAILED_CHANNELS=' "$healthy_canary_env"
+
+required_release_spec_dir="$TEST_ROOT/required-release-spec"
+mkdir -p "$required_release_spec_dir"
+if (
+  cd "$required_release_spec_dir"
+  GITHUB_ENV="$required_release_spec_dir/github-env" \
+    MOCK_CURL_LOG="$required_release_spec_dir/curl.log" \
+    MOCK_CURL_FAILURE=spec3.sdk.json \
+    "$DOWNLOAD_SCRIPT" 2026-10-01.clover ga_and_public_preview true
+) 2> /dev/null; then
+  echo "Release download unexpectedly accepted a missing spec" >&2
+  exit 1
+fi
+test ! -e "$required_release_spec_dir/github-env"
 
 echo "download-openapi-specs tests passed"
